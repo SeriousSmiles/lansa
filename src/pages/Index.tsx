@@ -1,14 +1,18 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { AuthLayout } from "@/components/auth/AuthLayout"
+import { SignUpForm } from "@/components/auth/SignUpForm"
 
-const Index = () => {
+export default function IndexPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <AuthLayout imageSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/21db5620684d4cbbfb27b61d5dfc0736c8a7cd9c?placeholderIfAbsent=true">
+      <div className="w-full text-[#2E2E2E] font-normal text-center max-md:max-w-full">
+        <h1 className="text-5xl leading-[1.2] tracking-[-0.48px] max-md:max-w-full max-md:text-[40px]">
+          Sign Up
+        </h1>
+        <p className="text-lg mt-6 max-md:max-w-full">
+          Every journey of a thousand steps, started with one!
+        </p>
       </div>
-    </div>
-  );
-};
-
-export default Index;
+      <SignUpForm />
+    </AuthLayout>
+  )
+}
