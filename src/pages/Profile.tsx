@@ -48,6 +48,103 @@ export default function Profile() {
   const goal = getProfileGoal(userAnswers?.question3);
   const blocker = userAnswers?.question2 || "Identifying my unique value proposition";
 
+  const getSkillsBasedOnAnswers = (answers: any) => {
+    const skillsMap: { [key: string]: string[] } = {
+      "I want to get noticed and valued as a freelancer": ["Communication", "Self-Promotion", "Networking", "Portfolio Building", "Client Management"],
+      "I'm trying to find a job that fits me": ["Interview Skills", "Resume Development", "Self-Assessment", "Job Research", "Career Planning"],
+      "I want more clarity for my business/idea": ["Strategic Thinking", "Market Research", "Business Planning", "Value Proposition", "Brand Development"],
+      "I'm preparing for my next move as a student": ["Academic Focus", "Professional Development", "Research Skills", "Networking", "Career Exploration"],
+      "I'm not sure — I just know I want more": ["Self-Awareness", "Goal Setting", "Personal Development", "Exploration", "Reflection"]
+    };
+
+    // Default skills if no match or answers are undefined
+    let skills = ["Communication", "Problem Solving", "Strategic Thinking", "Self-Awareness", "Professional Growth"];
+    
+    if (answers?.question1 && skillsMap[answers.question1]) {
+      skills = skillsMap[answers.question1];
+    }
+
+    return skills;
+  };
+
+  const skills = getSkillsBasedOnAnswers(userAnswers);
+
+  const getExperienceBasedOnRole = (role: string) => {
+    const roleToExperience: { [key: string]: { title: string, description: string }[] } = {
+      "Freelancer seeking recognition": [
+        {
+          title: "Independent Professional",
+          description: "Developed expertise in delivering quality services while building a client portfolio and establishing a personal brand."
+        }
+      ],
+      "Job seeker finding their fit": [
+        {
+          title: "Career Explorer",
+          description: "Evaluated professional strengths and preferences to identify ideal work environments and positions that align with core values."
+        }
+      ],
+      "Business owner seeking clarity": [
+        {
+          title: "Entrepreneur",
+          description: "Built a business from the ground up, focusing on developing a unique value proposition and strategic market positioning."
+        }
+      ],
+      "Student preparing for the future": [
+        {
+          title: "Academic Achiever",
+          description: "Balanced education with professional development activities, preparing for successful transition to the workforce."
+        }
+      ],
+      "Professional seeking clarity": [
+        {
+          title: "Career Developer",
+          description: "Focused on personal and professional growth through continuous learning and strategic career planning."
+        }
+      ]
+    };
+
+    return roleToExperience[role] || [
+      {
+        title: "Clarity Seeker",
+        description: "Working on improving professional clarity and visibility through the Lansa platform."
+      }
+    ];
+  };
+
+  const experiences = getExperienceBasedOnRole(role);
+
+  const getEducationBasedOnAnswers = (answers: any) => {
+    if (!answers) return [
+      {
+        title: "Lansa Platform",
+        description: "Professional Development Program"
+      }
+    ];
+
+    // If the user mentioned being a student, customize the education section
+    if (answers.question1 && answers.question1.includes("student")) {
+      return [
+        {
+          title: "Current Academic Program",
+          description: "Pursuing education while preparing for professional success"
+        },
+        {
+          title: "Lansa Platform",
+          description: "Supplementary professional development program"
+        }
+      ];
+    }
+
+    return [
+      {
+        title: "Lansa Platform",
+        description: "Professional Development Program focusing on " + goal.toLowerCase()
+      }
+    ];
+  };
+
+  const education = getEducationBasedOnAnswers(userAnswers);
+
   return (
     <div className="min-h-screen bg-[rgba(253,248,242,1)] flex flex-col">
       <header className="flex min-h-[72px] w-full px-4 md:px-16 items-center shadow-sm bg-white">
@@ -104,11 +201,11 @@ export default function Profile() {
                   Skills
                 </h2>
                 <div className="flex flex-wrap gap-2">
-                  <div className="bg-[#FFF4EE] text-[#FF6B4A] px-3 py-1 rounded-full">Communication</div>
-                  <div className="bg-[#FFF4EE] text-[#FF6B4A] px-3 py-1 rounded-full">Problem Solving</div>
-                  <div className="bg-[#FFF4EE] text-[#FF6B4A] px-3 py-1 rounded-full">Strategic Thinking</div>
-                  <div className="bg-[#FFF4EE] text-[#FF6B4A] px-3 py-1 rounded-full">Self-Awareness</div>
-                  <div className="bg-[#FFF4EE] text-[#FF6B4A] px-3 py-1 rounded-full">Professional Growth</div>
+                  {skills.map((skill, index) => (
+                    <div key={index} className="bg-[#FFF4EE] text-[#FF6B4A] px-3 py-1 rounded-full">
+                      {skill}
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -152,20 +249,24 @@ export default function Profile() {
                 </h2>
                 
                 <div className="space-y-6">
-                  <div className="flex flex-col md:flex-row">
-                    <div className="md:w-1/3">
-                      <h3 className="text-lg font-semibold text-[#FF6B4A]">Clarity Seeker</h3>
-                      <p className="text-gray-500">Present</p>
+                  {experiences.map((exp, index) => (
+                    <div key={index}>
+                      <div className="flex flex-col md:flex-row">
+                        <div className="md:w-1/3">
+                          <h3 className="text-lg font-semibold text-[#FF6B4A]">{exp.title}</h3>
+                          <p className="text-gray-500">Present</p>
+                        </div>
+                        <div className="md:w-2/3">
+                          <h4 className="font-medium">Professional Development</h4>
+                          <p className="text-gray-600 mt-1">
+                            {exp.description}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {index < experiences.length - 1 && <Separator className="my-4" />}
                     </div>
-                    <div className="md:w-2/3">
-                      <h4 className="font-medium">Professional Development</h4>
-                      <p className="text-gray-600 mt-1">
-                        Working on improving professional clarity and visibility
-                        through the Lansa platform. Focusing on personal branding,
-                        communication skills, and strategic positioning.
-                      </p>
-                    </div>
-                  </div>
+                  ))}
                   
                   <Separator />
                   
@@ -195,20 +296,20 @@ export default function Profile() {
                 </h2>
                 
                 <div className="space-y-6">
-                  <div className="flex flex-col md:flex-row">
-                    <div className="md:w-1/3">
-                      <h3 className="text-lg font-semibold text-[#FF6B4A]">Lansa Platform</h3>
-                      <p className="text-gray-500">Present</p>
+                  {education.map((edu, index) => (
+                    <div key={index} className="flex flex-col md:flex-row">
+                      <div className="md:w-1/3">
+                        <h3 className="text-lg font-semibold text-[#FF6B4A]">{edu.title}</h3>
+                        <p className="text-gray-500">Present</p>
+                      </div>
+                      <div className="md:w-2/3">
+                        <h4 className="font-medium">Professional Development Program</h4>
+                        <p className="text-gray-600 mt-1">
+                          {edu.description}
+                        </p>
+                      </div>
                     </div>
-                    <div className="md:w-2/3">
-                      <h4 className="font-medium">Professional Development Program</h4>
-                      <p className="text-gray-600 mt-1">
-                        Currently enrolled in Lansa's professional clarity program,
-                        focusing on developing a clear message, improving visibility,
-                        and achieving career goals.
-                      </p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
