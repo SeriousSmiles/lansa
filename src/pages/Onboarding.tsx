@@ -120,7 +120,7 @@ export default function Onboarding() {
                   className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200"
                 >
                   <div className="p-5 flex flex-col h-full">
-                    <div className="flex justify-center mb-3">
+                    <div className="flex justify-end mb-3">
                       {badgeTypes.map(type => (
                         <Badge 
                           key={type} 
@@ -130,14 +130,14 @@ export default function Onboarding() {
                             type === "student" ? "outline" :
                             "destructive"
                           }
-                          className="text-xs"
+                          className="font-['Public Sans'] text-right"
                         >
                           Perfect for {type}
                         </Badge>
                       ))}
                     </div>
                     
-                    <p className="flex-grow mb-4 text-[#2E2E2E] text-center">{option}</p>
+                    <p className="flex-grow mb-4 text-[#2E2E2E] text-right">{option}</p>
                     
                     <Button 
                       onClick={() => handleAnswer(option)}
