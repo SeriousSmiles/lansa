@@ -1,3 +1,6 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Urbanist&family=Public+Sans&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -96,6 +99,34 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-['Public_Sans',sans-serif];
   }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-['Urbanist',sans-serif];
+  }
+}
+
+/* Custom masonry layout styles */
+.masonry-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -8px;
+  width: 100%;
+}
+
+.masonry-grid-item {
+  padding-left: 8px;
+  background-clip: padding-box;
+}
+
+/* Custom animation for card selection */
+@keyframes card-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.card-pulse {
+  animation: card-pulse 0.3s ease-in-out;
 }
