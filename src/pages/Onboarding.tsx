@@ -33,17 +33,14 @@ const questionDetails = [
   {
     id: "question1",
     clarifyingText: "Your motivation matters. Understanding why you're here helps us tailor your path to clarity.",
-    image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80"
   },
   {
     id: "question2",
     clarifyingText: "Identifying your biggest challenge is the first step to overcoming it.",
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80"
   },
   {
     id: "question3",
     clarifyingText: "Your short-term goals help us create an achievable roadmap for your success.",
-    image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80"
   }
 ];
 
@@ -120,20 +117,10 @@ export default function Onboarding() {
               return (
                 <div 
                   key={index}
-                  className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 relative"
+                  className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200"
                 >
-                  {currentDetail?.image && (
-                    <div className="w-full h-32 overflow-hidden relative">
-                      <img 
-                        src={currentDetail.image} 
-                        alt="Question illustration" 
-                        className="w-full h-full object-cover absolute top-0 left-0 rounded-t-lg"
-                      />
-                    </div>
-                  )}
-                  
                   <div className="p-5 flex flex-col h-full">
-                    <div className="flex justify-start mb-3">
+                    <div className="flex justify-center mb-3">
                       {badgeTypes.map(type => (
                         <Badge 
                           key={type} 
@@ -143,14 +130,14 @@ export default function Onboarding() {
                             type === "student" ? "outline" :
                             "destructive"
                           }
-                          className="text-sm font-medium"
+                          className="text-xs"
                         >
                           Perfect for {type}
                         </Badge>
                       ))}
                     </div>
                     
-                    <p className="flex-grow mb-4 text-[#2E2E2E] text-left">{option}</p>
+                    <p className="flex-grow mb-4 text-[#2E2E2E] text-center">{option}</p>
                     
                     <Button 
                       onClick={() => handleAnswer(option)}
