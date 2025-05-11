@@ -64,11 +64,15 @@ export default function Dashboard() {
               <div className="space-y-3">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Role</h3>
-                  <p className="text-base md:text-lg">{role}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <p className="text-base md:text-lg">{role}</p>
+                  </div>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Goal</h3>
-                  <p className="text-base md:text-lg">{goal}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <p className="text-base md:text-lg">{goal}</p>
+                  </div>
                 </div>
                 <div className="pt-1">
                   <Link to="/profile">
