@@ -1,28 +1,8 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { createClient, Session } from "@supabase/supabase-js";
+import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
-
-// Initialize Supabase client with fallback values for development
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
-
-// Check for missing environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error("Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.");
-}
-
-// Create the Supabase client with proper error handling
-const supabase = createClient(
-  supabaseUrl, 
-  supabaseAnonKey, 
-  {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-    }
-  }
-);
+import { supabase } from "@/integrations/supabase/client";
 
 type UserType = {
   id: string;
