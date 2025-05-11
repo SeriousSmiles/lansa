@@ -15,6 +15,8 @@ import {
   getEducationBasedOnAnswers 
 } from "@/utils/profileUtils";
 import type { UserAnswers } from "@/utils/profileUtils";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Profile() {
   const [userAnswers, setUserAnswers] = useState<UserAnswers | null>(null);
@@ -22,6 +24,7 @@ export default function Profile() {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     async function loadProfile() {
@@ -33,7 +36,7 @@ export default function Profile() {
       }
       
       // In a real app, you would fetch the user's name from their profile
-      // For now we'll use a placeholder
+      // For now we'll use a placeholder or email
       if (user.email) {
         setUserName(user.email.split('@')[0]);
       }
@@ -59,6 +62,39 @@ export default function Profile() {
   const experiences = getExperienceBasedOnRole(role);
   const education = getEducationBasedOnAnswers(userAnswers, goal);
 
+  // Function to update user answers in the database
+  const updateUserAnswer = async (field: string, value: string) => {
+    if (!user?.id) return;
+
+    const { error } = await supabase
+      .from('user_answers')
+      .update({ [field]: value })
+      .eq('user_id', user.id);
+    
+    if (error) {
+      console.error('Error updating answer:', error);
+      throw new Error('Failed to update profile');
+    }
+    
+    // Update local state
+    setUserAnswers(prev => {
+      if (!prev) return { [field]: value } as UserAnswers;
+      return { ...prev, [field]: value };
+    });
+  };
+
+  // Function to update user name (would be implemented fully in a real app with user profiles)
+  const updateUserName = async (name: string) => {
+    // In a real app, this would update a user_profiles table
+    // For now, we'll just update the local state
+    setUserName(name);
+    
+    toast({
+      title: "Name updated",
+      description: "Your name has been updated successfully.",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-[rgba(253,248,242,1)] flex flex-col">
       <ProfileHeader 
@@ -76,6 +112,8 @@ export default function Profile() {
             email={user?.email || ''}
             skills={skills}
             goal={goal}
+            onUpdate={updateUserAnswer}
+            onUpdateUserName={updateUserName}
           />
           
           {/* Right Column - Experience & Education */}
@@ -85,6 +123,7 @@ export default function Profile() {
               role={role}
               goal={goal}
               blocker={blocker}
+              onUpdate={updateUserAnswer}
             />
             
             {/* Experience */}
