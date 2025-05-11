@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -113,7 +112,7 @@ export default function Onboarding() {
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-8">
         <div className="w-full max-w-[800px]">
           <div className="flex flex-col items-center text-center mb-10">
-            <h1 className="text-3xl md:text-4xl font-semibold text-[#2E2E2E] mb-4">{currentQ.question}</h1>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-[48px] font-semibold text-[#2E2E2E] mb-4">{currentQ.question}</h1>
             <p className="text-[#5A5A5A] text-lg max-w-2xl">{currentDetail?.clarifyingText}</p>
           </div>
           
@@ -138,7 +137,7 @@ export default function Onboarding() {
                     </div>
                     
                     <div className="p-5 flex flex-col flex-grow">
-                      <div className="flex justify-start mb-3">
+                      <div className="flex flex-col gap-1 mb-3">
                         {badgeTypes.map(type => (
                           <Badge 
                             key={type} 

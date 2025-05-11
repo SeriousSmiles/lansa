@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { 
@@ -64,13 +63,13 @@ export default function Dashboard() {
               <div className="space-y-3">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Role</h3>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-col gap-1">
                     <p className="text-base md:text-lg">{role}</p>
                   </div>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Goal</h3>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-col gap-1">
                     <p className="text-base md:text-lg">{goal}</p>
                   </div>
                 </div>
