@@ -10,12 +10,12 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-transparent bg-[#FF6B4A] text-primary-foreground hover:bg-[#FF6B4A]/80", // freelancer
+          "border-transparent bg-[#1A1F71] text-[#2ED6C0] hover:bg-[#1A1F71]/90", // freelancer
         secondary:
-          "border-transparent bg-[#1A1F71] text-secondary-foreground hover:bg-[#1A1F71]/80", // job-seeker
+          "border-transparent bg-[#1A1F71] text-[#2ED6C0] hover:bg-[#1A1F71]/90", // job-seeker
         destructive:
-          "border-transparent bg-[#8B5CF6] text-destructive-foreground hover:bg-[#8B5CF6]/80", // entrepreneur
-        outline: "border-[#33C3F0] text-[#33C3F0]", // student
+          "border-transparent bg-[#1A1F71] text-[#2ED6C0] hover:bg-[#1A1F71]/90", // entrepreneur
+        outline: "border-[#1A1F71] bg-[#1A1F71] text-[#2ED6C0]", // student
       },
     },
     defaultVariants: {
