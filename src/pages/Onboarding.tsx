@@ -133,7 +133,7 @@ export default function Onboarding() {
                   )}
                   
                   <div className="p-5 flex flex-col h-full">
-                    <div className="flex justify-end mb-3">
+                    <div className="flex justify-start mb-3">
                       {badgeTypes.map(type => (
                         <Badge 
                           key={type} 
@@ -150,7 +150,7 @@ export default function Onboarding() {
                       ))}
                     </div>
                     
-                    <p className="flex-grow mb-4 text-[#2E2E2E] text-center">{option}</p>
+                    <p className="flex-grow mb-4 text-[#2E2E2E] text-left">{option}</p>
                     
                     <Button 
                       onClick={() => handleAnswer(option)}
