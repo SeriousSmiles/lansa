@@ -123,11 +123,11 @@ export default function Onboarding() {
                   className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 relative"
                 >
                   {currentDetail?.image && (
-                    <div className="w-full h-32 overflow-hidden rounded-t-lg">
+                    <div className="w-full h-32 overflow-hidden relative">
                       <img 
                         src={currentDetail.image} 
                         alt="Question illustration" 
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover absolute top-0 left-0 rounded-t-lg"
                       />
                     </div>
                   )}
