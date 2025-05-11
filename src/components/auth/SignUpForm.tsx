@@ -98,11 +98,6 @@ export function SignUpForm() {
             Sign up with Google
           </Button>
         </div>
-
-        <div className="flex items-center gap-[5px] text-[#2E2E2E] font-normal text-center mt-6">
-          <span>Already have an account?</span>
-          <a href="/login" className="underline">Log In</a>
-        </div>
       </div>
     </form>
   );

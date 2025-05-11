@@ -86,11 +86,6 @@ export function LoginForm() {
             Log In with Google
           </Button>
         </div>
-
-        <div className="flex items-center gap-[5px] text-[#2E2E2E] font-normal text-center mt-6">
-          <span>Don't have an account?</span>
-          <a href="/auth" className="underline">Sign Up</a>
-        </div>
       </div>
     </form>
   );

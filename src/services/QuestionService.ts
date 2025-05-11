@@ -53,9 +53,9 @@ export const questions: OnboardingQuestion[] = [
 export async function saveUserAnswers(userId: string, answers: UserAnswers) {
   // Save to Supabase
   try {
-    // Cast the entire operation to any to bypass TypeScript errors
-    const { error } = await (supabase
-      .from('user_answers') as any)
+    // Type assertion for the entire operation to bypass TypeScript errors
+    const { error } = await (supabase as any)
+      .from('user_answers')
       .upsert([{ 
         user_id: userId, 
         question1: answers.question1,
@@ -74,9 +74,9 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
 
 export async function getUserAnswers(userId: string): Promise<UserAnswers | null> {
   try {
-    // Cast the entire operation to any to bypass TypeScript errors
-    const { data, error } = await (supabase
-      .from('user_answers') as any)
+    // Type assertion for the entire operation to bypass TypeScript errors
+    const { data, error } = await (supabase as any)
+      .from('user_answers')
       .select('question1, question2, question3')
       .eq('user_id', userId)
       .single();
