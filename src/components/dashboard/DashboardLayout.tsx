@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -178,6 +179,9 @@ export function DashboardLayout({ children, userName, email }: DashboardLayoutPr
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+            </div>
+            <div className="mt-4 text-xs text-center text-muted-foreground">
+              &copy; {new Date().getFullYear()} Lansa N.V.
             </div>
           </SidebarFooter>
         </Sidebar>
