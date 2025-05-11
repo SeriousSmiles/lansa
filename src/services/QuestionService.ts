@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -68,7 +69,7 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
           question1: answers.question1,
           question2: answers.question2,
           question3: answers.question3,
-          updated_at: new Date()
+          updated_at: new Date().toISOString() // Convert Date to ISO string
         })
         .eq('user_id', userId);
       
