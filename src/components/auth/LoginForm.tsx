@@ -1,43 +1,40 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
-interface SignUpFormData {
-  name: string;
+interface LoginFormData {
   email: string;
   password: string;
 }
 
-export function SignUpForm() {
-  const { register, handleSubmit, formState: { errors } } = useForm<SignUpFormData>();
+export function LoginForm() {
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>();
   const [isLoading, setIsLoading] = useState(false);
-  const { signUp } = useAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as any)?.from?.pathname || "/onboarding";
 
-  const onSubmit = async (data: SignUpFormData) => {
+  const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      // Store name in metadata
-      const { error } = await signUp(data.email, data.password);
+      const { error } = await signIn(data.email, data.password);
       
       if (error) {
-        toast.error(error.message || "Failed to sign up");
+        toast.error(error.message || "Invalid login credentials");
         return;
       }
       
-      // Save the user's name to Supabase when profile tables are set up
-      // This happens after email verification in a real app
-      
-      toast.success("Account created successfully!");
-      navigate("/onboarding");
+      toast.success("Login successful!");
+      navigate(from, { replace: true });
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || "An error occurred during sign up");
+      toast.error(error.message || "An error occurred during login");
     } finally {
       setIsLoading(false);
     }
@@ -45,15 +42,6 @@ export function SignUpForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex w-[480px] max-w-full flex-col items-stretch text-base justify-center mt-8">
-      <div className="w-full text-[#2E2E2E] font-normal">
-        <label className="block mb-2">Name*</label>
-        <Input
-          {...register("name", { required: true })}
-          error={!!errors.name}
-          disabled={isLoading}
-        />
-      </div>
-
       <div className="w-full text-[#2E2E2E] font-normal mt-6">
         <label className="block mb-2">Email*</label>
         <Input
@@ -80,7 +68,7 @@ export function SignUpForm() {
             type="submit"
             disabled={isLoading}
           >
-            Sign up
+            Log In
           </Button>
 
           <Button
@@ -88,20 +76,20 @@ export function SignUpForm() {
             variant="google"
             disabled={isLoading}
             className="mt-4"
-            onClick={() => toast.info("Google sign up is not implemented in this MVP")}
+            onClick={() => toast.info("Google login is not implemented in this MVP")}
           >
             <img
               src="https://cdn.builder.io/api/v1/image/assets/TEMP/abebc497af7ae0216b313acd82c8ed74ee2d8b24?placeholderIfAbsent=true"
               alt="Google"
               className="w-6 h-6 mr-3"
             />
-            Sign up with Google
+            Log In with Google
           </Button>
         </div>
 
         <div className="flex items-center gap-[5px] text-[#2E2E2E] font-normal text-center mt-6">
-          <span>Already have an account?</span>
-          <a href="/login" className="underline">Log In</a>
+          <span>Don't have an account?</span>
+          <a href="/auth" className="underline">Sign Up</a>
         </div>
       </div>
     </form>
