@@ -1,9 +1,16 @@
 
 import { createClient } from "@supabase/supabase-js";
+import { toast } from "sonner";
 
-// Initialize Supabase client
+// Initialize Supabase client with fallback values for development
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+
+// Check for missing environment variables
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error("Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.");
+}
+
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface OnboardingQuestion {
@@ -70,6 +77,7 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
     return { success: true };
   } catch (error) {
     console.error('Error saving user answers:', error);
+    toast.error("Failed to save your answers. Please try again.");
     return { success: false, error };
   }
 }

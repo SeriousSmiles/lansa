@@ -1,12 +1,28 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { createClient, Session } from "@supabase/supabase-js";
+import { toast } from "sonner";
 
-// Initialize Supabase client
+// Initialize Supabase client with fallback values for development
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Check for missing environment variables
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error("Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.");
+}
+
+// Create the Supabase client with proper error handling
+const supabase = createClient(
+  supabaseUrl, 
+  supabaseAnonKey, 
+  {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+    }
+  }
+);
 
 type UserType = {
   id: string;
@@ -49,11 +65,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = {
     user,
     session,
-    signIn: (email: string, password: string) => 
-      supabase.auth.signInWithPassword({ email, password }),
-    signUp: (email: string, password: string) => 
-      supabase.auth.signUp({ email, password }),
-    signOut: () => supabase.auth.signOut(),
+    signIn: async (email: string, password: string) => {
+      try {
+        return await supabase.auth.signInWithPassword({ email, password });
+      } catch (error) {
+        console.error("Error signing in:", error);
+        toast.error("Failed to sign in. Please check your internet connection.");
+        return { error };
+      }
+    },
+    signUp: async (email: string, password: string) => {
+      try {
+        return await supabase.auth.signUp({ email, password });
+      } catch (error) {
+        console.error("Error signing up:", error);
+        toast.error("Failed to sign up. Please check your internet connection.");
+        return { error, data: null };
+      }
+    },
+    signOut: async () => {
+      try {
+        return await supabase.auth.signOut();
+      } catch (error) {
+        console.error("Error signing out:", error);
+        return { error };
+      }
+    },
   };
 
   return (
