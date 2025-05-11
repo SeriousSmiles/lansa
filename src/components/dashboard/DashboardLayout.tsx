@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -90,7 +89,7 @@ export function DashboardLayout({ children, userName, email }: DashboardLayoutPr
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-[rgba(253,248,242,1)]">
         <Sidebar>
-          <SidebarHeader className="gap-4 pt-6 lg:gap-6 lg:pt-0">
+          <SidebarHeader className="gap-4 pt-6 pb-6 lg:gap-6 lg:pt-6">
             <Link to="/dashboard">
               <img
                 src="https://cdn.builder.io/api/v1/image/assets/TEMP/41285a6d1f6906d8349429ceb652f953bf730d06?placeholderIfAbsent=true"
@@ -129,7 +128,7 @@ export function DashboardLayout({ children, userName, email }: DashboardLayoutPr
             </SidebarGroup>
           </SidebarContent>
           
-          <SidebarFooter className="flex flex-col gap-4 pb-6 lg:gap-6 lg:pb-0">
+          <SidebarFooter className="flex flex-col gap-4 pb-6 pt-6 lg:gap-6 lg:pb-6">
             <SidebarSeparator />
             <div>
               <SidebarMenu>
