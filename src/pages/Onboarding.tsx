@@ -54,10 +54,13 @@ const placeholderImages = [
 export default function Onboarding() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   
   const handleAnswer = async (answer: string) => {
+    if (isSubmitting) return; // Prevent multiple submissions
+    
     const questionId = questions[currentQuestion].id;
     const updatedAnswers = { ...answers, [questionId]: answer };
     setAnswers(updatedAnswers);
@@ -65,16 +68,24 @@ export default function Onboarding() {
     // If this is the last question, save and navigate to results
     if (currentQuestion === questions.length - 1) {
       try {
+        setIsSubmitting(true);
+        
         if (!user?.id) {
           toast.error("User not authenticated");
+          setIsSubmitting(false);
           return;
         }
         
-        await saveUserAnswers(user.id, updatedAnswers);
-        navigate("/result");
+        const result = await saveUserAnswers(user.id, updatedAnswers);
+        if (result.success) {
+          navigate("/dashboard");
+        } else {
+          throw new Error("Failed to save answers");
+        }
       } catch (error) {
         console.error("Failed to save answers:", error);
         toast.error("Failed to save your answers. Please try again.");
+        setIsSubmitting(false);
       }
     } else {
       // Move to next question
@@ -159,9 +170,10 @@ export default function Onboarding() {
                       
                       <Button 
                         onClick={() => handleAnswer(option)}
+                        disabled={isSubmitting}
                         className="w-full mt-auto bg-[#FF6B4A] hover:bg-[#FF6B4A]/90 text-white rounded-lg py-3"
                       >
-                        Select
+                        {isSubmitting && currentQuestion === questions.length - 1 ? "Saving..." : "Select"}
                       </Button>
                     </div>
                   </div>

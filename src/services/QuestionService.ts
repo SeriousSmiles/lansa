@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -52,17 +51,46 @@ export const questions: OnboardingQuestion[] = [
 
 export async function saveUserAnswers(userId: string, answers: UserAnswers) {
   try {
-    const { error } = await supabase
+    // First, check if the user already has answers
+    const { data: existingAnswers } = await supabase
       .from('user_answers')
-      .upsert([{ 
-        user_id: userId, 
-        question1: answers.question1,
-        question2: answers.question2,
-        question3: answers.question3
-      }]);
+      .select('*')
+      .eq('user_id', userId)
+      .limit(1);
     
-    if (error) throw error;
-    return { success: true };
+    let result;
+    
+    // If user already has answers, update them
+    if (existingAnswers && existingAnswers.length > 0) {
+      const { error } = await supabase
+        .from('user_answers')
+        .update({ 
+          question1: answers.question1,
+          question2: answers.question2,
+          question3: answers.question3,
+          updated_at: new Date()
+        })
+        .eq('user_id', userId);
+      
+      if (error) throw error;
+      result = { success: true };
+    } else {
+      // Otherwise, insert new answers
+      const { error } = await supabase
+        .from('user_answers')
+        .insert([{ 
+          user_id: userId, 
+          question1: answers.question1,
+          question2: answers.question2,
+          question3: answers.question3
+        }]);
+      
+      if (error) throw error;
+      result = { success: true };
+    }
+    
+    toast.success("Your answers have been saved successfully!");
+    return result;
   } catch (error) {
     console.error('Error saving user answers:', error);
     toast.error("Failed to save your answers. Please try again.");
@@ -76,10 +104,18 @@ export async function getUserAnswers(userId: string): Promise<UserAnswers | null
       .from('user_answers')
       .select('question1, question2, question3')
       .eq('user_id', userId)
-      .single();
+      .order('created_at', { ascending: false })
+      .limit(1);
     
     if (error) throw error;
-    return data;
+    
+    // If no data or empty array, return null
+    if (!data || data.length === 0) {
+      return null;
+    }
+    
+    // Return the most recent answer
+    return data[0];
   } catch (error) {
     console.error('Error fetching user answers:', error);
     return null;
