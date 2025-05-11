@@ -44,6 +44,13 @@ const questionDetails = [
   }
 ];
 
+// Array of placeholder image URLs to use for cards
+const placeholderImages = [
+  "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&w=600&q=80"
+];
+
 export default function Onboarding() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -113,38 +120,50 @@ export default function Onboarding() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {currentQ.options.map((option, index) => {
               const badgeTypes = optionToBadgeMap[option] || ["all"];
+              const imageIndex = index % placeholderImages.length;
               
               return (
                 <div 
                   key={index}
                   className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
                 >
-                  <div className="flex flex-col h-full p-5">
-                    <div className="flex flex-col gap-1 mb-3">
-                      {badgeTypes.map(type => (
-                        <Badge 
-                          key={type} 
-                          variant={
-                            type === "freelancer" ? "default" : 
-                            type === "job-seeker" ? "secondary" :
-                            type === "student" ? "outline" :
-                            "destructive"
-                          }
-                          className="w-fit px-3 py-1 text-left bg-[#FDE1D3] text-[#ea384c] hover:bg-[#FDE1D3] hover:text-[#ea384c] border-0"
-                        >
-                          Perfect for {type}
-                        </Badge>
-                      ))}
+                  <div className="flex flex-col h-full">
+                    {/* Image area at the top */}
+                    <div className="w-full h-36 overflow-hidden">
+                      <img 
+                        src={placeholderImages[imageIndex]} 
+                        alt="Option illustration" 
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     
-                    <p className="flex-grow mb-5 text-[#2E2E2E] text-left text-xl font-medium">{option}</p>
-                    
-                    <Button 
-                      onClick={() => handleAnswer(option)}
-                      className="w-full mt-auto bg-[#FF6B4A] hover:bg-[#FF6B4A]/90 text-white rounded-lg py-3"
-                    >
-                      Select
-                    </Button>
+                    <div className="p-5 flex flex-col flex-grow">
+                      <div className="flex flex-col gap-1 mb-3">
+                        {badgeTypes.map(type => (
+                          <Badge 
+                            key={type} 
+                            variant={
+                              type === "freelancer" ? "default" : 
+                              type === "job-seeker" ? "secondary" :
+                              type === "student" ? "outline" :
+                              "destructive"
+                            }
+                            className="w-fit px-3 py-1 text-left bg-[#FDE1D3] text-[#ea384c] hover:bg-[#FDE1D3] hover:text-[#ea384c] border-0"
+                          >
+                            Perfect for {type}
+                          </Badge>
+                        ))}
+                      </div>
+                      
+                      <p className="flex-grow mb-5 text-[#2E2E2E] text-left text-xl font-medium">{option}</p>
+                      
+                      <Button 
+                        onClick={() => handleAnswer(option)}
+                        className="w-full mt-auto bg-[#FF6B4A] hover:bg-[#FF6B4A]/90 text-white rounded-lg py-3"
+                      >
+                        Select
+                      </Button>
+                    </div>
                   </div>
                 </div>
               );
