@@ -9,6 +9,9 @@ import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
 import Result from "./pages/Result";
 import Profile from "./pages/Profile";
+import Dashboard from "./pages/Dashboard";
+import Resources from "./pages/Resources";
+import ContentLibrary from "./pages/ContentLibrary";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -29,6 +32,9 @@ const App = () => {
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/result" element={<Result />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/resources" element={<Resources />} />
+                <Route path="/content" element={<ContentLibrary />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

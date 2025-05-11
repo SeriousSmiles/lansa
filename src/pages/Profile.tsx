@@ -1,5 +1,7 @@
 
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { getUserAnswers, getProfileRole, getProfileGoal } from "@/services/QuestionService";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -8,6 +10,7 @@ export default function Profile() {
   const [userName, setUserName] = useState<string>("Lansa User");
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function loadProfile() {
@@ -55,9 +58,9 @@ export default function Profile() {
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-8">
         <div className="w-full max-w-[700px]">
           <h1 className="text-4xl font-semibold text-[#2E2E2E] mb-2 text-center">Your Starter Profile</h1>
-          <p className="text-center text-[#2E2E2E] mb-10">This is just the beginning. We'll evolve this with you over time.</p>
+          <p className="text-center text-[#2E2E2E] mb-6">Based on your onboarding answers. This is just the beginning of your clarity journey.</p>
           
-          <div className="bg-white p-8 rounded-lg shadow-lg">
+          <div className="bg-white p-8 rounded-lg shadow-lg mb-8">
             <div className="flex items-center mb-8">
               <div className="w-20 h-20 bg-[#FF6B4A] rounded-full flex items-center justify-center text-white text-2xl font-bold">
                 {userName.charAt(0).toUpperCase()}
@@ -87,6 +90,15 @@ export default function Profile() {
                 Check back soon for personalized resources and exercises to help you achieve your goal.
               </p>
             </div>
+          </div>
+          
+          <div className="flex justify-center">
+            <Button 
+              onClick={() => navigate("/dashboard")} 
+              className="px-8 py-6 h-auto text-lg"
+            >
+              Go to Dashboard
+            </Button>
           </div>
         </div>
       </main>

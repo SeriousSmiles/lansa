@@ -45,19 +45,28 @@ export default function Result() {
 
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-8">
         <div className="w-full max-w-[700px] text-center">
-          <h1 className="text-4xl font-semibold text-[#2E2E2E] mb-6">Your Lansa Insight</h1>
+          <h1 className="text-4xl font-semibold text-[#2E2E2E] mb-6">Your Personalized Insight</h1>
+          
+          <p className="text-xl text-[#2E2E2E] mb-6 opacity-75">
+            Based on the answers you provided during onboarding
+          </p>
           
           <div className="bg-white p-8 rounded-lg shadow-lg mb-10 text-left">
             <p className="text-2xl text-[#2E2E2E] italic">"{insight}"</p>
           </div>
           
           <p className="text-xl text-[#2E2E2E] mb-10">
-            This is just the beginning of your clarity journey. We've prepared a starter profile for you based on your responses.
+            We've prepared a starter profile for you based on your responses. This is just the beginning of your clarity journey.
           </p>
           
-          <Button onClick={() => navigate("/profile")} className="w-auto px-8 py-6 h-auto text-lg">
-            See My Starter Profile
-          </Button>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Button onClick={() => navigate("/profile")} className="px-8 py-6 h-auto text-lg">
+              See My Starter Profile
+            </Button>
+            <Button onClick={() => navigate("/dashboard")} variant="outline" className="px-8 py-6 h-auto text-lg">
+              Go to Dashboard
+            </Button>
+          </div>
         </div>
       </main>
 
