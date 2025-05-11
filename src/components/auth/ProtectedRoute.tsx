@@ -18,7 +18,7 @@ export default function ProtectedRoute() {
           // If user has answered at least one question, consider onboarding complete
           setHasCompletedOnboarding(
             userAnswers && 
-            (userAnswers.question1 || userAnswers.question2 || userAnswers.question3)
+            Boolean(userAnswers.question1 || userAnswers.question2 || userAnswers.question3)
           );
         } catch (error) {
           console.error("Failed to check onboarding status:", error);
