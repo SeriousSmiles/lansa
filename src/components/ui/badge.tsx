@@ -5,17 +5,17 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-[4px] border px-2 py-1 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-[4px] border px-2 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
         default:
-          "border-transparent bg-[#FF6B4A]/30 text-[#FF6B4A] font-medium text-[14px]", // freelancer
+          "border-transparent bg-[#FF6B4A]/30 text-[#FF6B4A] font-medium text-[12px]", // freelancer
         secondary:
-          "border-transparent bg-[#FF6B4A]/30 text-[#FF6B4A] font-medium text-[14px]", // job-seeker
+          "border-transparent bg-[#FF6B4A]/30 text-[#FF6B4A] font-medium text-[12px]", // job-seeker
         destructive:
-          "border-transparent bg-[#FF6B4A]/30 text-[#FF6B4A] font-medium text-[14px]", // entrepreneur
-        outline: "border-transparent bg-[#FF6B4A]/30 text-[#FF6B4A] font-medium text-[14px]", // student
+          "border-transparent bg-[#FF6B4A]/30 text-[#FF6B4A] font-medium text-[12px]", // entrepreneur
+        outline: "border-transparent bg-[#FF6B4A]/30 text-[#FF6B4A] font-medium text-[12px]", // student
       },
     },
     defaultVariants: {
