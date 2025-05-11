@@ -15,7 +15,7 @@ const badgeVariants = cva(
           "border-transparent bg-[#1A1F71] text-[#2ED6C0] hover:bg-[#1A1F71]/90", // job-seeker
         destructive:
           "border-transparent bg-[#1A1F71] text-[#2ED6C0] hover:bg-[#1A1F71]/90", // entrepreneur
-        outline: "border-[#1A1F71] bg-[#1A1F71] text-[#2ED6C0]", // student
+        outline: "border-transparent bg-[#1A1F71] text-[#2ED6C0]", // student
       },
     },
     defaultVariants: {
