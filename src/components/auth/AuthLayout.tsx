@@ -1,3 +1,4 @@
+
 import { ReactNode } from "react"
 
 interface AuthLayoutProps {
@@ -8,8 +9,8 @@ interface AuthLayoutProps {
 export function AuthLayout({ children, imageSrc }: AuthLayoutProps) {
   return (
     <div className="bg-[rgba(253,248,242,1)] flex items-stretch overflow-hidden flex-wrap">
-      <div className="min-w-60 flex-1 shrink basis-[0%] px-16 max-md:max-w-full max-md:px-5">
-        <header className="flex min-h-[72px] w-full flex-col overflow-hidden justify-center max-md:max-w-full">
+      <div className="min-w-60 flex-1 shrink basis-[0%] px-16 flex flex-col items-center max-md:max-w-full max-md:px-5">
+        <header className="flex min-h-[72px] w-full flex-col overflow-hidden justify-center items-center max-md:max-w-full">
           <img
             src="https://cdn.builder.io/api/v1/image/assets/TEMP/41285a6d1f6906d8349429ceb652f953bf730d06?placeholderIfAbsent=true"
             alt="Logo"
@@ -17,7 +18,7 @@ export function AuthLayout({ children, imageSrc }: AuthLayoutProps) {
           />
         </header>
 
-        <main className="flex w-full flex-col items-stretch justify-center flex-1 max-md:max-w-full">
+        <main className="flex w-full flex-col items-center justify-center flex-1 max-md:max-w-full">
           {children}
         </main>
 

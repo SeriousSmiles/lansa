@@ -19,14 +19,16 @@ export default function IndexPage() {
             : "Every journey of a thousand steps, started with one!"}
         </p>
       </div>
-      {isLogin ? <LoginForm /> : <SignUpForm />}
-      <div className="text-center mt-6">
-        <button 
-          onClick={() => setIsLogin(!isLogin)}
-          className="text-[#FF6B4A] font-medium hover:underline focus:outline-none"
-        >
-          {isLogin ? "Need an account? Sign Up" : "Already have an account? Log In"}
-        </button>
+      <div className="flex flex-col items-center w-full">
+        {isLogin ? <LoginForm /> : <SignUpForm />}
+        <div className="text-center mt-6">
+          <button 
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-[#FF6B4A] font-medium hover:underline focus:outline-none"
+          >
+            {isLogin ? "Need an account? Sign Up" : "Already have an account? Log In"}
+          </button>
+        </div>
       </div>
     </AuthLayout>
   );

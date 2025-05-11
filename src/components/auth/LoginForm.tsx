@@ -41,7 +41,7 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex w-[480px] max-w-full flex-col items-stretch text-base justify-center mt-8">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex w-[480px] max-w-full flex-col items-center text-base justify-center mt-8 mx-auto">
       <div className="w-full text-[#2E2E2E] font-normal mt-6">
         <label className="block mb-2">Email*</label>
         <Input
@@ -62,7 +62,7 @@ export function LoginForm() {
         />
       </div>
 
-      <div className="self-center flex w-full max-w-[480px] flex-col items-center mt-6">
+      <div className="flex w-full flex-col items-center mt-6">
         <div className="w-full text-white font-medium">
           <Button
             type="submit"
