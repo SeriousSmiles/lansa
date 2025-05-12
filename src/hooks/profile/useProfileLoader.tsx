@@ -1,13 +1,12 @@
 
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getUserAnswers, getProfileRole, getProfileGoal } from "@/services/QuestionService";
+import { getUserAnswers, getProfileRole, getProfileGoal, UserAnswers } from "@/services/QuestionService";
 import { 
   getSkillsBasedOnAnswers, 
   getExperienceBasedOnRole, 
   getEducationBasedOnAnswers 
 } from "@/utils/profileUtils";
-import type { UserAnswers } from "@/utils/profileUtils";
 import { v4 as uuidv4 } from "@/utils/uuid";
 import { convertJsonToExperienceItems, convertJsonToEducationItems } from "@/utils/profileDataConverters";
 
