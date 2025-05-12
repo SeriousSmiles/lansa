@@ -38,6 +38,9 @@ export default function Profile() {
   };
   
   const textColor = getContrastTextColor(profile.coverColor);
+  
+  // Determine if the theme is dark based on luminance
+  const isDarkTheme = getContrastTextColor(profile.coverColor) === "#FFFFFF";
 
   if (profile.isLoading) {
     return (
@@ -125,7 +128,7 @@ export default function Profile() {
               <Button 
                 onClick={() => navigate("/dashboard")} 
                 className="py-2 h-auto"
-                variant="outline"
+                variant={isDarkTheme ? "contrast" : "outline"}
                 style={{
                   borderColor: themeColors.border,
                   color: textColor

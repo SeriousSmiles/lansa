@@ -11,6 +11,7 @@ const buttonVariants = cva(
         primary: "bg-[#FF6B4A] text-white shadow-[0px_32px_24px_0px_rgba(255,255,255,0.05)_inset,0px_2px_1px_0px_rgba(255,255,255,0.25)_inset,0px_0px_0px_1px_rgba(13,5,4,0.15)_inset,0px_-2px_1px_0px_rgba(0,0,0,0.20)_inset,0px_1px_2px_0px_rgba(13,5,4,0.05)] hover:bg-[#FF6B4A]/90",
         google: "bg-[#1A1F71] text-white shadow-[0px_0px_0px_1px_rgba(13,5,4,0.05)_inset,0px_-2px_1px_0px_rgba(13,5,4,0.05)_inset,0px_1px_2px_0px_rgba(13,5,4,0.05)] hover:bg-[#1A1F71]/90",
         outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        contrast: "border bg-black/10 text-foreground hover:bg-black/20", // New contrast variant for better visibility on dark backgrounds
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },

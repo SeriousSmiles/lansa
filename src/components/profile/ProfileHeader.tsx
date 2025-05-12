@@ -130,6 +130,8 @@ export function ProfileHeader({
   };
   
   const textColor = getContrastTextColor(coverColor);
+  // Determine if the theme is dark based on luminance
+  const isDarkTheme = textColor === "#FFFFFF";
   
   return (
     <header 
@@ -140,7 +142,7 @@ export function ProfileHeader({
       }}
     >
       <Button 
-        variant="ghost" 
+        variant={isDarkTheme ? "contrast" : "ghost"}
         size="icon" 
         onClick={() => navigate("/dashboard")}
         className="mr-2"
@@ -158,7 +160,7 @@ export function ProfileHeader({
       {!readOnly && (
         <div className="ml-auto flex items-center gap-2">
           <Button 
-            variant="outline" 
+            variant={isDarkTheme ? "contrast" : "outline"}
             size="sm" 
             onClick={() => setIsColorPickerOpen(true)}
             className="flex items-center gap-1"
@@ -172,7 +174,7 @@ export function ProfileHeader({
           </Button>
           
           <Button 
-            variant="outline" 
+            variant={isDarkTheme ? "contrast" : "outline"}
             size="sm" 
             onClick={() => setIsHighlightPickerOpen(true)}
             className="flex items-center gap-1"
@@ -203,7 +205,7 @@ export function ProfileHeader({
           <Button
             onClick={handleShare}
             className="flex items-center gap-1"
-            variant="outline"
+            variant={isDarkTheme ? "contrast" : "outline"}
             size="sm"
             style={{
               borderColor: `${coverColor}50`,
