@@ -19,9 +19,10 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
   userName: string;
   email: string;
+  themeColor?: string;
 }
 
-export function DashboardLayout({ children, userName, email }: DashboardLayoutProps) {
+export function DashboardLayout({ children, userName, email, themeColor }: DashboardLayoutProps) {
   const { signOut } = useAuth();
 
   const handleLogout = async () => {
@@ -61,7 +62,7 @@ export function DashboardLayout({ children, userName, email }: DashboardLayoutPr
             <SidebarGroup>
               <SidebarGroupLabel>Main Navigation</SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenuItems items={menuItems} />
+                <SidebarMenuItems items={menuItems} themeColor={themeColor} />
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
@@ -70,11 +71,12 @@ export function DashboardLayout({ children, userName, email }: DashboardLayoutPr
             userName={userName} 
             email={email} 
             handleLogout={handleLogout}
+            themeColor={themeColor}
           />
         </Sidebar>
         
         <main className="flex-1">
-          <MobileHeader />
+          <MobileHeader themeColor={themeColor} />
           <div className="container mx-auto pt-0 md:pt-0">
             {children}
           </div>

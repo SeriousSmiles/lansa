@@ -1,5 +1,5 @@
 
-import { ExperienceItem, EducationItem } from "@/utils/profileUtils";
+import { ExperienceItem, EducationItem } from "@/hooks/profile/profileTypes";
 import { Separator } from "@/components/ui/separator";
 
 interface SharedProfileContentProps {

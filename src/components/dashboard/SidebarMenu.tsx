@@ -15,15 +15,20 @@ type MenuItem = {
 
 interface SidebarMenuItemsProps {
   items: MenuItem[];
+  themeColor?: string;
 }
 
-export function SidebarMenuItems({ items }: SidebarMenuItemsProps) {
+export function SidebarMenuItems({ items, themeColor }: SidebarMenuItemsProps) {
   return (
     <SidebarMenu>
       {items.map((item, index) => (
         <SidebarMenuItem key={index}>
           <SidebarMenuButton asChild>
-            <Link to={item.url} className="flex w-full items-center gap-3">
+            <Link 
+              to={item.url} 
+              className="flex w-full items-center gap-3"
+              style={themeColor ? { color: themeColor } : {}}
+            >
               <item.icon className="size-5" />
               <span>{item.title}</span>
             </Link>

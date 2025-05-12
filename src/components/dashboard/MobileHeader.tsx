@@ -23,7 +23,7 @@ export function MobileHeader({ themeColor }: MobileHeaderProps) {
           className="aspect-[2.7] object-contain w-[92px]"
         />
       </Link>
-      <SidebarTrigger />
+      <SidebarTrigger style={themeColor ? { color: themeColor } : {}} />
     </div>
   );
 }

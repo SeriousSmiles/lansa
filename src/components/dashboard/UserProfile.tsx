@@ -17,13 +17,17 @@ interface UserProfileProps {
   userName: string;
   email: string;
   handleLogout: () => Promise<void>;
+  themeColor?: string;
 }
 
-export function UserProfile({ userName, email, handleLogout }: UserProfileProps) {
+export function UserProfile({ userName, email, handleLogout, themeColor }: UserProfileProps) {
   return (
     <div className="flex items-center justify-between px-2">
       <div className="grid grid-cols-[max-content_1fr] items-center gap-3">
-        <div className="w-10 h-10 bg-[#FF6B4A] rounded-full flex items-center justify-center text-white font-bold">
+        <div 
+          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+          style={{ backgroundColor: themeColor || "#FF6B4A" }}
+        >
           {userName.charAt(0).toUpperCase()}
         </div>
         <div>
@@ -33,7 +37,12 @@ export function UserProfile({ userName, email, handleLogout }: UserProfileProps)
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-full h-8 w-8"
+            style={themeColor ? { color: themeColor } : {}}
+          >
             <MoreHorizontal className="h-5 w-5" />
           </Button>
         </DropdownMenuTrigger>

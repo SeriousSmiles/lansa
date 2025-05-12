@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -89,17 +88,13 @@ export function ExperienceSection({
           </h2>
           {onAddExperience && (
             <Button 
-              variant="outline" 
-              size="sm"
-              className="flex items-center gap-1"
+              variant="ghost" 
+              size="icon"
               onClick={() => setIsAddingExperience(true)}
-              style={themeColor ? {
-                borderColor: `${themeColor}50`,
-                color: themeColor
-              } : {}}
+              style={{ color: highlightColor }}
+              className="h-8 w-8 p-0" 
             >
-              <Plus className="h-4 w-4" />
-              <span>Add Experience</span>
+              <Plus className="h-5 w-5" />
             </Button>
           )}
         </div>

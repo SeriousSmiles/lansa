@@ -8,6 +8,7 @@ import { AboutSection } from "@/components/profile/AboutSection";
 import { ExperienceSection } from "@/components/profile/ExperienceSection";
 import { EducationSection } from "@/components/profile/EducationSection";
 import { useProfileData } from "@/hooks/useProfileData";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 
 export default function Profile() {
   const { user } = useAuth();

@@ -1,8 +1,8 @@
 
 import { useState } from "react";
 import { v4 as uuidv4 } from "@/utils/uuid";
-import { UserProfile } from "../useProfileData";
-import { EducationItem } from "@/utils/profileUtils";
+import { UserProfile } from "../profile/profileTypes";
+import { EducationItem } from "../profile/profileTypes";
 
 interface UseProfileEducationProps {
   userId: string | undefined;
