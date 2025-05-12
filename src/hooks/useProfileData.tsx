@@ -15,6 +15,7 @@ import { useProfileSkills } from "./profile/useProfileSkills";
 import { useProfileExperience } from "./profile/useProfileExperience";
 import { useProfileEducation } from "./profile/useProfileEducation";
 import { useProfileImage } from "./profile/useProfileImage";
+import { convertJsonToExperienceItems, convertJsonToEducationItems } from "@/utils/profileDataConverters";
 
 // Define interface for profile data
 export interface UserProfile {
@@ -80,8 +81,6 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
   // Base state
   const [userAnswers, setUserAnswers] = useState<UserAnswers | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-
   const { toast } = useToast();
   
   // Use specialized hooks
@@ -91,145 +90,146 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
   const profileEducation = useProfileEducation({ userId, updateProfileData: profileBasics.updateProfileData });
   const profileImage = useProfileImage({ userId, updateProfileData: profileBasics.updateProfileData });
 
-  // Convert JSON from database to our typed objects
-  const convertJsonToExperienceItems = (jsonData: any): ExperienceItem[] => {
-    if (!jsonData || !Array.isArray(jsonData)) return [];
-    
-    return jsonData.map((item: any) => ({
-      id: item.id || uuidv4(),
-      title: item.title || "",
-      description: item.description || ""
-    }));
-  };
-  
-  const convertJsonToEducationItems = (jsonData: any): EducationItem[] => {
-    if (!jsonData || !Array.isArray(jsonData)) return [];
-    
-    return jsonData.map((item: any) => ({
-      id: item.id || uuidv4(),
-      title: item.title || "",
-      description: item.description || ""
-    }));
-  };
-
   useEffect(() => {
-    async function loadProfile() {
-      if (!userId) return;
-      
-      const answers = await getUserAnswers(userId);
-      if (answers) {
-        setUserAnswers(answers);
-      }
-      
-      try {
-        // Try to fetch the user profile
-        const { data: profileData, error } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('user_id', userId)
-          .single();
-          
-        if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
-          throw error;
-        }
-        
-        if (profileData) {
-          // If profile exists, set all the values from it
-          setUserProfile({
-            ...profileData,
-            experiences: convertJsonToExperienceItems(profileData.experiences),
-            education: convertJsonToEducationItems(profileData.education)
-          });
-          
-          if (profileData.name) profileBasics.setUserName(profileData.name);
-          if (profileData.phone_number) profileBasics.setPhoneNumber(profileData.phone_number);
-          if (profileData.about_text) profileBasics.setAboutText(profileData.about_text);
-          if (profileData.cover_color) profileBasics.setCoverColor(profileData.cover_color);
-          if (profileData.profile_image) profileImage.setProfileImage(profileData.profile_image);
-          
-          if (profileData.skills && Array.isArray(profileData.skills) && profileData.skills.length > 0) {
-            profileSkills.setUserSkills(profileData.skills);
-          } else if (answers) {
-            // Fall back to generated skills if not in profile
-            profileSkills.setUserSkills(getSkillsBasedOnAnswers(answers));
-          }
-          
-          if (profileData.experiences && Array.isArray(profileData.experiences) && profileData.experiences.length > 0) {
-            profileExperience.setExperiences(convertJsonToExperienceItems(profileData.experiences));
-          } else {
-            // Fall back to generated experiences
-            const role = getProfileRole(answers?.question1);
-            const generatedExperiences = getExperienceBasedOnRole(role);
-            profileExperience.setExperiences(generatedExperiences.map(exp => ({
-              ...exp,
-              id: uuidv4()
-            })));
-          }
-          
-          if (profileData.education && Array.isArray(profileData.education) && profileData.education.length > 0) {
-            profileEducation.setEducationItems(convertJsonToEducationItems(profileData.education));
-          } else {
-            // Fall back to generated education
-            const goal = getProfileGoal(answers?.question3);
-            const generatedEducation = getEducationBasedOnAnswers(answers, goal);
-            profileEducation.setEducationItems(generatedEducation.map(edu => ({
-              ...edu,
-              id: uuidv4()
-            })));
-          }
-        } else {
-          // If no profile exists, use generated data
-          const role = getProfileRole(answers?.question1);
-          const goal = getProfileGoal(answers?.question3);
-          profileSkills.setUserSkills(getSkillsBasedOnAnswers(answers));
-          
-          const generatedExperiences = getExperienceBasedOnRole(role);
-          profileExperience.setExperiences(generatedExperiences.map(exp => ({
-            ...exp,
-            id: uuidv4()
-          })));
-          
-          const generatedEducation = getEducationBasedOnAnswers(answers, goal);
-          profileEducation.setEducationItems(generatedEducation.map(edu => ({
-            ...edu,
-            id: uuidv4()
-          })));
-          
-          // In a real app, you would fetch the user's name from their profile
-          if (answers && userId) {
-            // Fix: Use userId instead of user_id from answers
-            profileBasics.setUserName(userId.split('@')[0]);
-          }
-        }
-      } catch (error) {
-        console.error("Error loading profile data:", error);
-        toast({
-          title: "Error loading profile",
-          description: "Could not load your profile data.",
-          variant: "destructive",
-        });
-        
-        // If there's an error, set up basic profile data
-        if (answers) {
-          const role = getProfileRole(answers.question1);
-          const goal = getProfileGoal(answers.question3);
-          profileSkills.setUserSkills(getSkillsBasedOnAnswers(answers));
-          profileExperience.setExperiences(getExperienceBasedOnRole(role).map(exp => ({
-            ...exp,
-            id: uuidv4()
-          })));
-          profileEducation.setEducationItems(getEducationBasedOnAnswers(answers, goal).map(edu => ({
-            ...edu,
-            id: uuidv4()
-          })));
-        }
-      }
-      
-      setIsLoading(false);
+    // Load all profile data
+    loadProfileData();
+  }, [userId]);
+
+  const loadProfileData = async () => {
+    if (!userId) return;
+    
+    // Get user's onboarding answers
+    const answers = await getUserAnswers(userId);
+    if (answers) {
+      setUserAnswers(answers);
     }
     
-    loadProfile();
-  }, [userId, toast]);
+    try {
+      await loadProfileFromDatabase(answers);
+    } catch (error) {
+      console.error("Error loading profile data:", error);
+      toast({
+        title: "Error loading profile",
+        description: "Could not load your profile data.",
+        variant: "destructive",
+      });
+      
+      // If there's an error, set up basic profile data
+      handleProfileLoadError(answers);
+    }
+    
+    setIsLoading(false);
+  };
+
+  // Load profile from the database
+  const loadProfileFromDatabase = async (answers: UserAnswers | null) => {
+    if (!userId) return;
+    
+    // Try to fetch the user profile
+    const { data: profileData, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+      
+    if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
+      throw error;
+    }
+    
+    if (profileData) {
+      // If profile exists, set all the values from it
+      populateFromExistingProfile(profileData, answers);
+    } else {
+      // If no profile exists, use generated data
+      populateFromGeneratedData(answers);
+    }
+  };
+
+  // Populate the profile from existing database data
+  const populateFromExistingProfile = (profileData: any, answers: UserAnswers | null) => {
+    if (profileData.name) profileBasics.setUserName(profileData.name);
+    if (profileData.phone_number) profileBasics.setPhoneNumber(profileData.phone_number);
+    if (profileData.about_text) profileBasics.setAboutText(profileData.about_text);
+    if (profileData.cover_color) profileBasics.setCoverColor(profileData.cover_color);
+    if (profileData.profile_image) profileImage.setProfileImage(profileData.profile_image);
+    
+    if (profileData.skills && Array.isArray(profileData.skills) && profileData.skills.length > 0) {
+      profileSkills.setUserSkills(profileData.skills);
+    } else if (answers) {
+      // Fall back to generated skills if not in profile
+      profileSkills.setUserSkills(getSkillsBasedOnAnswers(answers));
+    }
+    
+    if (profileData.experiences && Array.isArray(profileData.experiences) && profileData.experiences.length > 0) {
+      profileExperience.setExperiences(convertJsonToExperienceItems(profileData.experiences));
+    } else {
+      // Fall back to generated experiences
+      const role = getProfileRole(answers?.question1);
+      const generatedExperiences = getExperienceBasedOnRole(role);
+      profileExperience.setExperiences(generatedExperiences.map(exp => ({
+        ...exp,
+        id: uuidv4()
+      })));
+    }
+    
+    if (profileData.education && Array.isArray(profileData.education) && profileData.education.length > 0) {
+      profileEducation.setEducationItems(convertJsonToEducationItems(profileData.education));
+    } else {
+      // Fall back to generated education
+      const goal = getProfileGoal(answers?.question3);
+      const generatedEducation = getEducationBasedOnAnswers(answers, goal);
+      profileEducation.setEducationItems(generatedEducation.map(edu => ({
+        ...edu,
+        id: uuidv4()
+      })));
+    }
+  };
+
+  // Populate profile with generated data when no profile exists
+  const populateFromGeneratedData = (answers: UserAnswers | null) => {
+    if (!answers) return;
+    
+    const role = getProfileRole(answers.question1);
+    const goal = getProfileGoal(answers.question3);
+    
+    profileSkills.setUserSkills(getSkillsBasedOnAnswers(answers));
+    
+    const generatedExperiences = getExperienceBasedOnRole(role);
+    profileExperience.setExperiences(generatedExperiences.map(exp => ({
+      ...exp,
+      id: uuidv4()
+    })));
+    
+    const generatedEducation = getEducationBasedOnAnswers(answers, goal);
+    profileEducation.setEducationItems(generatedEducation.map(edu => ({
+      ...edu,
+      id: uuidv4()
+    })));
+    
+    // In a real app, you would fetch the user's name from their profile
+    if (answers && userId) {
+      // Use userId instead of user_id from answers
+      profileBasics.setUserName(userId.split('@')[0]);
+    }
+  };
+
+  // Handle errors when loading profile
+  const handleProfileLoadError = (answers: UserAnswers | null) => {
+    if (answers) {
+      const role = getProfileRole(answers.question1);
+      const goal = getProfileGoal(answers.question3);
+      
+      profileSkills.setUserSkills(getSkillsBasedOnAnswers(answers));
+      profileExperience.setExperiences(getExperienceBasedOnRole(role).map(exp => ({
+        ...exp,
+        id: uuidv4()
+      })));
+      profileEducation.setEducationItems(getEducationBasedOnAnswers(answers, goal).map(edu => ({
+        ...edu,
+        id: uuidv4()
+      })));
+    }
+  };
 
   const role = getProfileRole(userAnswers?.question1);
   const goal = getProfileGoal(userAnswers?.question3);
