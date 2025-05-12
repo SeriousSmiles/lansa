@@ -7,6 +7,7 @@ import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { AboutSection } from "@/components/profile/AboutSection";
 import { ExperienceSection } from "@/components/profile/ExperienceSection";
 import { EducationSection } from "@/components/profile/EducationSection";
+import { ShareButton } from "@/components/profile/ShareButton";
 import { useProfileData } from "@/hooks/useProfileData";
 
 export default function Profile() {
@@ -88,6 +89,7 @@ export default function Profile() {
               >
                 Return to Dashboard
               </Button>
+              <ShareButton userId={user?.id} />
             </div>
           </div>
         </div>

@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
 import Result from "./pages/Result";
 import Profile from "./pages/Profile";
+import SharedProfile from "./pages/SharedProfile";
 import Dashboard from "./pages/Dashboard";
 import Resources from "./pages/Resources";
 import ContentLibrary from "./pages/ContentLibrary";
@@ -36,6 +37,8 @@ const App = () => {
                 <Route path="/resources" element={<Resources />} />
                 <Route path="/content" element={<ContentLibrary />} />
               </Route>
+              {/* Public shared profile route - no authentication required */}
+              <Route path="/profile/share/:userId" element={<SharedProfile />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
