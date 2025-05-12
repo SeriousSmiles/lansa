@@ -13,10 +13,12 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LockKeyhole } from "lucide-react";
+import { toast } from "sonner";
 
 export default function Dashboard() {
   const [userAnswers, setUserAnswers] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [highlightActions, setHighlightActions] = useState(false);
   const { user } = useAuth();
   
   useEffect(() => {
@@ -32,7 +34,23 @@ export default function Dashboard() {
     }
     
     loadDashboard();
+    
+    // Check if we should highlight the recommended actions
+    const shouldHighlight = localStorage.getItem('highlightRecommendedActions') === 'true';
+    if (shouldHighlight) {
+      setHighlightActions(true);
+      localStorage.removeItem('highlightRecommendedActions');
+    }
   }, [user]);
+  
+  useEffect(() => {
+    // Show welcome toast if highlighting actions
+    if (highlightActions && !isLoading) {
+      toast.success("Welcome! Here are your recommended actions to get started.", {
+        duration: 5000
+      });
+    }
+  }, [highlightActions, isLoading]);
   
   if (isLoading) {
     return (
@@ -104,8 +122,20 @@ export default function Dashboard() {
               </Card>
             </div>
             
-            <h2 className="text-xl md:text-2xl font-semibold mb-3">Recommended Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-xl md:text-2xl font-semibold">Recommended Actions</h2>
+              {highlightActions && (
+                <div className="bg-[#FF6B4A]/20 text-[#FF6B4A] px-3 py-1 rounded-full text-sm font-medium animate-pulse">
+                  Start here
+                </div>
+              )}
+            </div>
+            
+            <div 
+              className={`grid grid-cols-1 md:grid-cols-3 gap-4 ${
+                highlightActions ? 'ring-2 ring-[#FF6B4A] ring-offset-4 rounded-lg p-4 animate-[scale-in_0.5s_ease-out]' : ''
+              }`}
+            >
               <Card className="h-auto">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base md:text-lg">Define Your Message</CardTitle>

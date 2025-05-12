@@ -25,6 +25,12 @@ export default function Result() {
     loadResults();
   }, [user]);
 
+  const handleGetStartedWithActions = () => {
+    // Navigate to dashboard and store flag to highlight recommended actions
+    localStorage.setItem('highlightRecommendedActions', 'true');
+    navigate('/dashboard');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[rgba(253,248,242,1)] flex items-center justify-center">
@@ -60,8 +66,8 @@ export default function Result() {
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button onClick={() => navigate("/profile")} className="px-8 py-6 h-auto text-lg">
-              See My Starter Profile
+            <Button onClick={handleGetStartedWithActions} className="px-8 py-6 h-auto text-lg">
+              Get Started with Actions
             </Button>
             <Button onClick={() => navigate("/dashboard")} variant="outline" className="px-8 py-6 h-auto text-lg">
               Go to Dashboard

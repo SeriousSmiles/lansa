@@ -38,6 +38,12 @@ export default function CardPage() {
 
   const magicMoment = getMagicMoment(identity, desiredOutcome);
 
+  const handleGetStartedWithActions = () => {
+    // Navigate to dashboard and store flag to highlight recommended actions
+    localStorage.setItem('highlightRecommendedActions', 'true');
+    navigate('/dashboard');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[rgba(253,248,242,1)] flex items-center justify-center">
@@ -100,10 +106,10 @@ export default function CardPage() {
               
               <div className="flex flex-col md:flex-row gap-4 justify-center mt-6">
                 <Button
-                  onClick={() => navigate('/content')}
+                  onClick={handleGetStartedWithActions}
                   className="bg-[#FF6B4A] hover:bg-[#FF6B4A]/90 text-white text-lg py-6 px-8 h-auto rounded-lg"
                 >
-                  Explore Content Resources
+                  Get Started with Actions
                 </Button>
                 
                 <Button
