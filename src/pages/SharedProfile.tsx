@@ -15,7 +15,7 @@ import { SharedProfileContent } from "@/components/profile/shared/SharedProfileC
 import { processSkillsData, processExperiencesData, processEducationData } from "@/utils/profileDataUtils";
 
 interface SharedProfileData {
-  userProfile: UserProfile | null;
+  userProfile: any; // Changed from UserProfile to any to avoid type conflicts
   userName: string;
   role: string;
   goal: string;
@@ -56,6 +56,8 @@ export default function SharedProfile() {
           throw error;
         }
         
+        console.log("Raw profile data:", profileData);
+        
         // Create a properly typed profile object
         const profile: SharedProfileData = {
           userProfile: profileData || null,
@@ -69,6 +71,8 @@ export default function SharedProfile() {
           coverColor: profileData?.cover_color || "#1A1F71",
           profileImage: profileData?.profile_image || ""
         };
+        
+        console.log("Processed profile data:", profile);
         
         setProfileData(profile);
       } catch (error) {

@@ -5,7 +5,25 @@ import { getProfileGoal, getProfileRole } from "@/services/QuestionService";
 
 // Convert JSON from database to our typed objects
 export const convertJsonToExperienceItems = (jsonData: any): ExperienceItem[] => {
-  if (!jsonData || !Array.isArray(jsonData)) return [];
+  if (!jsonData || !Array.isArray(jsonData)) {
+    // If it's not an array, try to parse it if it's a string
+    if (typeof jsonData === 'string') {
+      try {
+        const parsed = JSON.parse(jsonData);
+        if (Array.isArray(parsed)) {
+          return parsed.map((item: any) => ({
+            id: item.id || uuidv4(),
+            title: item.title || "",
+            description: item.description || ""
+          }));
+        }
+      } catch (error) {
+        console.error("Error parsing experiences JSON:", error);
+        return [];
+      }
+    }
+    return [];
+  }
   
   return jsonData.map((item: any) => ({
     id: item.id || uuidv4(),
@@ -15,7 +33,25 @@ export const convertJsonToExperienceItems = (jsonData: any): ExperienceItem[] =>
 };
 
 export const convertJsonToEducationItems = (jsonData: any): EducationItem[] => {
-  if (!jsonData || !Array.isArray(jsonData)) return [];
+  if (!jsonData || !Array.isArray(jsonData)) {
+    // If it's not an array, try to parse it if it's a string
+    if (typeof jsonData === 'string') {
+      try {
+        const parsed = JSON.parse(jsonData);
+        if (Array.isArray(parsed)) {
+          return parsed.map((item: any) => ({
+            id: item.id || uuidv4(),
+            title: item.title || "",
+            description: item.description || ""
+          }));
+        }
+      } catch (error) {
+        console.error("Error parsing education JSON:", error);
+        return [];
+      }
+    }
+    return [];
+  }
   
   return jsonData.map((item: any) => ({
     id: item.id || uuidv4(),
@@ -30,16 +66,27 @@ export const processExperiencesData = (
 ): ExperienceItem[] => {
   if (experiences) {
     try {
-      // Parse if it's a string, or use directly if it's already an array
-      const experiencesData = typeof experiences === 'string' 
-        ? JSON.parse(experiences) 
-        : experiences;
-        
-      if (Array.isArray(experiencesData) && experiencesData.length > 0) {
-        return convertJsonToExperienceItems(experiencesData);
+      // If experiences is already an array, use it directly
+      if (Array.isArray(experiences)) {
+        return convertJsonToExperienceItems(experiences);
+      }
+      
+      // If experiences is a JSON string, parse it
+      if (typeof experiences === 'string') {
+        const parsedExperiences = JSON.parse(experiences);
+        if (Array.isArray(parsedExperiences) && parsedExperiences.length > 0) {
+          return convertJsonToExperienceItems(parsedExperiences);
+        }
+      }
+      
+      // Handle JSONB from PostgreSQL which might be an object
+      if (experiences && typeof experiences === 'object') {
+        if (Array.isArray(experiences)) {
+          return convertJsonToExperienceItems(experiences);
+        }
       }
     } catch (error) {
-      console.error("Error parsing experiences data:", error);
+      console.error("Error processing experiences data:", error);
     }
   }
   
@@ -57,16 +104,27 @@ export const processEducationData = (
 ): EducationItem[] => {
   if (education) {
     try {
-      // Parse if it's a string, or use directly if it's already an array
-      const educationData = typeof education === 'string'
-        ? JSON.parse(education)
-        : education;
-        
-      if (Array.isArray(educationData) && educationData.length > 0) {
-        return convertJsonToEducationItems(educationData);
+      // If education is already an array, use it directly
+      if (Array.isArray(education)) {
+        return convertJsonToEducationItems(education);
+      }
+      
+      // If education is a JSON string, parse it
+      if (typeof education === 'string') {
+        const parsedEducation = JSON.parse(education);
+        if (Array.isArray(parsedEducation) && parsedEducation.length > 0) {
+          return convertJsonToEducationItems(parsedEducation);
+        }
+      }
+      
+      // Handle JSONB from PostgreSQL which might be an object
+      if (education && typeof education === 'object') {
+        if (Array.isArray(education)) {
+          return convertJsonToEducationItems(education);
+        }
       }
     } catch (error) {
-      console.error("Error parsing education data:", error);
+      console.error("Error processing education data:", error);
     }
   }
   
