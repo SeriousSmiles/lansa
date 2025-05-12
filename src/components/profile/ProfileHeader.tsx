@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ProfileHeaderActions } from "./ProfileHeaderActions";
+import { getContrastTextColor, isDarkTheme as checkIsDarkTheme } from "@/utils/colorUtils";
 
 interface ProfileHeaderProps {
   userName: string;
@@ -30,22 +31,10 @@ export function ProfileHeader({
   const navigate = useNavigate();
   
   // Calculate text contrast color (black or white) based on background
-  const getContrastTextColor = (hexColor: string): string => {
-    // Convert hex to RGB
-    const r = parseInt(hexColor.slice(1, 3), 16);
-    const g = parseInt(hexColor.slice(3, 5), 16);
-    const b = parseInt(hexColor.slice(5, 7), 16);
-    
-    // Calculate luminance - standard formula for brightness
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    
-    // Return black for light colors and white for dark colors
-    return luminance > 0.5 ? "#000000" : "#FFFFFF";
-  };
-  
   const textColor = getContrastTextColor(coverColor);
+  
   // Determine if the theme is dark based on luminance
-  const isDarkTheme = textColor === "#FFFFFF";
+  const isDarkTheme = checkIsDarkTheme(coverColor);
   
   return (
     <header 

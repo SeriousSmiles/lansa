@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -9,38 +8,21 @@ import { ExperienceSection } from "@/components/profile/ExperienceSection";
 import { EducationSection } from "@/components/profile/EducationSection";
 import { useProfileData } from "@/hooks/useProfileData";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { getContrastTextColor, generateThemeColors } from "@/utils/colorUtils";
 
 export default function Profile() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const profile = useProfileData(user?.id);
 
-  // Generate theme colors based on primary color
-  const themeColors = {
-    primary: profile.coverColor,
-    light: `${profile.coverColor}15`,
-    medium: `${profile.coverColor}30`,
-    border: `${profile.coverColor}50`,
-    text: profile.coverColor,
-  };
+  // Generate theme colors based on primary color using our utility
+  const themeColors = generateThemeColors(profile.coverColor);
   
-  // Calculate text contrast color (black or white) based on background
-  const getContrastTextColor = (hexColor: string): string => {
-    // Convert hex to RGB
-    const r = parseInt(hexColor.slice(1, 3), 16);
-    const g = parseInt(hexColor.slice(3, 5), 16);
-    const b = parseInt(hexColor.slice(5, 7), 16);
-    
-    // Calculate luminance
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    
-    return luminance > 0.5 ? "#000000" : "#FFFFFF";
-  };
-  
+  // Get text color based on background
   const textColor = getContrastTextColor(profile.coverColor);
   
-  // Determine if the theme is dark based on luminance
-  const isDarkTheme = getContrastTextColor(profile.coverColor) === "#FFFFFF";
+  // Determine if the theme is dark
+  const isDarkTheme = textColor === "#FFFFFF";
 
   if (profile.isLoading) {
     return (

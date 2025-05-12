@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ExperienceCard } from "./experience/ExperienceCard";
 import { ExperienceForm } from "./experience/ExperienceForm";
 import { StaticExperienceCard } from "./experience/StaticExperienceCard";
+import { getContrastTextColor } from "@/utils/colorUtils";
 
 interface ExperienceItem {
   id?: string;
