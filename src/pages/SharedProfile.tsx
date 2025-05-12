@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -75,7 +74,7 @@ export default function SharedProfile() {
         
         // Create a properly typed profile object
         const profile: SharedProfileData = {
-          userProfile: profileData || null,
+          userProfile: null, // We don't use raw profile data directly to avoid type issues
           userName: profileData?.name || userId.split('@')[0],
           role: role,
           goal: goal,

@@ -6,9 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SignUpFormData {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
 }
@@ -22,16 +24,49 @@ export function SignUpForm() {
   const onSubmit = async (data: SignUpFormData) => {
     setIsLoading(true);
     try {
-      // Store name in metadata
-      const { error } = await signUp(data.email, data.password);
+      // Store names in metadata
+      const { error, data: authData } = await signUp(data.email, data.password);
       
       if (error) {
         toast.error(error.message || "Failed to sign up");
+        setIsLoading(false);
         return;
       }
       
-      // Save the user's name to Supabase when profile tables are set up
-      // This happens after email verification in a real app
+      // Save user profile information
+      if (authData?.user?.id) {
+        try {
+          // Check if profile exists first
+          const { data: existingProfile } = await supabase
+            .from('user_profiles')
+            .select('user_id')
+            .eq('user_id', authData.user.id)
+            .maybeSingle();
+            
+          if (existingProfile) {
+            // Update existing profile
+            await supabase
+              .from('user_profiles')
+              .update({ 
+                name: `${data.firstName} ${data.lastName}`,
+              })
+              .eq('user_id', authData.user.id);
+          } else {
+            // Create new profile
+            await supabase
+              .from('user_profiles')
+              .insert({ 
+                user_id: authData.user.id,
+                name: `${data.firstName} ${data.lastName}`,
+              });
+          }
+          
+          console.log("Saved user profile information");
+        } catch (profileError) {
+          console.error("Error saving profile:", profileError);
+          // Don't block the sign-up flow if profile save fails
+        }
+      }
       
       toast.success("Account created successfully!");
       navigate("/onboarding");
@@ -46,10 +81,19 @@ export function SignUpForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex w-[480px] max-w-full flex-col items-center text-base justify-center mt-8 mx-auto">
       <div className="w-full text-[#2E2E2E] font-normal">
-        <label className="block mb-2">Name*</label>
+        <label className="block mb-2">First Name*</label>
         <Input
-          {...register("name", { required: true })}
-          error={!!errors.name}
+          {...register("firstName", { required: true })}
+          error={!!errors.firstName}
+          disabled={isLoading}
+        />
+      </div>
+
+      <div className="w-full text-[#2E2E2E] font-normal mt-6">
+        <label className="block mb-2">Last Name*</label>
+        <Input
+          {...register("lastName", { required: true })}
+          error={!!errors.lastName}
           disabled={isLoading}
         />
       </div>

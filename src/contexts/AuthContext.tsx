@@ -56,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     signUp: async (email: string, password: string) => {
       try {
+        // We don't use metadata here anymore as we're saving to user_profiles table
         return await supabase.auth.signUp({ email, password });
       } catch (error) {
         console.error("Error signing up:", error);
