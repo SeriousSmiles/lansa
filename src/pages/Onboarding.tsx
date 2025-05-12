@@ -76,8 +76,11 @@ export default function Onboarding() {
           return;
         }
         
+        console.log("Saving final answers:", updatedAnswers);
         const result = await saveUserAnswers(user.id, updatedAnswers);
+        
         if (result.success) {
+          console.log("Successfully saved answers, navigating to dashboard");
           navigate("/dashboard");
         } else {
           throw new Error("Failed to save answers");

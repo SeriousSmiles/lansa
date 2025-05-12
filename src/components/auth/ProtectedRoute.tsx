@@ -15,15 +15,19 @@ export default function ProtectedRoute() {
       if (user?.id) {
         try {
           const userAnswers = await getUserAnswers(user.id);
-          // If user has answered at least one question, consider onboarding complete
-          setHasCompletedOnboarding(
-            userAnswers && 
-            Boolean(userAnswers.question1 || userAnswers.question2 || userAnswers.question3)
-          );
+          console.log("User answers for onboarding check:", userAnswers);
+          
+          // Consider onboarding complete if user has answered the last question (question3)
+          const isComplete = userAnswers && Boolean(userAnswers.question3);
+          console.log("Has completed onboarding:", isComplete);
+          
+          setHasCompletedOnboarding(isComplete);
         } catch (error) {
           console.error("Failed to check onboarding status:", error);
           setHasCompletedOnboarding(false);
         }
+        setLoading(false);
+      } else {
         setLoading(false);
       }
     }
@@ -41,20 +45,24 @@ export default function ProtectedRoute() {
 
   if (loading) {
     // Show loading while checking onboarding status
-    return <div className="flex items-center justify-center h-screen">
-      <p className="text-xl">Loading...</p>
-    </div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-xl">Loading...</p>
+      </div>
+    );
   }
 
   // If user is accessing the onboarding page but has already completed it,
   // redirect them to the dashboard
   if (location.pathname === "/onboarding" && hasCompletedOnboarding) {
+    console.log("User has completed onboarding, redirecting to dashboard");
     return <Navigate to="/dashboard" replace />;
   }
 
   // If user hasn't completed onboarding and is trying to access any protected 
   // route other than onboarding, redirect to onboarding
-  if (!hasCompletedOnboarding && location.pathname !== "/onboarding") {
+  if (hasCompletedOnboarding === false && location.pathname !== "/onboarding") {
+    console.log("User has not completed onboarding, redirecting to onboarding");
     return <Navigate to="/onboarding" replace />;
   }
 

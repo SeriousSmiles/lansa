@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -52,31 +51,43 @@ export const questions: OnboardingQuestion[] = [
 
 export async function saveUserAnswers(userId: string, answers: UserAnswers) {
   try {
+    console.log("Saving user answers:", userId, answers);
+    
     // First, check if the user already has answers
-    const { data: existingAnswers } = await supabase
+    const { data: existingAnswers, error: fetchError } = await supabase
       .from('user_answers')
       .select('*')
       .eq('user_id', userId)
-      .limit(1);
+      .maybeSingle();
+    
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error("Error fetching existing answers:", fetchError);
+      throw fetchError;
+    }
     
     let result;
     
     // If user already has answers, update them
-    if (existingAnswers && existingAnswers.length > 0) {
+    if (existingAnswers) {
+      console.log("Updating existing answers for user:", userId);
       const { error } = await supabase
         .from('user_answers')
         .update({ 
-          question1: answers.question1,
-          question2: answers.question2,
-          question3: answers.question3,
-          updated_at: new Date().toISOString() // Convert Date to ISO string
+          question1: answers.question1 || existingAnswers.question1,
+          question2: answers.question2 || existingAnswers.question2,
+          question3: answers.question3 || existingAnswers.question3,
+          updated_at: new Date().toISOString()
         })
         .eq('user_id', userId);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating answers:", error);
+        throw error;
+      }
       result = { success: true };
     } else {
       // Otherwise, insert new answers
+      console.log("Inserting new answers for user:", userId);
       const { error } = await supabase
         .from('user_answers')
         .insert([{ 
@@ -86,7 +97,10 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
           question3: answers.question3
         }]);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error inserting answers:", error);
+        throw error;
+      }
       result = { success: true };
     }
     

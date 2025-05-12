@@ -58,6 +58,17 @@ export default function SharedProfile() {
         
         console.log("Raw profile data:", profileData);
         
+        // Process the profile data to ensure proper types
+        const processedExperiences = profileData?.experiences 
+          ? processExperiencesData(profileData.experiences, answers)
+          : [];
+          
+        const processedEducation = profileData?.education 
+          ? processEducationData(profileData.education, answers)
+          : [];
+          
+        const processedSkills = processSkillsData(profileData?.skills, answers);
+        
         // Create a properly typed profile object
         const profile: SharedProfileData = {
           userProfile: profileData || null,
@@ -65,9 +76,9 @@ export default function SharedProfile() {
           role: getProfileRole(answers?.question1),
           goal: getProfileGoal(answers?.question3),
           aboutText: profileData?.about_text || "",
-          userSkills: processSkillsData(profileData?.skills, answers),
-          experiences: processExperiencesData(profileData?.experiences, answers),
-          educationItems: processEducationData(profileData?.education, answers),
+          userSkills: processedSkills,
+          experiences: processedExperiences,
+          educationItems: processedEducation,
           coverColor: profileData?.cover_color || "#1A1F71",
           profileImage: profileData?.profile_image || ""
         };
