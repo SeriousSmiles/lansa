@@ -80,22 +80,24 @@ export function SignUpForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex w-[480px] max-w-full flex-col items-center text-base justify-center mt-8 mx-auto">
-      <div className="w-full text-[#2E2E2E] font-normal">
-        <label className="block mb-2">First Name*</label>
-        <Input
-          {...register("firstName", { required: true })}
-          error={!!errors.firstName}
-          disabled={isLoading}
-        />
-      </div>
+      <div className="w-full grid grid-cols-2 gap-4">
+        <div className="text-[#2E2E2E] font-normal">
+          <label className="block mb-2">First Name*</label>
+          <Input
+            {...register("firstName", { required: true })}
+            error={!!errors.firstName}
+            disabled={isLoading}
+          />
+        </div>
 
-      <div className="w-full text-[#2E2E2E] font-normal mt-6">
-        <label className="block mb-2">Last Name*</label>
-        <Input
-          {...register("lastName", { required: true })}
-          error={!!errors.lastName}
-          disabled={isLoading}
-        />
+        <div className="text-[#2E2E2E] font-normal">
+          <label className="block mb-2">Last Name*</label>
+          <Input
+            {...register("lastName", { required: true })}
+            error={!!errors.lastName}
+            disabled={isLoading}
+          />
+        </div>
       </div>
 
       <div className="w-full text-[#2E2E2E] font-normal mt-6">
