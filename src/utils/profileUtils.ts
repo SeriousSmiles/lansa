@@ -1,15 +1,6 @@
 
-export interface ExperienceItem {
-  id?: string;
-  title: string;
-  description: string;
-}
-
-export interface EducationItem {
-  id?: string;
-  title: string;
-  description: string;
-}
+import { UserAnswers } from "@/services/QuestionService";
+import { ExperienceItem, EducationItem } from "@/hooks/profile/profileTypes";
 
 export interface UserAnswers {
   question1?: string;
