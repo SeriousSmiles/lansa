@@ -14,21 +14,23 @@ import { SharedProfileSidebar } from "@/components/profile/shared/SharedProfileS
 import { SharedProfileContent } from "@/components/profile/shared/SharedProfileContent";
 import { processSkillsData, processExperiencesData, processEducationData } from "@/utils/profileDataUtils";
 
+interface SharedProfileData {
+  userProfile: UserProfile | null;
+  userName: string;
+  role: string;
+  goal: string;
+  aboutText: string;
+  userSkills: string[];
+  experiences: ExperienceItem[];
+  educationItems: EducationItem[];
+  coverColor: string;
+  profileImage: string;
+}
+
 export default function SharedProfile() {
   const { userId } = useParams();
   const [isLoading, setIsLoading] = useState(true);
-  const [profileData, setProfileData] = useState<{
-    userProfile: UserProfile | null;
-    userName: string;
-    role: string;
-    goal: string;
-    aboutText: string;
-    userSkills: string[];
-    experiences: ExperienceItem[];
-    educationItems: EducationItem[];
-    coverColor: string;
-    profileImage: string;
-  } | null>(null);
+  const [profileData, setProfileData] = useState<SharedProfileData | null>(null);
   
   const navigate = useNavigate();
 
@@ -55,7 +57,7 @@ export default function SharedProfile() {
         }
         
         // Create a properly typed profile object
-        const profile = {
+        const profile: SharedProfileData = {
           userProfile: profileData || null,
           userName: profileData?.name || userId.split('@')[0],
           role: getProfileRole(answers?.question1),
