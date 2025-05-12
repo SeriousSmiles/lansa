@@ -69,12 +69,16 @@ export default function SharedProfile() {
           
         const processedSkills = processSkillsData(profileData?.skills, answers);
         
+        // Get proper role and goal based on either legacy or new onboarding answers
+        const role = getProfileRole(answers?.question1, answers?.identity);
+        const goal = getProfileGoal(answers?.question3, answers?.desired_outcome);
+        
         // Create a properly typed profile object
         const profile: SharedProfileData = {
           userProfile: profileData || null,
           userName: profileData?.name || userId.split('@')[0],
-          role: getProfileRole(answers?.question1),
-          goal: getProfileGoal(answers?.question3),
+          role: role,
+          goal: goal,
           aboutText: profileData?.about_text || "",
           userSkills: processedSkills,
           experiences: processedExperiences,

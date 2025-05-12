@@ -2,12 +2,12 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUserAnswers } from "@/services/QuestionService";
+import { getUserAnswers, hasCompletedOnboarding } from "@/services/QuestionService";
 
 export default function ProtectedRoute() {
   const { user } = useAuth();
   const location = useLocation();
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean | null>(null);
+  const [onboardingStatus, setOnboardingStatus] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,14 +17,14 @@ export default function ProtectedRoute() {
           const userAnswers = await getUserAnswers(user.id);
           console.log("User answers for onboarding check:", userAnswers);
           
-          // Consider onboarding complete if user has answered the last question (question3)
-          const isComplete = userAnswers && Boolean(userAnswers.question3);
+          // Check if onboarding is complete using our helper function
+          const isComplete = hasCompletedOnboarding(userAnswers);
           console.log("Has completed onboarding:", isComplete);
           
-          setHasCompletedOnboarding(isComplete);
+          setOnboardingStatus(isComplete);
         } catch (error) {
           console.error("Failed to check onboarding status:", error);
-          setHasCompletedOnboarding(false);
+          setOnboardingStatus(false);
         }
         setLoading(false);
       } else {
@@ -52,16 +52,18 @@ export default function ProtectedRoute() {
     );
   }
 
-  // If user is accessing the onboarding page but has already completed it,
+  // If user is accessing the onboarding or card page but has already completed onboarding,
   // redirect them to the dashboard
-  if (location.pathname === "/onboarding" && hasCompletedOnboarding) {
+  if ((location.pathname === "/onboarding" || location.pathname === "/card") && onboardingStatus) {
     console.log("User has completed onboarding, redirecting to dashboard");
     return <Navigate to="/dashboard" replace />;
   }
 
   // If user hasn't completed onboarding and is trying to access any protected 
-  // route other than onboarding, redirect to onboarding
-  if (hasCompletedOnboarding === false && location.pathname !== "/onboarding") {
+  // route other than onboarding or card, redirect to onboarding
+  if (onboardingStatus === false && 
+      location.pathname !== "/onboarding" && 
+      location.pathname !== "/card") {
     console.log("User has not completed onboarding, redirecting to onboarding");
     return <Navigate to="/onboarding" replace />;
   }

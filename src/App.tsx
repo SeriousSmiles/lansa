@@ -13,6 +13,7 @@ import SharedProfile from "./pages/SharedProfile";
 import Dashboard from "./pages/Dashboard";
 import Resources from "./pages/Resources";
 import ContentLibrary from "./pages/ContentLibrary";
+import Card from "./pages/Card";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -32,6 +33,7 @@ const App = () => {
               <Route element={<ProtectedRoute />}>
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/result" element={<Result />} />
+                <Route path="/card" element={<Card />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/resources" element={<Resources />} />

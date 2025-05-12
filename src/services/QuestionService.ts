@@ -11,8 +11,67 @@ export interface UserAnswers {
   question1?: string;
   question2?: string;
   question3?: string;
+  gender?: string;
+  age_group?: string;
+  identity?: string;
+  desired_outcome?: string;
 }
 
+// Define all questions across steps
+export const demographicsQuestions: OnboardingQuestion[] = [
+  {
+    id: "gender",
+    question: "What's your gender?",
+    options: [
+      "Male",
+      "Female",
+      "Prefer not to say",
+      "Prefer to self-describe"
+    ]
+  },
+  {
+    id: "age_group",
+    question: "What's your age range?",
+    options: [
+      "Under 18",
+      "18–24",
+      "25–34",
+      "35–44",
+      "45–54",
+      "55+"
+    ]
+  }
+];
+
+export const identityQuestions: OnboardingQuestion[] = [
+  {
+    id: "identity",
+    question: "Which of these describes how you see yourself professionally?",
+    options: [
+      "Freelancer",
+      "Job-seeker",
+      "Student",
+      "Entrepreneur",
+      "Visionary"
+    ]
+  }
+];
+
+export const outcomeQuestions: OnboardingQuestion[] = [
+  {
+    id: "desired_outcome",
+    question: "What do you want most from Lansa right now?",
+    options: [
+      "Be taken seriously as a freelancer or creative professional",
+      "Stand out and get hired for the kind of job I really want",
+      "Figure out what makes me different and valuable",
+      "Turn my ideas into something clear and actionable",
+      "Finally feel confident about how I show up to others"
+    ]
+  }
+];
+
+// Legacy questions - keeping for backward compatibility
 export const questions: OnboardingQuestion[] = [
   {
     id: "question1",
@@ -76,6 +135,10 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
           question1: answers.question1 || existingAnswers.question1,
           question2: answers.question2 || existingAnswers.question2,
           question3: answers.question3 || existingAnswers.question3,
+          gender: answers.gender || existingAnswers.gender,
+          age_group: answers.age_group || existingAnswers.age_group,
+          identity: answers.identity || existingAnswers.identity,
+          desired_outcome: answers.desired_outcome || existingAnswers.desired_outcome,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', userId);
@@ -94,7 +157,11 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
           user_id: userId, 
           question1: answers.question1,
           question2: answers.question2,
-          question3: answers.question3
+          question3: answers.question3,
+          gender: answers.gender,
+          age_group: answers.age_group,
+          identity: answers.identity,
+          desired_outcome: answers.desired_outcome
         }]);
       
       if (error) {
@@ -102,6 +169,41 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
         throw error;
       }
       result = { success: true };
+    }
+    
+    // Also update the user profile with the same information
+    try {
+      const { data: existingProfile } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (existingProfile) {
+        await supabase
+          .from('user_profiles')
+          .update({ 
+            gender: answers.gender || existingProfile.gender,
+            age_group: answers.age_group || existingProfile.age_group,
+            identity: answers.identity || existingProfile.identity,
+            desired_outcome: answers.desired_outcome || existingProfile.desired_outcome,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId);
+      } else {
+        await supabase
+          .from('user_profiles')
+          .insert([{ 
+            user_id: userId, 
+            gender: answers.gender,
+            age_group: answers.age_group,
+            identity: answers.identity,
+            desired_outcome: answers.desired_outcome
+          }]);
+      }
+    } catch (profileError) {
+      console.error("Error updating user profile:", profileError);
+      // Don't throw here, as the main user_answers update was successful
     }
     
     toast.success("Your answers have been saved successfully!");
@@ -115,9 +217,10 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
 
 export async function getUserAnswers(userId: string): Promise<UserAnswers | null> {
   try {
+    console.log("Fetching user answers for:", userId);
     const { data, error } = await supabase
       .from('user_answers')
-      .select('question1, question2, question3')
+      .select('question1, question2, question3, gender, age_group, identity, desired_outcome')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(1);
@@ -126,9 +229,11 @@ export async function getUserAnswers(userId: string): Promise<UserAnswers | null
     
     // If no data or empty array, return null
     if (!data || data.length === 0) {
+      console.log("No answers found for user:", userId);
       return null;
     }
     
+    console.log("Found answers for user:", userId, data[0]);
     // Return the most recent answer
     return data[0];
   } catch (error) {
@@ -154,7 +259,18 @@ export function getInsightFromAnswers(answers: UserAnswers): string {
   return insights[Math.floor(Math.random() * insights.length)];
 }
 
-export function getProfileRole(answer1: string | undefined): string {
+export function getProfileRole(answer1: string | undefined, identity?: string): string {
+  if (identity) {
+    switch (identity) {
+      case "Freelancer": return "Freelancer seeking recognition";
+      case "Job-seeker": return "Job seeker finding their fit";
+      case "Student": return "Student preparing for the future";
+      case "Entrepreneur": return "Business owner seeking clarity";
+      case "Visionary": return "Visionary creating impact";
+    }
+  }
+
+  // Legacy fallback logic
   if (!answer1) return "Professional seeking clarity";
   
   if (answer1.includes("freelancer")) return "Freelancer seeking recognition";
@@ -165,6 +281,23 @@ export function getProfileRole(answer1: string | undefined): string {
   return "Professional seeking clarity";
 }
 
-export function getProfileGoal(answer3: string | undefined): string {
+export function getProfileGoal(answer3?: string, desiredOutcome?: string): string {
+  if (desiredOutcome) {
+    return desiredOutcome;
+  }
+  
   return answer3 || "Gaining professional clarity";
+}
+
+// Function to determine if user has completed the multi-step onboarding
+export function hasCompletedOnboarding(answers: UserAnswers | null): boolean {
+  if (!answers) return false;
+  
+  // Check if legacy onboarding was completed
+  if (answers.question3) {
+    return true;
+  }
+  
+  // Check if new multi-step onboarding was completed
+  return Boolean(answers.gender && answers.age_group && answers.identity && answers.desired_outcome);
 }

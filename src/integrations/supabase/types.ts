@@ -11,8 +11,12 @@ export type Database = {
     Tables: {
       user_answers: {
         Row: {
+          age_group: string | null
           created_at: string
+          desired_outcome: string | null
+          gender: string | null
           id: string
+          identity: string | null
           question1: string | null
           question2: string | null
           question3: string | null
@@ -20,8 +24,12 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          age_group?: string | null
           created_at?: string
+          desired_outcome?: string | null
+          gender?: string | null
           id?: string
+          identity?: string | null
           question1?: string | null
           question2?: string | null
           question3?: string | null
@@ -29,8 +37,12 @@ export type Database = {
           user_id: string
         }
         Update: {
+          age_group?: string | null
           created_at?: string
+          desired_outcome?: string | null
+          gender?: string | null
           id?: string
+          identity?: string | null
           question1?: string | null
           question2?: string | null
           question3?: string | null
@@ -42,10 +54,14 @@ export type Database = {
       user_profiles: {
         Row: {
           about_text: string | null
+          age_group: string | null
           cover_color: string | null
           created_at: string | null
+          desired_outcome: string | null
           education: Json | null
           experiences: Json | null
+          gender: string | null
+          identity: string | null
           name: string | null
           phone_number: string | null
           profile_image: string | null
@@ -55,10 +71,14 @@ export type Database = {
         }
         Insert: {
           about_text?: string | null
+          age_group?: string | null
           cover_color?: string | null
           created_at?: string | null
+          desired_outcome?: string | null
           education?: Json | null
           experiences?: Json | null
+          gender?: string | null
+          identity?: string | null
           name?: string | null
           phone_number?: string | null
           profile_image?: string | null
@@ -68,10 +88,14 @@ export type Database = {
         }
         Update: {
           about_text?: string | null
+          age_group?: string | null
           cover_color?: string | null
           created_at?: string | null
+          desired_outcome?: string | null
           education?: Json | null
           experiences?: Json | null
+          gender?: string | null
+          identity?: string | null
           name?: string | null
           phone_number?: string | null
           profile_image?: string | null

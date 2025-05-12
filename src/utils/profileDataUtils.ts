@@ -1,5 +1,7 @@
+
 import { UserAnswers } from "@/services/QuestionService";
 import { ExperienceItem, EducationItem } from "@/utils/profileUtils";
+import { Json } from "@/integrations/supabase/types";
 
 /**
  * Process skills data from the database
@@ -8,23 +10,10 @@ import { ExperienceItem, EducationItem } from "@/utils/profileUtils";
  * @returns Array of skill strings
  */
 export function processSkillsData(
-  skillsData: string | string[] | null | undefined,
+  skillsData: string[] | null | undefined,
   answers: UserAnswers | null
 ): string[] {
   try {
-    // If skillsData is a string, try to parse it as JSON
-    if (typeof skillsData === 'string') {
-      try {
-        const parsed = JSON.parse(skillsData);
-        if (Array.isArray(parsed)) {
-          return parsed.filter(Boolean);
-        }
-      } catch (e) {
-        // If parsing fails, it might be a single skill as a string
-        return [skillsData];
-      }
-    }
-
     // If skillsData is already an array, use it
     if (Array.isArray(skillsData)) {
       return skillsData.filter(Boolean);
@@ -40,7 +29,23 @@ export function processSkillsData(
       if (answers.question2 && answers.question2.includes("industry")) {
         skills.push("Industry Knowledge");
       }
-      return skills;
+      if (answers.identity === "Freelancer") {
+        skills.push("Client Management", "Self-Marketing");
+      }
+      if (answers.identity === "Job-seeker") {
+        skills.push("Resume Building", "Interview Skills");
+      }
+      if (answers.identity === "Student") {
+        skills.push("Academic Focus", "Career Planning");
+      }
+      if (answers.identity === "Entrepreneur") {
+        skills.push("Business Strategy", "Market Analysis");
+      }
+      if (answers.identity === "Visionary") {
+        skills.push("Innovation", "Leadership");
+      }
+      
+      return skills.length > 0 ? skills : ["Professional Development"];
     }
 
     // Default to empty array if no data available
@@ -58,7 +63,7 @@ export function processSkillsData(
  * @returns Array of ExperienceItem objects
  */
 export function processExperiencesData(
-  experiencesData: string | any[] | null | undefined,
+  experiencesData: Json | null | undefined,
   answers: UserAnswers | null
 ): ExperienceItem[] {
   try {
@@ -81,17 +86,53 @@ export function processExperiencesData(
     }
 
     // If no experiences data, try to create a placeholder from answers
-    if (answers && answers.question1) {
-      // Example: Create a placeholder experience based on user answers
-      if (answers.question1.includes("freelancer")) {
+    if (answers) {
+      // Create placeholder experiences based on identity
+      if (answers.identity === "Freelancer") {
+        return [{
+          id: "placeholder-1",
+          title: "Freelance Professional",
+          description: "Working with clients to deliver high-quality services while building a professional reputation."
+        }];
+      }
+      
+      if (answers.identity === "Job-seeker") {
+        return [{
+          id: "placeholder-1",
+          title: "Career Development",
+          description: "Actively pursuing professional growth opportunities aligned with career goals."
+        }];
+      }
+      
+      if (answers.identity === "Student") {
+        return [{
+          id: "placeholder-1",
+          title: "Academic Achievement",
+          description: "Pursuing educational excellence while developing professional skills."
+        }];
+      }
+      
+      if (answers.identity === "Entrepreneur") {
+        return [{
+          id: "placeholder-1",
+          title: "Business Development",
+          description: "Building and growing a business concept from idea to implementation."
+        }];
+      }
+      
+      if (answers.identity === "Visionary") {
+        return [{
+          id: "placeholder-1",
+          title: "Innovation Leadership",
+          description: "Developing groundbreaking ideas and leading initiatives to bring them to life."
+        }];
+      }
+      
+      // Legacy fallback
+      if (answers.question1 && answers.question1.includes("freelancer")) {
         return [{
           id: "placeholder-1",
           title: "Freelancer",
-          company: "Self-employed",
-          location: "",
-          startDate: new Date().toISOString(),
-          endDate: null,
-          current: true,
           description: "Started freelancing career"
         }];
       }
@@ -112,7 +153,7 @@ export function processExperiencesData(
  * @returns Array of EducationItem objects
  */
 export function processEducationData(
-  educationData: string | any[] | null | undefined,
+  educationData: Json | null | undefined,
   answers: UserAnswers | null
 ): EducationItem[] {
   try {
@@ -135,20 +176,21 @@ export function processEducationData(
     }
 
     // If no education data, try to create a placeholder from answers
-    if (answers && answers.question1) {
-      // Example: Create a placeholder education based on user answers
-      if (answers.question1.includes("student")) {
+    if (answers) {
+      // Create placeholder education based on identity
+      if (answers.identity === "Student") {
         return [{
           id: "placeholder-1",
-          school: "University",
-          degree: "Degree",
-          field: "Field of Study",
-          startDate: new Date().toISOString(),
-          endDate: null,
-          current: true,
-          description: ""
+          title: "Current Academic Program",
+          description: "Pursuing education with focus on professional development"
         }];
       }
+      
+      return [{
+        id: "placeholder-1",
+        title: "Professional Development",
+        description: "Continuous learning and skill enhancement"
+      }];
     }
 
     // Default to empty array if no data available
@@ -168,11 +210,6 @@ function ensureExperienceFormat(exp: any): ExperienceItem {
   return {
     id: exp.id || `exp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     title: exp.title || "Position",
-    company: exp.company || "Company",
-    location: exp.location || "",
-    startDate: exp.startDate || new Date().toISOString(),
-    endDate: exp.endDate || null,
-    current: exp.current || false,
     description: exp.description || ""
   };
 }
@@ -185,12 +222,7 @@ function ensureExperienceFormat(exp: any): ExperienceItem {
 function ensureEducationFormat(edu: any): EducationItem {
   return {
     id: edu.id || `edu-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    school: edu.school || "School/University",
-    degree: edu.degree || "Degree",
-    field: edu.field || "Field of Study",
-    startDate: edu.startDate || new Date().toISOString(),
-    endDate: edu.endDate || null,
-    current: edu.current || false,
+    title: edu.title || "Education",
     description: edu.description || ""
   };
 }

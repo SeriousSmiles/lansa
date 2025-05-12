@@ -15,6 +15,10 @@ export interface UserAnswers {
   question1?: string;
   question2?: string;
   question3?: string;
+  gender?: string;
+  age_group?: string;
+  identity?: string;
+  desired_outcome?: string;
   user_id?: string;
 }
 
@@ -24,13 +28,22 @@ export function getSkillsBasedOnAnswers(answers: UserAnswers | null): string[] {
     "I'm trying to find a job that fits me": ["Interview Skills", "Resume Development", "Self-Assessment", "Job Research", "Career Planning"],
     "I want more clarity for my business/idea": ["Strategic Thinking", "Market Research", "Business Planning", "Value Proposition", "Brand Development"],
     "I'm preparing for my next move as a student": ["Academic Focus", "Professional Development", "Research Skills", "Networking", "Career Exploration"],
-    "I'm not sure — I just know I want more": ["Self-Awareness", "Goal Setting", "Personal Development", "Exploration", "Reflection"]
+    "I'm not sure — I just know I want more": ["Self-Awareness", "Goal Setting", "Personal Development", "Exploration", "Reflection"],
+    
+    // New identity-based skills
+    "Freelancer": ["Client Acquisition", "Project Management", "Self-Marketing", "Portfolio Development", "Service Pricing"],
+    "Job-seeker": ["Resume Optimization", "Interview Preparation", "Personal Branding", "Networking", "Job Market Research"],
+    "Student": ["Academic Excellence", "Career Planning", "Skill Development", "Networking", "Internship Strategy"],
+    "Entrepreneur": ["Business Strategy", "Market Analysis", "Product Development", "Funding Strategy", "Team Building"],
+    "Visionary": ["Strategic Thinking", "Communication", "Leadership", "Innovation", "Change Management"]
   };
 
   // Default skills if no match or answers are undefined
   let skills = ["Communication", "Problem Solving", "Strategic Thinking", "Self-Awareness", "Professional Growth"];
   
-  if (answers?.question1 && skillsMap[answers.question1]) {
+  if (answers?.identity && skillsMap[answers.identity]) {
+    skills = skillsMap[answers.identity];
+  } else if (answers?.question1 && skillsMap[answers.question1]) {
     skills = skillsMap[answers.question1];
   }
 
@@ -68,6 +81,12 @@ export function getExperienceBasedOnRole(role: string): ExperienceItem[] {
         title: "Career Developer",
         description: "Focused on personal and professional growth through continuous learning and strategic career planning."
       }
+    ],
+    "Visionary creating impact": [
+      {
+        title: "Innovation Leader",
+        description: "Developed groundbreaking approaches to solving problems and creating new opportunities in the industry."
+      }
     ]
   };
 
@@ -87,8 +106,8 @@ export function getEducationBasedOnAnswers(answers: UserAnswers | null, goal: st
     }
   ];
 
-  // If the user mentioned being a student, customize the education section
-  if (answers.question1 && answers.question1.includes("student")) {
+  // If the user mentioned being a student or identity is Student, customize the education section
+  if ((answers.question1 && answers.question1.includes("student")) || answers.identity === "Student") {
     return [
       {
         title: "Current Academic Program",
