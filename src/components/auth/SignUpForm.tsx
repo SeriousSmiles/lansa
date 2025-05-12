@@ -24,7 +24,9 @@ export function SignUpForm() {
   const onSubmit = async (data: SignUpFormData) => {
     setIsLoading(true);
     try {
-      // Store names in metadata
+      const fullName = `${data.firstName} ${data.lastName}`;
+      
+      // Sign up user with email and password
       const { error, data: authData } = await signUp(data.email, data.password);
       
       if (error) {
@@ -36,6 +38,9 @@ export function SignUpForm() {
       // Save user profile information
       if (authData?.user?.id) {
         try {
+          // Store name in local storage temporarily to use on first login
+          localStorage.setItem('userName', fullName);
+          
           // Check if profile exists first
           const { data: existingProfile } = await supabase
             .from('user_profiles')
@@ -48,7 +53,7 @@ export function SignUpForm() {
             await supabase
               .from('user_profiles')
               .update({ 
-                name: `${data.firstName} ${data.lastName}`,
+                name: fullName,
               })
               .eq('user_id', authData.user.id);
           } else {
@@ -57,11 +62,11 @@ export function SignUpForm() {
               .from('user_profiles')
               .insert({ 
                 user_id: authData.user.id,
-                name: `${data.firstName} ${data.lastName}`,
+                name: fullName,
               });
           }
           
-          console.log("Saved user profile information");
+          console.log("Saved user profile information with name:", fullName);
         } catch (profileError) {
           console.error("Error saving profile:", profileError);
           // Don't block the sign-up flow if profile save fails

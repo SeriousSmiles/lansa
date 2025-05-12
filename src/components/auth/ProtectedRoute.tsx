@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserAnswers, hasCompletedOnboarding } from "@/services/QuestionService";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function ProtectedRoute() {
-  const { user } = useAuth();
+  const { user, updateDisplayName } = useAuth();
   const location = useLocation();
   const [onboardingStatus, setOnboardingStatus] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
@@ -15,6 +16,19 @@ export default function ProtectedRoute() {
     async function checkOnboardingStatus() {
       if (user?.id) {
         try {
+          // Fetch user profile to ensure display name is set
+          if (!user.displayName || user.displayName === user.email?.split('@')[0]) {
+            const { data: profileData } = await supabase
+              .from('user_profiles')
+              .select('name')
+              .eq('user_id', user.id)
+              .maybeSingle();
+              
+            if (profileData?.name && typeof updateDisplayName === 'function') {
+              updateDisplayName(profileData.name);
+            }
+          }
+          
           const userAnswers = await getUserAnswers(user.id);
           console.log("User answers for onboarding check:", userAnswers);
           
@@ -39,7 +53,7 @@ export default function ProtectedRoute() {
     } else {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, updateDisplayName]);
 
   if (!user) {
     return <Navigate to="/auth" state={{ from: location }} replace />;

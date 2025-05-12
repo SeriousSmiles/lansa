@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 type UserType = {
   id: string;
   email?: string;
+  displayName?: string;
 } | null;
 
 interface AuthContextType {
@@ -15,6 +16,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any; data: any }>;
   signOut: () => Promise<{ error: any }>;
+  updateDisplayName: (name: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,19 +26,75 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const updateDisplayName = (name: string) => {
+    if (user) {
+      setUser({ ...user, displayName: name });
+    }
+  };
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('name')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (profile?.name) {
+        return profile.name;
+      }
+      
+      // Check localStorage as fallback for new users
+      const localName = localStorage.getItem('userName');
+      if (localName) {
+        // Update profile with name from localStorage if it exists
+        await supabase
+          .from('user_profiles')
+          .upsert({ 
+            user_id: userId,
+            name: localName
+          });
+        
+        // Clear localStorage after use
+        localStorage.removeItem('userName');
+        return localName;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      return null;
+    }
+  };
+
+  // Handle auth state changes
+  const handleAuthStateChange = async (session: Session | null) => {
+    setSession(session);
+    
+    if (session?.user) {
+      const displayName = await fetchUserProfile(session.user.id);
+      
+      setUser({
+        id: session.user.id,
+        email: session.user.email,
+        displayName: displayName || session.user.email?.split('@')[0] || 'Lansa User'
+      });
+    } else {
+      setUser(null);
+    }
+    
+    setLoading(false);
+  };
+
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+      handleAuthStateChange(session);
     });
 
-    // THEN check for existing session
+    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+      handleAuthStateChange(session);
     });
 
     return () => subscription.unsubscribe();
@@ -56,7 +114,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     signUp: async (email: string, password: string) => {
       try {
-        // We don't use metadata here anymore as we're saving to user_profiles table
         return await supabase.auth.signUp({ email, password });
       } catch (error) {
         console.error("Error signing up:", error);
@@ -72,6 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error };
       }
     },
+    updateDisplayName,
   };
 
   return (
