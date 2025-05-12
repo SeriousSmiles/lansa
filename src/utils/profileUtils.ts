@@ -2,17 +2,7 @@
 import { UserAnswers } from "@/services/QuestionService";
 import { ExperienceItem, EducationItem } from "@/hooks/profile/profileTypes";
 
-export interface UserAnswers {
-  question1?: string;
-  question2?: string;
-  question3?: string;
-  gender?: string;
-  age_group?: string;
-  identity?: string;
-  desired_outcome?: string;
-  user_id?: string;
-}
-
+// Export interface declarations needed by other files
 export function getSkillsBasedOnAnswers(answers: UserAnswers | null): string[] {
   const skillsMap: { [key: string]: string[] } = {
     "I want to get noticed and valued as a freelancer": ["Communication", "Self-Promotion", "Networking", "Portfolio Building", "Client Management"],

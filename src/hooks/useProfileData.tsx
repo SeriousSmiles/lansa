@@ -18,7 +18,8 @@ import {
   handleProfileLoadError
 } from "./profile/profileLoaders";
 
-export { UserProfile, ProfileDataReturn } from "./profile/profileTypes";
+// Using 'export type' instead of 'export' for TypeScript types
+export type { UserProfile, ProfileDataReturn } from "./profile/profileTypes";
 
 export function useProfileData(userId: string | undefined): ProfileDataReturn {
   // Base state

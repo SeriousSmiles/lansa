@@ -1,6 +1,5 @@
-
 import { UserAnswers } from "@/services/QuestionService";
-import { ExperienceItem, EducationItem } from "@/utils/profileUtils";
+import { ExperienceItem, EducationItem } from "@/hooks/profile/profileTypes";
 import { Json } from "@/integrations/supabase/types";
 
 /**
