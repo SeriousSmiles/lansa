@@ -7,13 +7,21 @@ import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { AboutSection } from "@/components/profile/AboutSection";
 import { ExperienceSection } from "@/components/profile/ExperienceSection";
 import { EducationSection } from "@/components/profile/EducationSection";
-import { ShareButton } from "@/components/profile/ShareButton";
 import { useProfileData } from "@/hooks/useProfileData";
 
 export default function Profile() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const profile = useProfileData(user?.id);
+
+  // Generate theme colors based on primary color
+  const themeColors = {
+    primary: profile.coverColor,
+    light: `${profile.coverColor}15`,
+    medium: `${profile.coverColor}30`,
+    border: `${profile.coverColor}50`,
+    text: profile.coverColor,
+  };
 
   if (profile.isLoading) {
     return (
@@ -24,11 +32,17 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-[rgba(253,248,242,1)] flex flex-col">
+    <div 
+      className="min-h-screen flex flex-col"
+      style={{ 
+        backgroundColor: themeColors.light,
+      }}
+    >
       <ProfileHeader 
         userName={profile.userName} 
         role={profile.role} 
         user={profile.user}
+        userId={user?.id}
         coverColor={profile.coverColor}
         onCoverColorChange={profile.updateCoverColor} 
       />
@@ -63,6 +77,7 @@ export default function Profile() {
               aboutText={profile.aboutText}
               onUpdate={profile.updateUserAnswer}
               onUpdateAbout={profile.updateAboutText}
+              themeColor={profile.coverColor}
             />
             
             {/* Experience */}
@@ -71,6 +86,7 @@ export default function Profile() {
               onAddExperience={profile.addExperience}
               onEditExperience={profile.editExperience}
               onRemoveExperience={profile.removeExperience}
+              themeColor={profile.coverColor}
             />
             
             {/* Education */}
@@ -79,23 +95,31 @@ export default function Profile() {
               onAddEducation={profile.addEducation}
               onEditEducation={profile.editEducation}
               onRemoveEducation={profile.removeEducation}
+              themeColor={profile.coverColor}
             />
             
             {/* Actions Section */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex justify-center">
               <Button 
                 onClick={() => navigate("/dashboard")} 
-                className="px-8 py-6 h-auto text-lg"
+                className="py-2 h-auto"
+                variant="outline"
+                style={{
+                  borderColor: themeColors.border,
+                  color: themeColors.text
+                }}
               >
                 Return to Dashboard
               </Button>
-              <ShareButton userId={user?.id} />
             </div>
           </div>
         </div>
       </main>
 
-      <footer className="text-center py-6 text-sm text-gray-500">
+      <footer 
+        className="text-center py-6 text-sm"
+        style={{ color: `${profile.coverColor}90` }}
+      >
         © 2025 Lansa N.V.
       </footer>
     </div>

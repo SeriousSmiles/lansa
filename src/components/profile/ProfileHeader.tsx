@@ -1,5 +1,5 @@
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Share } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -15,6 +15,7 @@ interface ProfileHeaderProps {
   userName: string;
   role: string;
   user: any;
+  userId?: string;
   coverColor: string;
   onCoverColorChange: (color: string) => Promise<void>;
   readOnly?: boolean; // Add readOnly prop
@@ -24,6 +25,7 @@ export function ProfileHeader({
   userName, 
   role, 
   user, 
+  userId,
   coverColor, 
   onCoverColorChange,
   readOnly = false // Default to false for backward compatibility
@@ -31,6 +33,8 @@ export function ProfileHeader({
   const navigate = useNavigate();
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState(coverColor || "#FF6B4A");
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
   
   const colorOptions = [
     "#FF6B4A", // Default orange
@@ -61,8 +65,32 @@ export function ProfileHeader({
     setIsColorPickerOpen(false);
   };
   
+  const handleShare = () => {
+    if (!userId) return;
+    
+    // Generate a shareable URL
+    const shareableUrl = `${window.location.origin}/profile/share/${userId}`;
+    setShareUrl(shareableUrl);
+    setIsShareDialogOpen(true);
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      // Toast notification is handled in ShareButton component
+    } catch (error) {
+      console.error("Failed to copy:", error);
+    }
+  };
+  
   return (
-    <header className="flex min-h-[72px] w-full px-4 md:px-16 items-center shadow-sm bg-white">
+    <header 
+      className="flex min-h-[72px] w-full px-4 md:px-16 items-center shadow-sm"
+      style={{
+        backgroundColor: `${coverColor}15`, // Very light version of theme color
+        borderBottom: `1px solid ${coverColor}30`
+      }}
+    >
       <Button 
         variant="ghost" 
         size="icon" 
@@ -83,6 +111,10 @@ export function ProfileHeader({
             size="sm" 
             onClick={() => setIsColorPickerOpen(true)}
             className="flex items-center gap-1"
+            style={{
+              borderColor: `${coverColor}50`,
+              color: coverColor
+            }}
           >
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
@@ -100,7 +132,21 @@ export function ProfileHeader({
               <circle cx="12" cy="12" r="6" />
               <circle cx="12" cy="12" r="2" />
             </svg>
-            <span>Change Cover</span>
+            <span>Change Theme</span>
+          </Button>
+          
+          <Button
+            onClick={handleShare}
+            className="flex items-center gap-1"
+            variant="outline"
+            size="sm"
+            style={{
+              borderColor: `${coverColor}50`,
+              color: coverColor
+            }}
+          >
+            <Share size={16} />
+            <span>Share Profile</span>
           </Button>
         </div>
       )}
@@ -108,9 +154,9 @@ export function ProfileHeader({
       <Dialog open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Select Cover Color</DialogTitle>
+            <DialogTitle>Select Theme Color</DialogTitle>
             <DialogDescription>
-              Choose a color for your profile cover background
+              Choose a color for your profile theme
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-5 gap-3 mt-4">
@@ -125,6 +171,28 @@ export function ProfileHeader({
                 aria-label={`Select ${color} color`}
               />
             ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Share your profile</DialogTitle>
+            <DialogDescription>
+              Anyone with this link can view your profile without needing to sign in.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-2">
+              <input 
+                value={shareUrl} 
+                readOnly 
+                className="flex-grow p-2 border rounded"
+                onClick={(e) => e.currentTarget.select()}
+              />
+              <Button onClick={copyToClipboard}>Copy</Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
