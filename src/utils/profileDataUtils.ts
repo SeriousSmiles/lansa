@@ -2,7 +2,6 @@
 import { v4 as uuidv4 } from "@/utils/uuid";
 import { ExperienceItem, EducationItem, UserAnswers, getSkillsBasedOnAnswers, getExperienceBasedOnRole, getEducationBasedOnAnswers } from "@/utils/profileUtils";
 import { getProfileGoal, getProfileRole } from "@/services/QuestionService";
-import { Json } from "@/integrations/supabase/types";
 
 // Convert JSON from database to our typed objects
 export const convertJsonToExperienceItems = (jsonData: any): ExperienceItem[] => {
@@ -26,7 +25,7 @@ export const convertJsonToEducationItems = (jsonData: any): EducationItem[] => {
 };
 
 export const processExperiencesData = (
-  experiences: Json | null, 
+  experiences: any, 
   answers: UserAnswers | null
 ): ExperienceItem[] => {
   if (experiences) {
@@ -53,7 +52,7 @@ export const processExperiencesData = (
 };
 
 export const processEducationData = (
-  education: Json | null,
+  education: any,
   answers: UserAnswers | null
 ): EducationItem[] => {
   if (education) {
