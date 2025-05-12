@@ -22,6 +22,21 @@ export default function Profile() {
     border: `${profile.coverColor}50`,
     text: profile.coverColor,
   };
+  
+  // Calculate text contrast color (black or white) based on background
+  const getContrastTextColor = (hexColor: string): string => {
+    // Convert hex to RGB
+    const r = parseInt(hexColor.slice(1, 3), 16);
+    const g = parseInt(hexColor.slice(3, 5), 16);
+    const b = parseInt(hexColor.slice(5, 7), 16);
+    
+    // Calculate luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    return luminance > 0.5 ? "#000000" : "#FFFFFF";
+  };
+  
+  const textColor = getContrastTextColor(profile.coverColor);
 
   if (profile.isLoading) {
     return (
@@ -44,7 +59,9 @@ export default function Profile() {
         user={profile.user}
         userId={user?.id}
         coverColor={profile.coverColor}
-        onCoverColorChange={profile.updateCoverColor} 
+        highlightColor={profile.highlightColor}
+        onCoverColorChange={profile.updateCoverColor}
+        onHighlightColorChange={profile.updateHighlightColor}
       />
 
       <main className="flex-1 container mx-auto px-4 py-8 md:py-12">
@@ -58,6 +75,7 @@ export default function Profile() {
             goal={profile.goal}
             phoneNumber={profile.phoneNumber}
             coverColor={profile.coverColor}
+            highlightColor={profile.highlightColor}
             profileImage={profile.profileImage}
             onUpdate={profile.updateUserAnswer}
             onUpdateUserName={profile.updateUserName}
@@ -78,6 +96,7 @@ export default function Profile() {
               onUpdate={profile.updateUserAnswer}
               onUpdateAbout={profile.updateAboutText}
               themeColor={profile.coverColor}
+              highlightColor={profile.highlightColor}
             />
             
             {/* Experience */}
@@ -87,6 +106,7 @@ export default function Profile() {
               onEditExperience={profile.editExperience}
               onRemoveExperience={profile.removeExperience}
               themeColor={profile.coverColor}
+              highlightColor={profile.highlightColor}
             />
             
             {/* Education */}
@@ -96,6 +116,7 @@ export default function Profile() {
               onEditEducation={profile.editEducation}
               onRemoveEducation={profile.removeEducation}
               themeColor={profile.coverColor}
+              highlightColor={profile.highlightColor}
             />
             
             {/* Actions Section */}
@@ -106,7 +127,7 @@ export default function Profile() {
                 variant="outline"
                 style={{
                   borderColor: themeColors.border,
-                  color: themeColors.text
+                  color: textColor
                 }}
               >
                 Return to Dashboard

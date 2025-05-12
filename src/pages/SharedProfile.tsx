@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +24,7 @@ interface SharedProfileData {
   experiences: ExperienceItem[];
   educationItems: EducationItem[];
   coverColor: string;
+  highlightColor: string; // Added highlightColor
   profileImage: string;
 }
 
@@ -83,6 +85,7 @@ export default function SharedProfile() {
           experiences: processedExperiences,
           educationItems: processedEducation,
           coverColor: profileData?.cover_color || "#1A1F71",
+          highlightColor: profileData?.highlight_color || "#FF6B4A",
           profileImage: profileData?.profile_image || ""
         };
         
@@ -99,6 +102,21 @@ export default function SharedProfile() {
     loadProfile();
   }, [userId]);
 
+  // Calculate theme colors based on primary color
+  const themeColors = profileData ? {
+    primary: profileData.coverColor,
+    light: `${profileData.coverColor}15`,
+    medium: `${profileData.coverColor}30`,
+    border: `${profileData.coverColor}50`,
+    text: profileData.coverColor,
+  } : {
+    primary: "#1A1F71",
+    light: "#1A1F7115",
+    medium: "#1A1F7130",
+    border: "#1A1F7150",
+    text: "#1A1F71",
+  };
+
   if (isLoading) {
     return <ProfileLoadingState />;
   }
@@ -113,7 +131,10 @@ export default function SharedProfile() {
   };
 
   return (
-    <div className="min-h-screen bg-[rgba(253,248,242,1)] flex flex-col">
+    <div 
+      className="min-h-screen flex flex-col"
+      style={{ backgroundColor: themeColors.light }}
+    >
       <div className="p-4">
         <Button variant="outline" onClick={() => navigate(-1)} className="flex items-center gap-2">
           <ArrowLeft size={16} />
@@ -126,6 +147,7 @@ export default function SharedProfile() {
         role={profileData.role} 
         user={{ id: userId }}
         coverColor={profileData.coverColor}
+        highlightColor={profileData.highlightColor}
         onCoverColorChange={noop}
         readOnly={true}
       />
@@ -139,6 +161,8 @@ export default function SharedProfile() {
             goal={profileData.goal}
             userSkills={profileData.userSkills}
             profileImage={profileData.profileImage}
+            coverColor={profileData.coverColor}
+            highlightColor={profileData.highlightColor}
           />
           
           {/* Right Column - Content */}
@@ -146,11 +170,15 @@ export default function SharedProfile() {
             aboutText={profileData.aboutText}
             experiences={profileData.experiences}
             educationItems={profileData.educationItems}
+            highlightColor={profileData.highlightColor}
           />
         </div>
       </main>
 
-      <footer className="text-center py-6 text-sm text-gray-500">
+      <footer 
+        className="text-center py-6 text-sm"
+        style={{ color: `${profileData.coverColor}90` }}
+      >
         © 2025 Lansa N.V.
       </footer>
     </div>

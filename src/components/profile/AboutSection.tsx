@@ -13,7 +13,8 @@ interface AboutSectionProps {
   aboutText?: string;
   onUpdate?: (field: string, value: string) => Promise<void>;
   onUpdateAbout?: (text: string) => Promise<void>;
-  themeColor?: string; // Added the themeColor property
+  themeColor?: string;
+  highlightColor?: string; // Added highlightColor property
 }
 
 export function AboutSection({ 
@@ -23,7 +24,8 @@ export function AboutSection({
   aboutText,
   onUpdate,
   onUpdateAbout,
-  themeColor 
+  themeColor,
+  highlightColor = "#FF6B4A" // Default to the original orange color
 }: AboutSectionProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingAbout, setIsEditingAbout] = useState(false);
@@ -76,6 +78,19 @@ export function AboutSection({
     }
   };
   
+  // Get contrast text color for the highlight
+  const getContrastTextColor = (hexColor: string): string => {
+    // Convert hex to RGB
+    const r = parseInt(hexColor.slice(1, 3), 16);
+    const g = parseInt(hexColor.slice(3, 5), 16);
+    const b = parseInt(hexColor.slice(5, 7), 16);
+    
+    // Calculate luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    return luminance > 0.5 ? "#000000" : "#FFFFFF";
+  };
+  
   return (
     <Card>
       <CardContent className="pt-6">
@@ -87,6 +102,7 @@ export function AboutSection({
               size="sm" 
               className="h-8 w-8 p-0" 
               onClick={() => setIsEditingAbout(!isEditingAbout)}
+              style={{ color: highlightColor }}
             >
               <Pencil className="h-4 w-4" />
               <span className="sr-only">Edit</span>
@@ -103,7 +119,13 @@ export function AboutSection({
               placeholder="Tell us about yourself..."
             />
             <div className="flex space-x-2">
-              <Button onClick={handleSaveAbout} size="sm">Save</Button>
+              <Button 
+                onClick={handleSaveAbout} 
+                size="sm" 
+                style={{ backgroundColor: highlightColor, color: getContrastTextColor(highlightColor) }}
+              >
+                Save
+              </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -128,6 +150,7 @@ export function AboutSection({
               size="sm" 
               className="h-8 w-8 p-0" 
               onClick={() => setIsEditing(!isEditing)}
+              style={{ color: highlightColor }}
             >
               <Pencil className="h-4 w-4" />
               <span className="sr-only">Edit</span>
@@ -144,7 +167,13 @@ export function AboutSection({
               placeholder="Describe your biggest professional challenge..."
             />
             <div className="flex space-x-2">
-              <Button onClick={handleSave} size="sm">Save</Button>
+              <Button 
+                onClick={handleSave} 
+                size="sm"
+                style={{ backgroundColor: highlightColor, color: getContrastTextColor(highlightColor) }}
+              >
+                Save
+              </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -158,7 +187,10 @@ export function AboutSection({
             </div>
           </div>
         ) : (
-          <blockquote className="border-l-4 border-[#FF6B4A] pl-4 italic">
+          <blockquote 
+            className="border-l-4 pl-4 italic"
+            style={{ borderColor: highlightColor }}
+          >
             "{blocker}"
           </blockquote>
         )}

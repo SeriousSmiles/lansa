@@ -15,6 +15,7 @@ interface ProfileSidebarProps {
   goal: string;
   phoneNumber?: string;
   coverColor?: string;
+  highlightColor?: string;
   profileImage?: string;
   onUpdate?: (field: string, value: string) => Promise<void>;
   onUpdateUserName?: (name: string) => Promise<void>;
@@ -32,6 +33,7 @@ export function ProfileSidebar({
   goal,
   phoneNumber,
   coverColor,
+  highlightColor = "#FF6B4A",
   profileImage,
   onUpdate,
   onUpdateUserName,
@@ -188,12 +190,13 @@ export function ProfileSidebar({
             onUpdateUserName={handleUpdateUserName}
           />
           
-          <p className="text-[#FF6B4A] font-medium text-center">{role}</p>
+          <p className="font-medium text-center" style={{ color: highlightColor }}>{role}</p>
           
           <ContactInfo
             email={email}
             phoneNumber={phoneNumber}
             onUpdatePhoneNumber={handleUpdatePhoneNumber}
+            highlightColor={highlightColor}
           />
         </div>
       </Card>
@@ -203,12 +206,14 @@ export function ProfileSidebar({
         skills={skills}
         onAddSkill={handleAddSkill}
         onRemoveSkill={handleRemoveSkill}
+        highlightColor={highlightColor}
       />
       
       {/* Goals */}
       <ProfessionalGoal
         goal={goal}
         onUpdate={handleUpdateGoal}
+        highlightColor={highlightColor}
       />
     </div>
   );

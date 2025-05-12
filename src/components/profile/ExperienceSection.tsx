@@ -19,7 +19,8 @@ interface ExperienceSectionProps {
   onAddExperience?: (experience: ExperienceItem) => Promise<void>;
   onEditExperience?: (id: string, experience: ExperienceItem) => Promise<void>;
   onRemoveExperience?: (id: string) => Promise<void>;
-  themeColor?: string; // Added themeColor property
+  themeColor?: string;
+  highlightColor?: string; // Added highlightColor property
 }
 
 export function ExperienceSection({ 
@@ -27,7 +28,8 @@ export function ExperienceSection({
   onAddExperience, 
   onEditExperience, 
   onRemoveExperience,
-  themeColor 
+  themeColor,
+  highlightColor = "#FF6B4A" // Default to the original orange color
 }: ExperienceSectionProps) {
   const [isAddingExperience, setIsAddingExperience] = useState(false);
   const [newExperience, setNewExperience] = useState<ExperienceItem>({ title: "", description: "" });
@@ -64,12 +66,25 @@ export function ExperienceSection({
     }
   };
 
+  // Calculate text contrast color for better readability
+  const getContrastTextColor = (hexColor: string): string => {
+    // Convert hex to RGB
+    const r = parseInt(hexColor.slice(1, 3), 16);
+    const g = parseInt(hexColor.slice(3, 5), 16);
+    const b = parseInt(hexColor.slice(5, 7), 16);
+    
+    // Calculate luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    return luminance > 0.5 ? "#000000" : "#FFFFFF";
+  };
+
   return (
     <Card>
       <CardContent className="pt-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold flex items-center">
-            <Briefcase className="h-5 w-5 text-[#FF6B4A] mr-2" />
+            <Briefcase className="h-5 w-5 mr-2" style={{ color: highlightColor }} />
             Experience
           </h2>
           {onAddExperience && (
@@ -102,6 +117,7 @@ export function ExperienceSection({
                 setIsAddingExperience(false);
               }}
               isNew={true}
+              highlightColor={highlightColor}
             />
           </div>
         )}
@@ -117,6 +133,7 @@ export function ExperienceSection({
                   onDescriptionChange={(description) => setEditingExperience({...editingExperience, description})}
                   onSave={handleEditExperience}
                   onCancel={() => setEditingExperienceId(null)}
+                  highlightColor={highlightColor}
                 />
               ) : (
                 <ExperienceCard 
@@ -125,6 +142,7 @@ export function ExperienceSection({
                   description={exp.description}
                   onEdit={onEditExperience ? () => startEditing(exp) : undefined}
                   onRemove={onRemoveExperience && exp.id ? () => onRemoveExperience(exp.id!) : undefined}
+                  highlightColor={highlightColor}
                 />
               )}
               
@@ -139,6 +157,7 @@ export function ExperienceSection({
             period="Past"
             subtitle="Self-Discovery"
             description="Explored various professional paths and opportunities to better understand strengths, weaknesses, and career aspirations."
+            highlightColor={highlightColor}
           />
         </div>
       </CardContent>

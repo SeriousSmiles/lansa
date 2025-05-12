@@ -24,6 +24,7 @@ export interface UserProfile {
   about_text?: string;
   phone_number?: string;
   cover_color?: string;
+  highlight_color?: string; // Added highlight_color
   profile_image?: string;
   skills?: string[];
   experiences?: ExperienceItem[];
@@ -47,6 +48,7 @@ export interface ProfileDataReturn {
   phoneNumber: string;
   aboutText: string;
   coverColor: string;
+  highlightColor: string; // Added highlightColor
   profileImage: string;
   userSkills: string[];
   experiences: ExperienceItem[];
@@ -57,6 +59,7 @@ export interface ProfileDataReturn {
   updatePhoneNumber: (phone: string) => Promise<void>;
   updateAboutText: (text: string) => Promise<void>;
   updateCoverColor: (color: string) => Promise<void>;
+  updateHighlightColor: (color: string) => Promise<void>; // Added updateHighlightColor
   updateUserAnswer: (field: string, value: string) => Promise<void>;
   
   // Skills functions
@@ -151,6 +154,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     if (profileData.phone_number) profileBasics.setPhoneNumber(profileData.phone_number);
     if (profileData.about_text) profileBasics.setAboutText(profileData.about_text);
     if (profileData.cover_color) profileBasics.setCoverColor(profileData.cover_color);
+    if (profileData.highlight_color) profileBasics.setHighlightColor(profileData.highlight_color);
     if (profileData.profile_image) profileImage.setProfileImage(profileData.profile_image);
     
     if (profileData.skills && Array.isArray(profileData.skills) && profileData.skills.length > 0) {
@@ -250,6 +254,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     phoneNumber: profileBasics.phoneNumber,
     aboutText: profileBasics.aboutText,
     coverColor: profileBasics.coverColor,
+    highlightColor: profileBasics.highlightColor,
     profileImage: profileImage.profileImage,
     userSkills: profileSkills.userSkills,
     experiences: profileExperience.experiences,
@@ -260,6 +265,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     updatePhoneNumber: profileBasics.updatePhoneNumber,
     updateAboutText: profileBasics.updateAboutText,
     updateCoverColor: profileBasics.updateCoverColor,
+    updateHighlightColor: profileBasics.updateHighlightColor,
     updateUserAnswer: profileBasics.updateUserAnswer,
     
     // Skills functions
