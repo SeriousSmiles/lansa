@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserAnswers, hasCompletedOnboarding } from "@/services/QuestionService";
+import { toast } from "sonner";
 
 export default function ProtectedRoute() {
   const { user } = useAuth();
@@ -25,6 +26,7 @@ export default function ProtectedRoute() {
         } catch (error) {
           console.error("Failed to check onboarding status:", error);
           setOnboardingStatus(false);
+          toast.error("Failed to check onboarding status. Please try again.");
         }
         setLoading(false);
       } else {
@@ -38,11 +40,6 @@ export default function ProtectedRoute() {
       setLoading(false);
     }
   }, [user]);
-
-  // Always allow authenticated users to access the dashboard
-  if (location.pathname === "/dashboard" && user) {
-    return <Outlet />;
-  }
 
   if (!user) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
@@ -66,11 +63,9 @@ export default function ProtectedRoute() {
 
   // If user hasn't completed onboarding and is trying to access any protected 
   // route other than onboarding or card, redirect to onboarding
-  // BUT always allow access to dashboard
   if (onboardingStatus === false && 
       location.pathname !== "/onboarding" && 
-      location.pathname !== "/card" &&
-      location.pathname !== "/dashboard") {
+      location.pathname !== "/card") {
     console.log("User has not completed onboarding, redirecting to onboarding");
     return <Navigate to="/onboarding" replace />;
   }

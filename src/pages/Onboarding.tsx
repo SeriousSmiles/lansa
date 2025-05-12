@@ -44,6 +44,21 @@ export default function Onboarding() {
     loadUserAnswers();
   }, [user]);
 
+  const handleSaveAnswers = async (userId: string, answers: any) => {
+    try {
+      const result = await saveUserAnswers(userId, answers);
+      if (!result.success) {
+        toast.error("Failed to save your answers. Please try again.");
+        return { success: false };
+      }
+      return result;
+    } catch (error) {
+      console.error("Error in save answers handler:", error);
+      toast.error("Failed to save your answers. Please try again.");
+      return { success: false };
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[rgba(253,248,242,1)] flex items-center justify-center">
@@ -65,7 +80,7 @@ export default function Onboarding() {
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-8">
         <MultiStepForm
           initialAnswers={userAnswers}
-          onSaveAnswers={saveUserAnswers}
+          onSaveAnswers={handleSaveAnswers}
           demographicsQuestions={demographicsQuestions}
           identityQuestions={identityQuestions}
           outcomeQuestions={outcomeQuestions}

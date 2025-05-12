@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -113,7 +112,16 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
   try {
     console.log("Saving user answers:", userId, answers);
     
-    // First, check if the user already has answers
+    // First check if the user exists in the auth.users table
+    const { data: authUser, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !authUser?.user) {
+      console.error("User authentication error:", authError);
+      toast.error("Authentication error. Please sign in again.");
+      return { success: false, error: authError };
+    }
+    
+    // Check if the user already has answers
     const { data: existingAnswers, error: fetchError } = await supabase
       .from('user_answers')
       .select('*')
@@ -122,7 +130,8 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
     
     if (fetchError && fetchError.code !== 'PGRST116') {
       console.error("Error fetching existing answers:", fetchError);
-      // Don't throw here - just log and continue with local storage fallback
+      toast.error("Failed to check existing answers. Please try again.");
+      return { success: false, error: fetchError };
     }
     
     let result;
@@ -146,8 +155,8 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
       
       if (error) {
         console.error("Error updating answers:", error);
-        // Store in local storage as fallback
-        localStorage.setItem(`user_answers_${userId}`, JSON.stringify(answers));
+        toast.error("Failed to update your answers. Please try again.");
+        return { success: false, error };
       }
       result = { success: true };
     } else {
@@ -168,8 +177,8 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
       
       if (error) {
         console.error("Error inserting answers:", error);
-        // Store in local storage as fallback
-        localStorage.setItem(`user_answers_${userId}`, JSON.stringify(answers));
+        toast.error("Failed to save your answers. Please try again.");
+        return { success: false, error };
       }
       result = { success: true };
     }
@@ -204,26 +213,24 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
             desired_outcome: answers.desired_outcome
           }]);
       }
-    } catch (profileError) {
+    } catch (profileError: any) {
       console.error("Error updating user profile:", profileError);
-      // Don't throw here, as the main user_answers update was successful
+      // Don't prevent the flow if profile update fails, just show a warning
+      toast.warning("Profile was not fully updated. Some features may be limited.");
     }
     
     toast.success("Your answers have been saved successfully!");
     return result;
   } catch (error) {
     console.error('Error saving user answers:', error);
-    // Store in local storage as fallback
-    localStorage.setItem(`user_answers_${userId}`, JSON.stringify(answers));
-    // Continue without showing an error to the user
-    return { success: true, error };
+    toast.error("Failed to save your answers. Please try again.");
+    return { success: false, error };
   }
 }
 
 export async function getUserAnswers(userId: string): Promise<UserAnswers | null> {
   try {
     console.log("Fetching user answers for:", userId);
-    // First try to get answers from Supabase
     const { data, error } = await supabase
       .from('user_answers')
       .select('question1, question2, question3, gender, age_group, identity, desired_outcome')
@@ -232,38 +239,22 @@ export async function getUserAnswers(userId: string): Promise<UserAnswers | null
       .limit(1);
     
     if (error) {
-      console.error("Error fetching from Supabase:", error);
-      // Fall back to localStorage
-      const localData = localStorage.getItem(`user_answers_${userId}`);
-      if (localData) {
-        console.log("Found answers in localStorage for user:", userId);
-        return JSON.parse(localData);
-      }
-      return null;
+      console.error("Error fetching answers:", error);
+      throw error;
     }
     
-    // If no data or empty array, check localStorage
+    // If no data or empty array, return null
     if (!data || data.length === 0) {
-      console.log("No answers in Supabase for user:", userId);
-      // Check localStorage
-      const localData = localStorage.getItem(`user_answers_${userId}`);
-      if (localData) {
-        console.log("Found answers in localStorage for user:", userId);
-        return JSON.parse(localData);
-      }
+      console.log("No answers found for user:", userId);
       return null;
     }
     
-    console.log("Found answers in Supabase for user:", userId, data[0]);
+    console.log("Found answers for user:", userId, data[0]);
+    // Return the most recent answer
     return data[0];
   } catch (error) {
     console.error('Error fetching user answers:', error);
-    // Fall back to localStorage
-    const localData = localStorage.getItem(`user_answers_${userId}`);
-    if (localData) {
-      return JSON.parse(localData);
-    }
-    return null;
+    throw error;
   }
 }
 
