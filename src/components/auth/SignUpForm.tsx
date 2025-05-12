@@ -73,12 +73,22 @@ export function SignUpForm() {
         }
       }
       
-      toast.success("Account created successfully!");
-      navigate("/onboarding");
+      toast.success("Account created successfully! Please log in.");
+      
+      // After successful signup, switch to login form
+      setTimeout(() => {
+        const loginTab = document.querySelector('[data-login-tab="true"]');
+        if (loginTab && 'click' in loginTab) {
+          (loginTab as HTMLElement).click();
+        } else {
+          // If we can't find the login tab, just reset the form and let the user know
+          toast.info("Please log in with your new account");
+        }
+        setIsLoading(false);
+      }, 200);
     } catch (error: any) {
       console.error(error);
       toast.error(error.message || "An error occurred during sign up");
-    } finally {
       setIsLoading(false);
     }
   };

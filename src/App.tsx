@@ -28,8 +28,9 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
+              {/* Change default route to auth */}
+              <Route path="/" element={<Navigate to="/auth" replace />} />
               <Route path="/auth" element={<Index />} />
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/result" element={<Result />} />

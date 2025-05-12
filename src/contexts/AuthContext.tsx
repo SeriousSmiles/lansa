@@ -69,6 +69,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Handle auth state changes
   const handleAuthStateChange = async (session: Session | null) => {
+    console.log("Auth state changed, session:", session ? "exists" : "null");
+    
     setSession(session);
     
     if (session?.user) {
@@ -79,22 +81,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: session.user.email,
         displayName: displayName || session.user.email?.split('@')[0] || 'Lansa User'
       });
+      
+      console.log("User set after auth state change:", session.user.id);
     } else {
       setUser(null);
+      console.log("User set to null after auth state change");
     }
-    
-    setLoading(false);
   };
 
   useEffect(() => {
-    // Set up auth state listener
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      handleAuthStateChange(session);
+      // Use setTimeout to prevent potential deadlocks in Supabase auth state handling
+      setTimeout(() => {
+        handleAuthStateChange(session);
+      }, 0);
     });
 
-    // Check for existing session
+    // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       handleAuthStateChange(session);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -105,7 +112,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     session,
     signIn: async (email: string, password: string) => {
       try {
-        return await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        
+        if (error) {
+          console.error("Sign in error:", error);
+          return { error };
+        }
+        
+        console.log("Sign in successful, session:", data.session ? "exists" : "null");
+        return { error: null };
       } catch (error) {
         console.error("Error signing in:", error);
         toast.error("Failed to sign in. Please check your internet connection.");
@@ -114,7 +129,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     signUp: async (email: string, password: string) => {
       try {
-        return await supabase.auth.signUp({ email, password });
+        const result = await supabase.auth.signUp({ email, password });
+        return result;
       } catch (error) {
         console.error("Error signing up:", error);
         toast.error("Failed to sign up. Please check your internet connection.");
