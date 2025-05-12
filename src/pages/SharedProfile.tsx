@@ -15,7 +15,7 @@ import { SharedProfileContent } from "@/components/profile/shared/SharedProfileC
 import { processSkillsData, processExperiencesData, processEducationData } from "@/utils/profileDataUtils";
 
 interface SharedProfileData {
-  userProfile: any; // Changed from UserProfile to any to avoid type conflicts
+  userProfile: UserProfile | null;
   userName: string;
   role: string;
   goal: string;
@@ -50,7 +50,7 @@ export default function SharedProfile() {
           .from('user_profiles')
           .select('*')
           .eq('user_id', userId)
-          .single();
+          .maybeSingle();
           
         if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
           throw error;

@@ -22,6 +22,12 @@ export function useProfileBasics(userId: string | undefined) {
         description: "Your name has been updated successfully.",
       });
     } catch (error) {
+      console.error("Error updating name:", error);
+      toast({
+        title: "Error updating name",
+        description: "There was an error updating your name. Please try again.",
+        variant: "destructive",
+      });
       throw error;
     }
   };
@@ -32,6 +38,12 @@ export function useProfileBasics(userId: string | undefined) {
       await updateProfileData({ phone_number: phone });
       setPhoneNumber(phone);
     } catch (error) {
+      console.error("Error updating phone number:", error);
+      toast({
+        title: "Error updating phone number",
+        description: "There was an error updating your phone number. Please try again.",
+        variant: "destructive",
+      });
       throw error;
     }
   };
@@ -42,6 +54,12 @@ export function useProfileBasics(userId: string | undefined) {
       await updateProfileData({ about_text: text });
       setAboutText(text);
     } catch (error) {
+      console.error("Error updating about text:", error);
+      toast({
+        title: "Error updating about text",
+        description: "There was an error updating your about text. Please try again.",
+        variant: "destructive",
+      });
       throw error;
     }
   };
@@ -56,6 +74,12 @@ export function useProfileBasics(userId: string | undefined) {
         description: "Your profile cover color has been updated.",
       });
     } catch (error) {
+      console.error("Error updating cover color:", error);
+      toast({
+        title: "Error updating cover color",
+        description: "There was an error updating your cover color. Please try again.",
+        variant: "destructive",
+      });
       throw error;
     }
   };
@@ -73,7 +97,7 @@ export function useProfileBasics(userId: string | undefined) {
         .from('user_profiles')
         .select('user_id')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
       
       if (fetchError && fetchError.code !== 'PGRST116') {
         throw fetchError;
@@ -107,14 +131,39 @@ export function useProfileBasics(userId: string | undefined) {
   const updateUserAnswer = async (field: string, value: string) => {
     if (!userId) return;
 
-    const { error } = await supabase
-      .from('user_answers')
-      .update({ [field]: value })
-      .eq('user_id', userId);
-    
-    if (error) {
+    try {
+      const { data: existingAnswer, error: fetchError } = await supabase
+        .from('user_answers')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw fetchError;
+      }
+      
+      let result;
+      
+      if (existingAnswer) {
+        // Update existing answer
+        result = await supabase
+          .from('user_answers')
+          .update({ [field]: value })
+          .eq('user_id', userId);
+      } else {
+        // Create new answer
+        result = await supabase
+          .from('user_answers')
+          .insert({ user_id: userId, [field]: value });
+      }
+      
+      if (result.error) {
+        console.error('Error updating answer:', result.error);
+        throw new Error('Failed to update profile');
+      }
+    } catch (error) {
       console.error('Error updating answer:', error);
-      throw new Error('Failed to update profile');
+      throw error;
     }
   };
 
