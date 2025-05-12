@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription
 } from "@/components/ui/dialog";
 
 interface ProfileHeaderProps {
@@ -104,6 +105,9 @@ export function ProfileHeader({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Select Cover Color</DialogTitle>
+            <DialogDescription>
+              Choose a color for your profile cover background
+            </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-5 gap-3 mt-4">
             {colorOptions.map((color) => (

@@ -1,10 +1,12 @@
 
 export interface ExperienceItem {
+  id?: string;
   title: string;
   description: string;
 }
 
 export interface EducationItem {
+  id?: string;
   title: string;
   description: string;
 }
@@ -13,6 +15,7 @@ export interface UserAnswers {
   question1?: string;
   question2?: string;
   question3?: string;
+  user_id?: string;
 }
 
 export function getSkillsBasedOnAnswers(answers: UserAnswers | null): string[] {
