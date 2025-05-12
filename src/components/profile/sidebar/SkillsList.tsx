@@ -1,42 +1,34 @@
 
 import { useState } from "react";
-import { Star, Plus, Trash } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { Plus, X } from "lucide-react";
 
 interface SkillsListProps {
   skills: string[];
   onAddSkill?: (skill: string) => Promise<void>;
   onRemoveSkill?: (skill: string) => Promise<void>;
+  highlightColor?: string; // Added highlightColor property
 }
 
 export function SkillsList({ 
   skills, 
   onAddSkill, 
-  onRemoveSkill 
+  onRemoveSkill,
+  highlightColor = "#FF6B4A" // Default to original orange
 }: SkillsListProps) {
-  const [isAddingSkill, setIsAddingSkill] = useState(false);
   const [newSkill, setNewSkill] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
 
   const handleAddSkill = async () => {
-    if (onAddSkill && newSkill.trim()) {
+    if (newSkill.trim() && onAddSkill) {
       try {
         await onAddSkill(newSkill.trim());
         setNewSkill("");
-        setIsAddingSkill(false);
       } catch (error) {
         console.error("Error adding skill:", error);
-      }
-    }
-  };
-
-  const handleRemoveSkill = async (skill: string) => {
-    if (onRemoveSkill) {
-      try {
-        await onRemoveSkill(skill);
-      } catch (error) {
-        console.error("Error removing skill:", error);
       }
     }
   };
@@ -45,66 +37,85 @@ export function SkillsList({
     <Card>
       <CardContent className="pt-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold flex items-center">
-            <Star className="h-5 w-5 text-[#FF6B4A] mr-2" />
-            Skills
-          </h2>
-          {onAddSkill && (
+          <h3 className="text-lg font-semibold" style={{ color: highlightColor }}>Skills</h3>
+          {onAddSkill && !isAdding && (
             <Button 
               variant="ghost" 
               size="sm" 
               className="h-8 w-8 p-0" 
-              onClick={() => setIsAddingSkill(true)}
+              onClick={() => setIsAdding(true)}
+              style={{ color: highlightColor }}
             >
               <Plus className="h-4 w-4" />
               <span className="sr-only">Add skill</span>
             </Button>
           )}
         </div>
-
-        {isAddingSkill && (
-          <div className="mb-4">
-            <Input
-              value={newSkill}
+        
+        {isAdding && (
+          <div className="flex gap-2 mb-4">
+            <Input 
+              value={newSkill} 
               onChange={(e) => setNewSkill(e.target.value)}
-              placeholder="Enter a skill"
-              className="mb-2"
-            />
-            <div className="flex space-x-2">
-              <Button onClick={handleAddSkill} size="sm">Add</Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => {
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleAddSkill();
+                } else if (e.key === "Escape") {
+                  setIsAdding(false);
                   setNewSkill("");
-                  setIsAddingSkill(false);
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
+                }
+              }}
+              placeholder="Enter a skill"
+              className="h-9"
+            />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-9" 
+              onClick={handleAddSkill}
+              style={{ 
+                borderColor: `${highlightColor}50`,
+                color: highlightColor
+              }}
+            >
+              Add
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-9 px-2" 
+              onClick={() => {
+                setIsAdding(false);
+                setNewSkill("");
+              }}
+            >
+              Cancel
+            </Button>
           </div>
         )}
-
+        
         <div className="flex flex-wrap gap-2">
           {skills.map((skill, index) => (
-            <div 
+            <Badge 
               key={index} 
-              className="bg-[#FFF4EE] text-[#FF6B4A] px-3 py-1 rounded-full flex items-center group"
+              variant="outline"
+              className="group relative px-3 py-1"
+              style={{ 
+                backgroundColor: `${highlightColor}15`,
+                borderColor: `${highlightColor}30`,
+                color: highlightColor
+              }}
             >
               {skill}
               {onRemoveSkill && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-5 w-5 p-0 ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => handleRemoveSkill(skill)}
+                <button
+                  onClick={() => onRemoveSkill(skill)}
+                  className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
-                  <Trash className="h-3 w-3" />
-                  <span className="sr-only">Remove {skill}</span>
-                </Button>
+                  <X className="h-3 w-3" />
+                </button>
               )}
-            </div>
+            </Badge>
           ))}
         </div>
       </CardContent>

@@ -61,6 +61,7 @@ export type Database = {
           education: Json | null
           experiences: Json | null
           gender: string | null
+          highlight_color: string | null
           identity: string | null
           name: string | null
           phone_number: string | null
@@ -78,6 +79,7 @@ export type Database = {
           education?: Json | null
           experiences?: Json | null
           gender?: string | null
+          highlight_color?: string | null
           identity?: string | null
           name?: string | null
           phone_number?: string | null
@@ -95,6 +97,7 @@ export type Database = {
           education?: Json | null
           experiences?: Json | null
           gender?: string | null
+          highlight_color?: string | null
           identity?: string | null
           name?: string | null
           phone_number?: string | null
