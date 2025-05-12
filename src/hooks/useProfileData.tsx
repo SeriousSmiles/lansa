@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserAnswers, getProfileRole, getProfileGoal } from "@/services/QuestionService";
@@ -9,6 +10,11 @@ import {
 import type { UserAnswers, ExperienceItem, EducationItem } from "@/utils/profileUtils";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "@/utils/uuid";
+import { useProfileBasics } from "./profile/useProfileBasics";
+import { useProfileSkills } from "./profile/useProfileSkills";
+import { useProfileExperience } from "./profile/useProfileExperience";
+import { useProfileEducation } from "./profile/useProfileEducation";
+import { useProfileImage } from "./profile/useProfileImage";
 
 // Define interface for profile data
 export interface UserProfile {
@@ -73,21 +79,18 @@ export interface ProfileDataReturn {
 export function useProfileData(userId: string | undefined): ProfileDataReturn {
   // Base state
   const [userAnswers, setUserAnswers] = useState<UserAnswers | null>(null);
-  const [userName, setUserName] = useState<string>("Lansa User");
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Extended state for editable profile
-  const [phoneNumber, setPhoneNumber] = useState<string>("");
-  const [aboutText, setAboutText] = useState<string>("");
-  const [coverColor, setCoverColor] = useState<string>("#FF6B4A");
-  const [profileImage, setProfileImage] = useState<string>("");
-  const [userSkills, setUserSkills] = useState<string[]>([]);
-  const [experiences, setExperiences] = useState<ExperienceItem[]>([]);
-  const [educationItems, setEducationItems] = useState<EducationItem[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  
+
   const { toast } = useToast();
   
+  // Use specialized hooks
+  const profileBasics = useProfileBasics(userId);
+  const profileSkills = useProfileSkills({ userId, updateProfileData: profileBasics.updateProfileData });
+  const profileExperience = useProfileExperience({ userId, updateProfileData: profileBasics.updateProfileData });
+  const profileEducation = useProfileEducation({ userId, updateProfileData: profileBasics.updateProfileData });
+  const profileImage = useProfileImage({ userId, updateProfileData: profileBasics.updateProfileData });
+
   // Convert JSON from database to our typed objects
   const convertJsonToExperienceItems = (jsonData: any): ExperienceItem[] => {
     if (!jsonData || !Array.isArray(jsonData)) return [];
@@ -138,38 +141,38 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
             education: convertJsonToEducationItems(profileData.education)
           });
           
-          if (profileData.name) setUserName(profileData.name);
-          if (profileData.phone_number) setPhoneNumber(profileData.phone_number);
-          if (profileData.about_text) setAboutText(profileData.about_text);
-          if (profileData.cover_color) setCoverColor(profileData.cover_color);
-          if (profileData.profile_image) setProfileImage(profileData.profile_image);
+          if (profileData.name) profileBasics.setUserName(profileData.name);
+          if (profileData.phone_number) profileBasics.setPhoneNumber(profileData.phone_number);
+          if (profileData.about_text) profileBasics.setAboutText(profileData.about_text);
+          if (profileData.cover_color) profileBasics.setCoverColor(profileData.cover_color);
+          if (profileData.profile_image) profileImage.setProfileImage(profileData.profile_image);
           
           if (profileData.skills && Array.isArray(profileData.skills) && profileData.skills.length > 0) {
-            setUserSkills(profileData.skills);
+            profileSkills.setUserSkills(profileData.skills);
           } else if (answers) {
             // Fall back to generated skills if not in profile
-            setUserSkills(getSkillsBasedOnAnswers(answers));
+            profileSkills.setUserSkills(getSkillsBasedOnAnswers(answers));
           }
           
           if (profileData.experiences && Array.isArray(profileData.experiences) && profileData.experiences.length > 0) {
-            setExperiences(convertJsonToExperienceItems(profileData.experiences));
+            profileExperience.setExperiences(convertJsonToExperienceItems(profileData.experiences));
           } else {
             // Fall back to generated experiences
             const role = getProfileRole(answers?.question1);
             const generatedExperiences = getExperienceBasedOnRole(role);
-            setExperiences(generatedExperiences.map(exp => ({
+            profileExperience.setExperiences(generatedExperiences.map(exp => ({
               ...exp,
               id: uuidv4()
             })));
           }
           
           if (profileData.education && Array.isArray(profileData.education) && profileData.education.length > 0) {
-            setEducationItems(convertJsonToEducationItems(profileData.education));
+            profileEducation.setEducationItems(convertJsonToEducationItems(profileData.education));
           } else {
             // Fall back to generated education
             const goal = getProfileGoal(answers?.question3);
             const generatedEducation = getEducationBasedOnAnswers(answers, goal);
-            setEducationItems(generatedEducation.map(edu => ({
+            profileEducation.setEducationItems(generatedEducation.map(edu => ({
               ...edu,
               id: uuidv4()
             })));
@@ -178,16 +181,16 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
           // If no profile exists, use generated data
           const role = getProfileRole(answers?.question1);
           const goal = getProfileGoal(answers?.question3);
-          setUserSkills(getSkillsBasedOnAnswers(answers));
+          profileSkills.setUserSkills(getSkillsBasedOnAnswers(answers));
           
           const generatedExperiences = getExperienceBasedOnRole(role);
-          setExperiences(generatedExperiences.map(exp => ({
+          profileExperience.setExperiences(generatedExperiences.map(exp => ({
             ...exp,
             id: uuidv4()
           })));
           
           const generatedEducation = getEducationBasedOnAnswers(answers, goal);
-          setEducationItems(generatedEducation.map(edu => ({
+          profileEducation.setEducationItems(generatedEducation.map(edu => ({
             ...edu,
             id: uuidv4()
           })));
@@ -195,7 +198,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
           // In a real app, you would fetch the user's name from their profile
           if (answers && userId) {
             // Fix: Use userId instead of user_id from answers
-            setUserName(userId.split('@')[0]);
+            profileBasics.setUserName(userId.split('@')[0]);
           }
         }
       } catch (error) {
@@ -210,12 +213,12 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
         if (answers) {
           const role = getProfileRole(answers.question1);
           const goal = getProfileGoal(answers.question3);
-          setUserSkills(getSkillsBasedOnAnswers(answers));
-          setExperiences(getExperienceBasedOnRole(role).map(exp => ({
+          profileSkills.setUserSkills(getSkillsBasedOnAnswers(answers));
+          profileExperience.setExperiences(getExperienceBasedOnRole(role).map(exp => ({
             ...exp,
             id: uuidv4()
           })));
-          setEducationItems(getEducationBasedOnAnswers(answers, goal).map(edu => ({
+          profileEducation.setEducationItems(getEducationBasedOnAnswers(answers, goal).map(edu => ({
             ...edu,
             id: uuidv4()
           })));
@@ -228,259 +231,6 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     loadProfile();
   }, [userId, toast]);
 
-  // Update or create profile data function
-  const updateProfileData = async (updatedData: Partial<UserProfile>) => {
-    if (!userId) return;
-    
-    try {
-      // Prepare data for Supabase by converting typed objects to raw JSON
-      const supabaseData: any = { ...updatedData };
-      
-      // Convert typed arrays to JSON compatible format
-      if (updatedData.experiences) {
-        supabaseData.experiences = updatedData.experiences;
-      }
-      
-      if (updatedData.education) {
-        supabaseData.education = updatedData.education;
-      }
-
-      // Check if profile exists
-      const { data: existingProfile, error: fetchError } = await supabase
-        .from('user_profiles')
-        .select('user_id')
-        .eq('user_id', userId)
-        .single();
-      
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        throw fetchError;
-      }
-      
-      let result;
-      
-      if (existingProfile) {
-        // Update existing profile
-        result = await supabase
-          .from('user_profiles')
-          .update(supabaseData)
-          .eq('user_id', userId);
-      } else {
-        // Create new profile
-        result = await supabase
-          .from('user_profiles')
-          .insert({ user_id: userId, ...supabaseData });
-      }
-      
-      if (result.error) throw result.error;
-      
-      // Update local state with the changes
-      setUserProfile(prev => prev ? { ...prev, ...updatedData } : { ...updatedData });
-      
-      return result;
-    } catch (error) {
-      console.error("Error updating profile data:", error);
-      throw error;
-    }
-  };
-
-  // Function to update user answers in the database
-  const updateUserAnswer = async (field: string, value: string) => {
-    if (!userId) return;
-
-    const { error } = await supabase
-      .from('user_answers')
-      .update({ [field]: value })
-      .eq('user_id', userId);
-    
-    if (error) {
-      console.error('Error updating answer:', error);
-      throw new Error('Failed to update profile');
-    }
-    
-    // Update local state
-    setUserAnswers(prev => {
-      if (!prev) return { [field]: value } as UserAnswers;
-      return { ...prev, [field]: value };
-    });
-  };
-
-  // Function to update user name
-  const updateUserName = async (name: string) => {
-    try {
-      await updateProfileData({ name });
-      setUserName(name);
-      
-      toast({
-        title: "Name updated",
-        description: "Your name has been updated successfully.",
-      });
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Function to update phone number
-  const updatePhoneNumber = async (phone: string) => {
-    try {
-      await updateProfileData({ phone_number: phone });
-      setPhoneNumber(phone);
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Function to update about text
-  const updateAboutText = async (text: string) => {
-    try {
-      await updateProfileData({ about_text: text });
-      setAboutText(text);
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Function to update cover color
-  const updateCoverColor = async (color: string) => {
-    try {
-      await updateProfileData({ cover_color: color });
-      setCoverColor(color);
-      toast({
-        title: "Cover updated",
-        description: "Your profile cover color has been updated.",
-      });
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Function to add a new skill
-  const addSkill = async (skill: string) => {
-    try {
-      const updatedSkills = [...userSkills, skill];
-      await updateProfileData({ skills: updatedSkills });
-      setUserSkills(updatedSkills);
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Function to remove a skill
-  const removeSkill = async (skillToRemove: string) => {
-    try {
-      const updatedSkills = userSkills.filter(skill => skill !== skillToRemove);
-      await updateProfileData({ skills: updatedSkills });
-      setUserSkills(updatedSkills);
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Function to add a new experience
-  const addExperience = async (experience: ExperienceItem) => {
-    try {
-      const newExperience = { ...experience, id: uuidv4() };
-      const updatedExperiences = [...experiences, newExperience];
-      await updateProfileData({ experiences: updatedExperiences });
-      setExperiences(updatedExperiences);
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Function to edit an experience
-  const editExperience = async (id: string, updatedExperience: ExperienceItem) => {
-    try {
-      const updatedExperiences = experiences.map(exp => 
-        exp.id === id ? { ...updatedExperience, id } : exp
-      );
-      await updateProfileData({ experiences: updatedExperiences });
-      setExperiences(updatedExperiences);
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Function to remove an experience
-  const removeExperience = async (id: string) => {
-    try {
-      const updatedExperiences = experiences.filter(exp => exp.id !== id);
-      await updateProfileData({ experiences: updatedExperiences });
-      setExperiences(updatedExperiences);
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Function to add a new education item
-  const addEducation = async (education: EducationItem) => {
-    try {
-      const newEducation = { ...education, id: uuidv4() };
-      const updatedEducation = [...educationItems, newEducation];
-      await updateProfileData({ education: updatedEducation });
-      setEducationItems(updatedEducation);
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Function to edit an education item
-  const editEducation = async (id: string, updatedEducation: EducationItem) => {
-    try {
-      const updatedEducationItems = educationItems.map(edu => 
-        edu.id === id ? { ...updatedEducation, id } : edu
-      );
-      await updateProfileData({ education: updatedEducationItems });
-      setEducationItems(updatedEducationItems);
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Function to remove an education item
-  const removeEducation = async (id: string) => {
-    try {
-      const updatedEducationItems = educationItems.filter(edu => edu.id !== id);
-      await updateProfileData({ education: updatedEducationItems });
-      setEducationItems(updatedEducationItems);
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Function to upload profile image
-  const uploadProfileImage = async (file: File) => {
-    if (!userId) return "";
-    
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}-profile-${Date.now()}.${fileExt}`;
-      const filePath = `profile-images/${fileName}`;
-      
-      // Upload image to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from('user-uploads')
-        .upload(filePath, file);
-        
-      if (uploadError) throw uploadError;
-      
-      // Get public URL for the uploaded image
-      const { data } = supabase.storage
-        .from('user-uploads')
-        .getPublicUrl(filePath);
-        
-      const publicUrl = data.publicUrl;
-      
-      // Update profile with the new image URL
-      await updateProfileData({ profile_image: publicUrl });
-      setProfileImage(publicUrl);
-      
-      return publicUrl;
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      throw error;
-    }
-  };
-
   const role = getProfileRole(userAnswers?.question1);
   const goal = getProfileGoal(userAnswers?.question3);
   const blocker = userAnswers?.question2 || "Identifying my unique value proposition";
@@ -488,8 +238,8 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
   return {
     // User data
     user: { id: userId },
-    userName,
-    setUserName,
+    userName: profileBasics.userName,
+    setUserName: profileBasics.setUserName,
     userAnswers,
     role,
     goal,
@@ -497,36 +247,36 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     isLoading,
     
     // Profile fields
-    phoneNumber,
-    aboutText,
-    coverColor,
-    profileImage,
-    userSkills,
-    experiences,
-    educationItems,
+    phoneNumber: profileBasics.phoneNumber,
+    aboutText: profileBasics.aboutText,
+    coverColor: profileBasics.coverColor,
+    profileImage: profileImage.profileImage,
+    userSkills: profileSkills.userSkills,
+    experiences: profileExperience.experiences,
+    educationItems: profileEducation.educationItems,
     
     // Update functions
-    updateUserName,
-    updatePhoneNumber,
-    updateAboutText,
-    updateCoverColor,
-    updateUserAnswer,
+    updateUserName: profileBasics.updateUserName,
+    updatePhoneNumber: profileBasics.updatePhoneNumber,
+    updateAboutText: profileBasics.updateAboutText,
+    updateCoverColor: profileBasics.updateCoverColor,
+    updateUserAnswer: profileBasics.updateUserAnswer,
     
     // Skills functions
-    addSkill,
-    removeSkill,
+    addSkill: profileSkills.addSkill,
+    removeSkill: profileSkills.removeSkill,
     
     // Experience functions
-    addExperience,
-    editExperience,
-    removeExperience,
+    addExperience: profileExperience.addExperience,
+    editExperience: profileExperience.editExperience,
+    removeExperience: profileExperience.removeExperience,
     
     // Education functions
-    addEducation,
-    editEducation,
-    removeEducation,
+    addEducation: profileEducation.addEducation,
+    editEducation: profileEducation.editEducation,
+    removeEducation: profileEducation.removeEducation,
     
     // Image upload
-    uploadProfileImage
+    uploadProfileImage: profileImage.uploadProfileImage
   };
 }
