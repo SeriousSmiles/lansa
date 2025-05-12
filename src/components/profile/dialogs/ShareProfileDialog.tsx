@@ -20,10 +20,13 @@ export function ShareProfileDialog({
   onOpenChange,
   shareUrl
 }: ShareProfileDialogProps) {
+  const [isCopied, setIsCopied] = useState(false);
+  
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
-      // Toast notification is handled in the parent component
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 3000); // Reset after 3 seconds
     } catch (error) {
       console.error("Failed to copy:", error);
     }
@@ -46,8 +49,15 @@ export function ShareProfileDialog({
               className="flex-grow p-2 border rounded"
               onClick={(e) => e.currentTarget.select()}
             />
-            <Button onClick={copyToClipboard}>Copy</Button>
+            <Button onClick={copyToClipboard}>
+              {isCopied ? "Copied!" : "Copy"}
+            </Button>
           </div>
+          {isCopied && (
+            <div className="text-sm text-center text-green-600 font-medium">
+              Link copied to clipboard!
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

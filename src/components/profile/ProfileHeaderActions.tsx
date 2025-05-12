@@ -1,10 +1,10 @@
 
 import { useState } from "react";
 import { Palette, Share } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { ThemeColorPicker } from "./dialogs/ThemeColorPicker";
 import { HighlightColorPicker } from "./dialogs/HighlightColorPicker";
 import { ShareProfileDialog } from "./dialogs/ShareProfileDialog";
+import { ProfileActionButton } from "./buttons/ProfileActionButton";
 
 interface ProfileHeaderActionsProps {
   userId?: string;
@@ -57,29 +57,21 @@ export function ProfileHeaderActions({
 
   return (
     <div className="ml-auto flex items-center gap-2">
-      <Button 
-        variant={isDarkTheme ? "contrast" : "outline"}
-        size="sm" 
+      <ProfileActionButton
         onClick={() => setIsColorPickerOpen(true)}
-        className="flex items-center gap-1"
-        style={{
-          borderColor: `${coverColor}50`,
-          color: textColor
-        }}
+        textColor={textColor}
+        coverColor={coverColor}
+        isDarkTheme={isDarkTheme}
       >
         <Palette className="h-4 w-4" />
         <span>Change Theme</span>
-      </Button>
+      </ProfileActionButton>
       
-      <Button 
-        variant={isDarkTheme ? "contrast" : "outline"}
-        size="sm" 
+      <ProfileActionButton
         onClick={() => setIsHighlightPickerOpen(true)}
-        className="flex items-center gap-1"
-        style={{
-          borderColor: `${coverColor}50`,
-          color: textColor
-        }}
+        textColor={textColor}
+        coverColor={coverColor}
+        isDarkTheme={isDarkTheme}
       >
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
@@ -98,21 +90,17 @@ export function ProfileHeaderActions({
           <path d="M19 16v6" />
         </svg>
         <span>Change Highlights</span>
-      </Button>
+      </ProfileActionButton>
       
-      <Button
+      <ProfileActionButton
         onClick={handleShare}
-        variant={isDarkTheme ? "contrast" : "outline"}
-        size="sm"
-        style={{
-          borderColor: `${coverColor}50`,
-          color: textColor
-        }}
-        className="flex items-center gap-1"
+        textColor={textColor}
+        coverColor={coverColor}
+        isDarkTheme={isDarkTheme}
       >
         <Share size={16} />
         <span>Share Profile</span>
-      </Button>
+      </ProfileActionButton>
       
       {/* Dialog Components */}
       <ThemeColorPicker
