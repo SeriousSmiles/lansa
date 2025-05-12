@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { GraduationCap, Pencil, Plus, Trash } from "lucide-react";
@@ -19,13 +18,15 @@ interface EducationSectionProps {
   onAddEducation?: (education: EducationItem) => Promise<void>;
   onEditEducation?: (id: string, education: EducationItem) => Promise<void>;
   onRemoveEducation?: (id: string) => Promise<void>;
+  themeColor?: string; // Added themeColor property
 }
 
 export function EducationSection({ 
   education, 
   onAddEducation, 
   onEditEducation, 
-  onRemoveEducation 
+  onRemoveEducation,
+  themeColor 
 }: EducationSectionProps) {
   const [isAddingEducation, setIsAddingEducation] = useState(false);
   const [newEducation, setNewEducation] = useState<EducationItem>({ title: "", description: "" });
@@ -129,6 +130,10 @@ export function EducationSection({
               size="sm"
               className="flex items-center gap-1"
               onClick={() => setIsAddingEducation(true)}
+              style={themeColor ? {
+                borderColor: `${themeColor}50`,
+                color: themeColor
+              } : {}}
             >
               <Plus className="h-4 w-4" />
               <span>Add Education</span>

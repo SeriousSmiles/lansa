@@ -19,13 +19,15 @@ interface ExperienceSectionProps {
   onAddExperience?: (experience: ExperienceItem) => Promise<void>;
   onEditExperience?: (id: string, experience: ExperienceItem) => Promise<void>;
   onRemoveExperience?: (id: string) => Promise<void>;
+  themeColor?: string; // Added themeColor property
 }
 
 export function ExperienceSection({ 
   experiences, 
   onAddExperience, 
   onEditExperience, 
-  onRemoveExperience 
+  onRemoveExperience,
+  themeColor 
 }: ExperienceSectionProps) {
   const [isAddingExperience, setIsAddingExperience] = useState(false);
   const [newExperience, setNewExperience] = useState<ExperienceItem>({ title: "", description: "" });
@@ -76,6 +78,10 @@ export function ExperienceSection({
               size="sm"
               className="flex items-center gap-1"
               onClick={() => setIsAddingExperience(true)}
+              style={themeColor ? {
+                borderColor: `${themeColor}50`,
+                color: themeColor
+              } : {}}
             >
               <Plus className="h-4 w-4" />
               <span>Add Experience</span>

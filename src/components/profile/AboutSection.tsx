@@ -13,6 +13,7 @@ interface AboutSectionProps {
   aboutText?: string;
   onUpdate?: (field: string, value: string) => Promise<void>;
   onUpdateAbout?: (text: string) => Promise<void>;
+  themeColor?: string; // Added the themeColor property
 }
 
 export function AboutSection({ 
@@ -21,7 +22,8 @@ export function AboutSection({
   blocker, 
   aboutText,
   onUpdate,
-  onUpdateAbout 
+  onUpdateAbout,
+  themeColor 
 }: AboutSectionProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingAbout, setIsEditingAbout] = useState(false);
