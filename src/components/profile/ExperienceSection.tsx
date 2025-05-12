@@ -2,11 +2,11 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Briefcase, Pencil, Plus, Trash } from "lucide-react";
+import { Briefcase, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { ExperienceCard } from "./experience/ExperienceCard";
+import { ExperienceForm } from "./experience/ExperienceForm";
+import { StaticExperienceCard } from "./experience/StaticExperienceCard";
 
 interface ExperienceItem {
   id?: string;
@@ -31,61 +31,26 @@ export function ExperienceSection({
   const [newExperience, setNewExperience] = useState<ExperienceItem>({ title: "", description: "" });
   const [editingExperienceId, setEditingExperienceId] = useState<string | null>(null);
   const [editingExperience, setEditingExperience] = useState<ExperienceItem>({ title: "", description: "" });
-  const { toast } = useToast();
 
   const handleAddExperience = async () => {
-    if (!newExperience.title || !newExperience.description) {
-      toast({
-        title: "Validation error",
-        description: "Please fill out all fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (onAddExperience) {
       try {
         await onAddExperience(newExperience);
         setNewExperience({ title: "", description: "" });
         setIsAddingExperience(false);
-        toast({
-          title: "Experience added",
-          description: "Your new experience has been added to your profile.",
-        });
       } catch (error) {
-        toast({
-          title: "Error adding experience",
-          description: "Please try again later.",
-          variant: "destructive",
-        });
+        // Error handling is done in the ExperienceForm
       }
     }
   };
 
   const handleEditExperience = async () => {
-    if (!editingExperienceId || !editingExperience.title || !editingExperience.description) {
-      toast({
-        title: "Validation error",
-        description: "Please fill out all fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (onEditExperience) {
+    if (onEditExperience && editingExperienceId) {
       try {
         await onEditExperience(editingExperienceId, editingExperience);
         setEditingExperienceId(null);
-        toast({
-          title: "Experience updated",
-          description: "Your experience has been updated.",
-        });
       } catch (error) {
-        toast({
-          title: "Error updating experience",
-          description: "Please try again later.",
-          variant: "destructive",
-        });
+        // Error handling is done in the ExperienceForm
       }
     }
   };
@@ -94,24 +59,6 @@ export function ExperienceSection({
     if (exp.id) {
       setEditingExperienceId(exp.id);
       setEditingExperience({ ...exp });
-    }
-  };
-
-  const handleRemoveExperience = async (id: string) => {
-    if (onRemoveExperience) {
-      try {
-        await onRemoveExperience(id);
-        toast({
-          title: "Experience removed",
-          description: "The experience has been removed from your profile.",
-        });
-      } catch (error) {
-        toast({
-          title: "Error removing experience",
-          description: "Please try again later.",
-          variant: "destructive",
-        });
-      }
     }
   };
 
@@ -137,39 +84,19 @@ export function ExperienceSection({
         </div>
         
         {isAddingExperience && (
-          <div className="mb-6 border p-4 rounded-md bg-gray-50">
-            <h3 className="font-medium mb-2">Add New Experience</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium mb-1">Title</label>
-                <Input 
-                  value={newExperience.title}
-                  onChange={(e) => setNewExperience({...newExperience, title: e.target.value})}
-                  placeholder="Experience title"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <Textarea 
-                  value={newExperience.description}
-                  onChange={(e) => setNewExperience({...newExperience, description: e.target.value})}
-                  placeholder="Describe your experience"
-                />
-              </div>
-              <div className="flex space-x-2 pt-2">
-                <Button onClick={handleAddExperience} size="sm">Save</Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => {
-                    setNewExperience({ title: "", description: "" });
-                    setIsAddingExperience(false);
-                  }}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
+          <div className="mb-6">
+            <ExperienceForm 
+              title={newExperience.title}
+              description={newExperience.description}
+              onTitleChange={(title) => setNewExperience({...newExperience, title})}
+              onDescriptionChange={(description) => setNewExperience({...newExperience, description})}
+              onSave={handleAddExperience}
+              onCancel={() => {
+                setNewExperience({ title: "", description: "" });
+                setIsAddingExperience(false);
+              }}
+              isNew={true}
+            />
           </div>
         )}
         
@@ -177,78 +104,22 @@ export function ExperienceSection({
           {experiences.map((exp, index) => (
             <div key={exp.id || index}>
               {editingExperienceId === exp.id ? (
-                <div className="border p-4 rounded-md bg-gray-50">
-                  <h3 className="font-medium mb-2">Edit Experience</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Title</label>
-                      <Input 
-                        value={editingExperience.title}
-                        onChange={(e) => setEditingExperience({...editingExperience, title: e.target.value})}
-                        placeholder="Experience title"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Description</label>
-                      <Textarea 
-                        value={editingExperience.description}
-                        onChange={(e) => setEditingExperience({...editingExperience, description: e.target.value})}
-                        placeholder="Describe your experience"
-                      />
-                    </div>
-                    <div className="flex space-x-2 pt-2">
-                      <Button onClick={handleEditExperience} size="sm">Update</Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setEditingExperienceId(null)}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                <ExperienceForm 
+                  title={editingExperience.title}
+                  description={editingExperience.description}
+                  onTitleChange={(title) => setEditingExperience({...editingExperience, title})}
+                  onDescriptionChange={(description) => setEditingExperience({...editingExperience, description})}
+                  onSave={handleEditExperience}
+                  onCancel={() => setEditingExperienceId(null)}
+                />
               ) : (
-                <div className="flex flex-col md:flex-row group">
-                  <div className="md:w-1/3">
-                    <h3 className="text-lg font-semibold text-[#FF6B4A]">{exp.title}</h3>
-                    <p className="text-gray-500">Present</p>
-                  </div>
-                  <div className="md:w-2/3 relative">
-                    <h4 className="font-medium">Professional Development</h4>
-                    <p className="text-gray-600 mt-1">
-                      {exp.description}
-                    </p>
-                    
-                    {(onEditExperience || onRemoveExperience) && exp.id && (
-                      <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity flex">
-                        {onEditExperience && (
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0"
-                            onClick={() => startEditing(exp)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                            <span className="sr-only">Edit</span>
-                          </Button>
-                        )}
-                        
-                        {onRemoveExperience && (
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0 text-red-500"
-                            onClick={() => handleRemoveExperience(exp.id!)}
-                          >
-                            <Trash className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <ExperienceCard 
+                  id={exp.id || ''}
+                  title={exp.title}
+                  description={exp.description}
+                  onEdit={onEditExperience ? () => startEditing(exp) : undefined}
+                  onRemove={onRemoveExperience && exp.id ? () => onRemoveExperience(exp.id!) : undefined}
+                />
               )}
               
               {index < experiences.length - 1 && <Separator className="my-4" />}
@@ -257,19 +128,12 @@ export function ExperienceSection({
           
           {experiences.length > 0 && <Separator />}
           
-          <div className="flex flex-col md:flex-row">
-            <div className="md:w-1/3">
-              <h3 className="text-lg font-semibold text-[#FF6B4A]">Career Explorer</h3>
-              <p className="text-gray-500">Past</p>
-            </div>
-            <div className="md:w-2/3">
-              <h4 className="font-medium">Self-Discovery</h4>
-              <p className="text-gray-600 mt-1">
-                Explored various professional paths and opportunities 
-                to better understand strengths, weaknesses, and career aspirations.
-              </p>
-            </div>
-          </div>
+          <StaticExperienceCard
+            title="Career Explorer"
+            period="Past"
+            subtitle="Self-Discovery"
+            description="Explored various professional paths and opportunities to better understand strengths, weaknesses, and career aspirations."
+          />
         </div>
       </CardContent>
     </Card>

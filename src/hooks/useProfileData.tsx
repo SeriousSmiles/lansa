@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserAnswers, getProfileRole, getProfileGoal } from "@/services/QuestionService";
@@ -194,8 +193,9 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
           })));
           
           // In a real app, you would fetch the user's name from their profile
-          if (answers?.user_id) {
-            setUserName(answers.user_id.split('@')[0]);
+          if (answers && userId) {
+            // Fix: Use userId instead of user_id from answers
+            setUserName(userId.split('@')[0]);
           }
         }
       } catch (error) {
