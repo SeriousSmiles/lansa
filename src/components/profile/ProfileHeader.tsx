@@ -1,5 +1,5 @@
 
-import { ArrowLeft, ColorPicker } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -80,7 +80,22 @@ export function ProfileHeader({
           onClick={() => setIsColorPickerOpen(true)}
           className="flex items-center gap-1"
         >
-          <ColorPicker className="h-4 w-4" />
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            width="16" 
+            height="16" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            className="h-4 w-4"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="12" r="6" />
+            <circle cx="12" cy="12" r="2" />
+          </svg>
           <span>Change Cover</span>
         </Button>
       </div>

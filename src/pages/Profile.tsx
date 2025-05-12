@@ -14,25 +14,14 @@ import {
   getExperienceBasedOnRole, 
   getEducationBasedOnAnswers 
 } from "@/utils/profileUtils";
-import type { UserAnswers } from "@/utils/profileUtils";
+import type { UserAnswers, ExperienceItem, EducationItem } from "@/utils/profileUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "@/utils/uuid";
 
 // Define interfaces for profile data
-interface ExperienceItem {
-  id?: string;
-  title: string;
-  description: string;
-}
-
-interface EducationItem {
-  id?: string;
-  title: string;
-  description: string;
-}
-
 interface UserProfile {
+  user_id?: string;
   name?: string;
   about_text?: string;
   phone_number?: string;
@@ -41,6 +30,8 @@ interface UserProfile {
   skills?: string[];
   experiences?: ExperienceItem[];
   education?: EducationItem[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 export default function Profile() {
@@ -86,7 +77,7 @@ export default function Profile() {
         
         if (profileData) {
           // If profile exists, set all the values from it
-          setUserProfile(profileData);
+          setUserProfile(profileData as UserProfile);
           if (profileData.name) setUserName(profileData.name);
           if (profileData.phone_number) setPhoneNumber(profileData.phone_number);
           if (profileData.about_text) setAboutText(profileData.about_text);
