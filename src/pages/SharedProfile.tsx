@@ -3,9 +3,6 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
-import { AboutSection } from "@/components/profile/AboutSection";
-import { ExperienceSection } from "@/components/profile/ExperienceSection";
-import { EducationSection } from "@/components/profile/EducationSection";
 import { UserProfile } from "@/hooks/useProfileData";
 import { getSkillsBasedOnAnswers, getExperienceBasedOnRole, getEducationBasedOnAnswers, ExperienceItem, EducationItem } from "@/utils/profileUtils";
 import { getUserAnswers, getProfileRole, getProfileGoal } from "@/services/QuestionService";
@@ -96,11 +93,30 @@ export default function SharedProfile() {
           profile.userSkills = getSkillsBasedOnAnswers(answers);
         }
         
-        // Set experiences
-        if (profileData?.experiences && Array.isArray(profileData.experiences) && profileData.experiences.length > 0) {
-          profile.experiences = convertJsonToExperienceItems(profileData.experiences);
+        // Set experiences - properly handle JSON data from database
+        if (profileData?.experiences) {
+          try {
+            // Parse if it's a string, or use directly if it's already an array
+            const experiencesData = typeof profileData.experiences === 'string' 
+              ? JSON.parse(profileData.experiences) 
+              : profileData.experiences;
+              
+            if (Array.isArray(experiencesData) && experiencesData.length > 0) {
+              profile.experiences = convertJsonToExperienceItems(experiencesData);
+            } else {
+              throw new Error("Experiences data is not in the expected format");
+            }
+          } catch (error) {
+            console.error("Error parsing experiences data:", error);
+            // Fall back to generated experiences on parse error
+            const role = getProfileRole(answers?.question1);
+            profile.experiences = getExperienceBasedOnRole(role).map(exp => ({
+              ...exp,
+              id: uuidv4()
+            }));
+          }
         } else {
-          // Fall back to generated experiences
+          // Fall back to generated experiences if no experiences data
           const role = getProfileRole(answers?.question1);
           profile.experiences = getExperienceBasedOnRole(role).map(exp => ({
             ...exp,
@@ -108,11 +124,30 @@ export default function SharedProfile() {
           }));
         }
         
-        // Set education
-        if (profileData?.education && Array.isArray(profileData.education) && profileData.education.length > 0) {
-          profile.educationItems = convertJsonToEducationItems(profileData.education);
+        // Set education - properly handle JSON data from database
+        if (profileData?.education) {
+          try {
+            // Parse if it's a string, or use directly if it's already an array
+            const educationData = typeof profileData.education === 'string'
+              ? JSON.parse(profileData.education)
+              : profileData.education;
+              
+            if (Array.isArray(educationData) && educationData.length > 0) {
+              profile.educationItems = convertJsonToEducationItems(educationData);
+            } else {
+              throw new Error("Education data is not in the expected format");
+            }
+          } catch (error) {
+            console.error("Error parsing education data:", error);
+            // Fall back to generated education on parse error
+            const goal = getProfileGoal(answers?.question3);
+            profile.educationItems = getEducationBasedOnAnswers(answers, goal).map(edu => ({
+              ...edu,
+              id: uuidv4()
+            }));
+          }
         } else {
-          // Fall back to generated education
+          // Fall back to generated education if no education data
           const goal = getProfileGoal(answers?.question3);
           profile.educationItems = getEducationBasedOnAnswers(answers, goal).map(edu => ({
             ...edu,
@@ -167,7 +202,7 @@ export default function SharedProfile() {
         role={profileData.role} 
         user={{ id: userId }}
         coverColor={profileData.coverColor}
-        onCoverColorChange={noop} // Fixed: Now returns a Promise to match expected type
+        onCoverColorChange={noop}
         readOnly={true}
       />
 
