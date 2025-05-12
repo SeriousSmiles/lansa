@@ -17,6 +17,7 @@ interface ProfileHeaderProps {
   user: any;
   coverColor: string;
   onCoverColorChange: (color: string) => Promise<void>;
+  readOnly?: boolean; // Add readOnly prop
 }
 
 export function ProfileHeader({ 
@@ -24,7 +25,8 @@ export function ProfileHeader({
   role, 
   user, 
   coverColor, 
-  onCoverColorChange 
+  onCoverColorChange,
+  readOnly = false // Default to false for backward compatibility
 }: ProfileHeaderProps) {
   const navigate = useNavigate();
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
@@ -74,32 +76,34 @@ export function ProfileHeader({
         alt="Lansa Logo"
         className="aspect-[2.7] object-contain w-[92px]"
       />
-      <div className="ml-auto flex items-center gap-2">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => setIsColorPickerOpen(true)}
-          className="flex items-center gap-1"
-        >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            width="16" 
-            height="16" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            className="h-4 w-4"
+      {!readOnly && (
+        <div className="ml-auto flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setIsColorPickerOpen(true)}
+            className="flex items-center gap-1"
           >
-            <circle cx="12" cy="12" r="10" />
-            <circle cx="12" cy="12" r="6" />
-            <circle cx="12" cy="12" r="2" />
-          </svg>
-          <span>Change Cover</span>
-        </Button>
-      </div>
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              className="h-4 w-4"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <circle cx="12" cy="12" r="6" />
+              <circle cx="12" cy="12" r="2" />
+            </svg>
+            <span>Change Cover</span>
+          </Button>
+        </div>
+      )}
       
       <Dialog open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
         <DialogContent>

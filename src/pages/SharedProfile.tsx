@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { AboutSection } from "@/components/profile/AboutSection";
@@ -12,7 +12,6 @@ import { getUserAnswers, getProfileRole, getProfileGoal } from "@/services/Quest
 import { v4 as uuidv4 } from "@/utils/uuid";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 export default function SharedProfile() {
   const { userId } = useParams();
@@ -75,7 +74,8 @@ export default function SharedProfile() {
           throw error;
         }
         
-        let profile = {
+        // Create a properly typed profile object
+        const profile = {
           userProfile: profileData || null,
           userName: profileData?.name || userId.split('@')[0],
           role: getProfileRole(answers?.question1),
@@ -148,6 +148,11 @@ export default function SharedProfile() {
     );
   }
 
+  // Create a no-op function that returns a Promise to satisfy the type requirement
+  const noop = async (_: string) => {
+    return Promise.resolve();
+  };
+
   return (
     <div className="min-h-screen bg-[rgba(253,248,242,1)] flex flex-col">
       <div className="p-4">
@@ -162,7 +167,7 @@ export default function SharedProfile() {
         role={profileData.role} 
         user={{ id: userId }}
         coverColor={profileData.coverColor}
-        onCoverColorChange={() => {}} // No-op since this is readonly
+        onCoverColorChange={noop} // Fixed: Now returns a Promise to match expected type
         readOnly={true}
       />
 
