@@ -1,8 +1,7 @@
 
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { 
-  User, Users, CalendarDays, Briefcase, 
+  User, CalendarDays, Briefcase, 
   Award, Star, Lightbulb, Rocket, Check 
 } from "lucide-react";
 
@@ -23,75 +22,74 @@ export function QuestionCard({
   stepNumber,
   totalSteps
 }: QuestionCardProps) {
-  // Map options to appropriate user types for badges
-  const optionToBadgeMap: Record<string, string[]> = {
-    // Gender badges
-    "Male": ["all"],
-    "Female": ["all"],
-    "Prefer not to say": ["all"],
-    "Prefer to self-describe": ["all"],
+  // Map options to clarifying text for non-gender questions
+  const optionToClarifyingText: Record<string, string> = {
+    // Age clarifying text
+    "Under 18": "Perfect for students exploring their early interests and skills",
+    "18–24": "Ideal for those starting their career journey or academic path",
+    "25–34": "Great for professionals establishing their career direction",
+    "35–44": "For those advancing their career or pivoting to new opportunities",
+    "45–54": "For seasoned professionals looking to leverage their expertise",
+    "55+": "For experienced individuals sharing knowledge and pursuing passions",
     
-    // Age badges
-    "Under 18": ["student"],
-    "18–24": ["student", "job-seeker"],
-    "25–34": ["job-seeker", "entrepreneur"],
-    "35–44": ["entrepreneur", "freelancer"],
-    "45–54": ["entrepreneur", "freelancer"],
-    "55+": ["mentor", "visionary"],
+    // Identity clarifying text
+    "Freelancer": "Independent professionals seeking client recognition and growth",
+    "Job-seeker": "Professionals looking for meaningful employment opportunities",
+    "Student": "Learners developing skills and discovering their professional path",
+    "Entrepreneur": "Business builders turning ideas into sustainable ventures",
+    "Visionary": "Forward-thinkers with ambitious goals and innovative perspectives",
     
-    // Identity badges
-    "Freelancer": ["freelancer"],
-    "Job-seeker": ["job-seeker"],
-    "Student": ["student"],
-    "Entrepreneur": ["entrepreneur"],
-    "Visionary": ["visionary"],
-    
-    // Outcome badges
-    "Be taken seriously as a freelancer or creative professional": ["freelancer"],
-    "Stand out and get hired for the kind of job I really want": ["job-seeker"],
-    "Figure out what makes me different and valuable": ["student", "job-seeker"],
-    "Turn my ideas into something clear and actionable": ["entrepreneur", "visionary"],
-    "Finally feel confident about how I show up to others": ["all"],
+    // Outcome clarifying text
+    "Be taken seriously as a freelancer or creative professional": "Establish credibility and attract quality clients in your niche",
+    "Stand out and get hired for the kind of job I really want": "Differentiate yourself from other candidates in competitive markets",
+    "Figure out what makes me different and valuable": "Discover and articulate your unique professional strengths",
+    "Turn my ideas into something clear and actionable": "Transform abstract concepts into concrete plans and results",
+    "Finally feel confident about how I show up to others": "Present yourself authentically and powerfully in professional settings",
   };
   
   // Map options to appropriate icons
   const getOptionIcon = (option: string) => {
     // Gender icons
-    if (["Male", "Female", "Prefer not to say", "Prefer to self-describe"].includes(option)) {
-      return <User size={32} className="mb-3 text-[#FF6B4A]" />;
+    if (["Male", "Female"].includes(option)) {
+      return <User size={24} className="text-white" />;
     }
     
     // Age icons
     if (["Under 18", "18–24", "25–34", "35–44", "45–54", "55+"].includes(option)) {
-      return <CalendarDays size={32} className="mb-3 text-[#FF6B4A]" />;
+      return <CalendarDays size={24} className="text-white" />;
     }
     
     // Identity icons
     if (["Freelancer", "Job-seeker", "Student", "Entrepreneur", "Visionary"].includes(option)) {
-      return <Briefcase size={32} className="mb-3 text-[#FF6B4A]" />;
+      return <Briefcase size={24} className="text-white" />;
     }
     
     // Outcome icons
     if (option === "Be taken seriously as a freelancer or creative professional") {
-      return <Award size={32} className="mb-3 text-[#FF6B4A]" />;
+      return <Award size={24} className="text-white" />;
     }
     if (option === "Stand out and get hired for the kind of job I really want") {
-      return <Star size={32} className="mb-3 text-[#FF6B4A]" />;
+      return <Star size={24} className="text-white" />;
     }
     if (option === "Figure out what makes me different and valuable") {
-      return <Lightbulb size={32} className="mb-3 text-[#FF6B4A]" />;
+      return <Lightbulb size={24} className="text-white" />;
     }
     if (option === "Turn my ideas into something clear and actionable") {
-      return <Rocket size={32} className="mb-3 text-[#FF6B4A]" />;
+      return <Rocket size={24} className="text-white" />;
     }
     if (option === "Finally feel confident about how I show up to others") {
-      return <Check size={32} className="mb-3 text-[#FF6B4A]" />;
+      return <Check size={24} className="text-white" />;
     }
     
-    // Default icon (should not reach here)
-    return <Users size={32} className="mb-3 text-[#FF6B4A]" />;
+    return <User size={24} className="text-white" />;
   };
   
+  // Filter out non-binary gender options if this is a gender question
+  const isGenderQuestion = options.some(opt => opt === "Male" || opt === "Female");
+  const filteredOptions = isGenderQuestion 
+    ? options.filter(opt => opt === "Male" || opt === "Female") 
+    : options;
+
   return (
     <div className="w-full">
       {/* Progress indicator */}
@@ -124,8 +122,9 @@ export function QuestionCard({
       
       {/* Options */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {options.map((option, index) => {
-          const badgeTypes = optionToBadgeMap[option] || ["all"];
+        {filteredOptions.map((option, index) => {
+          const clarifyingText = optionToClarifyingText[option] || "";
+          const isGenderOption = option === "Male" || option === "Female";
           
           return (
             <Card 
@@ -136,33 +135,24 @@ export function QuestionCard({
               onClick={() => !isSubmitting && onAnswer(option)}
             >
               <div className="flex flex-col h-full p-6">
-                {/* Icon */}
-                <div className="flex items-center justify-center w-full">
-                  {getOptionIcon(option)}
+                {/* Icon with colored background, aligned left */}
+                <div className="flex items-start mb-4">
+                  <div className="flex items-center justify-center bg-[#FF6B4A] p-2 rounded-md">
+                    {getOptionIcon(option)}
+                  </div>
                 </div>
                 
                 <div className="flex flex-col flex-grow">
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {badgeTypes.map(type => (
-                      <Badge 
-                        key={type} 
-                        variant={
-                          type === "freelancer" ? "default" : 
-                          type === "job-seeker" ? "secondary" :
-                          type === "student" ? "outline" :
-                          type === "all" ? "default" :
-                          "destructive"
-                        }
-                        className="w-fit px-3 py-1 text-left bg-[#FDE1D3] text-[#ea384c] hover:bg-[#FDE1D3] hover:text-[#ea384c] border-0"
-                      >
-                        {type !== "all" ? `Perfect for ${type}` : "For everyone"}
-                      </Badge>
-                    ))}
-                  </div>
-                  
-                  <p className="flex-grow mb-0 text-[#2E2E2E] text-left text-xl font-medium">
+                  <p className="text-[#2E2E2E] text-left text-xl font-medium mb-2">
                     {option}
                   </p>
+                  
+                  {/* Display clarifying text for non-gender options */}
+                  {!isGenderOption && clarifyingText && (
+                    <p className="text-[#5A5A5A] text-sm text-left">
+                      {clarifyingText}
+                    </p>
+                  )}
                 </div>
               </div>
             </Card>
@@ -172,4 +162,3 @@ export function QuestionCard({
     </div>
   );
 }
-
