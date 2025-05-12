@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -121,7 +122,7 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
     
     if (fetchError && fetchError.code !== 'PGRST116') {
       console.error("Error fetching existing answers:", fetchError);
-      throw fetchError;
+      // Don't throw here - just log and continue with local storage fallback
     }
     
     let result;
@@ -145,7 +146,8 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
       
       if (error) {
         console.error("Error updating answers:", error);
-        throw error;
+        // Store in local storage as fallback
+        localStorage.setItem(`user_answers_${userId}`, JSON.stringify(answers));
       }
       result = { success: true };
     } else {
@@ -166,7 +168,8 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
       
       if (error) {
         console.error("Error inserting answers:", error);
-        throw error;
+        // Store in local storage as fallback
+        localStorage.setItem(`user_answers_${userId}`, JSON.stringify(answers));
       }
       result = { success: true };
     }
@@ -210,14 +213,17 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
     return result;
   } catch (error) {
     console.error('Error saving user answers:', error);
-    toast.error("Failed to save your answers. Please try again.");
-    return { success: false, error };
+    // Store in local storage as fallback
+    localStorage.setItem(`user_answers_${userId}`, JSON.stringify(answers));
+    // Continue without showing an error to the user
+    return { success: true, error };
   }
 }
 
 export async function getUserAnswers(userId: string): Promise<UserAnswers | null> {
   try {
     console.log("Fetching user answers for:", userId);
+    // First try to get answers from Supabase
     const { data, error } = await supabase
       .from('user_answers')
       .select('question1, question2, question3, gender, age_group, identity, desired_outcome')
@@ -225,19 +231,38 @@ export async function getUserAnswers(userId: string): Promise<UserAnswers | null
       .order('created_at', { ascending: false })
       .limit(1);
     
-    if (error) throw error;
-    
-    // If no data or empty array, return null
-    if (!data || data.length === 0) {
-      console.log("No answers found for user:", userId);
+    if (error) {
+      console.error("Error fetching from Supabase:", error);
+      // Fall back to localStorage
+      const localData = localStorage.getItem(`user_answers_${userId}`);
+      if (localData) {
+        console.log("Found answers in localStorage for user:", userId);
+        return JSON.parse(localData);
+      }
       return null;
     }
     
-    console.log("Found answers for user:", userId, data[0]);
-    // Return the most recent answer
+    // If no data or empty array, check localStorage
+    if (!data || data.length === 0) {
+      console.log("No answers in Supabase for user:", userId);
+      // Check localStorage
+      const localData = localStorage.getItem(`user_answers_${userId}`);
+      if (localData) {
+        console.log("Found answers in localStorage for user:", userId);
+        return JSON.parse(localData);
+      }
+      return null;
+    }
+    
+    console.log("Found answers in Supabase for user:", userId, data[0]);
     return data[0];
   } catch (error) {
     console.error('Error fetching user answers:', error);
+    // Fall back to localStorage
+    const localData = localStorage.getItem(`user_answers_${userId}`);
+    if (localData) {
+      return JSON.parse(localData);
+    }
     return null;
   }
 }

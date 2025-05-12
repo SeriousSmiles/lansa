@@ -39,6 +39,11 @@ export default function ProtectedRoute() {
     }
   }, [user]);
 
+  // Always allow authenticated users to access the dashboard
+  if (location.pathname === "/dashboard" && user) {
+    return <Outlet />;
+  }
+
   if (!user) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
@@ -61,9 +66,11 @@ export default function ProtectedRoute() {
 
   // If user hasn't completed onboarding and is trying to access any protected 
   // route other than onboarding or card, redirect to onboarding
+  // BUT always allow access to dashboard
   if (onboardingStatus === false && 
       location.pathname !== "/onboarding" && 
-      location.pathname !== "/card") {
+      location.pathname !== "/card" &&
+      location.pathname !== "/dashboard") {
     console.log("User has not completed onboarding, redirecting to onboarding");
     return <Navigate to="/onboarding" replace />;
   }
