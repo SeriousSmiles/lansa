@@ -1,6 +1,7 @@
 
 import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface ProfileActionButtonProps {
   onClick: () => void;
@@ -8,6 +9,7 @@ interface ProfileActionButtonProps {
   coverColor: string;
   isDarkTheme: boolean;
   children: ReactNode;
+  className?: string; // Added className as an optional prop
 }
 
 export function ProfileActionButton({
@@ -15,14 +17,15 @@ export function ProfileActionButton({
   textColor,
   coverColor,
   isDarkTheme,
-  children
+  children,
+  className
 }: ProfileActionButtonProps) {
   return (
     <Button 
       variant={isDarkTheme ? "contrast" : "outline"}
       size="sm" 
       onClick={onClick}
-      className="flex items-center gap-1"
+      className={cn("flex items-center gap-1", className)} // Use the cn utility to merge classNames
       style={{
         borderColor: `${coverColor}50`,
         color: textColor
