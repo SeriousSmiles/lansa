@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +8,6 @@ import { AboutSection } from "@/components/profile/AboutSection";
 import { ExperienceSection } from "@/components/profile/ExperienceSection";
 import { EducationSection } from "@/components/profile/EducationSection";
 import { useProfileData } from "@/hooks/useProfileData";
-import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { getContrastTextColor, generateThemeColors } from "@/utils/colorUtils";
 
 export default function Profile() {
