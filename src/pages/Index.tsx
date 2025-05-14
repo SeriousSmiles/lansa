@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { LoginForm } from "@/components/auth/LoginForm";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/auth";
 
 export default function IndexPage() {
   const [isLogin, setIsLogin] = useState(false);

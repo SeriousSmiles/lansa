@@ -14,7 +14,7 @@ import Dashboard from "./pages/Dashboard";
 import Resources from "./pages/Resources";
 import ContentLibrary from "./pages/ContentLibrary";
 import Card from "./pages/Card";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider } from "./contexts/auth";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient({

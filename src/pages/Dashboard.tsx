@@ -6,7 +6,7 @@ import {
   getProfileGoal,
   getInsightFromAnswers
 } from "@/services/QuestionService";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/auth";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { DashboardLoadingState } from "@/components/dashboard/LoadingState";

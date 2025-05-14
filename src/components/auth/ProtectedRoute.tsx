@@ -1,9 +1,7 @@
-
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/auth";
 import { getUserAnswers, hasCompletedOnboarding } from "@/services/QuestionService";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function ProtectedRoute() {

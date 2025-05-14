@@ -1,27 +1,17 @@
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import AuthContext from "./AuthContext";
+import { UserType } from "./types";
+import { fetchUserProfile } from "./useProfileManagement";
 
-type UserType = {
-  id: string;
-  email?: string;
-  displayName?: string;
-} | null;
-
-interface AuthContextType {
-  user: UserType;
-  session: Session | null;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string) => Promise<{ error: any; data: any }>;
-  signOut: () => Promise<{ error: any }>;
-  updateDisplayName: (name: string) => void;
+interface AuthProviderProps {
+  children: ReactNode;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<UserType>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,41 +20,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateDisplayName = (name: string) => {
     if (user) {
       setUser({ ...user, displayName: name });
-    }
-  };
-
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('name')
-        .eq('user_id', userId)
-        .maybeSingle();
-      
-      if (profile?.name) {
-        return profile.name;
-      }
-      
-      // Check localStorage as fallback for new users
-      const localName = localStorage.getItem('userName');
-      if (localName) {
-        // Update profile with name from localStorage if it exists
-        await supabase
-          .from('user_profiles')
-          .upsert({ 
-            user_id: userId,
-            name: localName
-          });
-        
-        // Clear localStorage after use
-        localStorage.removeItem('userName');
-        return localName;
-      }
-      
-      return null;
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-      return null;
     }
   };
 
@@ -193,12 +148,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {authInitialized && children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 }

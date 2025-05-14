@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { UserAnswers } from "@/services/QuestionService";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/auth";
 import { QuestionCard } from "./QuestionCard";
 import { MagicMomentCard } from "./MagicMomentCard";
 
