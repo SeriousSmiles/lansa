@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { PageTransition } from "@/components/transitions/PageTransition";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
@@ -28,20 +29,20 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/auth" element={<Index />} />
+              <Route path="/auth" element={<PageTransition><Index /></PageTransition>} />
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route element={<ProtectedRoute />}>
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/result" element={<Result />} />
-                <Route path="/card" element={<Card />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/resources" element={<Resources />} />
-                <Route path="/content" element={<ContentLibrary />} />
+                <Route path="/onboarding" element={<PageTransition><Onboarding /></PageTransition>} />
+                <Route path="/result" element={<PageTransition><Result /></PageTransition>} />
+                <Route path="/card" element={<PageTransition><Card /></PageTransition>} />
+                <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
+                <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
+                <Route path="/resources" element={<PageTransition><Resources /></PageTransition>} />
+                <Route path="/content" element={<PageTransition><ContentLibrary /></PageTransition>} />
               </Route>
               {/* Public shared profile route - no authentication required */}
-              <Route path="/profile/share/:userId" element={<SharedProfile />} />
-              <Route path="*" element={<NotFound />} />
+              <Route path="/profile/share/:userId" element={<PageTransition><SharedProfile /></PageTransition>} />
+              <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>

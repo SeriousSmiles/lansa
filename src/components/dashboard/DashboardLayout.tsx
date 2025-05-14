@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
@@ -14,6 +14,7 @@ import { DashboardSidebarHeader } from "./SidebarHeader";
 import { SidebarMenuItems } from "./SidebarMenu";
 import { SidebarFooterContent } from "./SidebarFooter";
 import { MobileHeader } from "./MobileHeader";
+import { gsap } from "gsap";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -24,6 +25,8 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children, userName, email, themeColor }: DashboardLayoutProps) {
   const { signOut } = useAuth();
+  const mainContentRef = useRef<HTMLDivElement>(null);
+  const [isContentVisible, setIsContentVisible] = useState(false);
 
   const handleLogout = async () => {
     await signOut();
@@ -51,11 +54,28 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
       icon: User,
     }
   ];
+  
+  // Animation for content loading
+  useEffect(() => {
+    if (mainContentRef.current) {
+      // Set initial state
+      gsap.set(mainContentRef.current, { opacity: 0, y: 20 });
+      
+      // Animate in
+      gsap.to(mainContentRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        ease: "power2.out",
+        onComplete: () => setIsContentVisible(true)
+      });
+    }
+  }, []);
 
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-[rgba(253,248,242,1)]">
-        <Sidebar>
+        <Sidebar className="animate-fade-in-left">
           <DashboardSidebarHeader />
           
           <SidebarContent className="mt-4 lg:mt-6">
@@ -77,7 +97,7 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
         
         <main className="flex-1">
           <MobileHeader themeColor={themeColor} />
-          <div className="container mx-auto pt-0 md:pt-0">
+          <div ref={mainContentRef} className="container mx-auto pt-0 md:pt-0">
             {children}
           </div>
         </main>
