@@ -11,16 +11,16 @@ export default function ProtectedRoute() {
   const location = useLocation();
   const [onboardingStatus, setOnboardingStatus] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
-  const [checkCount, setCheckCount] = useState(0);
 
   useEffect(() => {
+    let mounted = true;
+
     async function checkOnboardingStatus() {
       if (!user?.id) {
-        setLoading(false);
+        if (mounted) setLoading(false);
         return;
       }
       
-      console.log("Checking onboarding status for user:", user.id);
       try {
         // Fetch user profile to ensure display name is set
         if (!user.displayName || user.displayName === user.email?.split('@')[0]) {
@@ -41,25 +41,26 @@ export default function ProtectedRoute() {
         // Check if onboarding is complete using our helper function
         const isComplete = hasCompletedOnboarding(userAnswers);
         
-        // Update state once with final value
-        setOnboardingStatus(isComplete);
-        setLoading(false);
+        if (mounted) {
+          setOnboardingStatus(isComplete);
+          setLoading(false);
+        }
       } catch (error) {
         console.error("Failed to check onboarding status:", error);
         // Default to false on error to ensure user goes through onboarding
-        setOnboardingStatus(false);
-        setLoading(false);
+        if (mounted) {
+          setOnboardingStatus(false);
+          setLoading(false);
+        }
       }
     }
 
-    // Only check onboarding status if not already checked and user exists
-    if (user && onboardingStatus === null && checkCount === 0) {
-      checkOnboardingStatus();
-      setCheckCount(1); // Prevent repeated checks
-    } else if (!user) {
-      setLoading(false);
-    }
-  }, [user, onboardingStatus, updateDisplayName, checkCount]);
+    checkOnboardingStatus();
+    
+    return () => {
+      mounted = false;
+    };
+  }, [user, updateDisplayName]);
 
   // Show loading state while checking authentication/onboarding
   if (loading) {
@@ -72,14 +73,12 @@ export default function ProtectedRoute() {
 
   // If user is not authenticated, redirect to auth page
   if (!user) {
-    console.log("User not authenticated, redirecting to /auth");
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   // For safety, if we still don't know onboarding status after loading,
   // assume not completed and redirect to onboarding
   if (onboardingStatus === null) {
-    console.log("Onboarding status unknown, redirecting to onboarding for safety");
     return <Navigate to="/onboarding" replace />;
   }
 
@@ -87,7 +86,6 @@ export default function ProtectedRoute() {
   // redirect to dashboard
   if ((location.pathname === "/onboarding" || location.pathname === "/card") && 
       onboardingStatus === true) {
-    console.log("User completed onboarding, redirecting from onboarding/card to dashboard");
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -97,7 +95,6 @@ export default function ProtectedRoute() {
       location.pathname !== "/onboarding" && 
       location.pathname !== "/result" &&
       location.pathname !== "/card") {
-    console.log("User has not completed onboarding, redirecting to onboarding");
     return <Navigate to="/onboarding" replace />;
   }
 
