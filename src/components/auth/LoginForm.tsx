@@ -18,7 +18,7 @@ export function LoginForm() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as any)?.from?.pathname || "/dashboard";
+  const from = (location.state as any)?.from?.pathname || "/onboarding";
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
@@ -27,20 +27,15 @@ export function LoginForm() {
       
       if (error) {
         toast.error(error.message || "Invalid login credentials");
-        setIsLoading(false);
         return;
       }
       
       toast.success("Login successful!");
-      console.log("Login successful, navigating to:", from);
-      
-      // We don't need to use setLoading(false) here as the page will navigate
-      setTimeout(() => {
-        navigate(from, { replace: true });
-      }, 100);
+      navigate(from, { replace: true });
     } catch (error: any) {
       console.error(error);
       toast.error(error.message || "An error occurred during login");
+    } finally {
       setIsLoading(false);
     }
   };

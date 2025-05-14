@@ -15,7 +15,6 @@ export default function ProtectedRoute() {
   useEffect(() => {
     async function checkOnboardingStatus() {
       if (user?.id) {
-        console.log("Checking onboarding status for user:", user.id);
         try {
           // Fetch user profile to ensure display name is set
           if (!user.displayName || user.displayName === user.email?.split('@')[0]) {
@@ -56,9 +55,7 @@ export default function ProtectedRoute() {
     }
   }, [user, updateDisplayName]);
 
-  // If user is not authenticated, redirect to auth page
   if (!user) {
-    console.log("User not authenticated, redirecting to /auth");
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
@@ -73,7 +70,7 @@ export default function ProtectedRoute() {
 
   // If user is accessing the onboarding or card page but has already completed onboarding,
   // redirect them to the dashboard
-  if ((location.pathname === "/onboarding" || location.pathname === "/card") && onboardingStatus === true) {
+  if ((location.pathname === "/onboarding" || location.pathname === "/card") && onboardingStatus) {
     console.log("User has completed onboarding, redirecting to dashboard");
     return <Navigate to="/dashboard" replace />;
   }
@@ -82,7 +79,6 @@ export default function ProtectedRoute() {
   // route other than onboarding or card, redirect to onboarding
   if (onboardingStatus === false && 
       location.pathname !== "/onboarding" && 
-      location.pathname !== "/result" &&
       location.pathname !== "/card") {
     console.log("User has not completed onboarding, redirecting to onboarding");
     return <Navigate to="/onboarding" replace />;
