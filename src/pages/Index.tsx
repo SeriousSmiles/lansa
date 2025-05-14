@@ -4,11 +4,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { LoginForm } from "@/components/auth/LoginForm";
-import { useAuth } from "@/contexts/auth";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function IndexPage() {
   const [isLogin, setIsLogin] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -23,20 +22,9 @@ export default function IndexPage() {
     
     // If user is already logged in, redirect to dashboard
     if (user) {
-      console.log("User is logged in, redirecting to dashboard");
       navigate('/dashboard', { replace: true });
     }
-    
-    setIsLoading(false);
   }, [location, user, navigate]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-xl">Loading...</p>
-      </div>
-    );
-  }
 
   return (
     <AuthLayout imageSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/21db5620684d4cbbfb27b61d5dfc0736c8a7cd9c?placeholderIfAbsent=true">

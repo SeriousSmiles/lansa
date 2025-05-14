@@ -1,8 +1,9 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { getUserAnswers, getInsightFromAnswers } from "@/services/QuestionService";
-import { useAuth } from "@/contexts/auth";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Result() {
   const [insight, setInsight] = useState<string>("");

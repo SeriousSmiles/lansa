@@ -1,6 +1,5 @@
-
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/auth";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";

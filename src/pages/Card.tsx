@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { getMagicMoment } from "@/utils/magicMomentUtils";
-import { useAuth } from "@/contexts/auth";
+import { useAuth } from "@/contexts/AuthContext";
 import { getUserAnswers } from "@/services/QuestionService";
 
 export default function CardPage() {

@@ -14,31 +14,23 @@ import Dashboard from "./pages/Dashboard";
 import Resources from "./pages/Resources";
 import ContentLibrary from "./pages/ContentLibrary";
 import Card from "./pages/Card";
-import { AuthProvider } from "./contexts/auth";
+import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  }
-});
+const queryClient = new QueryClient();
 
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
+          <Toaster />
+          <Sonner />
           <BrowserRouter>
             <Routes>
-              {/* Public routes */}
+              {/* Change default route to auth */}
               <Route path="/" element={<Navigate to="/auth" replace />} />
               <Route path="/auth" element={<Index />} />
-              <Route path="/profile/share/:userId" element={<SharedProfile />} />
-              
-              {/* Protected routes */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/result" element={<Result />} />
@@ -48,12 +40,11 @@ const App = () => {
                 <Route path="/resources" element={<Resources />} />
                 <Route path="/content" element={<ContentLibrary />} />
               </Route>
-              
+              {/* Public shared profile route - no authentication required */}
+              <Route path="/profile/share/:userId" element={<SharedProfile />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
-          <Toaster />
-          <Sonner />
         </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>

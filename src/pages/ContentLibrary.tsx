@@ -1,6 +1,6 @@
 
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { useAuth } from "@/contexts/auth";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { getUserAnswers } from "@/services/QuestionService";
 import { useEffect, useState } from "react";
