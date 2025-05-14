@@ -17,7 +17,14 @@ import Card from "./pages/Card";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  }
+});
 
 const App = () => {
   return (
@@ -28,7 +35,7 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
-              {/* Change default route to auth */}
+              {/* Default route to auth */}
               <Route path="/" element={<Navigate to="/auth" replace />} />
               <Route path="/auth" element={<Index />} />
               <Route element={<ProtectedRoute />}>

@@ -11,6 +11,7 @@ export default function ProtectedRoute() {
   const location = useLocation();
   const [onboardingStatus, setOnboardingStatus] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const [checkCount, setCheckCount] = useState(0);
 
   useEffect(() => {
     async function checkOnboardingStatus() {
@@ -50,11 +51,20 @@ export default function ProtectedRoute() {
     }
 
     if (user) {
-      checkOnboardingStatus();
+      // Add check count to prevent infinite loops
+      if (checkCount < 3) {
+        checkOnboardingStatus();
+        setCheckCount(prev => prev + 1);
+      } else if (checkCount === 3 && onboardingStatus === null) {
+        // Fallback - if we've tried 3 times and still don't have a status
+        console.log("Fallback: Setting onboarding status to false after multiple attempts");
+        setOnboardingStatus(false);
+        setLoading(false);
+      }
     } else {
       setLoading(false);
     }
-  }, [user, updateDisplayName]);
+  }, [user, updateDisplayName, checkCount]);
 
   // If user is not authenticated, redirect to auth page
   if (!user) {
@@ -71,6 +81,12 @@ export default function ProtectedRoute() {
     );
   }
 
+  // Safety check to prevent infinite loops
+  if (onboardingStatus === null && checkCount >= 3) {
+    console.log("Forced navigation due to null status after multiple attempts");
+    return <Navigate to="/onboarding" replace />;
+  }
+
   // If user is accessing the onboarding or card page but has already completed onboarding,
   // redirect them to the dashboard
   if ((location.pathname === "/onboarding" || location.pathname === "/card") && onboardingStatus === true) {
@@ -79,7 +95,7 @@ export default function ProtectedRoute() {
   }
 
   // If user hasn't completed onboarding and is trying to access any protected 
-  // route other than onboarding or card, redirect to onboarding
+  // route other than onboarding or card or result, redirect to onboarding
   if (onboardingStatus === false && 
       location.pathname !== "/onboarding" && 
       location.pathname !== "/result" &&

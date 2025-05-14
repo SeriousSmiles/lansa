@@ -68,39 +68,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Handle auth state changes
-  const handleAuthStateChange = async (session: Session | null) => {
-    console.log("Auth state changed, session:", session ? "exists" : "null");
-    
-    setSession(session);
-    
-    if (session?.user) {
-      const displayName = await fetchUserProfile(session.user.id);
-      
-      setUser({
-        id: session.user.id,
-        email: session.user.email,
-        displayName: displayName || session.user.email?.split('@')[0] || 'Lansa User'
-      });
-      
-      console.log("User set after auth state change:", session.user.id);
-    } else {
-      setUser(null);
-      console.log("User set to null after auth state change");
-    }
-  };
-
   useEffect(() => {
     // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
       // Use setTimeout to prevent potential deadlocks in Supabase auth state handling
-      setTimeout(() => {
-        handleAuthStateChange(session);
+      setTimeout(async () => {
+        console.log("Auth state changed, session:", currentSession ? "exists" : "null");
+        setSession(currentSession);
+        
+        if (currentSession?.user) {
+          const displayName = await fetchUserProfile(currentSession.user.id);
+          
+          setUser({
+            id: currentSession.user.id,
+            email: currentSession.user.email,
+            displayName: displayName || currentSession.user.email?.split('@')[0] || 'Lansa User'
+          });
+          
+          console.log("User set after auth state change:", currentSession.user.id);
+        } else {
+          setUser(null);
+          console.log("User set to null after auth state change");
+        }
       }, 0);
     });
 
     // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      handleAuthStateChange(session);
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      if (currentSession?.user) {
+        fetchUserProfile(currentSession.user.id).then(displayName => {
+          setUser({
+            id: currentSession.user.id,
+            email: currentSession.user.email,
+            displayName: displayName || currentSession.user.email?.split('@')[0] || 'Lansa User'
+          });
+          setSession(currentSession);
+        });
+      }
       setLoading(false);
     });
 
