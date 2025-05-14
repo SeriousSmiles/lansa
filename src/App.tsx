@@ -35,11 +35,10 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
-              {/* Auth route */}
-              <Route path="/auth" element={<Index />} />
-              
-              {/* Default route redirects to auth */}
+              {/* Public routes */}
               <Route path="/" element={<Navigate to="/auth" replace />} />
+              <Route path="/auth" element={<Index />} />
+              <Route path="/profile/share/:userId" element={<SharedProfile />} />
               
               {/* Protected routes */}
               <Route element={<ProtectedRoute />}>
@@ -52,8 +51,6 @@ const App = () => {
                 <Route path="/content" element={<ContentLibrary />} />
               </Route>
               
-              {/* Public shared profile route - no authentication required */}
-              <Route path="/profile/share/:userId" element={<SharedProfile />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

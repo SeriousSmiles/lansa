@@ -74,7 +74,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function initializeAuth() {
       try {
-        // First get the session
+        // First set up the auth state listener to prevent missing events
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, currentSession) => {
+            console.log("Auth state changed, event:", event);
+            
+            if (mounted) {
+              setSession(currentSession);
+              
+              if (currentSession?.user) {
+                const userId = currentSession.user.id;
+                console.log("Auth state change with user:", userId);
+                
+                // Only fetch profile if we need to
+                let displayName = user?.displayName;
+                if (!displayName || displayName === currentSession.user.email?.split('@')[0]) {
+                  displayName = await fetchUserProfile(userId);
+                }
+                
+                setUser({
+                  id: userId,
+                  email: currentSession.user.email,
+                  displayName: displayName || currentSession.user.email?.split('@')[0] || 'Lansa User'
+                });
+              } else {
+                console.log("Auth state change with no user");
+                setUser(null);
+              }
+            }
+          }
+        );
+        
+        // Then check for existing session
         const { data: initialSession } = await supabase.auth.getSession();
         
         if (mounted) {
@@ -111,40 +142,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Start auth initialization
     initializeAuth();
     
-    // Set up the auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
-        console.log("Auth state changed, event:", event);
-        
-        if (mounted) {
-          setSession(currentSession);
-          
-          if (currentSession?.user) {
-            const userId = currentSession.user.id;
-            console.log("Auth state change with user:", userId);
-            
-            // Only fetch profile if we need to
-            let displayName = user?.displayName;
-            if (!displayName || displayName === currentSession.user.email?.split('@')[0]) {
-              displayName = await fetchUserProfile(userId);
-            }
-            
-            setUser({
-              id: userId,
-              email: currentSession.user.email,
-              displayName: displayName || currentSession.user.email?.split('@')[0] || 'Lansa User'
-            });
-          } else {
-            console.log("Auth state change with no user");
-            setUser(null);
-          }
-        }
-      }
-    );
-
     return () => {
       mounted = false;
-      subscription.unsubscribe();
     };
   }, []);
 
