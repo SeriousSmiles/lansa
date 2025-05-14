@@ -9,11 +9,16 @@ import { ExperienceSection } from "@/components/profile/ExperienceSection";
 import { EducationSection } from "@/components/profile/EducationSection";
 import { useProfileData } from "@/hooks/useProfileData";
 import { getContrastTextColor, generateThemeColors } from "@/utils/colorUtils";
+import { GuideButton } from "@/components/guide/GuideButton";
+import { runOnboardingSequence } from "@/utils/animationUtils";
+import { useRef, useEffect } from "react";
+import { gsap } from "gsap";
 
 export default function Profile() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const profile = useProfileData(user?.id);
+  const guideButtonRef = useRef<HTMLButtonElement>(null);
 
   // Generate theme colors based on primary color using our utility
   const themeColors = generateThemeColors(profile.coverColor);
@@ -23,6 +28,37 @@ export default function Profile() {
   
   // Determine if the theme is dark
   const isDarkTheme = textColor === "#FFFFFF";
+  
+  // Animate elements when the page loads
+  useEffect(() => {
+    if (profile.isLoading) return;
+    
+    // Animate main content
+    gsap.from("main .grid", {
+      opacity: 0,
+      y: 20,
+      duration: 0.8,
+      ease: "power2.out",
+      delay: 0.2
+    });
+    
+    // Animate guide button
+    if (guideButtonRef.current) {
+      gsap.from(guideButtonRef.current, {
+        scale: 0,
+        opacity: 0,
+        rotation: 180,
+        duration: 1,
+        ease: "elastic.out(1, 0.5)",
+        delay: 1
+      });
+    }
+  }, [profile.isLoading]);
+
+  // Function to trigger the onboarding sequence
+  const handleStartOnboarding = () => {
+    runOnboardingSequence();
+  };
 
   if (profile.isLoading) {
     return (
@@ -129,6 +165,12 @@ export default function Profile() {
       >
         © 2025 Lansa N.V.
       </footer>
+      
+      {/* Guide Button */}
+      <GuideButton 
+        onClick={handleStartOnboarding} 
+        ref={guideButtonRef}
+      />
     </div>
   );
 }

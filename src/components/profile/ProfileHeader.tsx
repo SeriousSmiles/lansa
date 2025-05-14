@@ -5,9 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { ProfileHeaderActions } from "./ProfileHeaderActions";
 import { getContrastTextColor, isDarkTheme as checkIsDarkTheme } from "@/utils/colorUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { useToast } from "@/hooks/use-toast";
 
 interface ProfileHeaderProps {
   userName: string;
@@ -35,53 +34,12 @@ export function ProfileHeader({
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { toast } = useToast();
   
   // Calculate text contrast color (black or white) based on background
   const textColor = getContrastTextColor(coverColor);
   
   // Determine if the theme is dark based on luminance
   const isDarkTheme = checkIsDarkTheme(coverColor);
-
-  // Check if it's the user's first visit to profile page
-  useEffect(() => {
-    const hasSeenOnboarding = localStorage.getItem('profile-onboarding-seen');
-    
-    if (!hasSeenOnboarding && !readOnly) {
-      // Show first onboarding step after a short delay
-      setTimeout(() => {
-        toast({
-          title: "Welcome to Your Profile Page!",
-          description: "Click the 'Change Theme' button to customize your profile's color theme.",
-          duration: 7000,
-          className: "onboarding-toast theme-button-tip",
-        });
-        
-        // Show second step after the first one closes
-        setTimeout(() => {
-          toast({
-            title: "Customize Your Highlights",
-            description: "Click the 'Change Highlights' button to set your accent colors.",
-            duration: 7000,
-            className: "onboarding-toast highlight-button-tip",
-          });
-          
-          // Show final step after the second one closes
-          setTimeout(() => {
-            toast({
-              title: "Share Your Profile",
-              description: "Use the 'Share Profile' button to generate a link to your public profile.",
-              duration: 7000,
-              className: "onboarding-toast share-button-tip",
-            });
-            
-            // Mark onboarding as seen
-            localStorage.setItem('profile-onboarding-seen', 'true');
-          }, 8000);
-        }, 8000);
-      }, 1000);
-    }
-  }, [readOnly, toast]);
   
   return (
     <header 

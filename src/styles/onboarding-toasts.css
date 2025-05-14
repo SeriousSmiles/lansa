@@ -3,11 +3,14 @@
 .onboarding-toast {
   z-index: 9999;
   animation: pulse 2s infinite;
+  transition: all 0.3s ease;
 }
 
 .onboarding-toast div[role="alert"] {
   border-left: 4px solid #FF6B4A;
   padding-left: 16px;
+  transition: all 0.3s ease;
+  transform: translateZ(0); /* Force hardware acceleration */
 }
 
 /* Pulse animation for drawing attention */
@@ -25,18 +28,42 @@
 
 /* Positioning for specific toast tips */
 .theme-button-tip {
-  position: relative;
+  position: relative !important;
   margin-left: -20px !important;
 }
 
 .highlight-button-tip {
-  position: relative;
+  position: relative !important;
   margin-left: 100px !important;
 }
 
 .share-button-tip {
-  position: relative;
+  position: relative !important;
   margin-left: 240px !important;
+}
+
+/* Highlight effects for buttons */
+.change-theme-button,
+.change-highlights-button,
+.share-profile-button {
+  transition: all 0.3s ease !important;
+}
+
+/* Guide button animation */
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+.guide-button-bounce {
+  animation: bounce 2s infinite;
 }
 
 /* Media query for mobile */
@@ -46,5 +73,10 @@
   .share-button-tip {
     margin-left: 0 !important;
     margin-top: 0 !important;
+    top: auto !important;
+    left: auto !important;
+    position: fixed !important;
+    bottom: 80px !important;
+    right: 10px !important;
   }
 }
