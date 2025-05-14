@@ -25,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserType>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authInitialized, setAuthInitialized] = useState(false);
 
   const updateDisplayName = (name: string) => {
     if (user) {
@@ -69,46 +70,82 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Handle auth state changes
   useEffect(() => {
-    // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
-      // Use setTimeout to prevent potential deadlocks in Supabase auth state handling
-      setTimeout(async () => {
-        console.log("Auth state changed, session:", currentSession ? "exists" : "null");
-        setSession(currentSession);
+    let mounted = true;
+
+    async function initializeAuth() {
+      try {
+        // First get the session
+        const { data: initialSession } = await supabase.auth.getSession();
         
-        if (currentSession?.user) {
-          const displayName = await fetchUserProfile(currentSession.user.id);
+        if (mounted) {
+          setSession(initialSession.session);
           
-          setUser({
-            id: currentSession.user.id,
-            email: currentSession.user.email,
-            displayName: displayName || currentSession.user.email?.split('@')[0] || 'Lansa User'
-          });
+          // If we have a user, load their profile
+          if (initialSession.session?.user) {
+            const userId = initialSession.session.user.id;
+            const displayName = await fetchUserProfile(userId);
+            
+            setUser({
+              id: userId,
+              email: initialSession.session.user.email,
+              displayName: displayName || initialSession.session.user.email?.split('@')[0] || 'Lansa User'
+            });
+            
+            console.log("Auth initialized with user:", userId);
+          } else {
+            console.log("Auth initialized with no user");
+          }
           
-          console.log("User set after auth state change:", currentSession.user.id);
-        } else {
-          setUser(null);
-          console.log("User set to null after auth state change");
+          setLoading(false);
+          setAuthInitialized(true);
         }
-      }, 0);
-    });
-
-    // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      if (currentSession?.user) {
-        fetchUserProfile(currentSession.user.id).then(displayName => {
-          setUser({
-            id: currentSession.user.id,
-            email: currentSession.user.email,
-            displayName: displayName || currentSession.user.email?.split('@')[0] || 'Lansa User'
-          });
-          setSession(currentSession);
-        });
+      } catch (error) {
+        console.error("Error during auth initialization:", error);
+        if (mounted) {
+          setLoading(false);
+          setAuthInitialized(true);
+        }
       }
-      setLoading(false);
-    });
+    }
+    
+    // Start auth initialization
+    initializeAuth();
+    
+    // Set up the auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, currentSession) => {
+        console.log("Auth state changed, event:", event);
+        
+        if (mounted) {
+          setSession(currentSession);
+          
+          if (currentSession?.user) {
+            const userId = currentSession.user.id;
+            console.log("Auth state change with user:", userId);
+            
+            // Only fetch profile if we need to
+            let displayName = user?.displayName;
+            if (!displayName || displayName === currentSession.user.email?.split('@')[0]) {
+              displayName = await fetchUserProfile(userId);
+            }
+            
+            setUser({
+              id: userId,
+              email: currentSession.user.email,
+              displayName: displayName || currentSession.user.email?.split('@')[0] || 'Lansa User'
+            });
+          } else {
+            console.log("Auth state change with no user");
+            setUser(null);
+          }
+        }
+      }
+    );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const value = {
@@ -154,7 +191,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {authInitialized && children}
     </AuthContext.Provider>
   );
 }

@@ -31,6 +31,7 @@ export default function ProtectedRoute() {
             }
           }
           
+          // Get answers once and cache them to avoid multiple API calls
           const userAnswers = await getUserAnswers(user.id);
           console.log("User answers for onboarding check:", userAnswers);
           
@@ -38,33 +39,28 @@ export default function ProtectedRoute() {
           const isComplete = hasCompletedOnboarding(userAnswers);
           console.log("Has completed onboarding:", isComplete);
           
+          // Update state once with final value
           setOnboardingStatus(isComplete);
+          setLoading(false);
         } catch (error) {
           console.error("Failed to check onboarding status:", error);
           setOnboardingStatus(false);
+          setLoading(false);
           toast.error("Failed to check onboarding status. Please try again.");
         }
-        setLoading(false);
       } else {
         setLoading(false);
       }
     }
 
-    if (user) {
-      // Add check count to prevent infinite loops
-      if (checkCount < 3) {
-        checkOnboardingStatus();
-        setCheckCount(prev => prev + 1);
-      } else if (checkCount === 3 && onboardingStatus === null) {
-        // Fallback - if we've tried 3 times and still don't have a status
-        console.log("Fallback: Setting onboarding status to false after multiple attempts");
-        setOnboardingStatus(false);
-        setLoading(false);
-      }
-    } else {
+    // Only make the API call once per mount or when user changes
+    if (user && checkCount === 0) {
+      checkOnboardingStatus();
+      setCheckCount(1); // Prevent repeated checks
+    } else if (!user) {
       setLoading(false);
     }
-  }, [user, updateDisplayName, checkCount]);
+  }, [user, updateDisplayName]);
 
   // If user is not authenticated, redirect to auth page
   if (!user) {
@@ -81,9 +77,10 @@ export default function ProtectedRoute() {
     );
   }
 
-  // Safety check to prevent infinite loops
-  if (onboardingStatus === null && checkCount >= 3) {
-    console.log("Forced navigation due to null status after multiple attempts");
+  // Safety check to prevent infinite loops - if we still don't know after trying, 
+  // assume not completed and send to onboarding
+  if (onboardingStatus === null) {
+    console.log("Onboarding status null, sending to onboarding");
     return <Navigate to="/onboarding" replace />;
   }
 
@@ -104,5 +101,6 @@ export default function ProtectedRoute() {
     return <Navigate to="/onboarding" replace />;
   }
 
+  // If we made it here, render the requested page
   return <Outlet />;
 }
