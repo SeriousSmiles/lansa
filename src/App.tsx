@@ -30,7 +30,8 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<PageTransition><Index /></PageTransition>} />
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              {/* Change the default route to redirect to /auth instead of /dashboard */}
+              <Route path="/" element={<Navigate to="/auth" replace />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/onboarding" element={<PageTransition><Onboarding /></PageTransition>} />
                 <Route path="/result" element={<PageTransition><Result /></PageTransition>} />

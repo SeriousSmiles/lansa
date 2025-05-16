@@ -70,6 +70,7 @@ export default function ProtectedRoute() {
     );
   }
 
+  // If there's no user, redirect to auth page instead of onboarding
   if (!user) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
