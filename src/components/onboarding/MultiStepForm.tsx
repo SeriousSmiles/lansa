@@ -31,6 +31,11 @@ export function MultiStepForm({
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Scroll to top whenever step changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentStep, demographicsStep]);
+
   useEffect(() => {
     // Check if user has already completed some steps and advance accordingly
     if (answers.gender && answers.age_group && demographicsStep === 0) {

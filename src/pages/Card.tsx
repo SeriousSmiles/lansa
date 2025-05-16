@@ -19,22 +19,25 @@ export default function CardPage() {
   useEffect(() => {
     // If we don't have state from navigation, try to load from user answers
     async function loadUserData() {
-      if (!state?.identity && user?.id) {
-        try {
+      try {
+        // Always try to load from user answers to ensure data freshness
+        // This is important when returning to the tab after navigating away
+        if (user?.id) {
           const answers = await getUserAnswers(user.id);
           if (answers) {
             setIdentity(answers.identity);
             setDesiredOutcome(answers.desired_outcome);
           }
-        } catch (error) {
-          console.error("Failed to load user data:", error);
         }
+      } catch (error) {
+        console.error("Failed to load user data:", error);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }
     
     loadUserData();
-  }, [state, user]);
+  }, [user]);
 
   const magicMoment = getMagicMoment(identity, desiredOutcome);
 

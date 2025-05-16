@@ -15,22 +15,23 @@ export const GuideButton = forwardRef<HTMLButtonElement, GuideButtonProps>(
     const [isHovering, setIsHovering] = useState(false);
     
     useEffect(() => {
-      const button = ref as unknown as HTMLButtonElement;
-      if (!button) return;
+      // Get the button element
+      const buttonElement = (ref as React.RefObject<HTMLButtonElement>)?.current;
+      if (!buttonElement) return;
       
       // Initial animation
-      gsap.fromTo(button, 
+      gsap.fromTo(buttonElement, 
         { scale: 0, opacity: 0, rotation: 180 }, 
         { scale: 1, opacity: 1, rotation: 0, duration: 1, ease: "elastic.out(1, 0.5)", delay: 1 }
       );
       
       // Add pulse animation that runs every 30 seconds
       const pulseTimeline = gsap.timeline({repeat: -1, repeatDelay: 30});
-      pulseTimeline.to(button, {
+      pulseTimeline.to(buttonElement, {
         scale: 1.15,
         duration: 0.5,
         ease: "power1.inOut"
-      }).to(button, {
+      }).to(buttonElement, {
         scale: 1,
         duration: 0.5,
         ease: "power1.inOut"
@@ -40,10 +41,17 @@ export const GuideButton = forwardRef<HTMLButtonElement, GuideButtonProps>(
         pulseTimeline.kill();
       };
     }, [ref]);
+
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Ensure the onClick handler gets called
+      if (onClick) onClick();
+    };
     
     return (
       <Button 
-        onClick={onClick}
+        onClick={handleClick}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
         className={cn(

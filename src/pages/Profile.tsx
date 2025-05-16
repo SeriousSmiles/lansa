@@ -73,6 +73,7 @@ export default function Profile() {
 
   // Function to trigger the onboarding sequence
   const handleStartOnboarding = () => {
+    console.log("Guide button clicked!");
     runOnboardingSequence();
   };
 
@@ -190,10 +191,11 @@ export default function Profile() {
         © 2025 Lansa N.V.
       </footer>
       
-      {/* Guide Button */}
+      {/* Guide Button - Fixed positioning ensures it's always visible */}
       <GuideButton 
         onClick={handleStartOnboarding} 
         ref={guideButtonRef}
+        className="!fixed" 
       />
     </div>
   );
