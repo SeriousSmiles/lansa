@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function Result() {
   const [insight, setInsight] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isNavigating, setIsNavigating] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -26,9 +27,26 @@ export default function Result() {
   }, [user]);
 
   const handleGetStartedWithActions = () => {
+    // Set navigating state to prevent multiple clicks
+    setIsNavigating(true);
+    
     // Navigate to dashboard and store flag to highlight recommended actions
     localStorage.setItem('highlightRecommendedActions', 'true');
-    navigate('/dashboard');
+    
+    // Add a small delay to ensure localStorage is set before navigation
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, 100);
+  };
+
+  const handleGoToDashboard = () => {
+    // Set navigating state to prevent multiple clicks
+    setIsNavigating(true);
+    
+    // Add a small delay for consistency with the other button
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, 100);
   };
 
   if (isLoading) {
@@ -66,11 +84,20 @@ export default function Result() {
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button onClick={handleGetStartedWithActions} className="px-8 py-6 h-auto text-lg">
-              Get Started with Actions
+            <Button 
+              onClick={handleGetStartedWithActions} 
+              className="px-8 py-6 h-auto text-lg"
+              disabled={isNavigating}
+            >
+              {isNavigating ? 'Redirecting...' : 'Get Started with Actions'}
             </Button>
-            <Button onClick={() => navigate("/dashboard")} variant="outline" className="px-8 py-6 h-auto text-lg">
-              Go to Dashboard
+            <Button 
+              onClick={handleGoToDashboard} 
+              variant="outline" 
+              className="px-8 py-6 h-auto text-lg"
+              disabled={isNavigating}
+            >
+              {isNavigating ? 'Redirecting...' : 'Go to Dashboard'}
             </Button>
           </div>
         </div>
