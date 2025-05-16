@@ -21,21 +21,26 @@ export function LoginForm() {
   const from = (location.state as any)?.from?.pathname || "/onboarding";
 
   const onSubmit = async (data: LoginFormData) => {
+    if (isLoading) return; // Prevent duplicate submissions
+    
     setIsLoading(true);
     try {
       const { error } = await signIn(data.email, data.password);
       
       if (error) {
         toast.error(error.message || "Invalid login credentials");
+        setIsLoading(false);
         return;
       }
       
+      // Only show success toast once
       toast.success("Login successful!");
+      
+      // Navigate immediately to avoid needing a second click
       navigate(from, { replace: true });
     } catch (error: any) {
       console.error(error);
       toast.error(error.message || "An error occurred during login");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -68,7 +73,7 @@ export function LoginForm() {
             type="submit"
             disabled={isLoading}
           >
-            Log In
+            {isLoading ? 'Logging in...' : 'Log In'}
           </Button>
 
           <Button

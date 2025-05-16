@@ -25,6 +25,7 @@ export default function IndexPage() {
           <button 
             onClick={() => setIsLogin(!isLogin)}
             className="text-[#FF6B4A] font-medium hover:underline focus:outline-none"
+            data-testid="toggle-auth-mode"
           >
             {isLogin ? "Need an account? Sign Up" : "Already have an account? Log In"}
           </button>

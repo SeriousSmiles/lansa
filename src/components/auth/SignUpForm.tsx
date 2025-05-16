@@ -73,12 +73,24 @@ export function SignUpForm() {
         }
       }
       
-      toast.success("Account created successfully!");
-      navigate("/onboarding");
+      toast.success("Account created successfully! Please log in.");
+      
+      // Add a small delay before redirecting to ensure toast is seen
+      setTimeout(() => {
+        // Switch to login page by toggling isLogin in parent component
+        const indexComponent = document.querySelector('button[data-testid="toggle-auth-mode"]');
+        if (indexComponent) {
+          // Use the button if it exists
+          indexComponent.click();
+        } else {
+          // Fallback to direct navigation
+          navigate("/auth");
+        }
+        setIsLoading(false);
+      }, 1000);
     } catch (error: any) {
       console.error(error);
       toast.error(error.message || "An error occurred during sign up");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -131,7 +143,7 @@ export function SignUpForm() {
             type="submit"
             disabled={isLoading}
           >
-            Sign up
+            {isLoading ? 'Creating Account...' : 'Sign up'}
           </Button>
 
           <Button
