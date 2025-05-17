@@ -47,6 +47,14 @@ export const useOnboardingCompletion = () => {
   };
 
   /**
+   * Process the navigation to dashboard after loading animation completes
+   */
+  const navigateToDashboard = () => {
+    setIsTransitioning(false);
+    navigate('/dashboard', { replace: true });
+  };
+
+  /**
    * Handle transition to dashboard with optional highlighting of recommended actions
    */
   const handleDashboardTransition = async (highlightActions = false) => {
@@ -66,11 +74,11 @@ export const useOnboardingCompletion = () => {
         localStorage.setItem('highlightRecommendedActions', 'true');
       }
       
-      // Add artificial delay to show the loading states
+      // Start the loading indicator animation by setting isRefreshing after a delay
+      // This shows all the loading states before navigation
       setTimeout(() => {
         setIsRefreshing(true);
-        navigate('/dashboard', { replace: true });
-      }, 8000); // Reduced from 10000 to 8000 since we have fewer loading steps
+      }, 1000);
       
     } catch (error) {
       console.error("Navigation error:", error);
@@ -84,6 +92,7 @@ export const useOnboardingCompletion = () => {
     isRefreshing,
     onboardingMarked,
     markOnboardingCompleted,
-    handleDashboardTransition
+    handleDashboardTransition,
+    navigateToDashboard
   };
 };

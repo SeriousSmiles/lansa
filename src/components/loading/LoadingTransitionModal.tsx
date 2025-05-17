@@ -1,5 +1,6 @@
 
 import * as React from "react";
+import { useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { LoadingProgress } from "./LoadingProgress";
 import { LoadingSpinner } from "./LoadingSpinner";
@@ -8,10 +9,26 @@ import { useLoadingStatus } from "@/hooks/useLoadingStatus";
 interface LoadingTransitionModalProps {
   isOpen: boolean;
   isRefreshing?: boolean;
+  onComplete?: () => void;
 }
 
-export const LoadingTransitionModal = ({ isOpen, isRefreshing = false }: LoadingTransitionModalProps) => {
+export const LoadingTransitionModal = ({ 
+  isOpen, 
+  isRefreshing = false, 
+  onComplete 
+}: LoadingTransitionModalProps) => {
   const { currentStatusIndex, progress, loadingStatuses } = useLoadingStatus(isOpen, isRefreshing);
+  
+  // When progress reaches 100%, trigger the onComplete callback
+  useEffect(() => {
+    if (progress === 100 && onComplete) {
+      const timer = setTimeout(() => {
+        onComplete();
+      }, 500); // Small delay after reaching 100% to ensure animation completes
+      
+      return () => clearTimeout(timer);
+    }
+  }, [progress, onComplete]);
 
   return (
     <Dialog open={isOpen} modal={true}>

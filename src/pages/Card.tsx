@@ -1,15 +1,16 @@
+
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserAnswers } from "@/services/question";
 import { LoadingTransitionModal } from "@/components/loading/LoadingTransitionModal";
 import { CompletionCard } from "@/components/card/CompletionCard";
 import { CardPageLayout } from "@/components/layouts/CardPageLayout";
 import { useOnboardingCompletion } from "@/hooks/useOnboardingCompletion";
-import { getProfileRole } from "@/services/question";
 
 export default function CardPage() {
   const { state } = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [identity, setIdentity] = useState<string | undefined>(state?.identity);
@@ -19,7 +20,8 @@ export default function CardPage() {
     isTransitioning, 
     isRefreshing,
     markOnboardingCompleted, 
-    handleDashboardTransition 
+    handleDashboardTransition,
+    navigateToDashboard
   } = useOnboardingCompletion();
 
   // Mark onboarding as completed when this page loads
@@ -69,6 +71,7 @@ export default function CardPage() {
     loadUserData();
   }, [user]);
 
+  // Handle button clicks
   const handleGetStartedWithActions = () => {
     handleDashboardTransition(true); // true = highlight recommended actions
   };
@@ -79,10 +82,11 @@ export default function CardPage() {
 
   return (
     <CardPageLayout isLoading={isLoading}>
-      {/* Loading transition modal */}
+      {/* Loading transition modal with onComplete callback */}
       <LoadingTransitionModal 
         isOpen={isTransitioning} 
         isRefreshing={isRefreshing}
+        onComplete={navigateToDashboard}
       />
       
       <CompletionCard

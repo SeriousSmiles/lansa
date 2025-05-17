@@ -19,29 +19,30 @@ export const useLoadingStatus = (isOpen: boolean, isRefreshing: boolean = false)
       return;
     }
 
-    // Update status message every 3 seconds
+    // Update status message every 2.5 seconds (slightly faster)
     const statusInterval = setInterval(() => {
       setCurrentStatusIndex((prevIndex) => {
         const nextIndex = prevIndex + 1;
         return nextIndex < loadingStatuses.length ? nextIndex : prevIndex;
       });
-    }, 3000);
+    }, 2500);
 
     // Gradually increase progress
     const progressInterval = setInterval(() => {
       setProgress((prevProgress) => {
-        // Calculate next progress value
-        const increment = 100 / (loadingStatuses.length * 5);
-        const nextProgress = Math.min(prevProgress + increment, 100);
+        // Calculate next progress value, ensure we reach 100% in about 7.5 seconds
+        const increment = 100 / (loadingStatuses.length * 10);
+        let nextProgress = prevProgress + increment;
         
-        // If progress is complete and we're refreshing, show refreshing message
-        if (nextProgress >= 100 && isRefreshing) {
-          setCurrentStatusIndex(loadingStatuses.length - 1);
+        // If refreshing and progress is high, accelerate to 100%
+        if (isRefreshing && nextProgress > 85) {
+          nextProgress = Math.min(prevProgress + increment * 2, 100);
         }
         
-        return nextProgress;
+        // Cap at 100%
+        return Math.min(nextProgress, 100);
       });
-    }, 600);
+    }, 300);
 
     return () => {
       clearInterval(statusInterval);
