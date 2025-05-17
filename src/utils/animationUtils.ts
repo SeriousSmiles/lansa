@@ -1,11 +1,9 @@
 
 import { gsap } from 'gsap';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 // Helper function to create staggered toast animations for onboarding
 export const runOnboardingSequence = () => {
-  const { toast } = useToast();
-  
   // Clear any existing toasts
   document.querySelectorAll('[role="status"]').forEach(el => el.remove());
   
