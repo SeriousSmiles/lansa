@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { getMagicMoment } from "@/utils/magicMomentUtils";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUserAnswers } from "@/services/QuestionService";
+import { getUserAnswers, saveUserAnswers } from "@/services/question";
 
 export default function CardPage() {
   const { state } = useLocation();
@@ -15,13 +15,39 @@ export default function CardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [identity, setIdentity] = useState<string | undefined>(state?.identity);
   const [desiredOutcome, setDesiredOutcome] = useState<string | undefined>(state?.desiredOutcome);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
-    // If we don't have state from navigation, try to load from user answers
+    // Mark onboarding as completed when this page loads
+    async function markOnboardingCompleted() {
+      if (user?.id) {
+        try {
+          // Load current user answers
+          const userAnswers = await getUserAnswers(user.id);
+          if (userAnswers) {
+            // Add onboarding_completed flag
+            const updatedAnswers = {
+              ...userAnswers,
+              onboarding_completed: true
+            };
+            
+            // Save the updated answers
+            await saveUserAnswers(user.id, updatedAnswers);
+            console.log("Onboarding marked as completed");
+          }
+        } catch (error) {
+          console.error("Failed to mark onboarding as completed:", error);
+        }
+      }
+    }
+    
+    markOnboardingCompleted();
+  }, [user]);
+
+  useEffect(() => {
+    // Load user data if not provided via state
     async function loadUserData() {
       try {
-        // Always try to load from user answers to ensure data freshness
-        // This is important when returning to the tab after navigating away
         if (user?.id) {
           const answers = await getUserAnswers(user.id);
           if (answers) {
@@ -42,9 +68,22 @@ export default function CardPage() {
   const magicMoment = getMagicMoment(identity, desiredOutcome);
 
   const handleGetStartedWithActions = () => {
-    // Navigate to dashboard and store flag to highlight recommended actions
+    if (isNavigating) return;
+    setIsNavigating(true);
+    
+    // Store flag to highlight recommended actions
     localStorage.setItem('highlightRecommendedActions', 'true');
-    navigate('/dashboard');
+    
+    // Use replace: true to prevent going back to this page with browser back button
+    navigate('/dashboard', { replace: true });
+  };
+
+  const handleGoToDashboard = () => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+    
+    // Use replace: true to prevent going back to this page with browser back button
+    navigate('/dashboard', { replace: true });
   };
 
   if (isLoading) {
@@ -59,10 +98,6 @@ export default function CardPage() {
     <div className="min-h-screen bg-[rgba(253,248,242,1)] flex flex-col">
       <header className="flex min-h-[72px] w-full px-6 md:px-16 items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={() => navigate(-1)} className="flex items-center gap-2">
-            <ArrowLeft size={16} />
-            <span>Back</span>
-          </Button>
           <img
             src="https://cdn.builder.io/api/v1/image/assets/TEMP/41285a6d1f6906d8349429ceb652f953bf730d06?placeholderIfAbsent=true"
             alt="Lansa Logo"
@@ -116,7 +151,7 @@ export default function CardPage() {
                 </Button>
                 
                 <Button
-                  onClick={() => navigate('/dashboard')}
+                  onClick={handleGoToDashboard}
                   variant="outline"
                   className="text-lg py-6 px-8 h-auto rounded-lg"
                 >
