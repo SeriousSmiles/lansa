@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserAnswers, saveUserAnswers } from "@/services/question";
@@ -55,9 +55,9 @@ export const useOnboardingCompletion = () => {
   };
 
   /**
-   * Handle transition to dashboard with optional highlighting of recommended actions
+   * Handle transition to dashboard
    */
-  const handleDashboardTransition = async (highlightActions = false) => {
+  const handleDashboardTransition = async () => {
     if (isTransitioning) return;
     
     // Start transition and show loading modal
@@ -67,11 +67,6 @@ export const useOnboardingCompletion = () => {
       // Ensure onboarding is marked as completed
       if (!onboardingMarked && user?.id) {
         await markOnboardingCompleted();
-      }
-      
-      // Store flag to highlight recommended actions if requested
-      if (highlightActions) {
-        localStorage.setItem('highlightRecommendedActions', 'true');
       }
       
       // Start the loading indicator animation by setting isRefreshing after a delay

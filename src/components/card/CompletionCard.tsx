@@ -4,15 +4,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 interface CompletionCardProps {
-  onGetStarted: () => void;
   onGoToDashboard: () => void;
   isTransitioning: boolean;
+  identity?: string;
+  desiredOutcome?: string;
 }
 
 export const CompletionCard: React.FC<CompletionCardProps> = ({
-  onGetStarted,
   onGoToDashboard,
   isTransitioning,
+  identity = "Professional",
+  desiredOutcome = "Professional clarity",
 }) => {
   return (
     <Card className="bg-white rounded-2xl overflow-hidden shadow-lg border-0 w-full">
@@ -31,7 +33,7 @@ export const CompletionCard: React.FC<CompletionCardProps> = ({
           
           <div className="bg-[#F9F5FF] p-6 rounded-lg border-l-4 border-[#FF6B4A]">
             <p className="text-xl text-[#2E2E2E] font-medium">
-              Clear professional positioning is the key to standing out in today's market.
+              As a {identity}, your goal of {desiredOutcome} is now within reach with our personalized guidance.
             </p>
           </div>
           
@@ -48,19 +50,10 @@ export const CompletionCard: React.FC<CompletionCardProps> = ({
             </ul>
           </div>
           
-          <div className="flex flex-col md:flex-row gap-4 justify-center mt-6">
-            <Button
-              onClick={onGetStarted}
-              className="bg-[#FF6B4A] hover:bg-[#FF6B4A]/90 text-white text-lg py-6 px-8 h-auto rounded-lg"
-              disabled={isTransitioning}
-            >
-              {isTransitioning ? 'Setting up...' : 'Get Started with Actions'}
-            </Button>
-            
+          <div className="flex justify-center mt-6">
             <Button
               onClick={onGoToDashboard}
-              variant="outline"
-              className="text-lg py-6 px-8 h-auto rounded-lg"
+              className="bg-[#FF6B4A] hover:bg-[#FF6B4A]/90 text-white text-lg py-6 px-8 h-auto rounded-lg w-full md:w-auto"
               disabled={isTransitioning}
             >
               {isTransitioning ? 'Setting up...' : 'Go to Dashboard'}

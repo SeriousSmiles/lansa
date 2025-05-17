@@ -1,10 +1,11 @@
 
 import { useState, useEffect } from "react";
 
+// Updated loading statuses for dashboard preparation
 export const loadingStatuses = [
-  "Setting up your personalized dashboard...",
-  "Organizing your profile data...",
-  "Configuring your recommended actions..."
+  "Fetching your profile data...",
+  "Preparing your dashboard...",
+  "Setting up your personalized view..."
 ];
 
 export const useLoadingStatus = (isOpen: boolean, isRefreshing: boolean = false) => {
@@ -19,7 +20,7 @@ export const useLoadingStatus = (isOpen: boolean, isRefreshing: boolean = false)
       return;
     }
 
-    // Update status message every 2.5 seconds (slightly faster)
+    // Update status message every 2.5 seconds
     const statusInterval = setInterval(() => {
       setCurrentStatusIndex((prevIndex) => {
         const nextIndex = prevIndex + 1;

@@ -7,10 +7,10 @@ import { LoadingTransitionModal } from "@/components/loading/LoadingTransitionMo
 import { CompletionCard } from "@/components/card/CompletionCard";
 import { CardPageLayout } from "@/components/layouts/CardPageLayout";
 import { useOnboardingCompletion } from "@/hooks/useOnboardingCompletion";
+import { toast } from "sonner";
 
 export default function CardPage() {
   const { state } = useLocation();
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [identity, setIdentity] = useState<string | undefined>(state?.identity);
@@ -24,11 +24,31 @@ export default function CardPage() {
     navigateToDashboard
   } = useOnboardingCompletion();
 
-  // Mark onboarding as completed when this page loads
+  // Fetch data and mark onboarding as completed on page load
   useEffect(() => {
     async function initializeCardPage() {
-      // Mark onboarding as completed
-      await markOnboardingCompleted();
+      if (!user?.id) {
+        toast.error("You need to be logged in to view this page.");
+        return;
+      }
+      
+      try {
+        // Load user data
+        const answers = await getUserAnswers(user.id);
+        if (answers) {
+          setIdentity(answers.identity || "Professional");
+          setDesiredOutcome(answers.desired_outcome || "Professional clarity");
+        }
+        
+        // Mark onboarding as completed
+        await markOnboardingCompleted();
+        
+      } catch (error) {
+        console.error("Failed to load user data:", error);
+        toast.error("Failed to load your profile information.");
+      } finally {
+        setIsLoading(false);
+      }
       
       // Block navigation with browser's back button
       const handlePopState = (event: PopStateEvent) => {
@@ -50,34 +70,9 @@ export default function CardPage() {
     initializeCardPage();
   }, [user, markOnboardingCompleted]);
 
-  useEffect(() => {
-    // Load user data if not provided via state
-    async function loadUserData() {
-      try {
-        if (user?.id) {
-          const answers = await getUserAnswers(user.id);
-          if (answers) {
-            setIdentity(answers.identity);
-            setDesiredOutcome(answers.desired_outcome);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to load user data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    
-    loadUserData();
-  }, [user]);
-
-  // Handle button clicks
-  const handleGetStartedWithActions = () => {
-    handleDashboardTransition(true); // true = highlight recommended actions
-  };
-
+  // Handle navigation to dashboard
   const handleGoToDashboard = () => {
-    handleDashboardTransition(false); // false = don't highlight actions
+    handleDashboardTransition();
   };
 
   return (
@@ -90,9 +85,10 @@ export default function CardPage() {
       />
       
       <CompletionCard
-        onGetStarted={handleGetStartedWithActions}
         onGoToDashboard={handleGoToDashboard}
         isTransitioning={isTransitioning}
+        identity={identity}
+        desiredOutcome={desiredOutcome}
       />
     </CardPageLayout>
   );
