@@ -1,7 +1,7 @@
 
 import { UserAnswers } from "./types";
 
-export function getInsightFromAnswers(answers: UserAnswers): string {
+export function getBasicInsightFromAnswers(answers: UserAnswers): string {
   // Basic logic for insights based on the user's answers
   // In a real app, this would be more sophisticated
   
