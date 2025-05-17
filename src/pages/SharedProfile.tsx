@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
@@ -10,8 +10,10 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { ProfileLoadingState } from "@/components/profile/shared/ProfileLoadingState";
 import { ProfileNotFound } from "@/components/profile/shared/ProfileNotFound";
-import { SharedProfileSidebar } from "@/components/profile/shared/SharedProfileSidebar";
-import { SharedProfileContent } from "@/components/profile/shared/SharedProfileContent";
+import { ProfileLayout } from "@/components/profile/layout/ProfileLayout";
+import { ProfileContent } from "@/components/profile/layout/ProfileContent";
+import { ProfileFooter } from "@/components/profile/layout/ProfileFooter";
+import { useElementAnimation } from "@/utils/animationHelpers";
 import { processSkillsData, processExperiencesData, processEducationData } from "@/utils/profileDataUtils";
 
 interface SharedProfileData {
@@ -24,23 +26,29 @@ interface SharedProfileData {
   experiences: ExperienceItem[];
   educationItems: EducationItem[];
   coverColor: string;
-  highlightColor: string; // Added highlightColor
+  highlightColor: string;
   profileImage: string;
 }
 
 export default function SharedProfile() {
-  const { userId } = useParams();
+  // Updated to handle the new URL format with name-userId
+  const { userId: urlParam } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [profileData, setProfileData] = useState<SharedProfileData | null>(null);
-  
   const navigate = useNavigate();
+  const mainContentRef = useElementAnimation();
 
   useEffect(() => {
     async function loadProfile() {
-      if (!userId) {
+      if (!urlParam) {
         setIsLoading(false);
         return;
       }
+      
+      // Extract the actual userId from the URL - userId is everything after the last dash
+      const userId = urlParam.includes('-') 
+        ? urlParam.substring(urlParam.lastIndexOf('-') + 1) 
+        : urlParam;
       
       try {
         // Try to fetch user answers
@@ -100,22 +108,7 @@ export default function SharedProfile() {
     }
     
     loadProfile();
-  }, [userId]);
-
-  // Calculate theme colors based on primary color
-  const themeColors = profileData ? {
-    primary: profileData.coverColor,
-    light: `${profileData.coverColor}15`,
-    medium: `${profileData.coverColor}30`,
-    border: `${profileData.coverColor}50`,
-    text: profileData.coverColor,
-  } : {
-    primary: "#1A1F71",
-    light: "#1A1F7115",
-    medium: "#1A1F7130",
-    border: "#1A1F7150",
-    text: "#1A1F71",
-  };
+  }, [urlParam]);
 
   if (isLoading) {
     return <ProfileLoadingState />;
@@ -131,10 +124,7 @@ export default function SharedProfile() {
   };
 
   return (
-    <div 
-      className="min-h-screen flex flex-col"
-      style={{ backgroundColor: themeColors.light }}
-    >
+    <div className="min-h-screen flex flex-col">
       <div className="p-4">
         <Button variant="outline" onClick={() => navigate(-1)} className="flex items-center gap-2">
           <ArrowLeft size={16} />
@@ -142,45 +132,44 @@ export default function SharedProfile() {
         </Button>
       </div>
       
-      <ProfileHeader 
+      <ProfileLayout 
         userName={profileData.userName} 
-        role={profileData.role} 
-        user={{ id: userId }}
+        role={profileData.role}
+        user={{ id: urlParam }}
         coverColor={profileData.coverColor}
         highlightColor={profileData.highlightColor}
         onCoverColorChange={noop}
-        readOnly={true}
-      />
-
-      <main className="flex-1 container mx-auto px-4 py-8 md:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Column - Sidebar */}
-          <SharedProfileSidebar 
-            userName={profileData.userName}
-            role={profileData.role}
-            goal={profileData.goal}
-            userSkills={profileData.userSkills}
-            profileImage={profileData.profileImage}
-            coverColor={profileData.coverColor}
-            highlightColor={profileData.highlightColor}
-          />
-          
-          {/* Right Column - Content */}
-          <SharedProfileContent 
-            aboutText={profileData.aboutText}
-            experiences={profileData.experiences}
-            educationItems={profileData.educationItems}
-            highlightColor={profileData.highlightColor}
-          />
-        </div>
-      </main>
-
-      <footer 
-        className="text-center py-6 text-sm"
-        style={{ color: `${profileData.coverColor}90` }}
+        onHighlightColorChange={noop}
+        mainContentRef={mainContentRef}
       >
-        © 2025 Lansa N.V.
-      </footer>
+        <ProfileContent 
+          profile={{
+            ...profileData,
+            isLoading: false,
+            user: { id: urlParam },
+            updateCoverColor: noop,
+            updateHighlightColor: noop,
+            updateUserAnswer: noop,
+            updateAboutText: noop,
+            updateUserName: noop,
+            updatePhoneNumber: noop,
+            addSkill: noop,
+            removeSkill: noop,
+            addExperience: noop,
+            editExperience: noop,
+            removeExperience: noop,
+            addEducation: noop,
+            editEducation: noop,
+            removeEducation: noop,
+            uploadProfileImage: noop,
+            phoneNumber: ""
+          }}
+          textColor={profileData.coverColor}
+          navigate={navigate}
+        />
+        
+        <ProfileFooter coverColor={profileData.coverColor} />
+      </ProfileLayout>
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 
 interface ProfileHeaderActionsProps {
   userId?: string;
+  userName?: string;
   coverColor: string;
   highlightColor: string;
   onCoverColorChange: (color: string) => Promise<void>;
@@ -21,6 +22,7 @@ interface ProfileHeaderActionsProps {
 
 export function ProfileHeaderActions({ 
   userId, 
+  userName,
   coverColor, 
   highlightColor,
   onCoverColorChange, 
@@ -56,8 +58,13 @@ export function ProfileHeaderActions({
   const handleShare = () => {
     if (!userId) return;
     
-    // Generate a shareable URL
-    const shareableUrl = `${window.location.origin}/profile/share/${userId}`;
+    // Format the user name for the URL (remove spaces, lowercase)
+    const urlFriendlyName = userName 
+      ? userName.toLowerCase().replace(/\s+/g, '-') 
+      : 'user';
+    
+    // Generate a shareable URL that includes the name but still has the userId parameter
+    const shareableUrl = `${window.location.origin}/profile/share/${urlFriendlyName}-${userId}`;
     setShareUrl(shareableUrl);
     setIsShareDialogOpen(true);
   };
