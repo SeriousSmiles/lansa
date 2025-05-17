@@ -150,7 +150,6 @@ export function ProfileHeaderActions({
         textColor={textColor}
         coverColor={coverColor}
         isDarkTheme={isDarkTheme}
-        className="change-theme-button"
       >
         <Palette className="h-4 w-4" />
         <span>Change Theme</span>
@@ -161,7 +160,6 @@ export function ProfileHeaderActions({
         textColor={textColor}
         coverColor={coverColor}
         isDarkTheme={isDarkTheme}
-        className="change-highlights-button"
       >
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
@@ -187,7 +185,6 @@ export function ProfileHeaderActions({
         textColor={textColor}
         coverColor={coverColor}
         isDarkTheme={isDarkTheme}
-        className="share-profile-button"
       >
         <Share size={16} />
         <span>Share Profile</span>

@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -8,22 +9,17 @@ import { ExperienceSection } from "@/components/profile/ExperienceSection";
 import { EducationSection } from "@/components/profile/EducationSection";
 import { useProfileData } from "@/hooks/useProfileData";
 import { getContrastTextColor, generateThemeColors } from "@/utils/colorUtils";
-import { GuideButton } from "@/components/guide/GuideButton";
-import { runOnboardingSequence } from "@/utils/animationUtils";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import { gsap } from "gsap";
 import { useElementAnimation } from "@/utils/animationHelpers";
-import { toast } from "sonner";
 
 export default function Profile() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const profile = useProfileData(user?.id);
-  const guideButtonRef = useRef<HTMLButtonElement>(null);
   const mainContentRef = useElementAnimation();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [hasShownGuide, setHasShownGuide] = useState(false);
   
   // Generate theme colors based on primary color using our utility
   const themeColors = generateThemeColors(profile.coverColor);
@@ -70,30 +66,7 @@ export default function Profile() {
       ease: "power2.out",
       delay: 0.4
     });
-
-    // Check if this is the first time visiting the profile page
-    const hasVisitedProfile = localStorage.getItem('has_visited_profile');
-    if (!hasVisitedProfile && !hasShownGuide) {
-      // Short delay to ensure all elements are loaded
-      setTimeout(() => {
-        runOnboardingSequence();
-        setHasShownGuide(true);
-        localStorage.setItem('has_visited_profile', 'true');
-        
-        // Show a welcome toast
-        toast("Welcome to your profile!", {
-          description: "Use the guide button at the bottom right for help anytime.",
-          duration: 5000,
-        });
-      }, 1500);
-    }
-  }, [profile.isLoading, hasShownGuide]);
-
-  // Function to trigger the onboarding sequence
-  const handleStartOnboarding = () => {
-    console.log("Guide button clicked!");
-    runOnboardingSequence();
-  };
+  }, [profile.isLoading]);
 
   if (profile.isLoading) {
     return (
@@ -208,12 +181,6 @@ export default function Profile() {
       >
         © 2025 Lansa N.V.
       </footer>
-      
-      {/* Guide Button - Fixed positioning ensures it's always visible */}
-      <GuideButton 
-        onClick={handleStartOnboarding} 
-        ref={guideButtonRef}
-      />
     </div>
   );
 }
