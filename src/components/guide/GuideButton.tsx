@@ -45,8 +45,8 @@ export const GuideButton = forwardRef<HTMLButtonElement, GuideButtonProps>(
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
       e.stopPropagation();
-      // Ensure the onClick handler gets called
-      if (onClick) onClick();
+      // Call the onClick handler directly
+      onClick();
     };
     
     return (
