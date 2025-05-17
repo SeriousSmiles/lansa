@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,7 +6,7 @@ import { LoadingTransitionModal } from "@/components/loading/LoadingTransitionMo
 import { CompletionCard } from "@/components/card/CompletionCard";
 import { CardPageLayout } from "@/components/layouts/CardPageLayout";
 import { useOnboardingCompletion } from "@/hooks/useOnboardingCompletion";
-import { getProfileRole } from "@/services/question/profileDataService";
+import { getProfileRole } from "@/services/question";
 
 export default function CardPage() {
   const { state } = useLocation();

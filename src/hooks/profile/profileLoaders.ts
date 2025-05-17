@@ -5,7 +5,10 @@ import {
   getExperienceBasedOnRole, 
   getEducationBasedOnAnswers 
 } from "@/utils/profileUtils";
-import { getProfileRole, getProfileGoal } from "@/services/QuestionService";
+import { 
+  getProfileRole, 
+  getProfileGoal 
+} from "@/services/question";
 import { convertJsonToExperienceItems, convertJsonToEducationItems } from "@/utils/profileDataConverters";
 
 // Populate the profile from existing database data

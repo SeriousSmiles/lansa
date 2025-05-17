@@ -2,7 +2,7 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { getUserAnswers } from "@/services/QuestionService";
+import { getUserAnswers } from "@/services/question";
 import { useEffect, useState } from "react";
 import { Video, Clock, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";

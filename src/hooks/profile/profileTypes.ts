@@ -1,5 +1,4 @@
-
-import { UserAnswers } from "@/services/QuestionService";
+import { UserAnswers } from "@/services/question";
 
 export interface ExperienceItem {
   id?: string;

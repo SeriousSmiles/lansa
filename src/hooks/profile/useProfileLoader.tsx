@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getUserAnswers, getProfileRole, getProfileGoal, UserAnswers } from "@/services/QuestionService";
+import { getUserAnswers, getProfileRole, getProfileGoal, UserAnswers } from "@/services/question";
 import { 
   getSkillsBasedOnAnswers, 
   getExperienceBasedOnRole, 

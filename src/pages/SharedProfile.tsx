@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { UserProfile } from "@/hooks/profile/profileTypes";
 import { ExperienceItem, EducationItem } from "@/hooks/profile/profileTypes";
-import { getUserAnswers, getProfileRole, getProfileGoal } from "@/services/QuestionService";
+import { getUserAnswers, getProfileRole, getProfileGoal } from "@/services/question";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { ProfileLoadingState } from "@/components/profile/shared/ProfileLoadingState";

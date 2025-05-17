@@ -5,7 +5,7 @@ import {
   getProfileRole, 
   getProfileGoal,
   getBasicInsightFromAnswers
-} from "@/services/QuestionService";
+} from "@/services/question";
 import { useAuth } from "@/contexts/AuthContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { toast } from "sonner";

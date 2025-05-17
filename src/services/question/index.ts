@@ -3,3 +3,4 @@
 // to maintain backward compatibility
 export * from './question';
 export * from './insightService';
+export * from './types';

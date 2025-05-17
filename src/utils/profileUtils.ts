@@ -1,5 +1,5 @@
-
-import { UserAnswers } from "@/services/QuestionService";
+import { v4 as uuidv4 } from "@/utils/uuid";
+import { UserAnswers } from "@/services/question";
 import { ExperienceItem, EducationItem } from "@/hooks/profile/profileTypes";
 
 // Export interface declarations needed by other files

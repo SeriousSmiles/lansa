@@ -1,6 +1,11 @@
-import { UserAnswers } from "@/services/QuestionService";
+import { UserAnswers } from "@/services/question";
+import { 
+  getSkillsBasedOnAnswers, 
+  getExperienceBasedOnRole, 
+  getEducationBasedOnAnswers 
+} from "@/utils/profileUtils";
 import { ExperienceItem, EducationItem } from "@/hooks/profile/profileTypes";
-import { Json } from "@/integrations/supabase/types";
+import { v4 as uuidv4 } from "@/utils/uuid";
 
 /**
  * Process skills data from the database
