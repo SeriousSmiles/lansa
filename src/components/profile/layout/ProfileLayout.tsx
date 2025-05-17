@@ -14,6 +14,7 @@ interface ProfileLayoutProps {
   onCoverColorChange: (color: string) => Promise<void>;
   onHighlightColorChange?: (color: string) => Promise<void>;
   mainContentRef: React.RefObject<HTMLDivElement>;
+  readOnly?: boolean;
 }
 
 export function ProfileLayout({ 
@@ -26,7 +27,8 @@ export function ProfileLayout({
   highlightColor = "#FF6B4A",
   onCoverColorChange,
   onHighlightColorChange,
-  mainContentRef
+  mainContentRef,
+  readOnly = false
 }: ProfileLayoutProps) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -50,6 +52,7 @@ export function ProfileLayout({
         highlightColor={highlightColor}
         onCoverColorChange={onCoverColorChange}
         onHighlightColorChange={onHighlightColorChange}
+        readOnly={readOnly}
       />
 
       <main ref={mainContentRef} className="flex-1 container mx-auto px-4 py-8 md:py-12">

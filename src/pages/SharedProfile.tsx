@@ -55,15 +55,22 @@ export default function SharedProfile() {
         // Try to fetch user answers
         const answers = await getUserAnswers(userId);
         
-        // Try to fetch the user profile
+        // Try to fetch the user profile from the public profiles table
         const { data: profileData, error } = await supabase
           .from('user_profiles')
           .select('*')
           .eq('user_id', userId)
           .maybeSingle();
           
-        if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
+        if (error) {
+          console.error("Error fetching profile:", error);
           throw error;
+        }
+        
+        if (!profileData) {
+          console.log("No profile found for userId:", userId);
+          setIsLoading(false);
+          return;
         }
         
         console.log("Raw profile data:", profileData);
@@ -165,6 +172,7 @@ export default function SharedProfile() {
         onCoverColorChange={noopString}
         onHighlightColorChange={noopString}
         mainContentRef={mainContentRef}
+        readOnly={true}
       >
         <ProfileContent 
           profile={{

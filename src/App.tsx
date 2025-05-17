@@ -41,7 +41,7 @@ const App = () => {
                 <Route path="/resources" element={<PageTransition><Resources /></PageTransition>} />
                 <Route path="/content" element={<PageTransition><ContentLibrary /></PageTransition>} />
               </Route>
-              {/* Updated public shared profile route - no authentication required */}
+              {/* Public shared profile route - no authentication required */}
               <Route path="/profile/share/:userId" element={<PageTransition><SharedProfile /></PageTransition>} />
               <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
             </Routes>

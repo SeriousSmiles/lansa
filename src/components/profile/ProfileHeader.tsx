@@ -86,6 +86,7 @@ export function ProfileHeader({
                 <h3 className="text-lg font-medium">Profile Actions</h3>
                 <ProfileHeaderActions
                   userId={userId}
+                  userName={userName}
                   coverColor={coverColor}
                   highlightColor={highlightColor}
                   onCoverColorChange={onCoverColorChange}
@@ -103,6 +104,7 @@ export function ProfileHeader({
         !readOnly && (
           <ProfileHeaderActions
             userId={userId}
+            userName={userName}
             coverColor={coverColor}
             highlightColor={highlightColor}
             onCoverColorChange={onCoverColorChange}
