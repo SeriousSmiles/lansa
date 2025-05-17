@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 export const loadingStatuses = [
   "Setting up your personalized dashboard...",
   "Organizing your profile data...",
-  "Configuring your recommended actions...",
-  "Finalizing your professional clarity insights..."
+  "Configuring your recommended actions..."
 ];
 
 export const useLoadingStatus = (isOpen: boolean, isRefreshing: boolean = false) => {

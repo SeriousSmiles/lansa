@@ -70,7 +70,7 @@ export const useOnboardingCompletion = () => {
       setTimeout(() => {
         setIsRefreshing(true);
         navigate('/dashboard', { replace: true });
-      }, 10000); // Show loading for at least 10 seconds to display all statuses
+      }, 8000); // Reduced from 10000 to 8000 since we have fewer loading steps
       
     } catch (error) {
       console.error("Navigation error:", error);
