@@ -9,12 +9,11 @@ import { supabase } from "@/integrations/supabase/client";
 export default function ProtectedRoute() {
   const { user, updateDisplayName } = useAuth();
   const location = useLocation();
-  const [onboardingStatus, setOnboardingStatus] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [initialCheck, setInitialCheck] = useState(false);
 
   useEffect(() => {
-    async function checkOnboardingStatus() {
+    async function checkUserProfile() {
       if (user?.id) {
         try {
           // Fetch user profile to ensure display name is set
@@ -30,30 +29,18 @@ export default function ProtectedRoute() {
             }
           }
           
-          const userAnswers = await getUserAnswers(user.id);
-          console.log("User answers for onboarding check:", userAnswers);
-          
-          // Check if onboarding is complete using our helper function
-          const isComplete = hasCompletedOnboarding(userAnswers);
-          console.log("Has completed onboarding:", isComplete);
-          
-          setOnboardingStatus(isComplete);
-          setInitialCheck(true);
         } catch (error) {
-          console.error("Failed to check onboarding status:", error);
-          setOnboardingStatus(false);
-          setInitialCheck(true);
-          toast.error("Failed to check onboarding status. Please try again.");
+          console.error("Failed to fetch user profile:", error);
         }
         setLoading(false);
       } else {
-        setInitialCheck(true);
         setLoading(false);
       }
+      setInitialCheck(true);
     }
 
     if (user) {
-      checkOnboardingStatus();
+      checkUserProfile();
     } else {
       setInitialCheck(true);
       setLoading(false);
@@ -70,18 +57,9 @@ export default function ProtectedRoute() {
     );
   }
 
-  // If there's no user, redirect to auth page instead of onboarding
+  // If there's no user, redirect to auth page
   if (!user) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
-  }
-
-  if (loading && !initialCheck) {
-    // Show loading while checking onboarding status
-    return (
-      <div className="flex items-center justify-center h-screen bg-[rgba(253,248,242,1)]">
-        <p className="text-xl">Loading...</p>
-      </div>
-    );
   }
 
   // Special handling for card page and dashboard-ready page - these are part of the onboarding flow
@@ -91,7 +69,12 @@ export default function ProtectedRoute() {
     return <Outlet />;
   }
 
-  // REMOVED: Code that redirected users to onboarding page if they hadn't completed it
+  // Check if the user is accessing the dashboard page
+  if (location.pathname === "/dashboard" && !user) {
+    console.log("Unauthorized access attempt to dashboard, redirecting to auth");
+    return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
 
+  // If we get here, the user is authenticated, so allow access to the requested route
   return <Outlet />;
 }
