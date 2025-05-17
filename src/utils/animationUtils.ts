@@ -9,8 +9,7 @@ export const runOnboardingSequence = () => {
   
   // Show first onboarding step
   setTimeout(() => {
-    const toast1 = toast({
-      title: "Welcome to Your Profile Page!",
+    toast("Welcome to Your Profile Page!", {
       description: "Click the 'Change Theme' button to customize your profile's color theme.",
       duration: 7000,
       className: "onboarding-toast theme-button-tip",
@@ -40,8 +39,7 @@ export const runOnboardingSequence = () => {
     
     // Show second step
     setTimeout(() => {
-      const toast2 = toast({
-        title: "Customize Your Highlights",
+      toast("Customize Your Highlights", {
         description: "Click the 'Change Highlights' button to set your accent colors.",
         duration: 7000,
         className: "onboarding-toast highlight-button-tip",
@@ -73,8 +71,7 @@ export const runOnboardingSequence = () => {
       
       // Show final step
       setTimeout(() => {
-        const toast3 = toast({
-          title: "Share Your Profile",
+        toast("Share Your Profile", {
           description: "Use the 'Share Profile' button to generate a link to your public profile.",
           duration: 7000,
           className: "onboarding-toast share-button-tip",

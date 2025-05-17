@@ -1,10 +1,11 @@
 
 import * as React from "react";
 import { useEffect } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { LoadingProgress } from "./LoadingProgress";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { useLoadingStatus } from "@/hooks/useLoadingStatus";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 
 interface LoadingTransitionModalProps {
   isOpen: boolean;
@@ -33,6 +34,11 @@ export const LoadingTransitionModal = ({
   return (
     <Dialog open={isOpen} modal={true}>
       <DialogContent className="sm:max-w-md">
+        {/* Add DialogTitle for accessibility */}
+        <VisuallyHidden>
+          <DialogTitle>Loading Progress</DialogTitle>
+        </VisuallyHidden>
+        
         <div className="flex flex-col items-center justify-center p-6 space-y-6">
           <LoadingSpinner />
           
