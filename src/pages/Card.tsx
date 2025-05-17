@@ -3,10 +3,11 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
 import { getMagicMoment } from "@/utils/magicMomentUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserAnswers, saveUserAnswers } from "@/services/question";
+import { LoadingTransitionModal } from "@/components/loading/LoadingTransitionModal";
+import { toast } from "sonner";
 
 export default function CardPage() {
   const { state } = useLocation();
@@ -15,12 +16,13 @@ export default function CardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [identity, setIdentity] = useState<string | undefined>(state?.identity);
   const [desiredOutcome, setDesiredOutcome] = useState<string | undefined>(state?.desiredOutcome);
-  const [isNavigating, setIsNavigating] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [onboardingMarked, setOnboardingMarked] = useState(false);
 
+  // Mark onboarding as completed when this page loads
   useEffect(() => {
-    // Mark onboarding as completed when this page loads
     async function markOnboardingCompleted() {
-      if (user?.id) {
+      if (user?.id && !onboardingMarked) {
         try {
           // Load current user answers
           const userAnswers = await getUserAnswers(user.id);
@@ -34,15 +36,33 @@ export default function CardPage() {
             // Save the updated answers
             await saveUserAnswers(user.id, updatedAnswers);
             console.log("Onboarding marked as completed");
+            setOnboardingMarked(true);
           }
         } catch (error) {
           console.error("Failed to mark onboarding as completed:", error);
+          toast.error("Failed to update your profile. Please try again.");
         }
       }
     }
     
     markOnboardingCompleted();
-  }, [user]);
+    
+    // Block navigation with browser's back button
+    const handlePopState = (event: PopStateEvent) => {
+      // Prevent going back
+      event.preventDefault();
+      window.history.pushState(null, "", window.location.pathname);
+      return false;
+    };
+
+    window.history.pushState(null, "", window.location.pathname);
+    window.addEventListener('popstate', handlePopState);
+
+    // Clean up event listener
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [user, navigate, onboardingMarked]);
 
   useEffect(() => {
     // Load user data if not provided via state
@@ -67,23 +87,67 @@ export default function CardPage() {
 
   const magicMoment = getMagicMoment(identity, desiredOutcome);
 
-  const handleGetStartedWithActions = () => {
-    if (isNavigating) return;
-    setIsNavigating(true);
+  const handleGetStartedWithActions = async () => {
+    if (isTransitioning) return;
     
-    // Store flag to highlight recommended actions
-    localStorage.setItem('highlightRecommendedActions', 'true');
+    // Start transition and show loading modal
+    setIsTransitioning(true);
     
-    // Use replace: true to prevent going back to this page with browser back button
-    navigate('/dashboard', { replace: true });
+    try {
+      // Ensure onboarding is marked as completed
+      if (!onboardingMarked && user?.id) {
+        const userAnswers = await getUserAnswers(user.id);
+        if (userAnswers) {
+          await saveUserAnswers(user.id, {
+            ...userAnswers,
+            onboarding_completed: true
+          });
+        }
+      }
+      
+      // Store flag to highlight recommended actions
+      localStorage.setItem('highlightRecommendedActions', 'true');
+      
+      // Add artificial delay to show the loading states
+      setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 10000); // Show loading for at least 10 seconds to display all statuses
+      
+    } catch (error) {
+      console.error("Navigation error:", error);
+      toast.error("An error occurred. Please try again.");
+      setIsTransitioning(false);
+    }
   };
 
-  const handleGoToDashboard = () => {
-    if (isNavigating) return;
-    setIsNavigating(true);
+  const handleGoToDashboard = async () => {
+    if (isTransitioning) return;
     
-    // Use replace: true to prevent going back to this page with browser back button
-    navigate('/dashboard', { replace: true });
+    // Start transition and show loading modal
+    setIsTransitioning(true);
+    
+    try {
+      // Ensure onboarding is marked as completed
+      if (!onboardingMarked && user?.id) {
+        const userAnswers = await getUserAnswers(user.id);
+        if (userAnswers) {
+          await saveUserAnswers(user.id, {
+            ...userAnswers,
+            onboarding_completed: true
+          });
+        }
+      }
+      
+      // Add artificial delay to show the loading states
+      setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 10000); // Show loading for at least 10 seconds to display all statuses
+      
+    } catch (error) {
+      console.error("Navigation error:", error);
+      toast.error("An error occurred. Please try again.");
+      setIsTransitioning(false);
+    }
   };
 
   if (isLoading) {
@@ -96,6 +160,9 @@ export default function CardPage() {
 
   return (
     <div className="min-h-screen bg-[rgba(253,248,242,1)] flex flex-col">
+      {/* Loading transition modal */}
+      <LoadingTransitionModal isOpen={isTransitioning} />
+      
       <header className="flex min-h-[72px] w-full px-6 md:px-16 items-center justify-between">
         <div className="flex items-center gap-4">
           <img
@@ -146,16 +213,18 @@ export default function CardPage() {
                 <Button
                   onClick={handleGetStartedWithActions}
                   className="bg-[#FF6B4A] hover:bg-[#FF6B4A]/90 text-white text-lg py-6 px-8 h-auto rounded-lg"
+                  disabled={isTransitioning}
                 >
-                  Get Started with Actions
+                  {isTransitioning ? 'Setting up...' : 'Get Started with Actions'}
                 </Button>
                 
                 <Button
                   onClick={handleGoToDashboard}
                   variant="outline"
                   className="text-lg py-6 px-8 h-auto rounded-lg"
+                  disabled={isTransitioning}
                 >
-                  Go to Dashboard
+                  {isTransitioning ? 'Setting up...' : 'Go to Dashboard'}
                 </Button>
               </div>
             </div>
