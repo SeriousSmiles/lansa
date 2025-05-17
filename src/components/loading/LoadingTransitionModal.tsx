@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 
 interface LoadingTransitionModalProps {
@@ -52,7 +52,8 @@ export const LoadingTransitionModal = ({ isOpen }: LoadingTransitionModalProps) 
 
   return (
     <Dialog open={isOpen} modal={true}>
-      <DialogContent className="sm:max-w-md" showClose={false}>
+      <DialogContent className="sm:max-w-md">
+        {/* We're removing the close button by not including DialogClose */}
         <div className="flex flex-col items-center justify-center p-6 space-y-6">
           <div className="w-16 h-16 border-4 border-[#FF6B4A] border-solid rounded-full border-t-transparent animate-spin"></div>
           

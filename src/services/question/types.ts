@@ -13,4 +13,5 @@ export interface UserAnswers {
   age_group?: string;
   identity?: string;
   desired_outcome?: string;
+  onboarding_completed?: boolean;
 }
