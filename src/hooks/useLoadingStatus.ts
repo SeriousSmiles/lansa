@@ -8,7 +8,7 @@ export const loadingStatuses = [
   "Finalizing your professional clarity insights..."
 ];
 
-export const useLoadingStatus = (isOpen: boolean) => {
+export const useLoadingStatus = (isOpen: boolean, isRefreshing: boolean = false) => {
   const [currentStatusIndex, setCurrentStatusIndex] = useState(0);
   const [progress, setProgress] = useState(0);
 
@@ -34,6 +34,12 @@ export const useLoadingStatus = (isOpen: boolean) => {
         // Calculate next progress value
         const increment = 100 / (loadingStatuses.length * 5);
         const nextProgress = Math.min(prevProgress + increment, 100);
+        
+        // If progress is complete and we're refreshing, show refreshing message
+        if (nextProgress >= 100 && isRefreshing) {
+          setCurrentStatusIndex(loadingStatuses.length - 1);
+        }
+        
         return nextProgress;
       });
     }, 600);
@@ -42,7 +48,7 @@ export const useLoadingStatus = (isOpen: boolean) => {
       clearInterval(statusInterval);
       clearInterval(progressInterval);
     };
-  }, [isOpen]);
+  }, [isOpen, isRefreshing]);
 
   return {
     currentStatusIndex,

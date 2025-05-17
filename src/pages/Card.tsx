@@ -18,6 +18,7 @@ export default function CardPage() {
   
   const { 
     isTransitioning, 
+    isRefreshing,
     markOnboardingCompleted, 
     handleDashboardTransition 
   } = useOnboardingCompletion();
@@ -82,7 +83,10 @@ export default function CardPage() {
   return (
     <CardPageLayout isLoading={isLoading}>
       {/* Loading transition modal */}
-      <LoadingTransitionModal isOpen={isTransitioning} />
+      <LoadingTransitionModal 
+        isOpen={isTransitioning} 
+        isRefreshing={isRefreshing}
+      />
       
       <MagicMomentCard
         title={magicMoment.title}

@@ -10,6 +10,7 @@ import { toast } from "sonner";
  */
 export const useOnboardingCompletion = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [onboardingMarked, setOnboardingMarked] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -67,6 +68,7 @@ export const useOnboardingCompletion = () => {
       
       // Add artificial delay to show the loading states
       setTimeout(() => {
+        setIsRefreshing(true);
         navigate('/dashboard', { replace: true });
       }, 10000); // Show loading for at least 10 seconds to display all statuses
       
@@ -79,6 +81,7 @@ export const useOnboardingCompletion = () => {
 
   return {
     isTransitioning,
+    isRefreshing,
     onboardingMarked,
     markOnboardingCompleted,
     handleDashboardTransition

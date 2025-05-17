@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import * as React from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { LoadingProgress } from "./LoadingProgress";
 import { LoadingSpinner } from "./LoadingSpinner";
@@ -7,10 +7,11 @@ import { useLoadingStatus } from "@/hooks/useLoadingStatus";
 
 interface LoadingTransitionModalProps {
   isOpen: boolean;
+  isRefreshing?: boolean;
 }
 
-export const LoadingTransitionModal = ({ isOpen }: LoadingTransitionModalProps) => {
-  const { currentStatusIndex, progress, loadingStatuses } = useLoadingStatus(isOpen);
+export const LoadingTransitionModal = ({ isOpen, isRefreshing = false }: LoadingTransitionModalProps) => {
+  const { currentStatusIndex, progress, loadingStatuses } = useLoadingStatus(isOpen, isRefreshing);
 
   return (
     <Dialog open={isOpen} modal={true}>
