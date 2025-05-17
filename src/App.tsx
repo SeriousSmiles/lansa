@@ -14,6 +14,7 @@ import Dashboard from "./pages/Dashboard";
 import Resources from "./pages/Resources";
 import ContentLibrary from "./pages/ContentLibrary";
 import Card from "./pages/Card";
+import DashboardReady from "./pages/DashboardReady";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -34,6 +35,7 @@ const App = () => {
               <Route element={<ProtectedRoute />}>
                 <Route path="/onboarding" element={<PageTransition><Onboarding /></PageTransition>} />
                 <Route path="/card" element={<PageTransition><Card /></PageTransition>} />
+                <Route path="/dashboard-ready" element={<PageTransition><DashboardReady /></PageTransition>} />
                 <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
                 <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
                 <Route path="/resources" element={<PageTransition><Resources /></PageTransition>} />

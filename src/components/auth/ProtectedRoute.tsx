@@ -1,3 +1,4 @@
+
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -83,10 +84,10 @@ export default function ProtectedRoute() {
     );
   }
 
-  // Special handling for card page - this is the final step of onboarding
-  // Allow access to card page regardless of onboarding status
-  if (location.pathname === "/card") {
-    console.log("On card page, allowing access regardless of onboarding status");
+  // Special handling for card page and dashboard-ready page - these are part of the onboarding flow
+  // Allow access to these pages regardless of onboarding status
+  if (location.pathname === "/card" || location.pathname === "/dashboard-ready") {
+    console.log("On special page, allowing access regardless of onboarding status");
     return <Outlet />;
   }
 
@@ -98,10 +99,11 @@ export default function ProtectedRoute() {
   }
 
   // If user hasn't completed onboarding and is trying to access any protected 
-  // route other than onboarding, card, or result, redirect to onboarding
+  // route other than onboarding, card, or dashboard-ready, redirect to onboarding
   if (onboardingStatus === false && 
       location.pathname !== "/onboarding" && 
-      location.pathname !== "/card") {
+      location.pathname !== "/card" &&
+      location.pathname !== "/dashboard-ready") {
     console.log("User has not completed onboarding, redirecting to onboarding");
     return <Navigate to="/onboarding" replace />;
   }

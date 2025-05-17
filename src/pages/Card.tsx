@@ -11,6 +11,7 @@ import { toast } from "sonner";
 
 export default function CardPage() {
   const { state } = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [identity, setIdentity] = useState<string | undefined>(state?.identity);
@@ -29,6 +30,7 @@ export default function CardPage() {
     async function initializeCardPage() {
       if (!user?.id) {
         toast.error("You need to be logged in to view this page.");
+        navigate("/auth", { replace: true });
         return;
       }
       
@@ -46,6 +48,7 @@ export default function CardPage() {
       } catch (error) {
         console.error("Failed to load user data:", error);
         toast.error("Failed to load your profile information.");
+        navigate("/auth", { replace: true });
       } finally {
         setIsLoading(false);
       }
@@ -68,11 +71,16 @@ export default function CardPage() {
     }
     
     initializeCardPage();
-  }, [user, markOnboardingCompleted]);
+  }, [user, markOnboardingCompleted, navigate]);
 
-  // Handle navigation to dashboard
+  // Modified to navigate to the DashboardReady page instead of directly to Dashboard
   const handleGoToDashboard = () => {
     handleDashboardTransition();
+  };
+
+  // Modified to redirect to the DashboardReady page
+  const navigateToDashboardReady = () => {
+    navigate('/dashboard-ready', { replace: true });
   };
 
   return (
@@ -81,7 +89,7 @@ export default function CardPage() {
       <LoadingTransitionModal 
         isOpen={isTransitioning} 
         isRefreshing={isRefreshing}
-        onComplete={navigateToDashboard}
+        onComplete={navigateToDashboardReady}
       />
       
       <CompletionCard

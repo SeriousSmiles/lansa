@@ -56,7 +56,7 @@ export const CompletionCard: React.FC<CompletionCardProps> = ({
               className="bg-[#FF6B4A] hover:bg-[#FF6B4A]/90 text-white text-lg py-6 px-8 h-auto rounded-lg w-full md:w-auto"
               disabled={isTransitioning}
             >
-              {isTransitioning ? 'Setting up...' : 'Go to Dashboard'}
+              {isTransitioning ? 'Setting up...' : 'Build My Success Dashboard'}
             </Button>
           </div>
         </div>
