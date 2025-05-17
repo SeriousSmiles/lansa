@@ -21,6 +21,7 @@ interface SharedProfileData {
   userName: string;
   role: string;
   goal: string;
+  blocker: string;
   aboutText: string;
   userSkills: string[];
   experiences: ExperienceItem[];
@@ -88,6 +89,7 @@ export default function SharedProfile() {
           userName: profileData?.name || userId.split('@')[0],
           role: role,
           goal: goal,
+          blocker: answers?.question2 || "Identifying my unique value proposition",
           aboutText: profileData?.about_text || "",
           userSkills: processedSkills,
           experiences: processedExperiences,
@@ -166,15 +168,31 @@ export default function SharedProfile() {
       >
         <ProfileContent 
           profile={{
-            ...profileData,
+            // Include all required properties from ProfileDataReturn type
             isLoading: false,
             user: { id: urlParam },
+            userName: profileData.userName,
+            setUserName: () => {},  // Add missing property
+            userAnswers: null,      // Add missing property
+            role: profileData.role,
+            goal: profileData.goal,
+            blocker: profileData.blocker,  // Add missing property
+            phoneNumber: "",
+            aboutText: profileData.aboutText,
+            coverColor: profileData.coverColor,
+            highlightColor: profileData.highlightColor,
+            profileImage: profileData.profileImage,
+            userSkills: profileData.userSkills,
+            experiences: profileData.experiences,
+            educationItems: profileData.educationItems,
+            
+            // No-op functions for all update methods
+            updateUserName: noopString,
+            updatePhoneNumber: noopString,
+            updateAboutText: noopString,
             updateCoverColor: noopString,
             updateHighlightColor: noopString,
             updateUserAnswer: noopString,
-            updateAboutText: noopString,
-            updateUserName: noopString,
-            updatePhoneNumber: noopString,
             addSkill: noopString,
             removeSkill: noopString,
             addExperience: noopExperience,
@@ -183,8 +201,7 @@ export default function SharedProfile() {
             addEducation: noopEducation,
             editEducation: noopEditEducation,
             removeEducation: noopString,
-            uploadProfileImage: noopFile,
-            phoneNumber: ""
+            uploadProfileImage: noopFile
           }}
           textColor={profileData.coverColor}
           navigate={navigate}
