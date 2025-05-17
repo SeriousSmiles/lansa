@@ -90,12 +90,6 @@ export default function ProtectedRoute() {
     console.log("On card page, allowing access regardless of onboarding status");
     return <Outlet />;
   }
-  
-  // Special handling for result page - never redirect away from it
-  if (location.pathname === "/result") {
-    console.log("On result page, allowing access regardless of onboarding status");
-    return <Outlet />;
-  }
 
   // If user is accessing the onboarding but has already completed onboarding,
   // redirect them to the dashboard
@@ -108,8 +102,7 @@ export default function ProtectedRoute() {
   // route other than onboarding, card, or result, redirect to onboarding
   if (onboardingStatus === false && 
       location.pathname !== "/onboarding" && 
-      location.pathname !== "/card" && 
-      location.pathname !== "/result") {
+      location.pathname !== "/card") {
     console.log("User has not completed onboarding, redirecting to onboarding");
     return <Navigate to="/onboarding" replace />;
   }
