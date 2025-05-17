@@ -1,6 +1,5 @@
-
 import { QuestionCard } from "../QuestionCard";
-import { UserAnswers } from "@/services/QuestionService";
+import { UserAnswers } from "@/services/question/types";
 
 interface OutcomeStepProps {
   outcomeQuestions: any[];

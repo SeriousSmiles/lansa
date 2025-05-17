@@ -1,7 +1,7 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserAnswers } from "@/services/QuestionService";
+import { UserAnswers } from "@/services/question/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOnboardingFlow } from "@/hooks/useOnboardingFlow";
 import {

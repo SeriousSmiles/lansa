@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { getUserAnswers, getInsightFromAnswers } from "@/services/QuestionService";
+import { getUserAnswers, getInsightFromAnswers } from "@/services/question";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Result() {

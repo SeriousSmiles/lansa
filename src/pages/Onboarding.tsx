@@ -9,7 +9,7 @@ import {
   demographicsQuestions,
   identityQuestions,
   outcomeQuestions
-} from "@/services/QuestionService";
+} from "@/services/question";
 import { MultiStepForm } from "@/components/onboarding/MultiStepForm";
 
 export default function Onboarding() {

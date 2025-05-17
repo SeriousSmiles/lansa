@@ -1,6 +1,5 @@
-
 import { MagicMomentCard } from "../MagicMomentCard";
-import { UserAnswers } from "@/services/QuestionService";
+import { UserAnswers } from "@/services/question/types";
 
 interface MagicMomentStepProps {
   userAnswers: UserAnswers;

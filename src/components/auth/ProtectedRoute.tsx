@@ -2,7 +2,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUserAnswers, hasCompletedOnboarding } from "@/services/QuestionService";
+import { getUserAnswers, hasCompletedOnboarding } from "@/services/question";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 

@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { UserAnswers } from "@/services/QuestionService";
+import { UserAnswers } from "@/services/question/types";
 
 type Step = 'demographics' | 'identity' | 'outcome' | 'magic-moment';
 

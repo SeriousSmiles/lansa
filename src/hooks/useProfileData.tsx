@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getUserAnswers, getProfileRole, getProfileGoal } from "@/services/QuestionService";
+import { getUserAnswers, getProfileRole, getProfileGoal } from "@/services/question";
 import { useToast } from "@/hooks/use-toast";
 import { useProfileBasics } from "./profile/useProfileBasics";
 import { useProfileSkills } from "./profile/useProfileSkills";
