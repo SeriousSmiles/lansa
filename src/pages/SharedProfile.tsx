@@ -118,9 +118,21 @@ export default function SharedProfile() {
     return <ProfileNotFound />;
   }
 
-  // Create a no-op function that returns a Promise to satisfy the type requirement
-  const noop = async (_: string) => {
+  // Create no-op functions that correctly match the expected parameter types
+  const noopString = async (_: string) => {
     return Promise.resolve();
+  };
+  
+  const noopExperience = async (_: ExperienceItem) => {
+    return Promise.resolve();
+  };
+  
+  const noopEducation = async (_: EducationItem) => {
+    return Promise.resolve();
+  };
+  
+  const noopFile = async (_: File): Promise<string> => {
+    return Promise.resolve("");
   };
 
   return (
@@ -138,8 +150,8 @@ export default function SharedProfile() {
         user={{ id: urlParam }}
         coverColor={profileData.coverColor}
         highlightColor={profileData.highlightColor}
-        onCoverColorChange={noop}
-        onHighlightColorChange={noop}
+        onCoverColorChange={noopString}
+        onHighlightColorChange={noopString}
         mainContentRef={mainContentRef}
       >
         <ProfileContent 
@@ -147,21 +159,21 @@ export default function SharedProfile() {
             ...profileData,
             isLoading: false,
             user: { id: urlParam },
-            updateCoverColor: noop,
-            updateHighlightColor: noop,
-            updateUserAnswer: noop,
-            updateAboutText: noop,
-            updateUserName: noop,
-            updatePhoneNumber: noop,
-            addSkill: noop,
-            removeSkill: noop,
-            addExperience: noop,
-            editExperience: noop,
-            removeExperience: noop,
-            addEducation: noop,
-            editEducation: noop,
-            removeEducation: noop,
-            uploadProfileImage: noop,
+            updateCoverColor: noopString,
+            updateHighlightColor: noopString,
+            updateUserAnswer: noopString,
+            updateAboutText: noopString,
+            updateUserName: noopString,
+            updatePhoneNumber: noopString,
+            addSkill: noopString,
+            removeSkill: noopString,
+            addExperience: noopExperience,
+            editExperience: noopExperience,
+            removeExperience: noopString,
+            addEducation: noopEducation,
+            editEducation: noopEducation,
+            removeEducation: noopString,
+            uploadProfileImage: noopFile,
             phoneNumber: ""
           }}
           textColor={profileData.coverColor}
