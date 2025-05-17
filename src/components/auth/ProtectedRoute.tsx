@@ -91,22 +91,7 @@ export default function ProtectedRoute() {
     return <Outlet />;
   }
 
-  // If user is accessing the onboarding but has already completed onboarding,
-  // redirect them to the dashboard
-  if (location.pathname === "/onboarding" && onboardingStatus === true) {
-    console.log("User has completed onboarding, redirecting to dashboard");
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  // If user hasn't completed onboarding and is trying to access any protected 
-  // route other than onboarding, card, or dashboard-ready, redirect to onboarding
-  if (onboardingStatus === false && 
-      location.pathname !== "/onboarding" && 
-      location.pathname !== "/card" &&
-      location.pathname !== "/dashboard-ready") {
-    console.log("User has not completed onboarding, redirecting to onboarding");
-    return <Navigate to="/onboarding" replace />;
-  }
+  // REMOVED: Code that redirected users to onboarding page if they hadn't completed it
 
   return <Outlet />;
 }
