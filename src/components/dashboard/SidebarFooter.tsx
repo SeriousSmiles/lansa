@@ -42,7 +42,7 @@ export function SidebarFooterContent({ userName, email, handleLogout, themeColor
         handleLogout={handleLogout}
         themeColor={themeColor}
       />
-      <div className="mt-4 text-xs text-center text-muted-foreground">
+      <div className="mt-4 text-xs text-center text-[#1A1F71]">
         &copy; {new Date().getFullYear()} Lansa N.V.
       </div>
     </SidebarFooter>

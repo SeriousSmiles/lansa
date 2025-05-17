@@ -22,8 +22,8 @@ export function AuthLayout({ children, imageSrc }: AuthLayoutProps) {
           {children}
         </main>
 
-        <footer className="text-white self-stretch min-h-[72px] w-full gap-[5px] text-sm font-normal text-center max-md:max-w-full">
-          © 2022 Relume
+        <footer className="text-[#1A1F71] self-stretch min-h-[72px] w-full gap-[5px] text-sm font-normal text-center max-md:max-w-full">
+          © 2025 Lansa
         </footer>
       </div>
 
