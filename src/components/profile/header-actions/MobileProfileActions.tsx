@@ -1,0 +1,122 @@
+
+import { Button } from "@/components/ui/button";
+import { Palette, Share } from "lucide-react";
+import { ThemeColorPicker } from "../dialogs/ThemeColorPicker";
+import { HighlightColorPicker } from "../dialogs/HighlightColorPicker";
+import { ShareProfileDialog } from "../dialogs/ShareProfileDialog";
+import { useProfileActions } from "@/hooks/useProfileActions";
+
+interface MobileProfileActionsProps {
+  userId?: string;
+  userName?: string;
+  coverColor: string;
+  highlightColor: string;
+  onCoverColorChange: (color: string) => Promise<void>;
+  onHighlightColorChange?: (color: string) => Promise<void>;
+  onActionComplete?: () => void;
+}
+
+export function MobileProfileActions({
+  userId,
+  userName,
+  coverColor,
+  highlightColor,
+  onCoverColorChange,
+  onHighlightColorChange,
+  onActionComplete
+}: MobileProfileActionsProps) {
+  const {
+    isColorPickerOpen,
+    setIsColorPickerOpen,
+    isHighlightPickerOpen,
+    setIsHighlightPickerOpen,
+    isShareDialogOpen,
+    setIsShareDialogOpen,
+    shareUrl,
+    selectedColor,
+    selectedHighlightColor,
+    handleColorSelect,
+    handleHighlightColorSelect,
+    handleShare,
+  } = useProfileActions({
+    userId,
+    userName,
+    coverColor,
+    highlightColor,
+    onCoverColorChange,
+    onHighlightColorChange,
+    onActionComplete
+  });
+
+  return (
+    <div className="flex flex-col w-full gap-3">
+      <Button
+        onClick={() => setIsColorPickerOpen(true)}
+        className="w-full justify-start"
+        variant="outline"
+      >
+        <Palette className="h-4 w-4 mr-2" />
+        Change Theme
+      </Button>
+      
+      <Button
+        onClick={() => setIsHighlightPickerOpen(true)}
+        className="w-full justify-start"
+        variant="outline"
+      >
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          width="16" 
+          height="16" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="2" 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+          className="h-4 w-4 mr-2"
+        >
+          <path d="M12 19H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5.5" />
+          <path d="M16 19h6" />
+          <path d="M19 16v6" />
+        </svg>
+        Change Highlights
+      </Button>
+      
+      <Button
+        onClick={handleShare}
+        className="w-full justify-start"
+        variant="outline"
+      >
+        <Share size={16} className="mr-2" />
+        Share Profile
+      </Button>
+      
+      {/* Dialog Components */}
+      <ThemeColorPicker
+        isOpen={isColorPickerOpen}
+        onOpenChange={setIsColorPickerOpen}
+        selectedColor={selectedColor}
+        onColorSelect={handleColorSelect}
+        title="Select Theme Color"
+        description="Choose a color for your profile theme"
+      />
+      
+      <HighlightColorPicker
+        isOpen={isHighlightPickerOpen}
+        onOpenChange={setIsHighlightPickerOpen}
+        selectedColor={selectedHighlightColor}
+        onColorSelect={handleHighlightColorSelect}
+      />
+      
+      <ShareProfileDialog
+        isOpen={isShareDialogOpen}
+        onOpenChange={(open) => {
+          setIsShareDialogOpen(open);
+          if (!open) onActionComplete?.();
+        }}
+        shareUrl={shareUrl}
+      />
+    </div>
+  );
+}

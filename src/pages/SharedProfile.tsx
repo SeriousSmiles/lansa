@@ -127,7 +127,17 @@ export default function SharedProfile() {
     return Promise.resolve();
   };
   
+  // Fixed function signature for editExperience
+  const noopEditExperience = async (_id: string, _experience: ExperienceItem) => {
+    return Promise.resolve();
+  };
+  
   const noopEducation = async (_: EducationItem) => {
+    return Promise.resolve();
+  };
+  
+  // Fixed function signature for editEducation
+  const noopEditEducation = async (_id: string, _education: EducationItem) => {
     return Promise.resolve();
   };
   
@@ -168,10 +178,10 @@ export default function SharedProfile() {
             addSkill: noopString,
             removeSkill: noopString,
             addExperience: noopExperience,
-            editExperience: noopExperience,
+            editExperience: noopEditExperience,
             removeExperience: noopString,
             addEducation: noopEducation,
-            editEducation: noopEducation,
+            editEducation: noopEditEducation,
             removeEducation: noopString,
             uploadProfileImage: noopFile,
             phoneNumber: ""
