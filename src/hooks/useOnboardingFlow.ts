@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { UserAnswers } from "@/services/question/types";
 
-type Step = 'demographics' | 'identity' | 'outcome' | 'magic-moment';
+type Step = 'demographics' | 'identity' | 'outcome';
 
 interface UseOnboardingFlowProps {
   initialAnswers: UserAnswers;
@@ -20,8 +21,8 @@ export function useOnboardingFlow({ initialAnswers, demographicsQuestions }: Use
       if (answers.identity) {
         // Identity completed
         if (answers.desired_outcome) {
-          // All steps completed, show magic moment
-          setCurrentStep('magic-moment');
+          // All steps completed, ready to proceed to card page
+          setCurrentStep('outcome');
         } else {
           // Show outcome step
           setCurrentStep('outcome');
@@ -53,16 +54,14 @@ export function useOnboardingFlow({ initialAnswers, demographicsQuestions }: Use
         return demographicsQuestions.length + 1;
       case 'outcome':
         return demographicsQuestions.length + 2;
-      case 'magic-moment':
-        return demographicsQuestions.length + 3;
       default:
         return 1;
     }
   };
 
   const getTotalSteps = (): number => {
-    // Demographics + Identity + Outcome + Magic Moment
-    return demographicsQuestions.length + 3;
+    // Demographics + Identity + Outcome
+    return demographicsQuestions.length + 2;
   };
 
   return {

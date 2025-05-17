@@ -1,13 +1,13 @@
 
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { getMagicMoment } from "@/utils/magicMomentUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserAnswers } from "@/services/question";
 import { LoadingTransitionModal } from "@/components/loading/LoadingTransitionModal";
-import { MagicMomentCard } from "@/components/card/MagicMomentCard";
+import { CompletionCard } from "@/components/card/CompletionCard";
 import { CardPageLayout } from "@/components/layouts/CardPageLayout";
 import { useOnboardingCompletion } from "@/hooks/useOnboardingCompletion";
+import { getProfileRole } from "@/services/question/profileDataService";
 
 export default function CardPage() {
   const { state } = useLocation();
@@ -70,8 +70,6 @@ export default function CardPage() {
     loadUserData();
   }, [user]);
 
-  const magicMoment = getMagicMoment(identity, desiredOutcome);
-
   const handleGetStartedWithActions = () => {
     handleDashboardTransition(true); // true = highlight recommended actions
   };
@@ -88,10 +86,7 @@ export default function CardPage() {
         isRefreshing={isRefreshing}
       />
       
-      <MagicMomentCard
-        title={magicMoment.title}
-        reflection={magicMoment.reflection}
-        insight={magicMoment.insight}
+      <CompletionCard
         onGetStarted={handleGetStartedWithActions}
         onGoToDashboard={handleGoToDashboard}
         isTransitioning={isTransitioning}

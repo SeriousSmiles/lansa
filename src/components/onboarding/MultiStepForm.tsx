@@ -7,8 +7,7 @@ import { useOnboardingFlow } from "@/hooks/useOnboardingFlow";
 import {
   DemographicsStep,
   IdentityStep,
-  OutcomeStep,
-  MagicMomentStep
+  OutcomeStep
 } from "./steps";
 
 interface MultiStepFormProps {
@@ -69,9 +68,8 @@ export function MultiStepForm({
     }
   };
 
-  // Handle completion of the magic moment step
-  const handleMagicMomentComplete = () => {
-    // Navigate to the card page with the answer data
+  // Handle completion of the outcome step - go directly to the card page
+  const handleOutcomeComplete = () => {
     navigate('/card', { 
       state: { 
         identity: answers.identity,
@@ -116,17 +114,8 @@ export function MultiStepForm({
           outcomeQuestions={outcomeQuestions}
           userAnswers={answers}
           onSaveAnswer={handleSaveAnswer}
-          onComplete={() => setCurrentStep('magic-moment')}
+          onComplete={handleOutcomeComplete}
           isSubmitting={isSubmitting}
-          stepNumber={stepNumber}
-          totalSteps={totalSteps}
-        />
-      );
-    } else if (currentStep === 'magic-moment') {
-      return (
-        <MagicMomentStep
-          userAnswers={answers}
-          onComplete={handleMagicMomentComplete}
           stepNumber={stepNumber}
           totalSteps={totalSteps}
         />
