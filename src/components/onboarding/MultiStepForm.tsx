@@ -142,6 +142,3 @@ export function MultiStepForm({
     </div>
   );
 }
-
-// Add missing import
-import { useEffect } from "react";
