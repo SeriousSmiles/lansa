@@ -1,0 +1,115 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { getUserAnswers, getProfileRole, getProfileGoal } from "@/services/question";
+import { UserProfile } from "@/hooks/profile/profileTypes";
+import { ExperienceItem, EducationItem } from "@/hooks/profile/profileTypes";
+import { processSkillsData, processExperiencesData, processEducationData } from "@/utils/profileDataUtils";
+
+export interface SharedProfileData {
+  userProfile: UserProfile | null;
+  userName: string;
+  role: string;
+  goal: string;
+  blocker: string;
+  aboutText: string;
+  userSkills: string[];
+  experiences: ExperienceItem[];
+  educationItems: EducationItem[];
+  coverColor: string;
+  highlightColor: string;
+  profileImage: string;
+}
+
+export function useSharedProfileData(urlParam: string | undefined) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [profileData, setProfileData] = useState<SharedProfileData | null>(null);
+
+  useEffect(() => {
+    async function loadProfile() {
+      if (!urlParam) {
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log("URL parameter received:", urlParam);
+      
+      // Extract the actual userId from the URL
+      // If the URL contains a dash, the userId is everything after the last dash
+      // Otherwise, use the whole urlParam as the userId
+      const userId = urlParam.includes('-') 
+        ? urlParam.substring(urlParam.lastIndexOf('-') + 1) 
+        : urlParam;
+      
+      console.log("Extracted userId:", userId);
+      
+      try {
+        // Try to fetch user answers
+        const answers = await getUserAnswers(userId);
+        console.log("User answers:", answers);
+        
+        // Try to fetch the user profile from the public profiles table
+        const { data: profileData, error } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .maybeSingle();
+          
+        if (error) {
+          console.error("Error fetching profile:", error);
+          throw error;
+        }
+        
+        if (!profileData) {
+          console.log("No profile found for userId:", userId);
+          setIsLoading(false);
+          return;
+        }
+        
+        console.log("Raw profile data:", profileData);
+        
+        // Process the profile data to ensure proper types
+        const processedExperiences = profileData?.experiences 
+          ? processExperiencesData(profileData.experiences, answers)
+          : [];
+          
+        const processedEducation = profileData?.education 
+          ? processEducationData(profileData.education, answers)
+          : [];
+          
+        const processedSkills = processSkillsData(profileData?.skills, answers);
+        
+        // Get proper role and goal based on either legacy or new onboarding answers
+        const role = getProfileRole(answers?.question1, answers?.identity);
+        const goal = getProfileGoal(answers?.question3, answers?.desired_outcome);
+        
+        // Create a properly typed profile object
+        const profile: SharedProfileData = {
+          userProfile: null,
+          userName: profileData?.name || userId.split('@')[0],
+          role: role,
+          goal: goal,
+          blocker: answers?.question2 || "Identifying my unique value proposition",
+          aboutText: profileData?.about_text || "",
+          userSkills: processedSkills,
+          experiences: processedExperiences,
+          educationItems: processedEducation,
+          coverColor: profileData?.cover_color || "#1A1F71",
+          highlightColor: profileData?.highlight_color || "#FF6B4A",
+          profileImage: profileData?.profile_image || ""
+        };
+        
+        console.log("Processed profile data:", profile);
+        
+        setProfileData(profile);
+      } catch (error) {
+        console.error("Error loading shared profile data:", error);
+      }
+      
+      setIsLoading(false);
+    }
+    
+    loadProfile();
+  }, [urlParam]);
+
+  return { isLoading, profileData };
+}
