@@ -38,7 +38,7 @@ export function ShareProfileDialog({
         <DialogHeader>
           <DialogTitle>Share your profile</DialogTitle>
           <DialogDescription>
-            Anyone with this link can view your profile without needing to sign in.
+            Anyone with this link can view your personalized professional profile without needing to sign in.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4">
@@ -46,7 +46,7 @@ export function ShareProfileDialog({
             <input 
               value={shareUrl} 
               readOnly 
-              className="flex-grow p-2 border rounded"
+              className="flex-grow p-2 border rounded text-sm"
               onClick={(e) => e.currentTarget.select()}
             />
             <Button onClick={copyToClipboard}>
@@ -58,6 +58,9 @@ export function ShareProfileDialog({
               Link copied to clipboard!
             </div>
           )}
+          <div className="text-xs text-gray-500 mt-2">
+            Your profile link is personalized with your name but will always work even if you change your display name later.
+          </div>
         </div>
       </DialogContent>
     </Dialog>

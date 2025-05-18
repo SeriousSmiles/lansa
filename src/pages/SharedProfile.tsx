@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,7 +31,7 @@ interface SharedProfileData {
 }
 
 export default function SharedProfile() {
-  // Updated to handle the new URL format with name-userId
+  // Get the URL parameter which could be either just userId or name-userId format
   const { userId: urlParam } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [profileData, setProfileData] = useState<SharedProfileData | null>(null);
@@ -46,14 +45,21 @@ export default function SharedProfile() {
         return;
       }
       
-      // Extract the actual userId from the URL - userId is everything after the last dash
+      console.log("URL parameter received:", urlParam);
+      
+      // Extract the actual userId from the URL
+      // If the URL contains a dash, the userId is everything after the last dash
+      // Otherwise, use the whole urlParam as the userId
       const userId = urlParam.includes('-') 
         ? urlParam.substring(urlParam.lastIndexOf('-') + 1) 
         : urlParam;
       
+      console.log("Extracted userId:", userId);
+      
       try {
         // Try to fetch user answers
         const answers = await getUserAnswers(userId);
+        console.log("User answers:", answers);
         
         // Try to fetch the user profile from the public profiles table
         const { data: profileData, error } = await supabase
