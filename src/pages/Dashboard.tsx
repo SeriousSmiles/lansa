@@ -35,6 +35,7 @@ export default function Dashboard() {
     const shouldHighlight = localStorage.getItem('highlightRecommendedActions') === 'true';
     if (shouldHighlight) {
       setHighlightActions(true);
+      // Clean up the flag after using it to prevent multiple highlights
       localStorage.removeItem('highlightRecommendedActions');
     }
   }, [user]);

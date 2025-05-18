@@ -24,6 +24,7 @@ export const LoadingTransitionModal = ({
   useEffect(() => {
     if (progress === 100 && onComplete) {
       const timer = setTimeout(() => {
+        console.log("Loading complete, calling onComplete callback");
         onComplete();
       }, 500); // Small delay after reaching 100% to ensure animation completes
       

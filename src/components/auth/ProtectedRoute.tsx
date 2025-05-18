@@ -14,13 +14,15 @@ export default function ProtectedRoute() {
   const [initialCheck, setInitialCheck] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
-  const [isReadyForDashboard, setIsReadyForDashboard] = useState(false);
+  // Track if we've already handled the dashboard transition
+  const [dashboardTransitionHandled, setDashboardTransitionHandled] = useState(false);
 
   // Handle transition to dashboard once validation is complete
   const handleDashboardTransitionComplete = () => {
     setIsValidating(false);
-    // Navigate to dashboard
-    window.location.href = "/dashboard";
+    // Prevent refreshing the page which causes the loop
+    // Navigate to dashboard without forcing a page refresh
+    window.history.replaceState({}, '', '/dashboard');
   };
 
   useEffect(() => {
@@ -50,9 +52,9 @@ export default function ProtectedRoute() {
           setOnboardingCompleted(completed);
           
           // If the user has completed onboarding and is trying to access the dashboard,
-          // mark them as ready for dashboard
-          if (completed && location.pathname === "/dashboard") {
-            setIsReadyForDashboard(true);
+          // mark them as ready for dashboard only if we haven't already handled the transition
+          if (completed && location.pathname === "/dashboard" && !dashboardTransitionHandled) {
+            setDashboardTransitionHandled(true);
           }
           
         } catch (error) {
@@ -71,7 +73,15 @@ export default function ProtectedRoute() {
       setInitialCheck(true);
       setLoading(false);
     }
-  }, [user, updateDisplayName, location.pathname]);
+  }, [user, updateDisplayName, location.pathname, dashboardTransitionHandled]);
+
+  // Effect to handle dashboard transition state
+  useEffect(() => {
+    // Only trigger validation if we're ready and haven't handled it yet
+    if (dashboardTransitionHandled && !isValidating && location.pathname === "/dashboard") {
+      setIsValidating(true);
+    }
+  }, [dashboardTransitionHandled, isValidating, location.pathname]);
 
   // If we're still on the first load, show a more substantial loading indicator
   if (!initialCheck) {
@@ -102,18 +112,12 @@ export default function ProtectedRoute() {
     return <Navigate to="/onboarding" state={{ from: location }} replace />;
   }
 
-  // If the user has completed onboarding and is trying to access the dashboard,
-  // show the loading transition before allowing access
-  if (isReadyForDashboard && !isValidating && location.pathname === "/dashboard") {
-    setIsValidating(true);
-  }
-
   // If we get here, the user is authenticated, so allow access to the requested route
   return (
     <>
       <LoadingTransitionModal 
         isOpen={isValidating} 
-        isRefreshing={true}
+        isRefreshing={false}
         onComplete={handleDashboardTransitionComplete} 
       />
       <Outlet />
