@@ -70,12 +70,29 @@ export function MultiStepForm({
 
   // Handle completion of the outcome step - go directly to the card page
   const handleOutcomeComplete = () => {
-    navigate('/card', { 
-      state: { 
-        identity: answers.identity,
-        desiredOutcome: answers.desired_outcome
-      } 
-    });
+    // Mark onboarding as completed in the final step
+    if (user?.id) {
+      const updatedAnswers = { 
+        ...answers, 
+        onboarding_completed: true 
+      };
+      
+      onSaveAnswers(user.id, updatedAnswers).then(() => {
+        navigate('/card', { 
+          state: { 
+            identity: answers.identity,
+            desiredOutcome: answers.desired_outcome
+          } 
+        });
+      });
+    } else {
+      navigate('/card', { 
+        state: { 
+          identity: answers.identity,
+          desiredOutcome: answers.desired_outcome
+        } 
+      });
+    }
   };
 
   // Render the appropriate step

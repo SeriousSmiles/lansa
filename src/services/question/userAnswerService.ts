@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { UserAnswers } from "./types";
@@ -43,6 +44,7 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
           age_group: answers.age_group || existingAnswers.age_group,
           identity: answers.identity || existingAnswers.identity,
           desired_outcome: answers.desired_outcome || existingAnswers.desired_outcome,
+          onboarding_completed: answers.onboarding_completed || existingAnswers.onboarding_completed,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', userId);
@@ -66,7 +68,8 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
           gender: answers.gender,
           age_group: answers.age_group,
           identity: answers.identity,
-          desired_outcome: answers.desired_outcome
+          desired_outcome: answers.desired_outcome,
+          onboarding_completed: answers.onboarding_completed
         }]);
       
       if (error) {
@@ -127,7 +130,7 @@ export async function getUserAnswers(userId: string): Promise<UserAnswers | null
     console.log("Fetching user answers for:", userId);
     const { data, error } = await supabase
       .from('user_answers')
-      .select('question1, question2, question3, gender, age_group, identity, desired_outcome')
+      .select('question1, question2, question3, gender, age_group, identity, desired_outcome, onboarding_completed')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(1);

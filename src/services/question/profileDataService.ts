@@ -35,6 +35,11 @@ export function getProfileGoal(answer3?: string, desiredOutcome?: string): strin
 export function hasCompletedOnboarding(answers: UserAnswers | null): boolean {
   if (!answers) return false;
   
+  // Check if onboarding_completed flag is explicitly set
+  if (answers.onboarding_completed === true) {
+    return true;
+  }
+  
   // Check if legacy onboarding was completed
   if (answers.question3) {
     return true;

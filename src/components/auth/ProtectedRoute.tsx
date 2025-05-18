@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getUserAnswers, hasCompletedOnboarding } from "@/services/question";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { LoadingTransitionModal } from "@/components/loading/LoadingTransitionModal";
 
 export default function ProtectedRoute() {
   const { user, updateDisplayName } = useAuth();
@@ -12,6 +13,15 @@ export default function ProtectedRoute() {
   const [loading, setLoading] = useState(true);
   const [initialCheck, setInitialCheck] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const [isReadyForDashboard, setIsReadyForDashboard] = useState(false);
+
+  // Handle transition to dashboard once validation is complete
+  const handleDashboardTransitionComplete = () => {
+    setIsValidating(false);
+    // Navigate to dashboard
+    window.location.href = "/dashboard";
+  };
 
   useEffect(() => {
     async function checkUserProfile() {
@@ -35,6 +45,12 @@ export default function ProtectedRoute() {
           const completed = hasCompletedOnboarding(userAnswers);
           setOnboardingCompleted(completed);
           
+          // If the user has completed onboarding and is trying to access the dashboard,
+          // mark them as ready for dashboard
+          if (completed && location.pathname === "/dashboard") {
+            setIsReadyForDashboard(true);
+          }
+          
         } catch (error) {
           console.error("Failed to fetch user profile:", error);
         }
@@ -51,7 +67,7 @@ export default function ProtectedRoute() {
       setInitialCheck(true);
       setLoading(false);
     }
-  }, [user, updateDisplayName]);
+  }, [user, updateDisplayName, location.pathname]);
 
   // If we're still on the first load, show a more substantial loading indicator
   if (!initialCheck) {
@@ -82,6 +98,21 @@ export default function ProtectedRoute() {
     return <Navigate to="/onboarding" state={{ from: location }} replace />;
   }
 
+  // If the user has completed onboarding and is trying to access the dashboard,
+  // show the loading transition before allowing access
+  if (isReadyForDashboard && !isValidating && location.pathname === "/dashboard") {
+    setIsValidating(true);
+  }
+
   // If we get here, the user is authenticated, so allow access to the requested route
-  return <Outlet />;
+  return (
+    <>
+      <LoadingTransitionModal 
+        isOpen={isValidating} 
+        isRefreshing={true}
+        onComplete={handleDashboardTransitionComplete} 
+      />
+      <Outlet />
+    </>
+  );
 }
