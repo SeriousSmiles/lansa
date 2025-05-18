@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserAnswers, getProfileRole, getProfileGoal } from "@/services/question";
@@ -34,11 +35,11 @@ export function useSharedProfileData(urlParam: string | undefined) {
       console.log("URL parameter received:", urlParam);
       
       // Extract the actual userId from the URL
-      // If the URL contains a dash, the userId is everything after the last dash
-      // Otherwise, use the whole urlParam as the userId
-      const userId = urlParam.includes('-') 
-        ? urlParam.substring(urlParam.lastIndexOf('-') + 1) 
-        : urlParam;
+      // The URL format is expected to be "name-UUID" where UUID is a standard 36-character UUID
+      // We need to extract the last 36 characters regardless of naming format
+      const uuidRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const match = urlParam.match(uuidRegex);
+      const userId = match ? match[0] : urlParam;
       
       console.log("Extracted userId:", userId);
       

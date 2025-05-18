@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 
 interface UseProfileActionsProps {
@@ -47,10 +48,11 @@ export function useProfileActions({
     
     // Format the user name for the URL (remove spaces, lowercase)
     const urlFriendlyName = userName 
-      ? userName.toLowerCase().replace(/\s+/g, '-') 
+      ? userName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') 
       : 'user';
     
-    // Generate a shareable URL with the name-userId format, ensuring the userId is still extractable
+    // Generate a shareable URL with the name-userId format
+    // Make sure we're using the FULL userId for the link
     const shareableUrl = `${window.location.origin}/profile/share/${urlFriendlyName}-${userId}`;
     setShareUrl(shareableUrl);
     setIsShareDialogOpen(true);
