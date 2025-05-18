@@ -75,6 +75,8 @@ export default function CardPage() {
 
   // Modified to navigate to the DashboardReady page instead of directly to Dashboard
   const handleGoToDashboard = () => {
+    // Set a flag in sessionStorage to indicate we're coming from the card page
+    sessionStorage.setItem('comingFromCardPage', 'true');
     handleDashboardTransition();
   };
 

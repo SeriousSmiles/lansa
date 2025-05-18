@@ -14,13 +14,11 @@ export default function ProtectedRoute() {
   const [initialCheck, setInitialCheck] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
-  // Track if we've already handled the dashboard transition
   const [dashboardTransitionHandled, setDashboardTransitionHandled] = useState(false);
 
   // Handle transition to dashboard once validation is complete
   const handleDashboardTransitionComplete = () => {
     setIsValidating(false);
-    // Prevent refreshing the page which causes the loop
     // Navigate to dashboard without forcing a page refresh
     window.history.replaceState({}, '', '/dashboard');
   };
@@ -51,9 +49,12 @@ export default function ProtectedRoute() {
           
           setOnboardingCompleted(completed);
           
-          // If the user has completed onboarding and is trying to access the dashboard,
-          // mark them as ready for dashboard only if we haven't already handled the transition
-          if (completed && location.pathname === "/dashboard" && !dashboardTransitionHandled) {
+          // Only handle dashboard transition if we're directly accessing the dashboard
+          // and not coming from the card page (which handles its own transition)
+          if (completed && 
+              location.pathname === "/dashboard" && 
+              !dashboardTransitionHandled && 
+              !sessionStorage.getItem('comingFromCardPage')) {
             setDashboardTransitionHandled(true);
           }
           
@@ -77,8 +78,12 @@ export default function ProtectedRoute() {
 
   // Effect to handle dashboard transition state
   useEffect(() => {
-    // Only trigger validation if we're ready and haven't handled it yet
-    if (dashboardTransitionHandled && !isValidating && location.pathname === "/dashboard") {
+    // Only trigger validation if we're ready, haven't handled it yet,
+    // and not coming from the card page
+    if (dashboardTransitionHandled && 
+        !isValidating && 
+        location.pathname === "/dashboard" && 
+        !sessionStorage.getItem('comingFromCardPage')) {
       setIsValidating(true);
     }
   }, [dashboardTransitionHandled, isValidating, location.pathname]);
