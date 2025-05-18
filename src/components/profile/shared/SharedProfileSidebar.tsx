@@ -27,24 +27,29 @@ export function SharedProfileSidebar({
   return (
     <div className="lg:col-span-4 space-y-4">
       <Card className="bg-white rounded-xl p-6 shadow">
-        <div className="text-2xl font-semibold mb-4">{userName}</div>
-        <div 
-          className="text-gray-600 mb-2"
-          style={{ color: coverColor }}
-        >
-          {role}
-        </div>
-        
-        {profileImage && (
-          <div className="mb-4">
-            <img 
-              src={profileImage} 
-              alt={`${userName}'s profile`}
-              className="w-32 h-32 rounded-full object-cover mx-auto border-4 border-white shadow" 
-              style={{ borderColor: `${coverColor}30` }}
-            />
+        {/* Rearranged to have profile image at top-left */}
+        <div className="flex flex-col sm:flex-row gap-4 items-start mb-4">
+          {profileImage && (
+            <div>
+              <img 
+                src={profileImage} 
+                alt={`${userName}'s profile`}
+                className="w-24 h-24 rounded-full object-cover border-4 border-white shadow" 
+                style={{ borderColor: `${coverColor}30` }}
+              />
+            </div>
+          )}
+          
+          <div>
+            <div className="text-2xl font-semibold">{userName}</div>
+            <div 
+              className="text-gray-600"
+              style={{ color: coverColor }}
+            >
+              {role}
+            </div>
           </div>
-        )}
+        </div>
         
         {/* Contact information */}
         {phoneNumber && (

@@ -37,7 +37,6 @@ export function useSharedProfileData(urlParam: string | undefined) {
       
       // Extract the actual userId from the URL
       // The URL format is expected to be "name-UUID" where UUID is a standard 36-character UUID
-      // We need to extract the last 36 characters regardless of naming format
       const uuidRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       const match = urlParam.match(uuidRegex);
       const userId = match ? match[0] : urlParam;
@@ -45,20 +44,16 @@ export function useSharedProfileData(urlParam: string | undefined) {
       console.log("Extracted userId:", userId);
       
       try {
-        // Try to fetch user answers
-        const answers = await getUserAnswers(userId);
-        console.log("User answers:", answers);
-        
-        // Try to fetch the user profile from the public profiles table
-        const { data: profileData, error } = await supabase
+        // Fetch the user profile first
+        const { data: profileData, error: profileError } = await supabase
           .from('user_profiles')
           .select('*')
           .eq('user_id', userId)
           .maybeSingle();
           
-        if (error) {
-          console.error("Error fetching profile:", error);
-          throw error;
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+          throw profileError;
         }
         
         if (!profileData) {
@@ -68,6 +63,16 @@ export function useSharedProfileData(urlParam: string | undefined) {
         }
         
         console.log("Raw profile data:", profileData);
+
+        // Try to fetch user answers (optional)
+        let answers = null;
+        try {
+          answers = await getUserAnswers(userId);
+          console.log("User answers:", answers);
+        } catch (error) {
+          console.error("Error fetching user answers:", error);
+          // Continue without answers - use profile data only
+        }
         
         // Process the profile data to ensure proper types
         const processedExperiences = profileData?.experiences 
@@ -81,15 +86,18 @@ export function useSharedProfileData(urlParam: string | undefined) {
         const processedSkills = processSkillsData(profileData?.skills, answers);
         
         // Get proper role and goal based on either legacy or new onboarding answers
-        const role = getProfileRole(answers?.question1, answers?.identity);
-        const goal = getProfileGoal(answers?.question3, answers?.desired_outcome);
+        const role = getProfileRole(answers?.question1, answers?.identity) || 
+                    profileData?.identity || "Professional";
+                    
+        const goal = getProfileGoal(answers?.question3, answers?.desired_outcome) || 
+                    profileData?.desired_outcome || "Advance my career";
         
         // Create a properly typed profile object
         const profile: SharedProfileData = {
           userProfile: null,
           userName: profileData?.name || userId.split('@')[0],
-          role: role || "Professional",
-          goal: goal || profileData?.desired_outcome || "Advance my career",
+          role: role,
+          goal: goal,
           blocker: answers?.question2 || profileData?.identity || "Identifying my unique value proposition",
           aboutText: profileData?.about_text || "",
           userSkills: processedSkills,
