@@ -1,12 +1,14 @@
+
 import { Card } from "@/components/ui/card";
-import { getContrastTextColor } from "@/utils/colorUtils";
 
 interface SharedProfileSidebarProps {
   userName: string;
   role: string;
   goal: string;
+  blocker: string;
   userSkills: string[];
   profileImage: string;
+  phoneNumber?: string;
   coverColor?: string;
   highlightColor?: string;
 }
@@ -15,8 +17,10 @@ export function SharedProfileSidebar({
   userName,
   role,
   goal,
+  blocker,
   userSkills,
   profileImage,
+  phoneNumber,
   coverColor = "#1A1F71",
   highlightColor = "#FF6B4A",
 }: SharedProfileSidebarProps) {
@@ -39,6 +43,16 @@ export function SharedProfileSidebar({
               className="w-32 h-32 rounded-full object-cover mx-auto border-4 border-white shadow" 
               style={{ borderColor: `${coverColor}30` }}
             />
+          </div>
+        )}
+        
+        {/* Contact information */}
+        {phoneNumber && (
+          <div className="mt-4 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <span>Phone:</span>
+              <span>{phoneNumber}</span>
+            </div>
           </div>
         )}
         
@@ -68,7 +82,7 @@ export function SharedProfileSidebar({
           </div>
         )}
         
-        {/* Goal */}
+        {/* Professional Goal */}
         {goal && (
           <div className="mt-6">
             <h3 
@@ -78,6 +92,19 @@ export function SharedProfileSidebar({
               Professional Goal
             </h3>
             <p className="text-gray-700">{goal}</p>
+          </div>
+        )}
+        
+        {/* Biggest Challenge */}
+        {blocker && (
+          <div className="mt-6">
+            <h3 
+              className="font-semibold text-lg mb-2"
+              style={{ color: coverColor }}
+            >
+              Biggest Challenge
+            </h3>
+            <p className="text-gray-700">{blocker}</p>
           </div>
         )}
       </Card>

@@ -1,6 +1,7 @@
 
 import { ExperienceItem, EducationItem } from "@/hooks/profile/profileTypes";
 import { Separator } from "@/components/ui/separator";
+import { StaticExperienceCard } from "../experience/StaticExperienceCard";
 
 interface SharedProfileContentProps {
   aboutText: string;
@@ -38,12 +39,23 @@ export function SharedProfileContent({
         >
           Experience
         </h2>
-        {experiences.map((exp) => (
-          <div key={exp.id} className="mb-4 last:mb-0">
-            <h3 className="text-lg font-medium">{exp.title}</h3>
-            <p className="text-gray-700">{exp.description}</p>
+        {experiences.length > 0 ? (
+          <div className="space-y-6">
+            {experiences.map((exp) => (
+              <div key={exp.id} className="border-b border-gray-200 last:border-0 pb-5 last:pb-0">
+                <StaticExperienceCard
+                  title={exp.title}
+                  period="Present"
+                  subtitle="Company"
+                  description={exp.description}
+                  highlightColor={highlightColor}
+                />
+              </div>
+            ))}
           </div>
-        ))}
+        ) : (
+          <p className="text-gray-500">No experience data available</p>
+        )}
       </div>
       
       {/* Education */}
@@ -54,12 +66,23 @@ export function SharedProfileContent({
         >
           Education
         </h2>
-        {educationItems.map((edu) => (
-          <div key={edu.id} className="mb-4 last:mb-0">
-            <h3 className="text-lg font-medium">{edu.title}</h3>
-            <p className="text-gray-700">{edu.description}</p>
+        {educationItems.length > 0 ? (
+          <div className="space-y-6">
+            {educationItems.map((edu) => (
+              <div key={edu.id} className="border-b border-gray-200 last:border-0 pb-5 last:pb-0">
+                <StaticExperienceCard
+                  title={edu.title}
+                  period="Completed"
+                  subtitle="Institution"
+                  description={edu.description}
+                  highlightColor={highlightColor}
+                />
+              </div>
+            ))}
           </div>
-        ))}
+        ) : (
+          <p className="text-gray-500">No education data available</p>
+        )}
       </div>
     </div>
   );
