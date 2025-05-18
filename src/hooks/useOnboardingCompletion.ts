@@ -51,6 +51,8 @@ export const useOnboardingCompletion = () => {
    */
   const navigateToDashboard = () => {
     setIsTransitioning(false);
+    // Set the flag to highlight recommended actions on the dashboard
+    localStorage.setItem('highlightRecommendedActions', 'true');
     navigate('/dashboard', { replace: true });
   };
 

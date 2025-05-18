@@ -1,19 +1,28 @@
 
 import { UserAnswers } from "./types";
 
-export function getBasicInsightFromAnswers(answers: UserAnswers): string {
-  // Basic logic for insights based on the user's answers
-  // In a real app, this would be more sophisticated
+export function getBasicInsightFromAnswers(answers: UserAnswers | null): string {
+  if (!answers) return "The professionals who advance fastest aren't just good at what they do — they're intentional about how they're perceived and positioned in their field.";
+
+  const identity = answers.identity;
   
-  const insights = [
-    "Your desire to be seen and valued is the first step towards creating clarity. Most people miss this crucial starting point.",
-    "You're already ahead of 80% of people by acknowledging what's blocking you. This awareness is powerful.",
-    "Clarity isn't about having all the answers—it's about asking the right questions. You're already on that path.",
-    "The path to visibility starts with understanding your unique value, which you're already exploring.",
-    "Your specific combination of goals and challenges puts you in a unique position to stand out.",
-    "Most people struggle with the same things you do, but few take action like you're doing now."
-  ];
-  
-  // For MVP, just return a random insight
-  return insights[Math.floor(Math.random() * insights.length)];
+  if (!identity) {
+    return "The professionals who advance fastest aren't just good at what they do — they're intentional about how they're perceived and positioned in their field.";
+  }
+
+  // Personalized insights based on identity
+  switch (identity) {
+    case "Freelancer":
+      return "The freelancers who get respect aren't just good — they're clear about their value and position themselves accordingly.";
+    case "Job-seeker":
+      return "When you understand how your unique strengths connect to market needs, you stop competing and start attracting the right opportunities.";
+    case "Student":
+      return "The most successful students don't wait for a degree to validate them — they actively curate experiences that showcase their unique perspective.";
+    case "Entrepreneur":
+      return "The entrepreneurs who break through fastest aren't necessarily the most innovative — they're the ones who make their innovation the easiest to understand and support.";
+    case "Visionary":
+      return "The visionaries who make the biggest impact aren't necessarily the boldest — they're the ones who learned to communicate their ideas in ways that build bridges rather than walls.";
+    default:
+      return "The professionals who advance fastest aren't just good at what they do — they're intentional about how they're perceived and positioned in their field.";
+  }
 }

@@ -11,6 +11,7 @@ export default function ProtectedRoute() {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [initialCheck, setInitialCheck] = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
 
   useEffect(() => {
     async function checkUserProfile() {
@@ -28,6 +29,11 @@ export default function ProtectedRoute() {
               updateDisplayName(profileData.name);
             }
           }
+          
+          // Check if user has completed onboarding
+          const userAnswers = await getUserAnswers(user.id);
+          const completed = hasCompletedOnboarding(userAnswers);
+          setOnboardingCompleted(completed);
           
         } catch (error) {
           console.error("Failed to fetch user profile:", error);
@@ -70,9 +76,10 @@ export default function ProtectedRoute() {
   }
 
   // Check if the user is accessing the dashboard page
-  if (location.pathname === "/dashboard" && !user) {
-    console.log("Unauthorized access attempt to dashboard, redirecting to auth");
-    return <Navigate to="/auth" state={{ from: location }} replace />;
+  if (location.pathname === "/dashboard" && !onboardingCompleted) {
+    console.log("User hasn't completed onboarding, redirecting to onboarding");
+    toast.info("Please complete onboarding before accessing the dashboard");
+    return <Navigate to="/onboarding" state={{ from: location }} replace />;
   }
 
   // If we get here, the user is authenticated, so allow access to the requested route

@@ -52,8 +52,8 @@ export default function Dashboard() {
     return <DashboardLoadingState />;
   }
   
-  const role = getProfileRole(userAnswers?.question1);
-  const goal = getProfileGoal(userAnswers?.question3);
+  const role = getProfileRole(userAnswers?.question1, userAnswers?.identity);
+  const goal = getProfileGoal(userAnswers?.question3, userAnswers?.desired_outcome);
   const insight = getBasicInsightFromAnswers(userAnswers);
   
   // Use the display name from the user object
