@@ -17,6 +17,7 @@ export type Database = {
           gender: string | null
           id: string
           identity: string | null
+          onboarding_completed: boolean | null
           question1: string | null
           question2: string | null
           question3: string | null
@@ -30,6 +31,7 @@ export type Database = {
           gender?: string | null
           id?: string
           identity?: string | null
+          onboarding_completed?: boolean | null
           question1?: string | null
           question2?: string | null
           question3?: string | null
@@ -43,6 +45,7 @@ export type Database = {
           gender?: string | null
           id?: string
           identity?: string | null
+          onboarding_completed?: boolean | null
           question1?: string | null
           question2?: string | null
           question3?: string | null

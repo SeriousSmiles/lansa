@@ -42,7 +42,11 @@ export default function ProtectedRoute() {
           
           // Check if user has completed onboarding
           const userAnswers = await getUserAnswers(user.id);
+          console.log("User answers in ProtectedRoute:", userAnswers);
+          
           const completed = hasCompletedOnboarding(userAnswers);
+          console.log("Onboarding completed:", completed);
+          
           setOnboardingCompleted(completed);
           
           // If the user has completed onboarding and is trying to access the dashboard,

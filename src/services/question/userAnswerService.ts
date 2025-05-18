@@ -44,7 +44,7 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
           age_group: answers.age_group || existingAnswers.age_group,
           identity: answers.identity || existingAnswers.identity,
           desired_outcome: answers.desired_outcome || existingAnswers.desired_outcome,
-          onboarding_completed: answers.onboarding_completed || existingAnswers.onboarding_completed,
+          onboarding_completed: answers.onboarding_completed !== undefined ? answers.onboarding_completed : existingAnswers.onboarding_completed,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', userId);
@@ -148,7 +148,7 @@ export async function getUserAnswers(userId: string): Promise<UserAnswers | null
     
     console.log("Found answers for user:", userId, data[0]);
     // Return the most recent answer
-    return data[0];
+    return data[0] as UserAnswers;
   } catch (error) {
     console.error('Error fetching user answers:', error);
     throw error;
