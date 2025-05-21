@@ -19,6 +19,8 @@ export default function CardPage() {
   const [desiredOutcome, setDesiredOutcome] = useState<string | undefined>(state?.desiredOutcome);
   const [aiInsight, setAiInsight] = useState<string | undefined>();
   const [isLoadingInsight, setIsLoadingInsight] = useState(true);
+  // Add local transition state to fix the button issue
+  const [localIsTransitioning, setLocalIsTransitioning] = useState(false);
   
   const { 
     isTransitioning, 
@@ -112,8 +114,8 @@ export default function CardPage() {
     // Set a flag in localStorage to indicate we're coming from the card page
     localStorage.setItem('highlightRecommendedActions', 'true');
     
-    // Proceed with transition to dashboard
-    setIsTransitioning(true);
+    // Use local state to show transition
+    setLocalIsTransitioning(true);
     
     // Skip dashboard-ready page and go directly to dashboard after a brief delay
     setTimeout(() => {
@@ -125,14 +127,14 @@ export default function CardPage() {
     <CardPageLayout isLoading={isLoading}>
       {/* Simplified loading transition modal */}
       <LoadingTransitionModal 
-        isOpen={isTransitioning} 
+        isOpen={localIsTransitioning} 
         isRefreshing={isRefreshing}
         onComplete={navigateToDashboard}
       />
       
       <CompletionCard
         onGoToDashboard={handleGoToDashboard}
-        isTransitioning={isTransitioning}
+        isTransitioning={localIsTransitioning}
         identity={identity}
         desiredOutcome={desiredOutcome}
         aiInsight={aiInsight}
