@@ -5,6 +5,7 @@ import { getUserAnswers, getProfileRole, getProfileGoal } from "@/services/quest
 import { UserProfile } from "@/hooks/profile/profileTypes";
 import { ExperienceItem, EducationItem } from "@/hooks/profile/profileTypes";
 import { processSkillsData, processExperiencesData, processEducationData } from "@/utils/profileDataUtils";
+import { convertJsonToExperienceItems, convertJsonToEducationItems } from "@/utils/profileDataConverters";
 
 export interface SharedProfileData {
   userProfile: UserProfile | null;
@@ -130,17 +131,33 @@ export function useSharedProfileData(urlParam: string | undefined) {
       const goal = getProfileGoal(answers?.question3, answers?.desired_outcome) || 
                   profileData?.desired_outcome || "Advance my career";
       
-      // Fix: Get blocker from answers.question2 or use a default value
+      // Get blocker from answers.question2 or use a default value
       // Note: profileData doesn't have a blocker field directly
       const blocker = answers?.question2 || "Identifying my unique value proposition";
       
+      // Create a properly typed UserProfile object from profileData
+      const typedUserProfile: UserProfile = {
+        user_id: profileData.user_id,
+        name: profileData.name,
+        about_text: profileData.about_text,
+        phone_number: profileData.phone_number,
+        cover_color: profileData.cover_color,
+        highlight_color: profileData.highlight_color,
+        profile_image: profileData.profile_image,
+        skills: profileData.skills,
+        experiences: convertJsonToExperienceItems(profileData.experiences),
+        education: convertJsonToEducationItems(profileData.education),
+        created_at: profileData.created_at,
+        updated_at: profileData.updated_at
+      };
+      
       // Create a properly typed profile object
       const profile: SharedProfileData = {
-        userProfile: profileData,
+        userProfile: typedUserProfile,
         userName: profileData?.name || userId.split('@')[0],
         role: role,
         goal: goal,
-        blocker: blocker, // Now correctly assigned from answers or default
+        blocker: blocker,
         aboutText: profileData?.about_text || "",
         userSkills: processedSkills,
         experiences: processedExperiences,
