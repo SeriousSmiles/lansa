@@ -19,7 +19,7 @@ export default function CardPage() {
   const [desiredOutcome, setDesiredOutcome] = useState<string | undefined>(state?.desiredOutcome);
   const [aiInsight, setAiInsight] = useState<string | undefined>();
   const [isLoadingInsight, setIsLoadingInsight] = useState(true);
-  // Add local transition state to fix the button issue
+  // Local state for transition management
   const [localIsTransitioning, setLocalIsTransitioning] = useState(false);
   
   const { 
