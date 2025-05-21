@@ -130,17 +130,17 @@ export function useSharedProfileData(urlParam: string | undefined) {
       const goal = getProfileGoal(answers?.question3, answers?.desired_outcome) || 
                   profileData?.desired_outcome || "Advance my career";
       
-      const blocker = answers?.question2 || 
-                     profileData?.blocker || 
-                     "Identifying my unique value proposition";
+      // Fix: Get blocker from answers.question2 or use a default value
+      // Note: profileData doesn't have a blocker field directly
+      const blocker = answers?.question2 || "Identifying my unique value proposition";
       
       // Create a properly typed profile object
       const profile: SharedProfileData = {
-        userProfile: null,
+        userProfile: profileData,
         userName: profileData?.name || userId.split('@')[0],
         role: role,
         goal: goal,
-        blocker: blocker,
+        blocker: blocker, // Now correctly assigned from answers or default
         aboutText: profileData?.about_text || "",
         userSkills: processedSkills,
         experiences: processedExperiences,
