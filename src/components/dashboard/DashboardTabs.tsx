@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LockKeyhole } from "lucide-react";
 import { gsap } from "gsap";
-import { OverviewTab } from "./OverviewTab";
+import { OverviewTab } from "./overview/OverviewTab";
 import { StoryBuilderTab } from "./StoryBuilderTab";
 
 interface DashboardTabsProps {
