@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserAnswers } from "@/services/question";
+import { getPersonalizedInsight } from "@/services/question/insightService";
 import { LoadingTransitionModal } from "@/components/loading/LoadingTransitionModal";
 import { CompletionCard } from "@/components/card/CompletionCard";
 import { CardPageLayout } from "@/components/layouts/CardPageLayout";
@@ -16,6 +17,8 @@ export default function CardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [identity, setIdentity] = useState<string | undefined>(state?.identity);
   const [desiredOutcome, setDesiredOutcome] = useState<string | undefined>(state?.desiredOutcome);
+  const [aiInsight, setAiInsight] = useState<string | undefined>();
+  const [isLoadingInsight, setIsLoadingInsight] = useState(true);
   
   const { 
     isTransitioning, 
@@ -40,6 +43,23 @@ export default function CardPage() {
         if (answers) {
           setIdentity(answers.identity || "Professional");
           setDesiredOutcome(answers.desired_outcome || "Professional clarity");
+          
+          // Check if we already have a stored AI insight
+          if (answers.ai_insight) {
+            setAiInsight(answers.ai_insight);
+            setIsLoadingInsight(false);
+          } else {
+            // Generate new AI insight
+            getPersonalizedInsight(user.id, answers).then((insight) => {
+              setAiInsight(insight);
+              setIsLoadingInsight(false);
+            }).catch(() => {
+              // If insight generation fails, use default text
+              setIsLoadingInsight(false);
+            });
+          }
+        } else {
+          setIsLoadingInsight(false);
         }
         
         // Mark onboarding as completed
@@ -99,6 +119,8 @@ export default function CardPage() {
         isTransitioning={isTransitioning}
         identity={identity}
         desiredOutcome={desiredOutcome}
+        aiInsight={aiInsight}
+        isLoadingInsight={isLoadingInsight}
       />
     </CardPageLayout>
   );

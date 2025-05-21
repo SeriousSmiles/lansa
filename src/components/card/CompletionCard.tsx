@@ -2,12 +2,15 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface CompletionCardProps {
   onGoToDashboard: () => void;
   isTransitioning: boolean;
   identity?: string;
   desiredOutcome?: string;
+  aiInsight?: string;
+  isLoadingInsight?: boolean;
 }
 
 export const CompletionCard: React.FC<CompletionCardProps> = ({
@@ -15,6 +18,8 @@ export const CompletionCard: React.FC<CompletionCardProps> = ({
   isTransitioning,
   identity = "Professional",
   desiredOutcome = "Professional clarity",
+  aiInsight,
+  isLoadingInsight = false,
 }) => {
   return (
     <Card className="bg-white rounded-2xl overflow-hidden shadow-lg border-0 w-full">
@@ -32,9 +37,17 @@ export const CompletionCard: React.FC<CompletionCardProps> = ({
           </div>
           
           <div className="bg-[#F9F5FF] p-6 rounded-lg border-l-4 border-[#FF6B4A]">
-            <p className="text-xl text-[#2E2E2E] font-medium">
-              As a {identity}, your goal of {desiredOutcome} is now within reach with our personalized guidance.
-            </p>
+            {isLoadingInsight ? (
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-4/6" />
+              </div>
+            ) : (
+              <p className="text-xl text-[#2E2E2E] font-medium">
+                {aiInsight || `As a ${identity}, your goal of ${desiredOutcome} is now within reach with our personalized guidance.`}
+              </p>
+            )}
           </div>
           
           <div className="space-y-4">

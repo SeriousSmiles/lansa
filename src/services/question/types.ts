@@ -14,4 +14,5 @@ export interface UserAnswers {
   identity?: string;
   desired_outcome?: string;
   onboarding_completed?: boolean;
+  ai_insight?: string; // New field to store AI-generated insights
 }

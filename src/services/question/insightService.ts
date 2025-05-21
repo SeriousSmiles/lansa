@@ -1,6 +1,9 @@
-
 import { UserAnswers } from "./types";
+import { supabase } from "@/integrations/supabase/client";
 
+/**
+ * Gets a basic insight message based on the user's identity
+ */
 export function getBasicInsightFromAnswers(answers: UserAnswers | null): string {
   if (!answers) return "The professionals who advance fastest aren't just good at what they do — they're intentional about how they're perceived and positioned in their field.";
 
@@ -25,4 +28,65 @@ export function getBasicInsightFromAnswers(answers: UserAnswers | null): string 
     default:
       return "The professionals who advance fastest aren't just good at what they do — they're intentional about how they're perceived and positioned in their field.";
   }
+}
+
+/**
+ * Generates an AI-powered insight based on the user's profile data
+ */
+export async function generateAIInsight(
+  userId: string, 
+  identity?: string, 
+  goal?: string, 
+  blocker?: string,
+  gender?: string,
+  age_group?: string
+): Promise<string> {
+  try {
+    // Call the Edge Function to generate insight
+    const { data, error } = await supabase.functions.invoke('generate-insight', {
+      body: {
+        userId,
+        identity,
+        goal,
+        blocker,
+        gender,
+        age_group
+      }
+    });
+
+    if (error) {
+      console.error('Error generating AI insight:', error);
+      // Fallback to basic insight
+      return getBasicInsightFromAnswers({ identity, desired_outcome: goal });
+    }
+
+    return data?.insight || getBasicInsightFromAnswers({ identity, desired_outcome: goal });
+  } catch (e) {
+    console.error('Exception when generating AI insight:', e);
+    // Fallback to basic insight
+    return getBasicInsightFromAnswers({ identity, desired_outcome: goal });
+  }
+}
+
+/**
+ * Gets the AI-generated insight from the user's answers, or generates a new one if not available
+ */
+export async function getPersonalizedInsight(
+  userId: string,
+  answers: UserAnswers | null
+): Promise<string> {
+  // If we already have a stored AI insight, use it
+  if (answers?.ai_insight) {
+    return answers.ai_insight;
+  }
+  
+  // Otherwise generate a new insight
+  return generateAIInsight(
+    userId,
+    answers?.identity,
+    answers?.desired_outcome,
+    answers?.question2,
+    answers?.gender,
+    answers?.age_group
+  );
 }
