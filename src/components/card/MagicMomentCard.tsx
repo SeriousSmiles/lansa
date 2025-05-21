@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,6 +23,31 @@ export const MagicMomentCard: React.FC<MagicMomentCardProps> = ({
   onGoToDashboard,
   isTransitioning,
 }) => {
+  const [displayedText, setDisplayedText] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  
+  // Typing animation effect
+  useEffect(() => {
+    if (!insight || isLoadingInsight) return;
+    
+    setIsTyping(true);
+    let index = 0;
+    const fullText = insight;
+    setDisplayedText("");
+    
+    const typingInterval = setInterval(() => {
+      if (index < fullText.length) {
+        setDisplayedText((prev) => prev + fullText.charAt(index));
+        index++;
+      } else {
+        clearInterval(typingInterval);
+        setIsTyping(false);
+      }
+    }, 20); // Adjust speed as needed
+    
+    return () => clearInterval(typingInterval);
+  }, [insight, isLoadingInsight]);
+
   return (
     <Card className="bg-white rounded-2xl overflow-hidden shadow-lg border-0 w-full">
       <div className="h-3 bg-gradient-to-r from-[#FF6B4A] to-[#FF8F6B]"></div>
@@ -44,8 +69,11 @@ export const MagicMomentCard: React.FC<MagicMomentCardProps> = ({
                 <Skeleton className="h-4 w-4/6" />
               </div>
             ) : (
-              <p className="text-xl text-[#2E2E2E] font-medium italic">
-                "{insight}"
+              <p className="text-xl text-[#2E2E2E] font-medium italic relative">
+                "{displayedText}"
+                {isTyping && (
+                  <span className="inline-block w-0.5 h-5 bg-[#2E2E2E] ml-0.5 animate-ping"></span>
+                )}
               </p>
             )}
           </div>

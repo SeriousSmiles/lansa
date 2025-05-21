@@ -55,6 +55,7 @@ export function DashboardTabs({
             goal={goal}
             insight={insight}
             highlightActions={highlightActions}
+            isLoading={isLoading}
           />
         </TabsContent>
         

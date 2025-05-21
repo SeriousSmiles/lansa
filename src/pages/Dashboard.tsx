@@ -4,7 +4,8 @@ import {
   getUserAnswers, 
   getProfileRole, 
   getProfileGoal,
-  getBasicInsightFromAnswers
+  getBasicInsightFromAnswers,
+  getPersonalizedInsight
 } from "@/services/question";
 import { useAuth } from "@/contexts/AuthContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -15,6 +16,8 @@ export default function Dashboard() {
   const [userAnswers, setUserAnswers] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [highlightActions, setHighlightActions] = useState(false);
+  const [aiInsight, setAiInsight] = useState<string | undefined>();
+  const [isLoadingInsight, setIsLoadingInsight] = useState(false);
   const { user } = useAuth();
   
   useEffect(() => {
@@ -24,6 +27,24 @@ export default function Dashboard() {
       const answers = await getUserAnswers(user.id);
       if (answers) {
         setUserAnswers(answers);
+        
+        // Check if we have a stored AI insight
+        if (answers.ai_insight) {
+          setAiInsight(answers.ai_insight);
+        } else {
+          // Generate insight if we don't have one stored
+          setIsLoadingInsight(true);
+          try {
+            const insight = await getPersonalizedInsight(user.id, answers);
+            setAiInsight(insight);
+          } catch (error) {
+            console.error("Failed to get AI insight:", error);
+            // Fallback to basic insight
+            setAiInsight(getBasicInsightFromAnswers(answers));
+          } finally {
+            setIsLoadingInsight(false);
+          }
+        }
       }
       
       setIsLoading(false);
@@ -55,7 +76,7 @@ export default function Dashboard() {
   
   const role = getProfileRole(userAnswers?.question1, userAnswers?.identity);
   const goal = getProfileGoal(userAnswers?.question3, userAnswers?.desired_outcome);
-  const insight = getBasicInsightFromAnswers(userAnswers);
+  const insight = aiInsight || getBasicInsightFromAnswers(userAnswers);
   
   // Use the display name from the user object
   const userName = user?.displayName || "Lansa User";
@@ -71,7 +92,7 @@ export default function Dashboard() {
           goal={goal}
           insight={insight}
           highlightActions={highlightActions}
-          isLoading={isLoading}
+          isLoading={isLoadingInsight}
         />
       </div>
     </DashboardLayout>
