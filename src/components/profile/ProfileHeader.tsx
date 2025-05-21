@@ -18,6 +18,7 @@ interface ProfileHeaderProps {
   onCoverColorChange: (color: string) => Promise<void>;
   onHighlightColorChange?: (color: string) => Promise<void>;
   readOnly?: boolean;
+  hideBackButton?: boolean;
 }
 
 export function ProfileHeader({ 
@@ -29,7 +30,8 @@ export function ProfileHeader({
   highlightColor = "#FF6B4A",
   onCoverColorChange,
   onHighlightColorChange,
-  readOnly = false
+  readOnly = false,
+  hideBackButton = false
 }: ProfileHeaderProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -49,21 +51,24 @@ export function ProfileHeader({
         borderBottom: `1px solid ${coverColor}30`
       }}
     >
-      <Button 
-        variant={isDarkTheme ? "contrast" : "ghost"}
-        size="icon" 
-        onClick={() => navigate("/dashboard")}
-        className="mr-2"
-        style={{
-          color: textColor
-        }}
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Button>
+      {!hideBackButton && (
+        <Button 
+          variant={isDarkTheme ? "contrast" : "ghost"}
+          size="icon" 
+          onClick={() => navigate("/dashboard")}
+          className="mr-2"
+          style={{
+            color: textColor
+          }}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+      )}
+      
       <img
         src="https://cdn.builder.io/api/v1/image/assets/TEMP/41285a6d1f6906d8349429ceb652f953bf730d06?placeholderIfAbsent=true"
         alt="Lansa Logo"
-        className="aspect-[2.7] object-contain w-[92px]"
+        className={`aspect-[2.7] object-contain w-[92px] ${!hideBackButton ? "" : "ml-0"}`}
       />
       
       {isMobile && !readOnly ? (

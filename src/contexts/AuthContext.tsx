@@ -87,6 +87,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // Clean up any stale auth state before initializing
+    const cleanupStorage = () => {
+      // Clear any potentially corrupted session data
+      const currentSession = localStorage.getItem('sb-hrmklkcdxkeyttboosgr-auth-token');
+      if (currentSession && !JSON.parse(currentSession)?.access_token) {
+        localStorage.removeItem('sb-hrmklkcdxkeyttboosgr-auth-token');
+      }
+    };
+    
+    cleanupStorage();
+
     // Set up auth state listener FIRST (critical for preventing double login issue)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       handleAuthStateChange(session);
@@ -105,6 +116,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     session,
     signIn: async (email: string, password: string) => {
       try {
+        // Clear existing session data before signing in to prevent conflicts
+        localStorage.removeItem('sb-hrmklkcdxkeyttboosgr-auth-token');
+        
         const result = await supabase.auth.signInWithPassword({ email, password });
         
         // If login is successful but we're still waiting for the auth state to update

@@ -33,7 +33,7 @@ export default function ProtectedRoute() {
       }
       
       checkUserProfile();
-    }, 100);
+    }, 150); // Increased delay to ensure auth state is fully loaded
     
     return () => clearTimeout(timer);
     

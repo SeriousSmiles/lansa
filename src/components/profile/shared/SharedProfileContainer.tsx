@@ -1,8 +1,5 @@
 
 import { useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { ProfileLayout } from "@/components/profile/layout/ProfileLayout";
 import { SharedProfileContent } from "@/components/profile/shared/SharedProfileContent";
 import { SharedProfileSidebar } from "@/components/profile/shared/SharedProfileSidebar";
@@ -16,18 +13,10 @@ interface SharedProfileContainerProps {
 }
 
 export function SharedProfileContainer({ profileData, urlParam }: SharedProfileContainerProps) {
-  const navigate = useNavigate();
   const mainContentRef = useElementAnimation();
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="p-4">
-        <Button variant="outline" onClick={() => navigate(-1)} className="flex items-center gap-2">
-          <ArrowLeft size={16} />
-          <span>Back</span>
-        </Button>
-      </div>
-      
       <ProfileLayout 
         userName={profileData.userName} 
         role={profileData.role}
@@ -37,6 +26,7 @@ export function SharedProfileContainer({ profileData, urlParam }: SharedProfileC
         onCoverColorChange={async () => {}}
         mainContentRef={mainContentRef}
         readOnly={true}
+        hideBackButton={true}
       >
         <SharedProfileSidebar 
           userName={profileData.userName}
