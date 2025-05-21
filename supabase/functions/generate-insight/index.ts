@@ -69,74 +69,95 @@ serve(async (req) => {
 
     console.log('Calling Nebius AI with prompt');
     
-    // Updated code to use the JWT token format for the new API key
-    const nebiusResponse = await fetch('https://api.nebius.ai/v1/llm/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${NEBIUS_AI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        modelUri: 'ngc-gpt-lite/latest',
-        messages: [
-          { role: 'system', text: 'You are a professional career coach with expertise in personal branding' },
-          { role: 'user', text: prompt }
-        ],
-        generationOptions: {
-          temperature: 0.7,
-          maxTokens: 200
-        }
-      }),
-    });
+    try {
+      // Updated code to use the JWT token format for the new API key
+      const nebiusResponse = await fetch('https://api.nebius.ai/v1/llm/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${NEBIUS_AI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          modelUri: 'ngc-gpt-lite/latest',
+          messages: [
+            { role: 'system', text: 'You are a professional career coach with expertise in personal branding' },
+            { role: 'user', text: prompt }
+          ],
+          generationOptions: {
+            temperature: 0.7,
+            maxTokens: 200
+          }
+        }),
+      });
 
-    if (!nebiusResponse.ok) {
-      const errorBody = await nebiusResponse.text();
-      console.error('Nebius AI API error:', nebiusResponse.status, errorBody);
-      throw new Error(`Nebius AI API error: ${nebiusResponse.status}`);
-    }
+      if (!nebiusResponse.ok) {
+        const errorBody = await nebiusResponse.text();
+        console.error('Nebius AI API error:', nebiusResponse.status, errorBody);
+        throw new Error(`Nebius AI API error: ${nebiusResponse.status}`);
+      }
 
-    const nebiusData = await nebiusResponse.json();
-    const insight = nebiusData.result.alternatives[0].message.text;
-    console.log('Generated insight:', insight);
+      const nebiusData = await nebiusResponse.json();
+      const insight = nebiusData.result.alternatives[0].message.text;
+      console.log('Generated insight:', insight);
 
-    // Store the generated insight in Supabase
-    if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
-      console.log('Storing insight in Supabase for user:', userId);
-      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-      
-      // Check if user exists in user_answers table
-      const { data: existingAnswers } = await supabase
-        .from('user_answers')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-      
-      if (existingAnswers) {
-        console.log('Updating existing user answers with insight');
-        // Update user_answers with the new AI-generated insight
-        await supabase
+      // Store the generated insight in Supabase
+      if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+        console.log('Storing insight in Supabase for user:', userId);
+        const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+        
+        // Check if user exists in user_answers table
+        const { data: existingAnswers } = await supabase
           .from('user_answers')
-          .update({ ai_insight: insight })
-          .eq('user_id', userId);
+          .select('*')
+          .eq('user_id', userId)
+          .single();
+        
+        if (existingAnswers) {
+          console.log('Updating existing user answers with insight');
+          // Update user_answers with the new AI-generated insight
+          await supabase
+            .from('user_answers')
+            .update({ ai_insight: insight })
+            .eq('user_id', userId);
+        } else {
+          console.log('No existing answers found for user:', userId);
+        }
       } else {
-        console.log('No existing answers found for user:', userId);
+        console.warn('Missing Supabase credentials, cannot save insight');
       }
-    } else {
-      console.warn('Missing Supabase credentials, cannot save insight');
-    }
 
-    return new Response(
-      JSON.stringify({ 
-        insight,
-        success: true
-      }),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json' 
-        } 
-      }
-    );
+      return new Response(
+        JSON.stringify({ 
+          insight,
+          success: true
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
+    } catch (aiError) {
+      console.error('AI generation error:', aiError);
+      
+      // Get a fallback insight based on identity
+      const fallbackInsight = getFallbackInsight(userAnswers?.identity);
+      
+      return new Response(
+        JSON.stringify({ 
+          insight: fallbackInsight,
+          success: false,
+          error: aiError.message
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
+    }
   } catch (error) {
     console.error('Error in generate-insight function:', error);
     
@@ -155,3 +176,22 @@ serve(async (req) => {
     );
   }
 });
+
+// Helper function to provide fallback insights based on identity
+function getFallbackInsight(identity?: string): string {
+  // Personalized insights based on identity
+  switch (identity) {
+    case "Freelancer":
+      return "The freelancers who get respect aren't just good — they're clear about their value and position themselves accordingly.";
+    case "Job-seeker":
+      return "When you understand how your unique strengths connect to market needs, you stop competing and start attracting the right opportunities.";
+    case "Student":
+      return "The most successful students don't wait for a degree to validate them — they actively curate experiences that showcase their unique perspective.";
+    case "Entrepreneur":
+      return "The entrepreneurs who break through fastest aren't necessarily the most innovative — they're the ones who make their innovation the easiest to understand and support.";
+    case "Visionary":
+      return "The visionaries who make the biggest impact aren't necessarily the boldest — they're the ones who learned to communicate their ideas in ways that build bridges rather than walls.";
+    default:
+      return "The professionals who advance fastest aren't just good at what they do — they're intentional about how they're perceived and positioned in their field.";
+  }
+}

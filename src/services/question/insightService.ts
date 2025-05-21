@@ -60,8 +60,6 @@ export async function generateAIInsight(
 
     if (error) {
       console.error('Error generating AI insight:', error);
-      // Show a toast to inform the user
-      toast.error("Could not generate personalized insight. Using default message.");
       // Fallback to basic insight
       return getBasicInsightFromAnswers({ identity, desired_outcome: goal });
     }
@@ -70,8 +68,6 @@ export async function generateAIInsight(
     return data?.insight || getBasicInsightFromAnswers({ identity, desired_outcome: goal });
   } catch (e) {
     console.error('Exception when generating AI insight:', e);
-    // Show a toast to inform the user
-    toast.error("Could not generate personalized insight. Using default message.");
     // Fallback to basic insight
     return getBasicInsightFromAnswers({ identity, desired_outcome: goal });
   }

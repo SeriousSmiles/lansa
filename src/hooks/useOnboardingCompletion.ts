@@ -71,11 +71,10 @@ export const useOnboardingCompletion = () => {
         await markOnboardingCompleted();
       }
       
-      // Start the loading indicator animation by setting isRefreshing after a delay
-      // This shows all the loading states before navigation
+      // Directly navigate to dashboard after a brief delay
       setTimeout(() => {
-        setIsRefreshing(true);
-      }, 1000);
+        navigateToDashboard();
+      }, 1500);
       
     } catch (error) {
       console.error("Navigation error:", error);
@@ -90,6 +89,7 @@ export const useOnboardingCompletion = () => {
     onboardingMarked,
     markOnboardingCompleted,
     handleDashboardTransition,
-    navigateToDashboard
+    navigateToDashboard,
+    setIsTransitioning
   };
 };

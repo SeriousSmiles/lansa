@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserAnswers } from "@/services/question";
-import { getPersonalizedInsight, testAIInsightGeneration, getBasicInsightFromAnswers } from "@/services/question/insightService";
+import { getPersonalizedInsight, getBasicInsightFromAnswers } from "@/services/question/insightService";
 import { LoadingTransitionModal } from "@/components/loading/LoadingTransitionModal";
 import { CompletionCard } from "@/components/card/CompletionCard";
 import { CardPageLayout } from "@/components/layouts/CardPageLayout";
@@ -19,7 +19,6 @@ export default function CardPage() {
   const [desiredOutcome, setDesiredOutcome] = useState<string | undefined>(state?.desiredOutcome);
   const [aiInsight, setAiInsight] = useState<string | undefined>();
   const [isLoadingInsight, setIsLoadingInsight] = useState(true);
-  const [aiStatus, setAiStatus] = useState<'loading' | 'success' | 'error' | 'not-checked'>('not-checked');
   
   const { 
     isTransitioning, 
@@ -28,28 +27,6 @@ export default function CardPage() {
     handleDashboardTransition,
     navigateToDashboard
   } = useOnboardingCompletion();
-
-  // Test the AI integration
-  useEffect(() => {
-    async function checkAiIntegration() {
-      if (user?.id) {
-        setAiStatus('loading');
-        try {
-          const isWorking = await testAIInsightGeneration();
-          setAiStatus(isWorking ? 'success' : 'error');
-          console.log('AI integration check:', isWorking ? 'Working' : 'Not working');
-        } catch (error) {
-          console.error('Error checking AI integration:', error);
-          setAiStatus('error');
-        }
-      }
-    }
-    
-    // Only run this once
-    if (aiStatus === 'not-checked') {
-      checkAiIntegration();
-    }
-  }, [user, aiStatus]);
 
   // Fetch data and mark onboarding as completed on page load
   useEffect(() => {
@@ -130,38 +107,27 @@ export default function CardPage() {
     initializeCardPage();
   }, [user, markOnboardingCompleted, navigate]);
 
-  // Modified to navigate to the DashboardReady page instead of directly to Dashboard
+  // Modified to navigate directly to the Dashboard
   const handleGoToDashboard = () => {
-    // Log AI status when navigating
-    console.log('AI integration status when navigating to dashboard:', aiStatus);
+    // Set a flag in localStorage to indicate we're coming from the card page
+    localStorage.setItem('highlightRecommendedActions', 'true');
     
-    // Set a flag in sessionStorage to indicate we're coming from the card page
-    sessionStorage.setItem('comingFromCardPage', 'true');
-    handleDashboardTransition();
+    // Proceed with transition to dashboard
+    setIsTransitioning(true);
+    
+    // Skip dashboard-ready page and go directly to dashboard after a brief delay
+    setTimeout(() => {
+      navigate('/dashboard', { replace: true });
+    }, 1500);
   };
-
-  // Modified to redirect to the DashboardReady page
-  const navigateToDashboardReady = () => {
-    navigate('/dashboard-ready', { replace: true });
-  };
-
-  // Show AI status information for debugging
-  useEffect(() => {
-    if (aiStatus === 'error') {
-      console.error('AI integration is not working properly');
-      toast.error("AI insights feature is currently unavailable. You'll see default insights.");
-    } else if (aiStatus === 'success') {
-      console.log('AI integration is working properly');
-    }
-  }, [aiStatus]);
 
   return (
     <CardPageLayout isLoading={isLoading}>
-      {/* Loading transition modal with onComplete callback */}
+      {/* Simplified loading transition modal */}
       <LoadingTransitionModal 
         isOpen={isTransitioning} 
         isRefreshing={isRefreshing}
-        onComplete={navigateToDashboardReady}
+        onComplete={navigateToDashboard}
       />
       
       <CompletionCard
