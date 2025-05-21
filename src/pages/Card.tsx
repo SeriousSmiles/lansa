@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserAnswers } from "@/services/question";
-import { getPersonalizedInsight } from "@/services/question/insightService";
+import { getPersonalizedInsight, testAIInsightGeneration, getBasicInsightFromAnswers } from "@/services/question/insightService";
 import { LoadingTransitionModal } from "@/components/loading/LoadingTransitionModal";
 import { CompletionCard } from "@/components/card/CompletionCard";
 import { CardPageLayout } from "@/components/layouts/CardPageLayout";

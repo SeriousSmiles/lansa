@@ -88,7 +88,7 @@ export function InsightCard({ insight, isLoading = false }: InsightCardProps) {
           </div>
         ) : (
           <p className="text-base md:text-lg italic relative">
-            "{displayedText}"
+            "{displayedInsight}"
             {isTyping && (
               <span className="inline-block w-0.5 h-5 bg-[#2E2E2E] ml-0.5 animate-ping"></span>
             )}
