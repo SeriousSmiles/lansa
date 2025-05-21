@@ -1,5 +1,6 @@
 import { UserAnswers } from "./types";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 /**
  * Gets a basic insight message based on the user's identity
@@ -42,6 +43,9 @@ export async function generateAIInsight(
   age_group?: string
 ): Promise<string> {
   try {
+    console.log('Generating AI insight for user:', userId);
+    console.log('Using data:', { identity, goal, blocker, gender, age_group });
+    
     // Call the Edge Function to generate insight
     const { data, error } = await supabase.functions.invoke('generate-insight', {
       body: {
@@ -56,13 +60,18 @@ export async function generateAIInsight(
 
     if (error) {
       console.error('Error generating AI insight:', error);
+      // Show a toast to inform the user
+      toast.error("Could not generate personalized insight. Using default message.");
       // Fallback to basic insight
       return getBasicInsightFromAnswers({ identity, desired_outcome: goal });
     }
 
+    console.log('AI insight generated successfully:', data);
     return data?.insight || getBasicInsightFromAnswers({ identity, desired_outcome: goal });
   } catch (e) {
     console.error('Exception when generating AI insight:', e);
+    // Show a toast to inform the user
+    toast.error("Could not generate personalized insight. Using default message.");
     // Fallback to basic insight
     return getBasicInsightFromAnswers({ identity, desired_outcome: goal });
   }
@@ -75,11 +84,16 @@ export async function getPersonalizedInsight(
   userId: string,
   answers: UserAnswers | null
 ): Promise<string> {
+  console.log('Getting personalized insight for user:', userId);
+  console.log('User answers:', answers);
+  
   // If we already have a stored AI insight, use it
   if (answers?.ai_insight) {
+    console.log('Using stored AI insight:', answers.ai_insight);
     return answers.ai_insight;
   }
   
+  console.log('No stored insight found, generating new insight');
   // Otherwise generate a new insight
   return generateAIInsight(
     userId,
@@ -89,4 +103,32 @@ export async function getPersonalizedInsight(
     answers?.gender,
     answers?.age_group
   );
+}
+
+/**
+ * Helper function to check if the AI integration is working
+ */
+export async function testAIInsightGeneration(): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.functions.invoke('generate-insight', {
+      body: {
+        userId: 'test-user',
+        identity: 'Professional',
+        goal: 'Career advancement',
+        blocker: 'Lack of visibility',
+        gender: 'Prefer not to say',
+        age_group: '25-34'
+      }
+    });
+
+    if (error) {
+      console.error('AI integration test failed:', error);
+      return false;
+    }
+
+    return !!data?.insight;
+  } catch (e) {
+    console.error('AI integration test exception:', e);
+    return false;
+  }
 }

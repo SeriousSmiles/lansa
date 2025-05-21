@@ -18,10 +18,19 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Edge function invoked: generate-insight');
     const { userId, identity, goal, blocker, gender, age_group } = await req.json();
+    
+    console.log('Request data:', { userId, identity, goal, blocker, gender, age_group });
     
     if (!userId) {
       throw new Error('User ID is required');
+    }
+
+    // Check if API key is configured
+    if (!NEBIUS_AI_API_KEY) {
+      console.error('NEBIUS_AI_API_KEY is not configured');
+      throw new Error('AI API key is not configured');
     }
 
     // Create a personalized prompt based on user data
@@ -39,6 +48,8 @@ serve(async (req) => {
       The output should sound like wisdom from a trusted mentor, not AI-generated text.
     `;
 
+    console.log('Calling Nebius AI with prompt');
+    
     // Call Nebius AI API
     const nebiusResponse = await fetch('https://api.nebius.ai/v1/llm/completions', {
       method: 'POST',
@@ -61,15 +72,17 @@ serve(async (req) => {
 
     if (!nebiusResponse.ok) {
       const errorBody = await nebiusResponse.text();
-      console.error('Nebius AI API error:', errorBody);
+      console.error('Nebius AI API error:', nebiusResponse.status, errorBody);
       throw new Error(`Nebius AI API error: ${nebiusResponse.status}`);
     }
 
     const nebiusData = await nebiusResponse.json();
     const insight = nebiusData.result.alternatives[0].message.text;
+    console.log('Generated insight:', insight);
 
     // Store the generated insight in Supabase
     if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+      console.log('Storing insight in Supabase for user:', userId);
       const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
       
       // Check if user exists in user_answers table
@@ -80,12 +93,17 @@ serve(async (req) => {
         .single();
       
       if (existingAnswers) {
+        console.log('Updating existing user answers with insight');
         // Update user_answers with the new AI-generated insight
         await supabase
           .from('user_answers')
           .update({ ai_insight: insight })
           .eq('user_id', userId);
+      } else {
+        console.log('No existing answers found for user:', userId);
       }
+    } else {
+      console.warn('Missing Supabase credentials, cannot save insight');
     }
 
     return new Response(

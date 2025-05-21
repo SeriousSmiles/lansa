@@ -23,6 +23,7 @@ export const CompletionCard: React.FC<CompletionCardProps> = ({
 }) => {
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [loadingError, setLoadingError] = useState(false);
   
   // Typing animation effect
   useEffect(() => {
@@ -46,6 +47,18 @@ export const CompletionCard: React.FC<CompletionCardProps> = ({
     return () => clearInterval(typingInterval);
   }, [aiInsight, isLoadingInsight]);
 
+  // Additional error handling
+  useEffect(() => {
+    const checkTimeout = setTimeout(() => {
+      if (isLoadingInsight && !aiInsight) {
+        setLoadingError(true);
+        console.error("AI insight is taking too long to load or failed to load");
+      }
+    }, 10000); // Set a 10s timeout
+    
+    return () => clearTimeout(checkTimeout);
+  }, [isLoadingInsight, aiInsight]);
+
   return (
     <Card className="bg-white rounded-2xl overflow-hidden shadow-lg border-0 w-full">
       <div className="h-3 bg-gradient-to-r from-[#FF6B4A] to-[#FF8F6B]"></div>
@@ -68,6 +81,10 @@ export const CompletionCard: React.FC<CompletionCardProps> = ({
                 <Skeleton className="h-4 w-5/6" />
                 <Skeleton className="h-4 w-4/6" />
               </div>
+            ) : loadingError ? (
+              <p className="text-xl text-[#2E2E2E] font-medium">
+                Creating your personalized insights... This will be ready on your dashboard.
+              </p>
             ) : (
               <p className="text-xl text-[#2E2E2E] font-medium relative">
                 {displayedText}
