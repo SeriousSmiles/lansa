@@ -24,6 +24,19 @@ export default function ProtectedRoute() {
   };
 
   useEffect(() => {
+    // Add a small delay to ensure auth state is properly loaded
+    const timer = setTimeout(() => {
+      if (!user) {
+        setLoading(false);
+        setInitialCheck(true);
+        return;
+      }
+      
+      checkUserProfile();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+    
     async function checkUserProfile() {
       if (user?.id) {
         try {
@@ -66,13 +79,6 @@ export default function ProtectedRoute() {
         setLoading(false);
       }
       setInitialCheck(true);
-    }
-
-    if (user) {
-      checkUserProfile();
-    } else {
-      setInitialCheck(true);
-      setLoading(false);
     }
   }, [user, updateDisplayName, location.pathname, dashboardTransitionHandled]);
 

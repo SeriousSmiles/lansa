@@ -87,12 +87,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Set up auth state listener
+    // Set up auth state listener FIRST (critical for preventing double login issue)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       handleAuthStateChange(session);
     });
 
-    // Check for existing session
+    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       handleAuthStateChange(session);
     });
@@ -105,7 +105,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     session,
     signIn: async (email: string, password: string) => {
       try {
-        return await supabase.auth.signInWithPassword({ email, password });
+        const result = await supabase.auth.signInWithPassword({ email, password });
+        
+        // If login is successful but we're still waiting for the auth state to update
+        // ensure we don't show an error
+        if (!result.error && result.data?.session) {
+          return { error: null };
+        }
+        
+        return result;
       } catch (error) {
         console.error("Error signing in:", error);
         toast.error("Failed to sign in. Please check your internet connection.");
