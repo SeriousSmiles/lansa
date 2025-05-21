@@ -50,11 +50,11 @@ serve(async (req) => {
 
     console.log('Calling Nebius AI with prompt');
     
-    // Call Nebius AI API
+    // Updated code to use the JWT token format for the new API key
     const nebiusResponse = await fetch('https://api.nebius.ai/v1/llm/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Api-Key ${NEBIUS_AI_API_KEY}`,
+        'Authorization': `Bearer ${NEBIUS_AI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
