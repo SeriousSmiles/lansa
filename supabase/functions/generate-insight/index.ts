@@ -33,19 +33,38 @@ serve(async (req) => {
       throw new Error('AI API key is not configured');
     }
 
-    // Create a personalized prompt based on user data
+    // Create a Supabase client to fetch full user answers
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error('Supabase configuration missing');
+    }
+    
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    
+    // Get complete user answers
+    const { data: userAnswers, error: userAnswersError } = await supabase
+      .from('user_answers')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+      
+    if (userAnswersError) {
+      console.error('Error fetching user answers:', userAnswersError);
+      throw new Error('Could not retrieve user profile data');
+    }
+    
+    console.log('Retrieved complete user answers:', userAnswers);
+
+    // Create an improved, personalized prompt with full user data
     const prompt = `
-      Generate a personalized professional insight for a ${gender || ''} ${age_group || ''} individual who identifies as a ${identity || 'professional'}.
-      Their professional goal is: "${goal || 'advancing their career'}"
-      Their main challenge is: "${blocker || 'identifying their unique value'}"
-      
-      Write a thoughtful, specific, and encouraging paragraph (max 3 sentences) that:
-      1. Acknowledges their identity and goal
-      2. Provides a unique insight about overcoming their specific challenge
-      3. Uses a warm, conversational, and human tone
-      4. Avoids generic advice and corporate speak
-      
-      The output should sound like wisdom from a trusted mentor, not AI-generated text.
+      You are a helpful coach who writes short but deeply insightful summaries after talking to a user. 
+      Based on the following user responses, write a 2-3 paragraph summary that:
+      - Feels like you understood them deeply
+      - Uses human conversational tone (friendly, not robotic)
+      - Points out hidden strengths or new perspectives
+      - Ends with a short, motivating thought.
+
+      User onboarding answers:
+      ${JSON.stringify(userAnswers, null, 2)}
     `;
 
     console.log('Calling Nebius AI with prompt');
