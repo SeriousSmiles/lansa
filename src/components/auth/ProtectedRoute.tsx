@@ -5,7 +5,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getUserAnswers, hasCompletedOnboarding } from "@/services/question";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { LoadingTransitionModal } from "@/components/loading/LoadingTransitionModal";
 
 export default function ProtectedRoute() {
   const { user, updateDisplayName } = useAuth();
@@ -13,15 +12,6 @@ export default function ProtectedRoute() {
   const [loading, setLoading] = useState(true);
   const [initialCheck, setInitialCheck] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
-  const [isValidating, setIsValidating] = useState(false);
-  const [dashboardTransitionHandled, setDashboardTransitionHandled] = useState(false);
-
-  // Handle transition to dashboard once validation is complete
-  const handleDashboardTransitionComplete = () => {
-    setIsValidating(false);
-    // Navigate to dashboard without forcing a page refresh
-    window.history.replaceState({}, '', '/dashboard');
-  };
 
   useEffect(() => {
     // Add a small delay to ensure auth state is properly loaded
@@ -33,7 +23,7 @@ export default function ProtectedRoute() {
       }
       
       checkUserProfile();
-    }, 150); // Increased delay to ensure auth state is fully loaded
+    }, 150);
     
     return () => clearTimeout(timer);
     
@@ -62,15 +52,6 @@ export default function ProtectedRoute() {
           
           setOnboardingCompleted(completed);
           
-          // Only handle dashboard transition if we're directly accessing the dashboard
-          // and not coming from the card page (which handles its own transition)
-          if (completed && 
-              location.pathname === "/dashboard" && 
-              !dashboardTransitionHandled && 
-              !sessionStorage.getItem('comingFromCardPage')) {
-            setDashboardTransitionHandled(true);
-          }
-          
         } catch (error) {
           console.error("Failed to fetch user profile:", error);
         }
@@ -80,21 +61,9 @@ export default function ProtectedRoute() {
       }
       setInitialCheck(true);
     }
-  }, [user, updateDisplayName, location.pathname, dashboardTransitionHandled]);
+  }, [user, updateDisplayName, location.pathname]);
 
-  // Effect to handle dashboard transition state
-  useEffect(() => {
-    // Only trigger validation if we're ready, haven't handled it yet,
-    // and not coming from the card page
-    if (dashboardTransitionHandled && 
-        !isValidating && 
-        location.pathname === "/dashboard" && 
-        !sessionStorage.getItem('comingFromCardPage')) {
-      setIsValidating(true);
-    }
-  }, [dashboardTransitionHandled, isValidating, location.pathname]);
-
-  // If we're still on the first load, show a more substantial loading indicator
+  // If we're still on the first load, show a loading indicator
   if (!initialCheck) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-[rgba(253,248,242,1)]">
@@ -109,10 +78,9 @@ export default function ProtectedRoute() {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // Special handling for card page and dashboard-ready page - these are part of the onboarding flow
-  // Allow access to these pages regardless of onboarding status
-  if (location.pathname === "/card" || location.pathname === "/dashboard-ready") {
-    console.log("On special page, allowing access regardless of onboarding status");
+  // Special handling for card page - allow access regardless of onboarding status
+  if (location.pathname === "/card") {
+    console.log("On card page, allowing access regardless of onboarding status");
     return <Outlet />;
   }
 
@@ -124,14 +92,5 @@ export default function ProtectedRoute() {
   }
 
   // If we get here, the user is authenticated, so allow access to the requested route
-  return (
-    <>
-      <LoadingTransitionModal 
-        isOpen={isValidating} 
-        isRefreshing={false}
-        onComplete={handleDashboardTransitionComplete} 
-      />
-      <Outlet />
-    </>
-  );
+  return <Outlet />;
 }

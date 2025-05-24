@@ -23,11 +23,7 @@ export default function CardPage() {
   const [localIsTransitioning, setLocalIsTransitioning] = useState(false);
   
   const { 
-    isTransitioning, 
-    isRefreshing,
-    markOnboardingCompleted, 
-    handleDashboardTransition,
-    navigateToDashboard
+    markOnboardingCompleted
   } = useOnboardingCompletion();
 
   // Fetch data and mark onboarding as completed on page load
@@ -109,18 +105,19 @@ export default function CardPage() {
     initializeCardPage();
   }, [user, markOnboardingCompleted, navigate]);
 
-  // Modified to navigate directly to the Dashboard
+  // Handle navigation to dashboard - simplified for mobile
   const handleGoToDashboard = () => {
+    console.log('Navigating to dashboard from card page');
     // Set a flag in localStorage to indicate we're coming from the card page
     localStorage.setItem('highlightRecommendedActions', 'true');
     
     // Use local state to show transition
     setLocalIsTransitioning(true);
     
-    // Skip dashboard-ready page and go directly to dashboard after a brief delay
+    // Navigate directly to dashboard after a brief delay
     setTimeout(() => {
       navigate('/dashboard', { replace: true });
-    }, 1500);
+    }, 1000); // Reduced delay for better mobile experience
   };
 
   return (
@@ -128,8 +125,8 @@ export default function CardPage() {
       {/* Simplified loading transition modal */}
       <LoadingTransitionModal 
         isOpen={localIsTransitioning} 
-        isRefreshing={isRefreshing}
-        onComplete={navigateToDashboard}
+        isRefreshing={false}
+        onComplete={() => navigate('/dashboard', { replace: true })}
       />
       
       <CompletionCard

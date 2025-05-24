@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { getUserAnswers, hasCompletedOnboarding } from "@/services/question";
 
 interface LoginFormData {
   email: string;
@@ -18,10 +19,9 @@ export function LoginForm() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as any)?.from?.pathname || "/onboarding";
 
   const onSubmit = async (data: LoginFormData) => {
-    if (isLoading) return; // Prevent duplicate submissions
+    if (isLoading) return;
     
     setIsLoading(true);
     try {
@@ -33,11 +33,28 @@ export function LoginForm() {
         return;
       }
       
-      // Only show success toast once
       toast.success("Login successful!");
       
-      // Navigate immediately to avoid needing a second click
-      navigate(from, { replace: true });
+      // Get the current session to check user ID
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user?.id) {
+        // Check if user has completed onboarding
+        const userAnswers = await getUserAnswers(session.user.id);
+        const onboardingCompleted = hasCompletedOnboarding(userAnswers);
+        
+        if (onboardingCompleted) {
+          // User has completed onboarding, go to dashboard
+          navigate('/dashboard', { replace: true });
+        } else {
+          // User hasn't completed onboarding, go to onboarding
+          navigate('/onboarding', { replace: true });
+        }
+      } else {
+        // Fallback to onboarding if we can't determine status
+        navigate('/onboarding', { replace: true });
+      }
+      
     } catch (error: any) {
       console.error(error);
       toast.error(error.message || "An error occurred during login");
