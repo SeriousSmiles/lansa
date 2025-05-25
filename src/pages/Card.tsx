@@ -8,6 +8,7 @@ import { LoadingTransitionModal } from "@/components/loading/LoadingTransitionMo
 import { CompletionCard } from "@/components/card/CompletionCard";
 import { CardPageLayout } from "@/components/layouts/CardPageLayout";
 import { useOnboardingCompletion } from "@/hooks/useOnboardingCompletion";
+import { useActionTracking } from "@/hooks/useActionTracking";
 import { toast } from "sonner";
 
 export default function CardPage() {
@@ -25,6 +26,8 @@ export default function CardPage() {
   const { 
     markOnboardingCompleted
   } = useOnboardingCompletion();
+  
+  const { track } = useActionTracking();
 
   // Fetch data and mark onboarding as completed on page load
   useEffect(() => {
@@ -74,8 +77,9 @@ export default function CardPage() {
           setIsLoadingInsight(false);
         }
         
-        // Mark onboarding as completed
+        // Mark onboarding as completed and track the action
         await markOnboardingCompleted();
+        await track('onboarding_completed', { identity, desiredOutcome });
         
       } catch (error) {
         console.error("Failed to load user data:", error);
@@ -103,7 +107,7 @@ export default function CardPage() {
     }
     
     initializeCardPage();
-  }, [user, markOnboardingCompleted, navigate]);
+  }, [user, markOnboardingCompleted, navigate, track, identity, desiredOutcome]);
 
   // Handle navigation to dashboard - simplified for mobile
   const handleGoToDashboard = () => {

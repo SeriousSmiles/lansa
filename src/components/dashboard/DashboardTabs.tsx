@@ -1,10 +1,11 @@
 
 import { useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LockKeyhole } from "lucide-react";
+import { LockKeyhole, Brain } from "lucide-react";
 import { gsap } from "gsap";
 import { OverviewTab } from "./overview/OverviewTab";
 import { StoryBuilderTab } from "./StoryBuilderTab";
+import { AICoachTab } from "./AICoachTab";
 
 interface DashboardTabsProps {
   userName: string;
@@ -42,6 +43,10 @@ export function DashboardTabs({
       <Tabs defaultValue="overview" className="mb-6">
         <TabsList>
           <TabsTrigger value="overview" className="btn-animate">Overview</TabsTrigger>
+          <TabsTrigger value="aicoach" className="flex items-center gap-1.5 btn-animate">
+            <Brain className="h-3.5 w-3.5" />
+            <span>AI Coach</span>
+          </TabsTrigger>
           <TabsTrigger value="storybuilder" className="flex items-center gap-1.5 btn-animate">
             <span>Story Builder</span>
             <LockKeyhole className="h-3.5 w-3.5" />
@@ -57,6 +62,10 @@ export function DashboardTabs({
             highlightActions={highlightActions}
             isLoading={isLoading}
           />
+        </TabsContent>
+        
+        <TabsContent value="aicoach" className="pt-4 animate-fade-in">
+          <AICoachTab />
         </TabsContent>
         
         <TabsContent value="storybuilder" className="pt-4 animate-fade-in">

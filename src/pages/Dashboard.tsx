@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { toast } from "sonner";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
+import { useActionTracking } from "@/hooks/useActionTracking";
 
 export default function Dashboard() {
   const [userAnswers, setUserAnswers] = useState<any>(null);
@@ -19,10 +20,14 @@ export default function Dashboard() {
   const [aiInsight, setAiInsight] = useState<string | undefined>();
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
   const { user } = useAuth();
+  const { track } = useActionTracking();
   
   useEffect(() => {
     async function loadDashboard() {
       if (!user?.id) return;
+      
+      // Track dashboard visit
+      track('dashboard_visited');
       
       const answers = await getUserAnswers(user.id);
       if (answers) {
@@ -59,7 +64,7 @@ export default function Dashboard() {
       // Clean up the flag after using it to prevent multiple highlights
       localStorage.removeItem('highlightRecommendedActions');
     }
-  }, [user]);
+  }, [user, track]);
   
   useEffect(() => {
     // Show welcome toast if highlighting actions
