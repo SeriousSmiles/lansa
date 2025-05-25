@@ -1,6 +1,6 @@
 
-import { ProfileSetupPage } from "@/components/profile/ProfileSetupPage";
+import { ProfilePage } from "@/components/profile/ProfilePage";
 
 export default function Profile() {
-  return <ProfileSetupPage />;
+  return <ProfilePage />;
 }
