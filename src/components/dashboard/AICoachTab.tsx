@@ -31,6 +31,7 @@ export function AICoachTab() {
     try {
       await checkAndRemoveCompletedInsights(user.id);
       const userInsights = await getUserInsights(user.id);
+      console.log('Loaded insights:', userInsights);
       setInsights(userInsights);
     } catch (error) {
       console.error('Failed to load insights:', error);
@@ -65,28 +66,31 @@ export function AICoachTab() {
   };
 
   const handleInsightAction = async (insight: AIInsight) => {
-    console.log('Navigating to:', insight.navigation_target);
+    // Ensure we have a valid navigation target
+    const navigationTarget = insight.navigation_target || 
+                            insight.metadata?.navigation_target || 
+                            "/dashboard";
     
-    if (insight.navigation_target) {
-      try {
-        if (insight.navigation_target.includes('#')) {
-          const [path, tab] = insight.navigation_target.split('#');
-          navigate(path, { state: { activeTab: tab } });
-        } else {
-          navigate(insight.navigation_target);
-        }
-        
-        trackUserAction('insight_interacted', { 
-          action: 'navigate_to_complete', 
-          insight_type: insight.insight_type,
-          target: insight.navigation_target
-        });
-        
-        toast.success(`Redirecting you to complete this action...`);
-      } catch (error) {
-        console.error('Navigation error:', error);
-        toast.error('Failed to navigate to the requested page');
+    console.log('Navigating to:', navigationTarget);
+    
+    try {
+      if (navigationTarget.includes('#')) {
+        const [path, tab] = navigationTarget.split('#');
+        navigate(path, { state: { activeTab: tab } });
+      } else {
+        navigate(navigationTarget);
       }
+      
+      trackUserAction('insight_interacted', { 
+        action: 'navigate_to_complete', 
+        insight_type: insight.insight_type,
+        target: navigationTarget
+      });
+      
+      toast.success(`Redirecting you to complete this action...`);
+    } catch (error) {
+      console.error('Navigation error:', error);
+      toast.error('Failed to navigate to the requested page');
     }
   };
 

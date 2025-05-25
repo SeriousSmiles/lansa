@@ -30,6 +30,21 @@ export function InsightCard({ insight, onAction, onMarkComplete }: InsightCardPr
     }
   };
 
+  // Ensure we have a valid navigation target
+  const navigationTarget = insight.navigation_target || 
+                          insight.metadata?.navigation_target || 
+                          "/dashboard";
+
+  const getActionText = (target: string) => {
+    switch (target) {
+      case "/profile": return "Go to Profile";
+      case "/card": return "View Card";
+      case "/resources": return "View Resources";
+      case "/content": return "Browse Content";
+      default: return "Take Action";
+    }
+  };
+
   return (
     <Card 
       className="hover:shadow-md transition-all cursor-pointer border-l-4 border-l-[#FF6B4A] group"
@@ -62,7 +77,7 @@ export function InsightCard({ insight, onAction, onMarkComplete }: InsightCardPr
       <CardContent>
         <p className="text-gray-700 leading-relaxed mb-3">{insight.message}</p>
         <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>Click to go to {insight.navigation_target?.replace('/', '') || 'action'}</span>
+          <span>{getActionText(navigationTarget)}</span>
           <span>or mark as complete →</span>
         </div>
       </CardContent>

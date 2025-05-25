@@ -1,107 +1,134 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { getUserActionSummary, ActionType } from "./actionTracking";
+import { getUserAnswers } from "./question";
 
 export interface AIInsight {
   id: string;
-  insight_type: string;
   title: string;
   message: string;
+  insight_type: string;
   priority: number;
+  navigation_target?: string;
+  metadata?: any;
   is_read: boolean;
-  metadata: any;
   created_at: string;
   expires_at?: string;
-  action_required?: string;
-  navigation_target?: string;
 }
 
-export async function generateInsights(userId: string): Promise<Omit<AIInsight, 'id' | 'created_at'>[]> {
+// Generate insights based on user's profile and actions
+export async function generateInsights(userId: string): Promise<AIInsight[]> {
   try {
-    const actionSummary = await getUserActionSummary(userId);
-    if (!actionSummary) return [];
-
-    // Get existing insights to avoid duplicates
-    const existingInsights = await getUserInsights(userId);
-    const existingTypes = existingInsights.map(insight => insight.insight_type);
-
-    const insights: Omit<AIInsight, 'id' | 'created_at'>[] = [];
-    const now = new Date();
-    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-
-    // Check for profile update nudge
-    const lastProfileUpdate = actionSummary.lastActionDates.profile_updated;
-    if (!existingTypes.includes('profile_maintenance') && 
-        (!lastProfileUpdate || new Date(lastProfileUpdate) < twoWeeksAgo)) {
-      insights.push({
-        insight_type: 'profile_maintenance',
-        title: 'Keep Your Profile Fresh',
-        message: "It's been a while since you updated your profile. A quick refresh can make a big difference in how others see your professional story.",
-        priority: 2,
-        is_read: false,
-        metadata: { lastUpdate: lastProfileUpdate },
-        expires_at: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        action_required: 'profile_updated',
-        navigation_target: '/profile'
-      });
-    }
-
-    // Check for pitch completion nudge
-    const hasPitchGenerated = actionSummary.actionCounts.pitch_generated > 0;
-    const hasProfileUpdated = actionSummary.actionCounts.profile_updated > 0;
-    if (!existingTypes.includes('pitch_completion') && 
-        hasPitchGenerated && !hasProfileUpdated) {
-      insights.push({
-        insight_type: 'pitch_completion',
-        title: 'Complete Your Story',
-        message: "You've generated a great pitch! Consider adding it to your profile to make your professional story complete.",
-        priority: 1,
-        is_read: false,
-        metadata: { pitchCount: actionSummary.actionCounts.pitch_generated },
-        expires_at: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-        action_required: 'profile_updated',
-        navigation_target: '/profile'
-      });
-    }
-
-    // Check for sharing nudge
-    const hasShared = actionSummary.actionCounts.profile_shared > 0;
-    const hasViews = actionSummary.actionCounts.profile_viewed > 0;
-    if (!existingTypes.includes('sharing_opportunity') && 
-        hasViews && (!hasShared || new Date(actionSummary.lastActionDates.profile_shared || 0) < twoWeeksAgo)) {
-      insights.push({
-        insight_type: 'sharing_opportunity',
-        title: 'Your Profile is Getting Noticed',
-        message: "Your profile has been viewed recently! This might be a great time to share it with new connections.",
-        priority: 1,
-        is_read: false,
-        metadata: { viewCount: actionSummary.actionCounts.profile_viewed },
-        expires_at: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        action_required: 'profile_shared',
-        navigation_target: '/profile'
-      });
-    }
-
-    // Check for onboarding completion
-    const hasCompletedOnboarding = actionSummary.actionCounts.onboarding_completed > 0;
-    if (!existingTypes.includes('complete_onboarding') && !hasCompletedOnboarding) {
-      insights.push({
-        insight_type: 'complete_onboarding',
-        title: 'Complete Your Setup',
-        message: "Finish setting up your profile to unlock all features and get the most out of Lansa.",
-        priority: 3,
-        is_read: false,
-        metadata: {},
-        expires_at: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        action_required: 'onboarding_completed',
-        navigation_target: '/onboarding'
-      });
-    }
-
+    const userAnswers = await getUserAnswers(userId);
+    const insights: AIInsight[] = [];
+    
+    // Check what the user might need help with
+    const profileInsight = await checkProfileCompleteness(userId);
+    if (profileInsight) insights.push(profileInsight);
+    
+    const actionInsight = await checkRecommendedActions(userId, userAnswers);
+    if (actionInsight) insights.push(actionInsight);
+    
     return insights;
   } catch (error) {
     console.error('Error generating insights:', error);
     return [];
+  }
+}
+
+async function checkProfileCompleteness(userId: string): Promise<AIInsight | null> {
+  try {
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+    
+    if (!profile) {
+      return {
+        id: `profile-setup-${Date.now()}`,
+        title: "Complete Your Profile",
+        message: "Set up your professional profile to make a great first impression. Add your experience, skills, and personal details.",
+        insight_type: "profile_setup",
+        priority: 1,
+        navigation_target: "/profile",
+        is_read: false,
+        created_at: new Date().toISOString()
+      };
+    }
+    
+    // Check for missing profile elements
+    const missingElements = [];
+    if (!profile.about_text) missingElements.push("about section");
+    if (!profile.experiences || Object.keys(profile.experiences).length === 0) missingElements.push("work experience");
+    if (!profile.skills || profile.skills.length === 0) missingElements.push("skills");
+    if (!profile.profile_image) missingElements.push("profile photo");
+    
+    if (missingElements.length > 0) {
+      return {
+        id: `profile-incomplete-${Date.now()}`,
+        title: "Enhance Your Profile",
+        message: `Your profile is missing: ${missingElements.join(", ")}. Complete these sections to strengthen your professional presence.`,
+        insight_type: "profile_enhancement",
+        priority: 2,
+        navigation_target: "/profile",
+        is_read: false,
+        created_at: new Date().toISOString()
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error checking profile completeness:', error);
+    return null;
+  }
+}
+
+async function checkRecommendedActions(userId: string, userAnswers: any): Promise<AIInsight | null> {
+  try {
+    // Check if user has tracked any actions recently
+    const { data: recentActions } = await supabase
+      .from('user_actions')
+      .select('*')
+      .eq('user_id', userId)
+      .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+      .order('created_at', { ascending: false });
+    
+    const role = userAnswers?.identity || "Professional";
+    const goal = userAnswers?.desired_outcome || "Advance my career";
+    
+    // If no recent activity, suggest getting started
+    if (!recentActions || recentActions.length === 0) {
+      return {
+        id: `get-started-${Date.now()}`,
+        title: "Start Building Your Presence",
+        message: `As a ${role.toLowerCase()} looking to ${goal.toLowerCase()}, begin by exploring your dashboard and completing your profile setup.`,
+        insight_type: "get_started",
+        priority: 1,
+        navigation_target: "/dashboard",
+        is_read: false,
+        created_at: new Date().toISOString()
+      };
+    }
+    
+    // Check if they haven't visited their card recently
+    const cardVisits = recentActions.filter(action => action.action_type === 'card_visited');
+    if (cardVisits.length === 0) {
+      return {
+        id: `visit-card-${Date.now()}`,
+        title: "Preview Your Professional Card",
+        message: "See how your professional information looks to others. Your card is your digital business card that you can share with potential connections.",
+        insight_type: "card_preview",
+        priority: 2,
+        navigation_target: "/card",
+        is_read: false,
+        created_at: new Date().toISOString()
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error checking recommended actions:', error);
+    return null;
   }
 }
 
@@ -112,15 +139,50 @@ export async function getUserInsights(userId: string): Promise<AIInsight[]> {
       .select('*')
       .eq('user_id', userId)
       .eq('is_read', false)
-      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
-      .order('priority', { ascending: false })
+      .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
+      .order('priority', { ascending: true })
       .order('created_at', { ascending: false });
-
+    
     if (error) throw error;
-    return data || [];
+    
+    // Ensure all insights have proper navigation targets
+    return (data || []).map(insight => ({
+      ...insight,
+      navigation_target: insight.metadata?.navigation_target || insight.navigation_target || "/dashboard"
+    }));
   } catch (error) {
-    console.error('Error fetching user insights:', error);
+    console.error('Failed to fetch user insights:', error);
     return [];
+  }
+}
+
+export async function saveInsightsToDatabase(userId: string, insights: AIInsight[]): Promise<void> {
+  if (insights.length === 0) return;
+  
+  try {
+    // Ensure each insight has a proper navigation target before saving
+    const insightsToSave = insights.map(insight => ({
+      user_id: userId,
+      title: insight.title,
+      message: insight.message,
+      insight_type: insight.insight_type,
+      priority: insight.priority,
+      metadata: {
+        navigation_target: insight.navigation_target || "/dashboard",
+        ...insight.metadata
+      },
+      is_read: false,
+      expires_at: insight.expires_at || null
+    }));
+    
+    const { error } = await supabase
+      .from('ai_insights')
+      .insert(insightsToSave);
+    
+    if (error) throw error;
+  } catch (error) {
+    console.error('Failed to save insights to database:', error);
+    throw error;
   }
 }
 
@@ -130,49 +192,47 @@ export async function markInsightAsRead(insightId: string): Promise<void> {
       .from('ai_insights')
       .update({ is_read: true })
       .eq('id', insightId);
-
+    
     if (error) throw error;
   } catch (error) {
-    console.error('Error marking insight as read:', error);
-  }
-}
-
-export async function saveInsightsToDatabase(userId: string, insights: Omit<AIInsight, 'id' | 'created_at'>[]): Promise<void> {
-  try {
-    if (insights.length === 0) return;
-
-    const { error } = await supabase
-      .from('ai_insights')
-      .insert(insights.map(insight => ({
-        user_id: userId,
-        ...insight
-      })));
-
-    if (error) throw error;
-  } catch (error) {
-    console.error('Error saving insights to database:', error);
+    console.error('Failed to mark insight as read:', error);
+    throw error;
   }
 }
 
 export async function checkAndRemoveCompletedInsights(userId: string): Promise<void> {
   try {
-    // Get current user actions to check completion status
-    const actionSummary = await getUserActionSummary(userId);
-    if (!actionSummary) return;
-
-    // Get current insights
-    const insights = await getUserInsights(userId);
+    // Get user's recent actions to determine what they've completed
+    const { data: recentActions } = await supabase
+      .from('user_actions')
+      .select('action_type')
+      .eq('user_id', userId)
+      .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
     
-    // Check each insight to see if its required action has been completed
-    for (const insight of insights) {
-      const actionRequired = insight.metadata?.action_required || insight.action_required;
-      
-      if (actionRequired && actionSummary.actionCounts[actionRequired as ActionType] > 0) {
-        // Action has been completed, mark insight as read
-        await markInsightAsRead(insight.id);
-      }
+    if (!recentActions) return;
+    
+    const completedActions = new Set(recentActions.map(action => action.action_type));
+    
+    // Mark insights as read if the user has completed the suggested actions
+    const insightsToMarkComplete = [];
+    
+    if (completedActions.has('profile_visited') || completedActions.has('profile_updated')) {
+      insightsToMarkComplete.push('profile_setup', 'profile_enhancement');
+    }
+    
+    if (completedActions.has('card_visited')) {
+      insightsToMarkComplete.push('card_preview');
+    }
+    
+    if (insightsToMarkComplete.length > 0) {
+      await supabase
+        .from('ai_insights')
+        .update({ is_read: true })
+        .eq('user_id', userId)
+        .in('insight_type', insightsToMarkComplete)
+        .eq('is_read', false);
     }
   } catch (error) {
-    console.error('Error checking completed insights:', error);
+    console.error('Error checking and removing completed insights:', error);
   }
 }
