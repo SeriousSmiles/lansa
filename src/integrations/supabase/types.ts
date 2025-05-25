@@ -9,6 +9,69 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ai_insights: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          insight_type: string
+          is_read: boolean
+          message: string
+          metadata: Json | null
+          priority: number
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          insight_type: string
+          is_read?: boolean
+          message: string
+          metadata?: Json | null
+          priority?: number
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          insight_type?: string
+          is_read?: boolean
+          message?: string
+          metadata?: Json | null
+          priority?: number
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_actions: {
+        Row: {
+          action_type: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_answers: {
         Row: {
           age_group: string | null

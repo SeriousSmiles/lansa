@@ -28,7 +28,7 @@ export async function trackUserAction(
       return;
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from('user_actions')
       .insert({
         user_id: user.id,
@@ -48,7 +48,7 @@ export async function trackUserAction(
 
 export async function getUserActionSummary(userId: string) {
   try {
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('user_actions')
       .select('action_type, created_at, metadata')
       .eq('user_id', userId)
@@ -64,7 +64,7 @@ export async function getUserActionSummary(userId: string) {
       lastActionDates: {} as Record<ActionType, string>
     };
 
-    data?.forEach((action: any) => {
+    data?.forEach((action) => {
       const type = action.action_type as ActionType;
       summary.actionCounts[type] = (summary.actionCounts[type] || 0) + 1;
       
