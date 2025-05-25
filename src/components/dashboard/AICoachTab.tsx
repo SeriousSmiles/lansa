@@ -1,16 +1,18 @@
 
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Brain, CheckCircle, Clock, TrendingUp } from "lucide-react";
-import { AIInsight, getUserInsights, markInsightAsRead, generateInsights, saveInsightsToDatabase } from "@/services/aiInsights";
+import { Brain, CheckCircle, Clock, TrendingUp, ArrowRight } from "lucide-react";
+import { AIInsight, getUserInsights, markInsightAsRead, generateInsights, saveInsightsToDatabase, checkAndRemoveCompletedInsights } from "@/services/aiInsights";
 import { trackUserAction } from "@/services/actionTracking";
 import { toast } from "sonner";
 
 export function AICoachTab() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [insights, setInsights] = useState<AIInsight[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -27,6 +29,10 @@ export function AICoachTab() {
     
     setIsLoading(true);
     try {
+      // First check and remove completed insights
+      await checkAndRemoveCompletedInsights(user.id);
+      
+      // Then load current insights
       const userInsights = await getUserInsights(user.id);
       setInsights(userInsights);
     } catch (error) {
@@ -41,8 +47,14 @@ export function AICoachTab() {
     
     setIsGenerating(true);
     try {
+      // Check and remove completed insights first
+      await checkAndRemoveCompletedInsights(user.id);
+      
+      // Generate new insights
       const newInsights = await generateInsights(user.id);
       await saveInsightsToDatabase(user.id, newInsights);
+      
+      // Reload insights
       await loadInsights();
       
       if (newInsights.length > 0) {
@@ -60,13 +72,39 @@ export function AICoachTab() {
     }
   };
 
-  const handleInsightClick = async (insight: AIInsight) => {
+  const handleInsightAction = async (insight: AIInsight) => {
+    // Navigate to the required page/section
+    if (insight.navigation_target) {
+      // If it's a dashboard tab, handle tab switching
+      if (insight.navigation_target.includes('#')) {
+        const [path, tab] = insight.navigation_target.split('#');
+        navigate(path);
+        // You could emit an event here to switch tabs if needed
+      } else {
+        navigate(insight.navigation_target);
+      }
+      
+      // Track the navigation action
+      trackUserAction('insight_interacted', { 
+        action: 'navigate_to_complete', 
+        insight_type: insight.insight_type,
+        target: insight.navigation_target
+      });
+      
+      toast.success(`Redirecting you to complete this action...`);
+    }
+  };
+
+  const handleMarkAsComplete = async (insight: AIInsight, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent triggering the card click
+    
     await markInsightAsRead(insight.id);
     setInsights(prev => prev.filter(i => i.id !== insight.id));
     trackUserAction('insight_interacted', { 
-      action: 'mark_read', 
+      action: 'mark_complete', 
       insight_type: insight.insight_type 
     });
+    toast.success('Insight marked as complete!');
   };
 
   const getPriorityColor = (priority: number) => {
@@ -120,7 +158,7 @@ export function AICoachTab() {
           {isGenerating ? (
             <>
               <Clock className="h-4 w-4 mr-2 animate-spin" />
-              Generating...
+              Refreshing...
             </>
           ) : (
             <>
@@ -150,24 +188,38 @@ export function AICoachTab() {
           {insights.map((insight) => (
             <Card 
               key={insight.id} 
-              className="hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-[#FF6B4A]"
-              onClick={() => handleInsightClick(insight)}
+              className="hover:shadow-md transition-all cursor-pointer border-l-4 border-l-[#FF6B4A] group"
+              onClick={() => handleInsightAction(insight)}
             >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg">{insight.title}</CardTitle>
-                  <Badge 
-                    variant="outline" 
-                    className={getPriorityColor(insight.priority)}
-                  >
-                    {getPriorityLabel(insight.priority)}
-                  </Badge>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    {insight.title}
+                    <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity text-[#FF6B4A]" />
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Badge 
+                      variant="outline" 
+                      className={getPriorityColor(insight.priority)}
+                    >
+                      {getPriorityLabel(insight.priority)}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => handleMarkAsComplete(insight, e)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 leading-relaxed">{insight.message}</p>
-                <div className="mt-4 text-xs text-gray-500">
-                  Click to mark as complete
+                <p className="text-gray-700 leading-relaxed mb-3">{insight.message}</p>
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <span>Click to go to {insight.navigation_target?.replace('/', '') || 'action'}</span>
+                  <span>or mark as complete →</span>
                 </div>
               </CardContent>
             </Card>
