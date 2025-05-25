@@ -73,25 +73,31 @@ export function AICoachTab() {
   };
 
   const handleInsightAction = async (insight: AIInsight) => {
+    console.log('Navigating to:', insight.navigation_target);
+    
     // Navigate to the required page/section
     if (insight.navigation_target) {
-      // If it's a dashboard tab, handle tab switching
-      if (insight.navigation_target.includes('#')) {
-        const [path, tab] = insight.navigation_target.split('#');
-        navigate(path);
-        // You could emit an event here to switch tabs if needed
-      } else {
-        navigate(insight.navigation_target);
+      try {
+        // If it's a dashboard tab, handle tab switching
+        if (insight.navigation_target.includes('#')) {
+          const [path, tab] = insight.navigation_target.split('#');
+          navigate(path, { state: { activeTab: tab } });
+        } else {
+          navigate(insight.navigation_target);
+        }
+        
+        // Track the navigation action
+        trackUserAction('insight_interacted', { 
+          action: 'navigate_to_complete', 
+          insight_type: insight.insight_type,
+          target: insight.navigation_target
+        });
+        
+        toast.success(`Redirecting you to complete this action...`);
+      } catch (error) {
+        console.error('Navigation error:', error);
+        toast.error('Failed to navigate to the requested page');
       }
-      
-      // Track the navigation action
-      trackUserAction('insight_interacted', { 
-        action: 'navigate_to_complete', 
-        insight_type: insight.insight_type,
-        target: insight.navigation_target
-      });
-      
-      toast.success(`Redirecting you to complete this action...`);
     }
   };
 

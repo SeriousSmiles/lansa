@@ -48,6 +48,42 @@ export type Database = {
         }
         Relationships: []
       }
+      content_blocks: {
+        Row: {
+          block_type: string
+          content: Json
+          created_at: string
+          display_order: number | null
+          id: string
+          is_visible: boolean | null
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          block_type: string
+          content?: Json
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_visible?: boolean | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          block_type?: string
+          content?: Json
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_visible?: boolean | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_actions: {
         Row: {
           action_type: string
