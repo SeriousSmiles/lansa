@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -127,6 +128,50 @@ export function ProfileSetupPage() {
     }
   };
 
+  const getBlockContent = (blockType: string) => {
+    return contentBlocks.find(block => block.block_type === blockType);
+  };
+
+  const renderSection = (blockType: string, title: string, icon: any) => {
+    const Icon = icon;
+    const block = getBlockContent(blockType);
+    
+    if (block) {
+      return (
+        <ContentBlockRenderer
+          key={block.id}
+          block={block}
+          onEdit={() => handleEditBlock(block)}
+          onDelete={() => handleDeleteBlock(block.id)}
+        />
+      );
+    }
+
+    return (
+      <Card key={blockType} className="border-2 border-dashed border-gray-300 hover:border-[#FF6B4A] transition-colors">
+        <CardHeader className="text-center pb-4">
+          <div className="flex items-center justify-center mb-4">
+            <Icon className="h-8 w-8 text-[#FF6B4A]" />
+          </div>
+          <CardTitle className="text-xl text-gray-800">{title}</CardTitle>
+        </CardHeader>
+        <CardContent className="text-center">
+          <p className="text-gray-600 mb-6">
+            {blockTypes.find(bt => bt.type === blockType)?.description}
+          </p>
+          <Button 
+            variant="outline" 
+            onClick={() => handleAddBlock(blockType)}
+            className="w-full"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add {title}
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -149,67 +194,20 @@ export function ProfileSetupPage() {
           </p>
         </div>
 
-        {/* Existing Blocks */}
-        {contentBlocks.length > 0 && (
-          <div className="mb-8 space-y-6">
-            <h2 className="text-2xl font-semibold text-gray-800">Your Profile Sections</h2>
-            {contentBlocks.map((block) => (
-              <ContentBlockRenderer
-                key={block.id}
-                block={block}
-                onEdit={() => handleEditBlock(block)}
-                onDelete={() => handleDeleteBlock(block.id)}
-              />
-            ))}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left Column - About Me & Contact */}
+          <div className="lg:col-span-4 space-y-8">
+            {renderSection('about', 'About Me', User)}
+            {renderSection('contact', 'Contact Info', Mail)}
           </div>
-        )}
-
-        {/* Add New Blocks */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-            {contentBlocks.length === 0 ? 'Get Started - Choose Your First Section' : 'Add More Sections'}
-          </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {blockTypes
-              .filter(blockType => !contentBlocks.some(block => block.block_type === blockType.type))
-              .map((blockType) => {
-                const Icon = blockType.icon;
-                return (
-                  <Card
-                    key={blockType.type}
-                    className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-gray-300 hover:border-[#FF6B4A]"
-                    onClick={() => handleAddBlock(blockType.type)}
-                  >
-                    <CardHeader className="text-center pb-2">
-                      <Icon className="h-8 w-8 mx-auto mb-2 text-[#FF6B4A]" />
-                      <CardTitle className="text-lg">{blockType.label}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-center">
-                      <p className="text-gray-600 text-sm mb-4">{blockType.description}</p>
-                      <Button variant="outline" size="sm" className="w-full">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Section
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+          {/* Right Column - Experience, Education & Skills */}
+          <div className="lg:col-span-8 space-y-8">
+            {renderSection('experience', 'Work Experience', Briefcase)}
+            {renderSection('education', 'Education', GraduationCap)}
+            {renderSection('skills', 'Skills', Wrench)}
           </div>
         </div>
-
-        {/* Empty State */}
-        {contentBlocks.length === 0 && (
-          <Card className="text-center py-12 bg-white border-2 border-dashed border-gray-300">
-            <CardContent>
-              <User className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-              <h3 className="text-xl font-semibold mb-2">Your profile is waiting for you!</h3>
-              <p className="text-gray-600 mb-6">
-                Start by adding your first section above. Each section you add will help build your professional story.
-              </p>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Modal */}
         <ContentBlockModal
