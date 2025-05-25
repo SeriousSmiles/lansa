@@ -14,7 +14,7 @@ export interface AIInsight {
   expires_at?: string;
 }
 
-export async function generateInsights(userId: string): Promise<AIInsight[]> {
+export async function generateInsights(userId: string): Promise<Omit<AIInsight, 'id' | 'created_at'>[]> {
   try {
     const actionSummary = await getUserActionSummary(userId);
     if (!actionSummary) return [];
@@ -76,7 +76,7 @@ export async function generateInsights(userId: string): Promise<AIInsight[]> {
 
 export async function getUserInsights(userId: string): Promise<AIInsight[]> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('ai_insights')
       .select('*')
       .eq('user_id', userId)
@@ -95,7 +95,7 @@ export async function getUserInsights(userId: string): Promise<AIInsight[]> {
 
 export async function markInsightAsRead(insightId: string): Promise<void> {
   try {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('ai_insights')
       .update({ is_read: true })
       .eq('id', insightId);
@@ -110,7 +110,7 @@ export async function saveInsightsToDatabase(userId: string, insights: Omit<AIIn
   try {
     if (insights.length === 0) return;
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('ai_insights')
       .insert(insights.map(insight => ({
         user_id: userId,
