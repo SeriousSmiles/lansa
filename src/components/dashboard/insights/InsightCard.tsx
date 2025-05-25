@@ -31,9 +31,7 @@ export function InsightCard({ insight, onAction, onMarkComplete }: InsightCardPr
   };
 
   // Ensure we have a valid navigation target
-  const navigationTarget = insight.navigation_target || 
-                          insight.metadata?.navigation_target || 
-                          "/dashboard";
+  const navigationTarget = insight.navigation_target || "/dashboard";
 
   const getActionText = (target: string) => {
     switch (target) {

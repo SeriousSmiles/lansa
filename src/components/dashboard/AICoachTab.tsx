@@ -67,9 +67,7 @@ export function AICoachTab() {
 
   const handleInsightAction = async (insight: AIInsight) => {
     // Ensure we have a valid navigation target
-    const navigationTarget = insight.navigation_target || 
-                            insight.metadata?.navigation_target || 
-                            "/dashboard";
+    const navigationTarget = insight.navigation_target || "/dashboard";
     
     console.log('Navigating to:', navigationTarget);
     

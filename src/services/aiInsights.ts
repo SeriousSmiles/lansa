@@ -145,11 +145,14 @@ export async function getUserInsights(userId: string): Promise<AIInsight[]> {
     
     if (error) throw error;
     
-    // Ensure all insights have proper navigation targets
-    return (data || []).map(insight => ({
-      ...insight,
-      navigation_target: insight.metadata?.navigation_target || insight.navigation_target || "/dashboard"
-    }));
+    // Transform database insights to our interface with proper metadata handling
+    return (data || []).map(insight => {
+      const metadata = insight.metadata as any;
+      return {
+        ...insight,
+        navigation_target: metadata?.navigation_target || "/dashboard"
+      };
+    });
   } catch (error) {
     console.error('Failed to fetch user insights:', error);
     return [];
@@ -160,7 +163,7 @@ export async function saveInsightsToDatabase(userId: string, insights: AIInsight
   if (insights.length === 0) return;
   
   try {
-    // Ensure each insight has a proper navigation target before saving
+    // Ensure each insight has a proper navigation target stored in metadata before saving
     const insightsToSave = insights.map(insight => ({
       user_id: userId,
       title: insight.title,
