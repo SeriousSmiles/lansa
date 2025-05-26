@@ -1,6 +1,4 @@
 
-import { useToast } from "@/hooks/use-toast";
-
 interface SidebarHandlerProps {
   onUpdateUserName?: (name: string) => Promise<void>;
   onUpdatePhoneNumber?: (phone: string) => Promise<void>;
@@ -11,7 +9,7 @@ interface SidebarHandlerProps {
 }
 
 /**
- * Custom hook for managing sidebar event handlers with toast notifications
+ * Custom hook for managing sidebar event handlers with error-only notifications
  */
 export const useSidebarHandlers = ({
   onUpdateUserName,
@@ -21,23 +19,13 @@ export const useSidebarHandlers = ({
   onRemoveSkill,
   onUploadProfileImage
 }: SidebarHandlerProps) => {
-  const { toast } = useToast();
 
   const handleUpdateUserName = async (name: string) => {
     if (onUpdateUserName) {
       try {
         await onUpdateUserName(name);
-        toast({
-          title: "Changes saved",
-          description: "Your name has been updated.",
-        });
         return Promise.resolve();
       } catch (error) {
-        toast({
-          title: "Error saving changes",
-          description: "Please try again later.",
-          variant: "destructive",
-        });
         return Promise.reject(error);
       }
     }
@@ -48,17 +36,8 @@ export const useSidebarHandlers = ({
     if (onUpdatePhoneNumber) {
       try {
         await onUpdatePhoneNumber(phone);
-        toast({
-          title: "Changes saved",
-          description: "Your phone number has been updated.",
-        });
         return Promise.resolve();
       } catch (error) {
-        toast({
-          title: "Error saving changes",
-          description: "Please try again later.",
-          variant: "destructive",
-        });
         return Promise.reject(error);
       }
     }
@@ -69,17 +48,8 @@ export const useSidebarHandlers = ({
     if (onUpdate) {
       try {
         await onUpdate(field, value);
-        toast({
-          title: "Changes saved",
-          description: "Your professional goal has been updated.",
-        });
         return Promise.resolve();
       } catch (error) {
-        toast({
-          title: "Error saving changes",
-          description: "Please try again later.",
-          variant: "destructive",
-        });
         return Promise.reject(error);
       }
     }
@@ -90,17 +60,8 @@ export const useSidebarHandlers = ({
     if (onAddSkill) {
       try {
         await onAddSkill(skill);
-        toast({
-          title: "Skill added",
-          description: "Your new skill has been added to your profile.",
-        });
         return Promise.resolve();
       } catch (error) {
-        toast({
-          title: "Error adding skill",
-          description: "Please try again later.",
-          variant: "destructive",
-        });
         return Promise.reject(error);
       }
     }
@@ -111,17 +72,8 @@ export const useSidebarHandlers = ({
     if (onRemoveSkill) {
       try {
         await onRemoveSkill(skill);
-        toast({
-          title: "Skill removed",
-          description: "The skill has been removed from your profile.",
-        });
         return Promise.resolve();
       } catch (error) {
-        toast({
-          title: "Error removing skill",
-          description: "Please try again later.",
-          variant: "destructive",
-        });
         return Promise.reject(error);
       }
     }
@@ -132,17 +84,8 @@ export const useSidebarHandlers = ({
     if (onUploadProfileImage) {
       try {
         const result = await onUploadProfileImage(file);
-        toast({
-          title: "Image uploaded",
-          description: "Your profile image has been updated.",
-        });
         return result;
       } catch (error) {
-        toast({
-          title: "Error uploading image",
-          description: "Please try again later.",
-          variant: "destructive",
-        });
         return Promise.reject(error);
       }
     }

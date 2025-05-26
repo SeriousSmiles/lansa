@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
 import { getUserAnswers, hasCompletedOnboarding } from "@/services/question";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -16,6 +17,7 @@ interface LoginFormData {
 export function LoginForm() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>();
   const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,16 +26,16 @@ export function LoginForm() {
     if (isLoading) return;
     
     setIsLoading(true);
+    setLoginError(null);
+    
     try {
       const { error } = await signIn(data.email, data.password);
       
       if (error) {
-        toast.error(error.message || "Invalid login credentials");
+        setLoginError(error.message || "Invalid login credentials");
         setIsLoading(false);
         return;
       }
-      
-      toast.success("Login successful!");
       
       // Get the current session to check user ID
       const { data: { session } } = await supabase.auth.getSession();
@@ -57,13 +59,19 @@ export function LoginForm() {
       
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || "An error occurred during login");
+      setLoginError(error.message || "An error occurred during login");
       setIsLoading(false);
     }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex w-[480px] max-w-full flex-col items-center text-base justify-center mt-8 mx-auto">
+      {loginError && (
+        <Alert variant="destructive" className="w-full mb-4">
+          <AlertDescription>{loginError}</AlertDescription>
+        </Alert>
+      )}
+      
       <div className="w-full text-[#2E2E2E] font-normal mt-6">
         <label className="block mb-2">Email*</label>
         <Input
@@ -98,7 +106,7 @@ export function LoginForm() {
             variant="google"
             disabled={isLoading}
             className="mt-4"
-            onClick={() => toast.info("Google login is not implemented in this MVP")}
+            onClick={() => console.log("Google login is not implemented in this MVP")}
           >
             <img
               src="https://cdn.builder.io/api/v1/image/assets/TEMP/abebc497af7ae0216b313acd82c8ed74ee2d8b24?placeholderIfAbsent=true"

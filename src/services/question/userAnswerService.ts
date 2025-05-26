@@ -1,5 +1,3 @@
-
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { UserAnswers } from "./types";
 
@@ -12,7 +10,6 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
     
     if (authError || !authUser?.user) {
       console.error("User authentication error:", authError);
-      toast.error("Authentication error. Please sign in again.");
       return { success: false, error: authError };
     }
     
@@ -25,7 +22,6 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
     
     if (fetchError && fetchError.code !== 'PGRST116') {
       console.error("Error fetching existing answers:", fetchError);
-      toast.error("Failed to check existing answers. Please try again.");
       return { success: false, error: fetchError };
     }
     
@@ -51,7 +47,6 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
       
       if (error) {
         console.error("Error updating answers:", error);
-        toast.error("Failed to update your answers. Please try again.");
         return { success: false, error };
       }
       result = { success: true };
@@ -74,7 +69,6 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
       
       if (error) {
         console.error("Error inserting answers:", error);
-        toast.error("Failed to save your answers. Please try again.");
         return { success: false, error };
       }
       result = { success: true };
@@ -112,15 +106,12 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
       }
     } catch (profileError: any) {
       console.error("Error updating user profile:", profileError);
-      // Don't prevent the flow if profile update fails, just show a warning
-      toast.warning("Profile was not fully updated. Some features may be limited.");
+      // Don't prevent the flow if profile update fails
     }
     
-    toast.success("Your answers have been saved successfully!");
     return result;
   } catch (error) {
     console.error('Error saving user answers:', error);
-    toast.error("Failed to save your answers. Please try again.");
     return { success: false, error };
   }
 }

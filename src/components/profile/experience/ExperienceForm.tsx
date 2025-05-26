@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getContrastTextColor } from "@/utils/colorUtils";
 
 interface ExperienceFormProps {
@@ -13,7 +14,7 @@ interface ExperienceFormProps {
   onSave: () => Promise<void>;
   onCancel: () => void;
   isNew?: boolean;
-  highlightColor?: string; // Added highlightColor property
+  highlightColor?: string;
 }
 
 export function ExperienceForm({ 
@@ -24,37 +25,25 @@ export function ExperienceForm({
   onSave, 
   onCancel, 
   isNew = false,
-  highlightColor = "#FF6B4A" // Default to original orange
+  highlightColor = "#FF6B4A"
 }: ExperienceFormProps) {
   const [isSaving, setIsSaving] = useState(false);
-  const { toast } = useToast();
+  const [error, setError] = useState<string | null>(null);
 
   const handleSave = async () => {
     if (!title.trim()) {
-      toast({
-        title: "Title required",
-        description: "Please provide a title for the experience.",
-        variant: "destructive",
-      });
+      setError("Please provide a title for the experience.");
       return;
     }
 
     setIsSaving(true);
+    setError(null);
+    
     try {
       await onSave();
-      toast({
-        title: isNew ? "Experience added" : "Experience updated",
-        description: isNew 
-          ? "Your new experience has been added to your profile." 
-          : "Your experience has been updated."
-      });
     } catch (error) {
       console.error("Error saving experience:", error);
-      toast({
-        title: "Error saving experience",
-        description: "There was an error saving your experience. Please try again.",
-        variant: "destructive",
-      });
+      setError("There was an error saving your experience. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -65,6 +54,12 @@ export function ExperienceForm({
       <h3 className="text-lg font-semibold" style={{ color: highlightColor }}>
         {isNew ? "Add New Experience" : "Edit Experience"}
       </h3>
+      
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       
       <div className="space-y-2">
         <label className="block text-sm font-medium">Title</label>
