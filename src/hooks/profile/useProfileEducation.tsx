@@ -3,7 +3,7 @@ import { useState } from "react";
 import { v4 as uuidv4 } from "@/utils/uuid";
 import { UserProfile } from "../profile/profileTypes";
 import { EducationItem } from "../profile/profileTypes";
-import { convertEducationItemsToJson } from "@/utils/profileDataConverters";
+import { convertEducationItemsToJson, convertJsonToEducationItems } from "@/utils/profileDataConverters";
 
 interface UseProfileEducationProps {
   userId: string | undefined;
