@@ -9,7 +9,7 @@ import { getContrastTextColor } from "@/utils/colorUtils";
 
 interface ProfessionalGoalProps {
   goal: string;
-  onUpdate?: (field: string, value: string) => Promise<void>;
+  onUpdate?: (goal: string) => Promise<void>;
   highlightColor?: string;
 }
 
@@ -27,11 +27,7 @@ export function ProfessionalGoal({
     if (onUpdate) {
       setIsSaving(true);
       try {
-        await onUpdate("question3", editedGoal);
-        toast({
-          title: "Changes saved",
-          description: "Your professional goal has been updated.",
-        });
+        await onUpdate(editedGoal);
         setIsEditing(false);
       } catch (error) {
         toast({
@@ -103,7 +99,7 @@ export function ProfessionalGoal({
             </div>
           </div>
         ) : (
-          <p>{goal}</p>
+          <p>{goal || "Click edit to add your professional goal"}</p>
         )}
       </CardContent>
     </Card>

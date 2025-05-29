@@ -15,10 +15,12 @@ interface ProfileSidebarProps {
   coverColor?: string;
   highlightColor?: string;
   profileImage?: string;
+  professionalGoal?: string;
   onUpdate?: (field: string, value: string) => Promise<void>;
   onUpdateUserName?: (name: string) => Promise<void>;
   onUpdateTitle?: (title: string) => Promise<void>;
   onUpdatePhoneNumber?: (phone: string) => Promise<void>;
+  onUpdateProfessionalGoal?: (goal: string) => Promise<void>;
   onAddSkill?: (skill: string) => Promise<void>;
   onRemoveSkill?: (skill: string) => Promise<void>;
   onUploadProfileImage?: (file: File) => Promise<string>;
@@ -35,10 +37,12 @@ export function ProfileSidebar({
   coverColor,
   highlightColor = "#FF6B4A",
   profileImage,
+  professionalGoal = "",
   onUpdate,
   onUpdateUserName,
   onUpdateTitle,
   onUpdatePhoneNumber,
+  onUpdateProfessionalGoal,
   onAddSkill,
   onRemoveSkill,
   onUploadProfileImage,
@@ -91,10 +95,10 @@ export function ProfileSidebar({
         highlightColor={highlightColor}
       />
       
-      {/* Goals */}
+      {/* Professional Goal */}
       <ProfessionalGoal
-        goal={goal}
-        onUpdate={handleUpdateGoal}
+        goal={professionalGoal}
+        onUpdate={onUpdateProfessionalGoal}
         highlightColor={highlightColor}
       />
     </div>

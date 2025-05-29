@@ -31,6 +31,7 @@ export interface UserProfile {
   skills?: string[];
   experiences?: ExperienceItem[];
   education?: EducationItem[];
+  professional_goal?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -57,6 +58,7 @@ export interface ProfileDataReturn {
   educationItems: EducationItem[];
   userEmail: string;
   userTitle: string;
+  professionalGoal: string;
 
   // Update functions
   updateUserName: (name: string) => Promise<void>;
@@ -67,6 +69,7 @@ export interface ProfileDataReturn {
   updateUserAnswer: (field: string, value: string) => Promise<void>;
   updateUserEmail: (email: string) => Promise<void>;
   updateUserTitle: (title: string) => Promise<void>;
+  updateProfessionalGoal: (goal: string) => Promise<void>;
   
   // Skills functions
   addSkill: (skill: string) => Promise<void>;

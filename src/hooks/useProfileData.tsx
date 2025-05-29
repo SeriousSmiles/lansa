@@ -25,6 +25,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
   // Base state
   const [userAnswers, setUserAnswers] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [professionalGoal, setProfessionalGoal] = useState("");
   const { toast } = useToast();
   
   // Use specialized hooks
@@ -83,9 +84,29 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     if (profileData) {
       // If profile exists, set all the values from it
       populateFromExistingProfile(profileData, answers, profileBasics, profileSkills, profileExperience, profileEducation, profileImage);
+      setProfessionalGoal(profileData.professional_goal || "");
     } else {
       // If no profile exists, use generated data
       populateFromGeneratedData(answers, userId, profileBasics, profileSkills, profileExperience, profileEducation);
+    }
+  };
+
+  // Function to update professional goal
+  const updateProfessionalGoal = async (goal: string) => {
+    try {
+      await profileBasics.updateProfileData({ professional_goal: goal });
+      setProfessionalGoal(goal);
+      toast({
+        title: "Professional goal updated",
+        description: "Your professional goal has been saved.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error updating goal",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+      throw error;
     }
   };
 
@@ -115,6 +136,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     educationItems: profileEducation.educationItems,
     userEmail: profileBasics.userEmail,
     userTitle: profileBasics.userTitle,
+    professionalGoal,
     
     // Update functions
     updateUserName: profileBasics.updateUserName,
@@ -125,6 +147,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     updateUserAnswer: profileBasics.updateUserAnswer,
     updateUserEmail: profileBasics.updateUserEmail,
     updateUserTitle: profileBasics.updateUserTitle,
+    updateProfessionalGoal,
     
     // Skills functions
     addSkill: profileSkills.addSkill,

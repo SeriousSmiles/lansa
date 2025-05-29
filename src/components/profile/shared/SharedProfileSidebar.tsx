@@ -14,6 +14,7 @@ interface SharedProfileSidebarProps {
   userTitle?: string;
   coverColor?: string;
   highlightColor?: string;
+  professionalGoal?: string;
 }
 
 export function SharedProfileSidebar({
@@ -28,6 +29,7 @@ export function SharedProfileSidebar({
   userTitle,
   coverColor = "#1A1F71",
   highlightColor = "#FF6B4A",
+  professionalGoal,
 }: SharedProfileSidebarProps) {
   return (
     <div className="lg:col-span-4 space-y-4">
@@ -105,7 +107,7 @@ export function SharedProfileSidebar({
         )}
         
         {/* Professional Goal */}
-        {goal && (
+        {professionalGoal && (
           <div className="mt-6">
             <h3 
               className="font-semibold text-lg mb-2"
@@ -113,7 +115,7 @@ export function SharedProfileSidebar({
             >
               Professional Goal
             </h3>
-            <p className="text-gray-700">{goal}</p>
+            <p className="text-gray-700">{professionalGoal}</p>
           </div>
         )}
         

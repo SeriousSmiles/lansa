@@ -23,6 +23,7 @@ export interface SharedProfileData {
   phoneNumber: string;
   userEmail: string;
   userTitle: string;
+  professionalGoal: string;
 }
 
 export function useSharedProfileData(urlParam: string | undefined) {
@@ -153,6 +154,7 @@ export function useSharedProfileData(urlParam: string | undefined) {
         skills: profileData.skills,
         experiences: processedExperiences,
         education: processedEducation,
+        professional_goal: profileData.professional_goal,
         created_at: profileData.created_at,
         updated_at: profileData.updated_at
       };
@@ -173,7 +175,8 @@ export function useSharedProfileData(urlParam: string | undefined) {
         profileImage: profileData?.profile_image || "",
         phoneNumber: profileData?.phone_number || "",
         userEmail: profileData?.email || "",
-        userTitle: profileData?.title || ""
+        userTitle: profileData?.title || "",
+        professionalGoal: profileData?.professional_goal || ""
       };
       
       console.log("Processed profile data:", profile);

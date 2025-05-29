@@ -3,7 +3,7 @@ import { useState } from "react";
 import { v4 as uuidv4 } from "@/utils/uuid";
 import { UserProfile } from "../profile/profileTypes";
 import { ExperienceItem } from "../profile/profileTypes";
-import { convertExperienceItemsToJson } from "@/utils/profileDataConverters";
+import { convertExperienceItemsToJson, convertJsonToExperienceItems } from "@/utils/profileDataConverters";
 
 interface UseProfileExperienceProps {
   userId: string | undefined;
