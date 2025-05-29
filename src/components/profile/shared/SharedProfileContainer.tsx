@@ -2,7 +2,7 @@
 import { useRef } from "react";
 import { ProfileLayout } from "@/components/profile/layout/ProfileLayout";
 import { SharedProfileContent } from "@/components/profile/shared/SharedProfileContent";
-import { CollapsibleSharedSidebar } from "@/components/profile/shared/CollapsibleSharedSidebar";
+import { SharedProfileSidebar } from "@/components/profile/shared/SharedProfileSidebar";
 import { ProfileFooter } from "@/components/profile/layout/ProfileFooter";
 import { useElementAnimation } from "@/utils/animationHelpers";
 import { SharedProfileData } from "@/hooks/useSharedProfileData";
@@ -28,7 +28,7 @@ export function SharedProfileContainer({ profileData, urlParam }: SharedProfileC
         readOnly={true}
         hideBackButton={true}
       >
-        <CollapsibleSharedSidebar 
+        <SharedProfileSidebar 
           userName={profileData.userName}
           role={profileData.role}
           goal={profileData.goal}
