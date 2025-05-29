@@ -8,19 +8,20 @@ interface ContactInfoProps {
   email: string;
   phoneNumber?: string;
   onUpdatePhoneNumber?: (phone: string) => Promise<void>;
-  highlightColor?: string; // Added highlightColor property
+  highlightColor?: string;
 }
 
 export function ContactInfo({ 
   email, 
   phoneNumber, 
   onUpdatePhoneNumber,
-  highlightColor = "#FF6B4A" // Default to original orange 
+  highlightColor = "#FF6B4A"
 }: ContactInfoProps) {
   const [isEditingPhone, setIsEditingPhone] = useState(false);
 
   return (
     <div className="w-full mt-4 space-y-2">
+      {/* Display email as read-only with icon */}
       <div className="flex items-center gap-2 text-sm">
         <Mail className="h-4 w-4" style={{ color: highlightColor }} />
         <span>{email}</span>
