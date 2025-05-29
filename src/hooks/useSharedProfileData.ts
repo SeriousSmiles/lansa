@@ -24,6 +24,7 @@ export interface SharedProfileData {
   userEmail: string;
   userTitle: string;
   professionalGoal: string;
+  biggestChallenge: string;
 }
 
 export function useSharedProfileData(urlParam: string | undefined) {
@@ -137,8 +138,10 @@ export function useSharedProfileData(urlParam: string | undefined) {
                   getProfileGoal(answers?.question3, answers?.desired_outcome) || 
                   "Advance my career";
       
-      // Get blocker from answers.question2 or use a default value
-      const blocker = answers?.question2 || "Identifying my unique value proposition";
+      // Get blocker from profile biggest_challenge or answers.question2 or use a default value
+      const blocker = profileData?.biggest_challenge || 
+                     answers?.question2 || 
+                     "Identifying my unique value proposition";
       
       // Create a properly typed UserProfile object from profileData
       const typedUserProfile: UserProfile = {
@@ -155,6 +158,7 @@ export function useSharedProfileData(urlParam: string | undefined) {
         experiences: processedExperiences,
         education: processedEducation,
         professional_goal: profileData.professional_goal,
+        biggest_challenge: profileData.biggest_challenge,
         created_at: profileData.created_at,
         updated_at: profileData.updated_at
       };
@@ -176,7 +180,8 @@ export function useSharedProfileData(urlParam: string | undefined) {
         phoneNumber: profileData?.phone_number || "",
         userEmail: profileData?.email || "",
         userTitle: profileData?.title || "",
-        professionalGoal: profileData?.professional_goal || ""
+        professionalGoal: profileData?.professional_goal || "",
+        biggestChallenge: profileData?.biggest_challenge || blocker
       };
       
       console.log("Processed profile data:", profile);

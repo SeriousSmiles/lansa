@@ -121,6 +121,7 @@ export type Database = {
         Row: {
           about_text: string | null
           age_group: string | null
+          biggest_challenge: string | null
           cover_color: string | null
           created_at: string | null
           desired_outcome: string | null
@@ -142,6 +143,7 @@ export type Database = {
         Insert: {
           about_text?: string | null
           age_group?: string | null
+          biggest_challenge?: string | null
           cover_color?: string | null
           created_at?: string | null
           desired_outcome?: string | null
@@ -163,6 +165,7 @@ export type Database = {
         Update: {
           about_text?: string | null
           age_group?: string | null
+          biggest_challenge?: string | null
           cover_color?: string | null
           created_at?: string | null
           desired_outcome?: string | null

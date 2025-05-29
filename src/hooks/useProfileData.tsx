@@ -26,6 +26,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
   const [userAnswers, setUserAnswers] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [professionalGoal, setProfessionalGoal] = useState("");
+  const [biggestChallenge, setBiggestChallenge] = useState("");
   const { toast } = useToast();
   
   // Use specialized hooks
@@ -85,9 +86,11 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
       // If profile exists, set all the values from it
       populateFromExistingProfile(profileData, answers, profileBasics, profileSkills, profileExperience, profileEducation, profileImage);
       setProfessionalGoal(profileData.professional_goal || "");
+      setBiggestChallenge(profileData.biggest_challenge || answers?.question2 || "Identifying my unique value proposition");
     } else {
       // If no profile exists, use generated data
       populateFromGeneratedData(answers, userId, profileBasics, profileSkills, profileExperience, profileEducation);
+      setBiggestChallenge(answers?.question2 || "Identifying my unique value proposition");
     }
   };
 
@@ -110,9 +113,28 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     }
   };
 
+  // Function to update biggest challenge
+  const updateBiggestChallenge = async (challenge: string) => {
+    try {
+      await profileBasics.updateProfileData({ biggest_challenge: challenge });
+      setBiggestChallenge(challenge);
+      toast({
+        title: "Biggest challenge updated",
+        description: "Your biggest challenge has been saved.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error updating challenge",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   const role = getProfileRole(userAnswers?.question1);
   const goal = getProfileGoal(userAnswers?.question3);
-  const blocker = userAnswers?.question2 || "Identifying my unique value proposition";
+  const blocker = biggestChallenge || userAnswers?.question2 || "Identifying my unique value proposition";
 
   return {
     // User data
@@ -137,6 +159,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     userEmail: profileBasics.userEmail,
     userTitle: profileBasics.userTitle,
     professionalGoal,
+    biggestChallenge,
     
     // Update functions
     updateUserName: profileBasics.updateUserName,
@@ -148,6 +171,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     updateUserEmail: profileBasics.updateUserEmail,
     updateUserTitle: profileBasics.updateUserTitle,
     updateProfessionalGoal,
+    updateBiggestChallenge,
     
     // Skills functions
     addSkill: profileSkills.addSkill,

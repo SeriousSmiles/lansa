@@ -3,6 +3,7 @@ import { useSidebarHandlers } from "@/hooks/useSidebarHandlers";
 import { SidebarPersonalInfo } from "./sidebar/SidebarPersonalInfo";
 import { SkillsList } from "./sidebar/SkillsList";
 import { ProfessionalGoal } from "./sidebar/ProfessionalGoal";
+import { BiggestChallenge } from "./sidebar/BiggestChallenge";
 
 interface ProfileSidebarProps {
   userName: string;
@@ -16,11 +17,13 @@ interface ProfileSidebarProps {
   highlightColor?: string;
   profileImage?: string;
   professionalGoal?: string;
+  biggestChallenge?: string;
   onUpdate?: (field: string, value: string) => Promise<void>;
   onUpdateUserName?: (name: string) => Promise<void>;
   onUpdateTitle?: (title: string) => Promise<void>;
   onUpdatePhoneNumber?: (phone: string) => Promise<void>;
   onUpdateProfessionalGoal?: (goal: string) => Promise<void>;
+  onUpdateBiggestChallenge?: (challenge: string) => Promise<void>;
   onAddSkill?: (skill: string) => Promise<void>;
   onRemoveSkill?: (skill: string) => Promise<void>;
   onUploadProfileImage?: (file: File) => Promise<string>;
@@ -38,11 +41,13 @@ export function ProfileSidebar({
   highlightColor = "#FF6B4A",
   profileImage,
   professionalGoal = "",
+  biggestChallenge = "",
   onUpdate,
   onUpdateUserName,
   onUpdateTitle,
   onUpdatePhoneNumber,
   onUpdateProfessionalGoal,
+  onUpdateBiggestChallenge,
   onAddSkill,
   onRemoveSkill,
   onUploadProfileImage,
@@ -99,6 +104,13 @@ export function ProfileSidebar({
       <ProfessionalGoal
         goal={professionalGoal}
         onUpdate={onUpdateProfessionalGoal}
+        highlightColor={highlightColor}
+      />
+
+      {/* Biggest Challenge */}
+      <BiggestChallenge
+        challenge={biggestChallenge}
+        onUpdate={onUpdateBiggestChallenge}
         highlightColor={highlightColor}
       />
     </div>

@@ -32,6 +32,7 @@ export interface UserProfile {
   experiences?: ExperienceItem[];
   education?: EducationItem[];
   professional_goal?: string;
+  biggest_challenge?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -59,6 +60,7 @@ export interface ProfileDataReturn {
   userEmail: string;
   userTitle: string;
   professionalGoal: string;
+  biggestChallenge: string;
 
   // Update functions
   updateUserName: (name: string) => Promise<void>;
@@ -70,6 +72,7 @@ export interface ProfileDataReturn {
   updateUserEmail: (email: string) => Promise<void>;
   updateUserTitle: (title: string) => Promise<void>;
   updateProfessionalGoal: (goal: string) => Promise<void>;
+  updateBiggestChallenge: (challenge: string) => Promise<void>;
   
   // Skills functions
   addSkill: (skill: string) => Promise<void>;

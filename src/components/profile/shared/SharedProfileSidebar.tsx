@@ -15,6 +15,7 @@ interface SharedProfileSidebarProps {
   coverColor?: string;
   highlightColor?: string;
   professionalGoal?: string;
+  biggestChallenge?: string;
 }
 
 export function SharedProfileSidebar({
@@ -30,6 +31,7 @@ export function SharedProfileSidebar({
   coverColor = "#1A1F71",
   highlightColor = "#FF6B4A",
   professionalGoal,
+  biggestChallenge,
 }: SharedProfileSidebarProps) {
   return (
     <div className="lg:col-span-4 space-y-4">
@@ -120,7 +122,7 @@ export function SharedProfileSidebar({
         )}
         
         {/* Biggest Challenge */}
-        {blocker && (
+        {(biggestChallenge || blocker) && (
           <div className="mt-6">
             <h3 
               className="font-semibold text-lg mb-2"
@@ -128,7 +130,12 @@ export function SharedProfileSidebar({
             >
               Biggest Challenge
             </h3>
-            <p className="text-gray-700">{blocker}</p>
+            <blockquote 
+              className="border-l-4 pl-4 italic text-gray-700"
+              style={{ borderColor: highlightColor }}
+            >
+              "{biggestChallenge || blocker}"
+            </blockquote>
           </div>
         )}
       </Card>
