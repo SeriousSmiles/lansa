@@ -103,6 +103,7 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
               aboutText={profile.aboutText}
               onUpdate={profile.updateUserAnswer}
               onUpdateAbout={profile.updateAboutText}
+              onUpdateBiggestChallenge={profile.updateBiggestChallenge}
               themeColor={profile.coverColor}
               highlightColor={profile.highlightColor}
             />

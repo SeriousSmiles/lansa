@@ -120,24 +120,6 @@ export function SharedProfileSidebar({
             <p className="text-gray-700">{professionalGoal}</p>
           </div>
         )}
-        
-        {/* Biggest Challenge */}
-        {(biggestChallenge || blocker) && (
-          <div className="mt-6">
-            <h3 
-              className="font-semibold text-lg mb-2"
-              style={{ color: coverColor }}
-            >
-              Biggest Challenge
-            </h3>
-            <blockquote 
-              className="border-l-4 pl-4 italic text-gray-700"
-              style={{ borderColor: highlightColor }}
-            >
-              "{biggestChallenge || blocker}"
-            </blockquote>
-          </div>
-        )}
       </Card>
     </div>
   );

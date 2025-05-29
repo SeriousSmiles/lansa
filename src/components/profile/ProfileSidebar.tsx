@@ -3,7 +3,6 @@ import { useSidebarHandlers } from "@/hooks/useSidebarHandlers";
 import { SidebarPersonalInfo } from "./sidebar/SidebarPersonalInfo";
 import { SkillsList } from "./sidebar/SkillsList";
 import { ProfessionalGoal } from "./sidebar/ProfessionalGoal";
-import { BiggestChallenge } from "./sidebar/BiggestChallenge";
 
 interface ProfileSidebarProps {
   userName: string;
@@ -104,13 +103,6 @@ export function ProfileSidebar({
       <ProfessionalGoal
         goal={professionalGoal}
         onUpdate={onUpdateProfessionalGoal}
-        highlightColor={highlightColor}
-      />
-
-      {/* Biggest Challenge */}
-      <BiggestChallenge
-        challenge={biggestChallenge}
-        onUpdate={onUpdateBiggestChallenge}
         highlightColor={highlightColor}
       />
     </div>

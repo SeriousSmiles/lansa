@@ -10,6 +10,7 @@ interface AboutContainerProps {
   aboutText?: string;
   onUpdate?: (field: string, value: string) => Promise<void>;
   onUpdateAbout?: (text: string) => Promise<void>;
+  onUpdateBiggestChallenge?: (challenge: string) => Promise<void>;
   themeColor?: string;
   highlightColor?: string;
 }
@@ -21,6 +22,7 @@ export function AboutContainer({
   aboutText,
   onUpdate,
   onUpdateAbout,
+  onUpdateBiggestChallenge,
   themeColor,
   highlightColor = "#FF6B4A"
 }: AboutContainerProps) {
@@ -37,7 +39,7 @@ export function AboutContainer({
         
         <BiggestChallengeSection
           blocker={blocker}
-          onUpdate={onUpdate}
+          onUpdate={onUpdateBiggestChallenge}
           highlightColor={highlightColor}
         />
       </CardContent>

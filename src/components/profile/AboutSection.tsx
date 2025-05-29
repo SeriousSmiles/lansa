@@ -8,6 +8,7 @@ interface AboutSectionProps {
   aboutText?: string;
   onUpdate?: (field: string, value: string) => Promise<void>;
   onUpdateAbout?: (text: string) => Promise<void>;
+  onUpdateBiggestChallenge?: (challenge: string) => Promise<void>;
   themeColor?: string;
   highlightColor?: string;
 }

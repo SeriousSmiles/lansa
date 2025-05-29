@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface BiggestChallengeSectionProps {
   blocker: string;
-  onUpdate?: (field: string, value: string) => Promise<void>;
+  onUpdate?: (challenge: string) => Promise<void>;
   highlightColor?: string;
 }
 
@@ -23,7 +23,7 @@ export function BiggestChallengeSection({
   const handleSave = async () => {
     if (onUpdate) {
       try {
-        await onUpdate("question2", editedBlocker);
+        await onUpdate(editedBlocker);
         toast({
           title: "Changes saved",
           description: "Your challenge description has been updated.",
@@ -103,7 +103,7 @@ export function BiggestChallengeSection({
           className="border-l-4 pl-4 italic"
           style={{ borderColor: highlightColor }}
         >
-          "{blocker}"
+          "{blocker || "Click edit to add your biggest challenge"}"
         </blockquote>
       )}
     </>
