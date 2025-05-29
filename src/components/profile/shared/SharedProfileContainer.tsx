@@ -46,7 +46,6 @@ export function SharedProfileContainer({ profileData, urlParam }: SharedProfileC
           aboutText={profileData.aboutText}
           experiences={profileData.experiences}
           educationItems={profileData.educationItems}
-          goal={profileData.goal}
           highlightColor={profileData.highlightColor}
         />
       </ProfileLayout>

@@ -7,7 +7,6 @@ interface SharedProfileContentProps {
   aboutText: string;
   experiences: ExperienceItem[];
   educationItems: EducationItem[];
-  goal?: string;
   highlightColor?: string;
 }
 
@@ -15,7 +14,6 @@ export function SharedProfileContent({
   aboutText,
   experiences,
   educationItems,
-  goal,
   highlightColor = "#FF6B4A"
 }: SharedProfileContentProps) {
   const formatYearRange = (startYear?: number, endYear?: number | null) => {
@@ -37,21 +35,6 @@ export function SharedProfileContent({
               About Me
             </h2>
             <p className="text-gray-700">{aboutText}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Professional Goal */}
-      {goal && (
-        <Card>
-          <CardContent className="pt-6">
-            <h2 
-              className="text-2xl font-semibold mb-4"
-              style={{ color: highlightColor }}
-            >
-              Professional Goal
-            </h2>
-            <p className="text-gray-700">{goal}</p>
           </CardContent>
         </Card>
       )}

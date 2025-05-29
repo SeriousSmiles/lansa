@@ -130,9 +130,11 @@ export function useSharedProfileData(urlParam: string | undefined) {
       const role = profileData?.title || 
                   getProfileRole(answers?.question1, answers?.identity) || 
                   profileData?.identity || "Professional";
-                  
-      const goal = getProfileGoal(answers?.question3, answers?.desired_outcome) || 
-                  profileData?.desired_outcome || "Advance my career";
+      
+      // Use profile desired_outcome if available, otherwise fall back to generated goal
+      const goal = profileData?.desired_outcome || 
+                  getProfileGoal(answers?.question3, answers?.desired_outcome) || 
+                  "Advance my career";
       
       // Get blocker from answers.question2 or use a default value
       const blocker = answers?.question2 || "Identifying my unique value proposition";
