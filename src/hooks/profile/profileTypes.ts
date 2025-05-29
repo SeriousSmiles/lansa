@@ -1,3 +1,4 @@
+
 import { UserAnswers } from "@/services/question";
 
 export interface ExperienceItem {
@@ -20,6 +21,8 @@ export interface EducationItem {
 export interface UserProfile {
   user_id?: string;
   name?: string;
+  email?: string;
+  title?: string;
   about_text?: string;
   phone_number?: string;
   cover_color?: string;
@@ -52,6 +55,8 @@ export interface ProfileDataReturn {
   userSkills: string[];
   experiences: ExperienceItem[];
   educationItems: EducationItem[];
+  userEmail: string;
+  userTitle: string;
 
   // Update functions
   updateUserName: (name: string) => Promise<void>;
@@ -60,6 +65,8 @@ export interface ProfileDataReturn {
   updateCoverColor: (color: string) => Promise<void>;
   updateHighlightColor: (color: string) => Promise<void>;
   updateUserAnswer: (field: string, value: string) => Promise<void>;
+  updateUserEmail: (email: string) => Promise<void>;
+  updateUserTitle: (title: string) => Promise<void>;
   
   // Skills functions
   addSkill: (skill: string) => Promise<void>;

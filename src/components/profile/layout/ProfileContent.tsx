@@ -71,7 +71,8 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
         <ProfileSidebar 
           userName={profile.userName}
           role={profile.role}
-          email={profile.user?.email || ''}
+          email={profile.userEmail || profile.user?.email || ''}
+          title={profile.userTitle}
           skills={profile.userSkills}
           goal={profile.goal}
           phoneNumber={profile.phoneNumber}
@@ -80,6 +81,7 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
           profileImage={profile.profileImage}
           onUpdate={profile.updateUserAnswer}
           onUpdateUserName={profile.updateUserName}
+          onUpdateTitle={profile.updateUserTitle}
           onUpdatePhoneNumber={profile.updatePhoneNumber}
           onAddSkill={profile.addSkill}
           onRemoveSkill={profile.removeSkill}

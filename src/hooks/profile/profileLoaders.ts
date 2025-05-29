@@ -22,6 +22,8 @@ export const populateFromExistingProfile = (
   profileImage: any
 ) => {
   if (profileData.name) profileBasics.setUserName(profileData.name);
+  if (profileData.email) profileBasics.setUserEmail(profileData.email);
+  if (profileData.title) profileBasics.setUserTitle(profileData.title);
   if (profileData.phone_number) profileBasics.setPhoneNumber(profileData.phone_number);
   if (profileData.about_text) profileBasics.setAboutText(profileData.about_text);
   if (profileData.cover_color) profileBasics.setCoverColor(profileData.cover_color);

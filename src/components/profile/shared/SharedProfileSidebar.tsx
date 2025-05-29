@@ -1,5 +1,6 @@
 
 import { Card } from "@/components/ui/card";
+import { Mail } from "lucide-react";
 
 interface SharedProfileSidebarProps {
   userName: string;
@@ -9,6 +10,8 @@ interface SharedProfileSidebarProps {
   userSkills: string[];
   profileImage: string;
   phoneNumber?: string;
+  userEmail?: string;
+  userTitle?: string;
   coverColor?: string;
   highlightColor?: string;
 }
@@ -21,6 +24,8 @@ export function SharedProfileSidebar({
   userSkills,
   profileImage,
   phoneNumber,
+  userEmail,
+  userTitle,
   coverColor = "#1A1F71",
   highlightColor = "#FF6B4A",
 }: SharedProfileSidebarProps) {
@@ -40,7 +45,7 @@ export function SharedProfileSidebar({
             </div>
           )}
           
-          <div>
+          <div className="flex-1">
             <div className="text-2xl font-semibold">{userName}</div>
             <div 
               className="text-gray-600"
@@ -48,18 +53,29 @@ export function SharedProfileSidebar({
             >
               {role}
             </div>
+            {userTitle && (
+              <div className="text-sm text-gray-500 mt-1">
+                {userTitle}
+              </div>
+            )}
           </div>
         </div>
         
         {/* Contact information */}
-        {phoneNumber && (
-          <div className="mt-4 text-sm text-gray-600">
+        <div className="mt-4 space-y-2 text-sm text-gray-600">
+          {userEmail && (
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4" style={{ color: highlightColor }} />
+              <span>{userEmail}</span>
+            </div>
+          )}
+          {phoneNumber && (
             <div className="flex items-center gap-2">
               <span>Phone:</span>
               <span>{phoneNumber}</span>
             </div>
-          </div>
-        )}
+          )}
+        </div>
         
         {/* Skills */}
         {userSkills.length > 0 && (

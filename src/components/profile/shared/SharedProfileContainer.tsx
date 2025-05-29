@@ -36,6 +36,8 @@ export function SharedProfileContainer({ profileData, urlParam }: SharedProfileC
           userSkills={profileData.userSkills}
           profileImage={profileData.profileImage}
           phoneNumber={profileData.phoneNumber}
+          userEmail={profileData.userEmail}
+          userTitle={profileData.userTitle}
           coverColor={profileData.coverColor}
           highlightColor={profileData.highlightColor}
         />

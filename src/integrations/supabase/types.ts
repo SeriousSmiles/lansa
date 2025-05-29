@@ -125,6 +125,7 @@ export type Database = {
           created_at: string | null
           desired_outcome: string | null
           education: Json | null
+          email: string | null
           experiences: Json | null
           gender: string | null
           highlight_color: string | null
@@ -133,6 +134,7 @@ export type Database = {
           phone_number: string | null
           profile_image: string | null
           skills: string[] | null
+          title: string | null
           updated_at: string | null
           user_id: string
         }
@@ -143,6 +145,7 @@ export type Database = {
           created_at?: string | null
           desired_outcome?: string | null
           education?: Json | null
+          email?: string | null
           experiences?: Json | null
           gender?: string | null
           highlight_color?: string | null
@@ -151,6 +154,7 @@ export type Database = {
           phone_number?: string | null
           profile_image?: string | null
           skills?: string[] | null
+          title?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -161,6 +165,7 @@ export type Database = {
           created_at?: string | null
           desired_outcome?: string | null
           education?: Json | null
+          email?: string | null
           experiences?: Json | null
           gender?: string | null
           highlight_color?: string | null
@@ -169,6 +174,7 @@ export type Database = {
           phone_number?: string | null
           profile_image?: string | null
           skills?: string[] | null
+          title?: string | null
           updated_at?: string | null
           user_id?: string
         }

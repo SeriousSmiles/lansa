@@ -21,6 +21,8 @@ export interface SharedProfileData {
   highlightColor: string;
   profileImage: string;
   phoneNumber: string;
+  userEmail: string;
+  userTitle: string;
 }
 
 export function useSharedProfileData(urlParam: string | undefined) {
@@ -139,6 +141,8 @@ export function useSharedProfileData(urlParam: string | undefined) {
       const typedUserProfile: UserProfile = {
         user_id: profileData.user_id,
         name: profileData.name,
+        email: profileData.email,
+        title: profileData.title,
         about_text: profileData.about_text,
         phone_number: profileData.phone_number,
         cover_color: profileData.cover_color,
@@ -165,7 +169,9 @@ export function useSharedProfileData(urlParam: string | undefined) {
         coverColor: profileData?.cover_color || "#1A1F71",
         highlightColor: profileData?.highlight_color || "#FF6B4A",
         profileImage: profileData?.profile_image || "",
-        phoneNumber: profileData?.phone_number || ""
+        phoneNumber: profileData?.phone_number || "",
+        userEmail: profileData?.email || "",
+        userTitle: profileData?.title || ""
       };
       
       console.log("Processed profile data:", profile);

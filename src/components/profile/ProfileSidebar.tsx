@@ -8,6 +8,7 @@ interface ProfileSidebarProps {
   userName: string;
   role: string;
   email: string;
+  title?: string;
   skills: string[];
   goal: string;
   phoneNumber?: string;
@@ -16,6 +17,7 @@ interface ProfileSidebarProps {
   profileImage?: string;
   onUpdate?: (field: string, value: string) => Promise<void>;
   onUpdateUserName?: (name: string) => Promise<void>;
+  onUpdateTitle?: (title: string) => Promise<void>;
   onUpdatePhoneNumber?: (phone: string) => Promise<void>;
   onAddSkill?: (skill: string) => Promise<void>;
   onRemoveSkill?: (skill: string) => Promise<void>;
@@ -26,6 +28,7 @@ export function ProfileSidebar({
   userName, 
   role, 
   email, 
+  title = "",
   skills, 
   goal,
   phoneNumber,
@@ -34,6 +37,7 @@ export function ProfileSidebar({
   profileImage,
   onUpdate,
   onUpdateUserName,
+  onUpdateTitle,
   onUpdatePhoneNumber,
   onAddSkill,
   onRemoveSkill,
@@ -56,6 +60,12 @@ export function ProfileSidebar({
     onUploadProfileImage
   });
 
+  const handleUpdateTitle = async (newTitle: string) => {
+    if (onUpdateTitle) {
+      await onUpdateTitle(newTitle);
+    }
+  };
+
   return (
     <div className="lg:col-span-4 space-y-8">
       {/* Personal info card */}
@@ -63,10 +73,12 @@ export function ProfileSidebar({
         userName={userName}
         role={role}
         email={email}
+        title={title}
         phoneNumber={phoneNumber}
         profileImage={profileImage}
         highlightColor={highlightColor}
         onUpdateUserName={handleUpdateUserName}
+        onUpdateTitle={handleUpdateTitle}
         onUpdatePhoneNumber={handleUpdatePhoneNumber}
         onUploadProfileImage={handleUploadProfileImage}
       />

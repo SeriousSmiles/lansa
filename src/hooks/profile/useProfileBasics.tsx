@@ -15,6 +15,10 @@ export function useProfileBasics(userId: string | undefined) {
     // Text data
     userName: profileText.userName,
     setUserName: profileText.setUserName,
+    userEmail: profileText.userEmail,
+    setUserEmail: profileText.setUserEmail,
+    userTitle: profileText.userTitle,
+    setUserTitle: profileText.setUserTitle,
     phoneNumber: profileText.phoneNumber,
     setPhoneNumber: profileText.setPhoneNumber,
     aboutText: profileText.aboutText, 
@@ -28,6 +32,8 @@ export function useProfileBasics(userId: string | undefined) {
     
     // Update functions
     updateUserName: profileText.updateUserName,
+    updateUserEmail: profileText.updateUserEmail,
+    updateUserTitle: profileText.updateUserTitle,
     updatePhoneNumber: profileText.updatePhoneNumber,
     updateAboutText: profileText.updateAboutText,
     updateCoverColor: profileColors.updateCoverColor,

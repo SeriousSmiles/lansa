@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserAnswers, getProfileRole, getProfileGoal } from "@/services/question";
@@ -112,6 +113,8 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     userSkills: profileSkills.userSkills,
     experiences: profileExperience.experiences,
     educationItems: profileEducation.educationItems,
+    userEmail: profileBasics.userEmail,
+    userTitle: profileBasics.userTitle,
     
     // Update functions
     updateUserName: profileBasics.updateUserName,
@@ -120,6 +123,8 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     updateCoverColor: profileBasics.updateCoverColor,
     updateHighlightColor: profileBasics.updateHighlightColor,
     updateUserAnswer: profileBasics.updateUserAnswer,
+    updateUserEmail: profileBasics.updateUserEmail,
+    updateUserTitle: profileBasics.updateUserTitle,
     
     // Skills functions
     addSkill: profileSkills.addSkill,

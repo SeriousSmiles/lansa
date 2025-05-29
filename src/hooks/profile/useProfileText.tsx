@@ -10,6 +10,8 @@ interface UseProfileTextProps {
 
 export function useProfileText({ userId, updateProfileData }: UseProfileTextProps) {
   const [userName, setUserName] = useState<string>("Lansa User");
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [userTitle, setUserTitle] = useState<string>("");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [aboutText, setAboutText] = useState<string>("");
   const { toast } = useToast();
@@ -29,6 +31,48 @@ export function useProfileText({ userId, updateProfileData }: UseProfileTextProp
       toast({
         title: "Error updating name",
         description: "There was an error updating your name. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // Function to update user email
+  const updateUserEmail = async (email: string) => {
+    try {
+      await updateProfileData({ email });
+      setUserEmail(email);
+      
+      toast({
+        title: "Email updated",
+        description: "Your email has been updated successfully.",
+      });
+    } catch (error) {
+      console.error("Error updating email:", error);
+      toast({
+        title: "Error updating email",
+        description: "There was an error updating your email. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // Function to update user title
+  const updateUserTitle = async (title: string) => {
+    try {
+      await updateProfileData({ title });
+      setUserTitle(title);
+      
+      toast({
+        title: "Title updated",
+        description: "Your title has been updated successfully.",
+      });
+    } catch (error) {
+      console.error("Error updating title:", error);
+      toast({
+        title: "Error updating title",
+        description: "There was an error updating your title. Please try again.",
         variant: "destructive",
       });
       throw error;
@@ -70,11 +114,17 @@ export function useProfileText({ userId, updateProfileData }: UseProfileTextProp
   return {
     userName,
     setUserName,
+    userEmail,
+    setUserEmail,
+    userTitle,
+    setUserTitle,
     phoneNumber,
     setPhoneNumber,
     aboutText,
     setAboutText,
     updateUserName,
+    updateUserEmail,
+    updateUserTitle,
     updatePhoneNumber,
     updateAboutText
   };
