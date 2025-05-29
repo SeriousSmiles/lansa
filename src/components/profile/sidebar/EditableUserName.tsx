@@ -29,12 +29,12 @@ export function EditableUserName({
 
   if (isEditing && onUpdateUserName) {
     return (
-      <div className="mt-4 w-full">
+      <div className="w-full">
         <Input
           value={editedName}
           onChange={(e) => setEditedName(e.target.value)}
           placeholder="Your name"
-          className="text-center"
+          className="text-center text-lg"
         />
         <div className="flex space-x-2 mt-2 justify-center">
           <Button onClick={handleSave} size="sm" className="w-20">Save</Button>
@@ -55,13 +55,15 @@ export function EditableUserName({
   }
 
   return (
-    <div className="relative mt-4 group">
-      <h1 className="text-2xl font-bold text-center">{userName}</h1>
+    <div className="relative group">
+      <h1 className="text-xl sm:text-2xl md:text-2xl font-bold text-center leading-tight break-words px-2">
+        {userName}
+      </h1>
       {onUpdateUserName && (
         <Button 
           variant="ghost" 
           size="sm" 
-          className="absolute -right-8 top-0 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity" 
+          className="absolute -right-2 sm:-right-6 top-0 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity" 
           onClick={() => setIsEditing(true)}
         >
           <Pencil className="h-4 w-4" />

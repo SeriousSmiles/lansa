@@ -38,34 +38,45 @@ export function SidebarPersonalInfo({
         className="h-20 sm:h-24" 
         style={{ backgroundColor: highlightColor }}
       ></div>
-      <div className="p-4 sm:p-6 pt-0 -mt-10 sm:-mt-12 flex flex-col items-center">
-        <ProfileAvatar
-          userName={userName}
-          profileImage={profileImage}
-          onUploadProfileImage={onUploadProfileImage}
-        />
+      <div className="p-4 sm:p-6 pt-0 -mt-10 sm:-mt-12">
+        {/* Profile Avatar - Centered */}
+        <div className="flex justify-center mb-4 sm:mb-6">
+          <ProfileAvatar
+            userName={userName}
+            profileImage={profileImage}
+            onUploadProfileImage={onUploadProfileImage}
+          />
+        </div>
         
-        <div className="w-full text-center mt-4">
+        {/* User Info - Better spacing and positioning */}
+        <div className="w-full text-center space-y-2">
           <EditableUserName
             userName={userName}
             onUpdateUserName={onUpdateUserName}
           />
           
-          <p className="font-medium text-center mt-1" style={{ color: highlightColor }}>{role}</p>
-          
-          <EditableTitle
-            title={title}
-            onUpdateTitle={onUpdateTitle}
+          <div className="flex flex-col items-center gap-1">
+            <p className="font-medium text-lg" style={{ color: highlightColor }}>
+              {role}
+            </p>
+            
+            <EditableTitle
+              title={title}
+              onUpdateTitle={onUpdateTitle}
+              highlightColor={highlightColor}
+            />
+          </div>
+        </div>
+        
+        {/* Contact Info - Separate section with better spacing */}
+        <div className="mt-6 pt-4 border-t border-gray-100">
+          <ContactInfo
+            email={email}
+            phoneNumber={phoneNumber}
+            onUpdatePhoneNumber={onUpdatePhoneNumber}
             highlightColor={highlightColor}
           />
         </div>
-        
-        <ContactInfo
-          email={email}
-          phoneNumber={phoneNumber}
-          onUpdatePhoneNumber={onUpdatePhoneNumber}
-          highlightColor={highlightColor}
-        />
       </div>
     </Card>
   );
