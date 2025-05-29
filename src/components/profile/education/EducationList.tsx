@@ -77,7 +77,7 @@ export function EducationList({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
           </AlertDialogFooter>
-        </AlertDialogFooter>
+        </AlertDialogContent>
       </AlertDialog>
     </>
   );
