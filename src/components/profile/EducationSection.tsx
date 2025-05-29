@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { GraduationCap, Pencil, Plus, Trash } from "lucide-react";
@@ -13,13 +14,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { EducationForm } from "./education/EducationForm";
 
 interface EducationItem {
   id?: string;
   title: string;
   description: string;
+  startYear?: number;
+  endYear?: number | null;
 }
 
 interface EducationSectionProps {
@@ -28,7 +30,7 @@ interface EducationSectionProps {
   onEditEducation?: (id: string, education: EducationItem) => Promise<void>;
   onRemoveEducation?: (id: string) => Promise<void>;
   themeColor?: string;
-  highlightColor?: string; // Added highlightColor property
+  highlightColor?: string;
 }
 
 export function EducationSection({ 
@@ -37,12 +39,22 @@ export function EducationSection({
   onEditEducation, 
   onRemoveEducation,
   themeColor,
-  highlightColor = "#FF6B4A" // Default to original orange
+  highlightColor = "#FF6B4A"
 }: EducationSectionProps) {
   const [isAddingEducation, setIsAddingEducation] = useState(false);
-  const [newEducation, setNewEducation] = useState<EducationItem>({ title: "", description: "" });
+  const [newEducation, setNewEducation] = useState<EducationItem>({ 
+    title: "", 
+    description: "",
+    startYear: undefined,
+    endYear: undefined
+  });
   const [editingEducationId, setEditingEducationId] = useState<string | null>(null);
-  const [editingEducation, setEditingEducation] = useState<EducationItem>({ title: "", description: "" });
+  const [editingEducation, setEditingEducation] = useState<EducationItem>({ 
+    title: "", 
+    description: "",
+    startYear: undefined,
+    endYear: undefined
+  });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [educationToDelete, setEducationToDelete] = useState<string | null>(null);
 
@@ -50,7 +62,12 @@ export function EducationSection({
     if (onAddEducation && newEducation.title.trim()) {
       try {
         await onAddEducation(newEducation);
-        setNewEducation({ title: "", description: "" });
+        setNewEducation({ 
+          title: "", 
+          description: "",
+          startYear: undefined,
+          endYear: undefined
+        });
         setIsAddingEducation(false);
       } catch (error) {
         console.error("Error adding education:", error);
@@ -88,18 +105,11 @@ export function EducationSection({
     setEducationToDelete(id);
     setDeleteDialogOpen(true);
   };
-  
-  // Calculate text contrast color for better readability
-  const getContrastTextColor = (hexColor: string): string => {
-    // Convert hex to RGB
-    const r = parseInt(hexColor.slice(1, 3), 16);
-    const g = parseInt(hexColor.slice(3, 5), 16);
-    const b = parseInt(hexColor.slice(5, 7), 16);
-    
-    // Calculate luminance
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    
-    return luminance > 0.5 ? "#000000" : "#FFFFFF";
+
+  const formatYearRange = (startYear?: number, endYear?: number | null) => {
+    if (!startYear) return "";
+    const endDisplay = endYear === null ? "Present" : endYear;
+    return `${startYear} - ${endDisplay}`;
   };
 
   return (
@@ -125,50 +135,29 @@ export function EducationSection({
         </div>
         
         {isAddingEducation && (
-          <div className="space-y-4 mb-6 p-4 border rounded-lg">
-            <h3 className="text-lg font-semibold" style={{ color: highlightColor }}>Add Education</h3>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Name of Institution / Qualification</label>
-              <Input 
-                value={newEducation.title} 
-                onChange={(e) => setNewEducation({...newEducation, title: e.target.value})} 
-                placeholder="e.g. University of Technology, Master's Degree"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Description</label>
-              <Textarea 
-                value={newEducation.description} 
-                onChange={(e) => setNewEducation({...newEducation, description: e.target.value})} 
-                placeholder="Describe your education, major, achievements, etc."
-                className="min-h-[100px]"
-              />
-            </div>
-            
-            <div className="flex space-x-2">
-              <Button
-                onClick={handleAddEducation}
-                disabled={!newEducation.title.trim()}
-                style={{ 
-                  backgroundColor: highlightColor,
-                  color: getContrastTextColor(highlightColor)
-                }}
-              >
-                Save Education
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setNewEducation({ title: "", description: "" });
-                  setIsAddingEducation(false);
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
+          <div className="mb-6">
+            <EducationForm
+              title={newEducation.title}
+              description={newEducation.description}
+              startYear={newEducation.startYear}
+              endYear={newEducation.endYear}
+              onTitleChange={(title) => setNewEducation({...newEducation, title})}
+              onDescriptionChange={(description) => setNewEducation({...newEducation, description})}
+              onStartYearChange={(startYear) => setNewEducation({...newEducation, startYear})}
+              onEndYearChange={(endYear) => setNewEducation({...newEducation, endYear})}
+              onSave={handleAddEducation}
+              onCancel={() => {
+                setNewEducation({ 
+                  title: "", 
+                  description: "",
+                  startYear: undefined,
+                  endYear: undefined
+                });
+                setIsAddingEducation(false);
+              }}
+              isNew={true}
+              highlightColor={highlightColor}
+            />
           </div>
         )}
         
@@ -176,49 +165,30 @@ export function EducationSection({
           {education.map((edu, index) => (
             <div key={edu.id || index}>
               {editingEducationId === edu.id ? (
-                <div className="space-y-4 p-4 border rounded-lg">
-                  <h3 className="text-lg font-semibold" style={{ color: highlightColor }}>Edit Education</h3>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Name of Institution / Qualification</label>
-                    <Input 
-                      value={editingEducation.title} 
-                      onChange={(e) => setEditingEducation({...editingEducation, title: e.target.value})} 
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Description</label>
-                    <Textarea 
-                      value={editingEducation.description} 
-                      onChange={(e) => setEditingEducation({...editingEducation, description: e.target.value})} 
-                      className="min-h-[100px]"
-                    />
-                  </div>
-                  
-                  <div className="flex space-x-2">
-                    <Button
-                      onClick={handleEditEducation}
-                      disabled={!editingEducation.title.trim()}
-                      style={{ 
-                        backgroundColor: highlightColor,
-                        color: getContrastTextColor(highlightColor)
-                      }}
-                    >
-                      Save Changes
-                    </Button>
-                    
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setEditingEducationId(null)}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
+                <EducationForm
+                  title={editingEducation.title}
+                  description={editingEducation.description}
+                  startYear={editingEducation.startYear}
+                  endYear={editingEducation.endYear}
+                  onTitleChange={(title) => setEditingEducation({...editingEducation, title})}
+                  onDescriptionChange={(description) => setEditingEducation({...editingEducation, description})}
+                  onStartYearChange={(startYear) => setEditingEducation({...editingEducation, startYear})}
+                  onEndYearChange={(endYear) => setEditingEducation({...editingEducation, endYear})}
+                  onSave={handleEditEducation}
+                  onCancel={() => setEditingEducationId(null)}
+                  highlightColor={highlightColor}
+                />
               ) : (
                 <div className="space-y-2">
                   <div className="flex justify-between items-start">
-                    <h3 className="text-lg font-semibold">{edu.title}</h3>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold">{edu.title}</h3>
+                      {(edu.startYear || edu.endYear !== undefined) && (
+                        <div className="text-sm text-muted-foreground">
+                          {formatYearRange(edu.startYear, edu.endYear)}
+                        </div>
+                      )}
+                    </div>
                     
                     {(onEditEducation || onRemoveEducation) && (
                       <div className="flex space-x-1">

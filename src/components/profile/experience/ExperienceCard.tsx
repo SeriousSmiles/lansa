@@ -1,7 +1,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash } from "lucide-react";
-import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,38 +10,45 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 interface ExperienceCardProps {
   id: string;
   title: string;
   description: string;
+  startYear?: number;
+  endYear?: number | null;
   onEdit?: () => void;
   onRemove?: () => void;
-  highlightColor?: string; // Added highlightColor property
+  highlightColor?: string;
 }
 
 export function ExperienceCard({ 
   id, 
   title, 
-  description, 
+  description,
+  startYear,
+  endYear,
   onEdit, 
   onRemove,
-  highlightColor = "#FF6B4A" // Default to original orange
+  highlightColor = "#FF6B4A"
 }: ExperienceCardProps) {
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
-  const handleDelete = async () => {
-    if (onRemove) {
-      onRemove();
-    }
-    setIsDeleteDialogOpen(false);
+  const formatYearRange = () => {
+    if (!startYear) return "";
+    const endDisplay = endYear === null ? "Present" : endYear;
+    return `${startYear} - ${endDisplay}`;
   };
 
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-start">
-        <h3 className="text-lg font-semibold">{title}</h3>
+        <div className="flex-1">
+          <h3 className="text-lg font-semibold">{title}</h3>
+          {(startYear || endYear !== undefined) && (
+            <div className="text-sm text-muted-foreground">{formatYearRange()}</div>
+          )}
+        </div>
         
         {(onEdit || onRemove) && (
           <div className="flex space-x-1">
@@ -60,37 +66,37 @@ export function ExperienceCard({
             )}
             
             {onRemove && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="p-0 h-8 w-8" 
-                onClick={() => setIsDeleteDialogOpen(true)}
-                style={{ color: highlightColor }}
-              >
-                <Trash className="h-4 w-4" />
-                <span className="sr-only">Delete</span>
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="p-0 h-8 w-8" 
+                    style={{ color: highlightColor }}
+                  >
+                    <Trash className="h-4 w-4" />
+                    <span className="sr-only">Delete</span>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete this experience.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={onRemove}>Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
           </div>
         )}
       </div>
       
       <p className="text-gray-600">{description}</p>
-
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete this experience from your profile.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

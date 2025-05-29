@@ -4,12 +4,16 @@ export interface ExperienceItem {
   id?: string;
   title: string;
   description: string;
+  startYear?: number;
+  endYear?: number | null; // null means "Present"
 }
 
 export interface EducationItem {
   id?: string;
   title: string;
   description: string;
+  startYear?: number;
+  endYear?: number | null; // null means "Present"
 }
 
 // Define interface for profile data

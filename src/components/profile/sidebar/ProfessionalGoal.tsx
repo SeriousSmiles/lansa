@@ -10,20 +10,22 @@ import { getContrastTextColor } from "@/utils/colorUtils";
 interface ProfessionalGoalProps {
   goal: string;
   onUpdate?: (field: string, value: string) => Promise<void>;
-  highlightColor?: string; // Added highlightColor property
+  highlightColor?: string;
 }
 
 export function ProfessionalGoal({ 
   goal,
   onUpdate,
-  highlightColor = "#FF6B4A" // Default to original orange
+  highlightColor = "#FF6B4A"
 }: ProfessionalGoalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedGoal, setEditedGoal] = useState(goal);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
   const handleSave = async () => {
     if (onUpdate) {
+      setIsSaving(true);
       try {
         await onUpdate("question3", editedGoal);
         toast({
@@ -37,8 +39,15 @@ export function ProfessionalGoal({
           description: "Please try again later.",
           variant: "destructive",
         });
+      } finally {
+        setIsSaving(false);
       }
     }
+  };
+
+  const handleCancel = () => {
+    setEditedGoal(goal);
+    setIsEditing(false);
   };
 
   // Use the getContrastTextColor utility from colorUtils.ts
@@ -75,20 +84,19 @@ export function ProfessionalGoal({
               <Button 
                 onClick={handleSave} 
                 size="sm"
+                disabled={isSaving}
                 style={{ 
                   backgroundColor: highlightColor,
                   color: textColor
                 }}
               >
-                Save
+                {isSaving ? "Saving..." : "Save"}
               </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => {
-                  setEditedGoal(goal);
-                  setIsEditing(false);
-                }}
+                onClick={handleCancel}
+                disabled={isSaving}
               >
                 Cancel
               </Button>

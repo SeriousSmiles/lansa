@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { YearRangeInput } from "@/components/profile/shared/YearRangeInput";
 import { getContrastTextColor } from "@/utils/colorUtils";
 
-interface ExperienceFormProps {
+interface EducationFormProps {
   title: string;
   description: string;
   startYear?: number;
@@ -22,7 +22,7 @@ interface ExperienceFormProps {
   highlightColor?: string;
 }
 
-export function ExperienceForm({ 
+export function EducationForm({ 
   title, 
   description,
   startYear,
@@ -35,13 +35,13 @@ export function ExperienceForm({
   onCancel, 
   isNew = false,
   highlightColor = "#FF6B4A"
-}: ExperienceFormProps) {
+}: EducationFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSave = async () => {
     if (!title.trim()) {
-      setError("Please provide a title for the experience.");
+      setError("Please provide a title for the education.");
       return;
     }
 
@@ -51,8 +51,8 @@ export function ExperienceForm({
     try {
       await onSave();
     } catch (error) {
-      console.error("Error saving experience:", error);
-      setError("There was an error saving your experience. Please try again.");
+      console.error("Error saving education:", error);
+      setError("There was an error saving your education. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -61,7 +61,7 @@ export function ExperienceForm({
   return (
     <div className="space-y-4 p-4 border rounded-lg">
       <h3 className="text-lg font-semibold" style={{ color: highlightColor }}>
-        {isNew ? "Add New Experience" : "Edit Experience"}
+        {isNew ? "Add Education" : "Edit Education"}
       </h3>
       
       {error && (
@@ -71,11 +71,11 @@ export function ExperienceForm({
       )}
       
       <div className="space-y-2">
-        <label className="block text-sm font-medium">Title</label>
+        <label className="text-sm font-medium">Name of Institution / Qualification</label>
         <Input 
           value={title} 
           onChange={(e) => onTitleChange(e.target.value)} 
-          placeholder="e.g. Product Manager at Tech Company"
+          placeholder="e.g. University of Technology, Master's Degree"
         />
       </div>
 
@@ -88,28 +88,31 @@ export function ExperienceForm({
       />
       
       <div className="space-y-2">
-        <label className="block text-sm font-medium">Description</label>
+        <label className="text-sm font-medium">Description</label>
         <Textarea 
           value={description} 
           onChange={(e) => onDescriptionChange(e.target.value)} 
-          placeholder="Describe your role, responsibilities and achievements..."
+          placeholder="Describe your education, major, achievements, etc."
           className="min-h-[100px]"
         />
       </div>
       
       <div className="flex space-x-2">
-        <Button 
-          onClick={handleSave} 
-          disabled={isSaving}
+        <Button
+          onClick={handleSave}
+          disabled={!title.trim() || isSaving}
           style={{ 
             backgroundColor: highlightColor,
-            color: getContrastTextColor(highlightColor) 
+            color: getContrastTextColor(highlightColor)
           }}
         >
-          {isSaving ? "Saving..." : "Save Experience"}
+          {isSaving ? "Saving..." : "Save Education"}
         </Button>
         
-        <Button variant="outline" onClick={onCancel}>
+        <Button 
+          variant="outline" 
+          onClick={onCancel}
+        >
           Cancel
         </Button>
       </div>

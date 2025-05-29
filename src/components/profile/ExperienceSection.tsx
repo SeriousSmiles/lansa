@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -6,12 +7,13 @@ import { Button } from "@/components/ui/button";
 import { ExperienceCard } from "./experience/ExperienceCard";
 import { ExperienceForm } from "./experience/ExperienceForm";
 import { StaticExperienceCard } from "./experience/StaticExperienceCard";
-import { getContrastTextColor } from "@/utils/colorUtils";
 
 interface ExperienceItem {
   id?: string;
   title: string;
   description: string;
+  startYear?: number;
+  endYear?: number | null;
 }
 
 interface ExperienceSectionProps {
@@ -20,7 +22,7 @@ interface ExperienceSectionProps {
   onEditExperience?: (id: string, experience: ExperienceItem) => Promise<void>;
   onRemoveExperience?: (id: string) => Promise<void>;
   themeColor?: string;
-  highlightColor?: string; // Added highlightColor property
+  highlightColor?: string;
 }
 
 export function ExperienceSection({ 
@@ -29,18 +31,33 @@ export function ExperienceSection({
   onEditExperience, 
   onRemoveExperience,
   themeColor,
-  highlightColor = "#FF6B4A" // Default to the original orange color
+  highlightColor = "#FF6B4A"
 }: ExperienceSectionProps) {
   const [isAddingExperience, setIsAddingExperience] = useState(false);
-  const [newExperience, setNewExperience] = useState<ExperienceItem>({ title: "", description: "" });
+  const [newExperience, setNewExperience] = useState<ExperienceItem>({ 
+    title: "", 
+    description: "",
+    startYear: undefined,
+    endYear: undefined
+  });
   const [editingExperienceId, setEditingExperienceId] = useState<string | null>(null);
-  const [editingExperience, setEditingExperience] = useState<ExperienceItem>({ title: "", description: "" });
+  const [editingExperience, setEditingExperience] = useState<ExperienceItem>({ 
+    title: "", 
+    description: "",
+    startYear: undefined,
+    endYear: undefined
+  });
 
   const handleAddExperience = async () => {
     if (onAddExperience) {
       try {
         await onAddExperience(newExperience);
-        setNewExperience({ title: "", description: "" });
+        setNewExperience({ 
+          title: "", 
+          description: "",
+          startYear: undefined,
+          endYear: undefined
+        });
         setIsAddingExperience(false);
       } catch (error) {
         // Error handling is done in the ExperienceForm
@@ -64,19 +81,6 @@ export function ExperienceSection({
       setEditingExperienceId(exp.id);
       setEditingExperience({ ...exp });
     }
-  };
-
-  // Calculate text contrast color for better readability
-  const getContrastTextColor = (hexColor: string): string => {
-    // Convert hex to RGB
-    const r = parseInt(hexColor.slice(1, 3), 16);
-    const g = parseInt(hexColor.slice(3, 5), 16);
-    const b = parseInt(hexColor.slice(5, 7), 16);
-    
-    // Calculate luminance
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    
-    return luminance > 0.5 ? "#000000" : "#FFFFFF";
   };
 
   return (
@@ -105,11 +109,20 @@ export function ExperienceSection({
             <ExperienceForm 
               title={newExperience.title}
               description={newExperience.description}
+              startYear={newExperience.startYear}
+              endYear={newExperience.endYear}
               onTitleChange={(title) => setNewExperience({...newExperience, title})}
               onDescriptionChange={(description) => setNewExperience({...newExperience, description})}
+              onStartYearChange={(startYear) => setNewExperience({...newExperience, startYear})}
+              onEndYearChange={(endYear) => setNewExperience({...newExperience, endYear})}
               onSave={handleAddExperience}
               onCancel={() => {
-                setNewExperience({ title: "", description: "" });
+                setNewExperience({ 
+                  title: "", 
+                  description: "",
+                  startYear: undefined,
+                  endYear: undefined
+                });
                 setIsAddingExperience(false);
               }}
               isNew={true}
@@ -125,8 +138,12 @@ export function ExperienceSection({
                 <ExperienceForm 
                   title={editingExperience.title}
                   description={editingExperience.description}
+                  startYear={editingExperience.startYear}
+                  endYear={editingExperience.endYear}
                   onTitleChange={(title) => setEditingExperience({...editingExperience, title})}
                   onDescriptionChange={(description) => setEditingExperience({...editingExperience, description})}
+                  onStartYearChange={(startYear) => setEditingExperience({...editingExperience, startYear})}
+                  onEndYearChange={(endYear) => setEditingExperience({...editingExperience, endYear})}
                   onSave={handleEditExperience}
                   onCancel={() => setEditingExperienceId(null)}
                   highlightColor={highlightColor}
@@ -136,6 +153,8 @@ export function ExperienceSection({
                   id={exp.id || ''}
                   title={exp.title}
                   description={exp.description}
+                  startYear={exp.startYear}
+                  endYear={exp.endYear}
                   onEdit={onEditExperience ? () => startEditing(exp) : undefined}
                   onRemove={onRemoveExperience && exp.id ? () => onRemoveExperience(exp.id!) : undefined}
                   highlightColor={highlightColor}
