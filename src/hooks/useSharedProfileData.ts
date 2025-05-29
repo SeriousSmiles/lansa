@@ -154,7 +154,7 @@ export function useSharedProfileData(urlParam: string | undefined) {
         skills: profileData.skills,
         experiences: processedExperiences,
         education: processedEducation,
-        professional_goal: profileData.professional_goal,
+        professional_goal: (profileData as any).professional_goal,
         created_at: profileData.created_at,
         updated_at: profileData.updated_at
       };
@@ -176,7 +176,7 @@ export function useSharedProfileData(urlParam: string | undefined) {
         phoneNumber: profileData?.phone_number || "",
         userEmail: profileData?.email || "",
         userTitle: profileData?.title || "",
-        professionalGoal: profileData?.professional_goal || ""
+        professionalGoal: (profileData as any).professional_goal || ""
       };
       
       console.log("Processed profile data:", profile);

@@ -84,7 +84,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     if (profileData) {
       // If profile exists, set all the values from it
       populateFromExistingProfile(profileData, answers, profileBasics, profileSkills, profileExperience, profileEducation, profileImage);
-      setProfessionalGoal(profileData.professional_goal || "");
+      setProfessionalGoal((profileData as any).professional_goal || "");
     } else {
       // If no profile exists, use generated data
       populateFromGeneratedData(answers, userId, profileBasics, profileSkills, profileExperience, profileEducation);
