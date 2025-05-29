@@ -18,7 +18,7 @@ export function useProfileEducation({ userId, updateProfileData }: UseProfileEdu
     try {
       const newEducation = { ...education, id: uuidv4() };
       const updatedEducation = [...educationItems, newEducation];
-      await updateProfileData({ education: convertEducationItemsToJson(updatedEducation) });
+      await updateProfileData({ education: convertEducationItemsToJson(updatedEducation) as any });
       setEducationItems(updatedEducation);
     } catch (error) {
       throw error;
@@ -31,7 +31,7 @@ export function useProfileEducation({ userId, updateProfileData }: UseProfileEdu
       const updatedItems = educationItems.map(item => 
         item.id === id ? { ...updatedEducation, id } : item
       );
-      await updateProfileData({ education: convertEducationItemsToJson(updatedItems) });
+      await updateProfileData({ education: convertEducationItemsToJson(updatedItems) as any });
       setEducationItems(updatedItems);
     } catch (error) {
       throw error;
@@ -42,7 +42,7 @@ export function useProfileEducation({ userId, updateProfileData }: UseProfileEdu
   const removeEducation = async (id: string) => {
     try {
       const updatedItems = educationItems.filter(item => item.id !== id);
-      await updateProfileData({ education: convertEducationItemsToJson(updatedItems) });
+      await updateProfileData({ education: convertEducationItemsToJson(updatedItems) as any });
       setEducationItems(updatedItems);
     } catch (error) {
       throw error;

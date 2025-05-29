@@ -132,6 +132,7 @@ export type Database = {
           identity: string | null
           name: string | null
           phone_number: string | null
+          professional_goal: string | null
           profile_image: string | null
           skills: string[] | null
           title: string | null
@@ -152,6 +153,7 @@ export type Database = {
           identity?: string | null
           name?: string | null
           phone_number?: string | null
+          professional_goal?: string | null
           profile_image?: string | null
           skills?: string[] | null
           title?: string | null
@@ -172,6 +174,7 @@ export type Database = {
           identity?: string | null
           name?: string | null
           phone_number?: string | null
+          professional_goal?: string | null
           profile_image?: string | null
           skills?: string[] | null
           title?: string | null

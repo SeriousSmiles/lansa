@@ -18,7 +18,7 @@ export function useProfileExperience({ userId, updateProfileData }: UseProfileEx
     try {
       const newExperience = { ...experience, id: uuidv4() };
       const updatedExperiences = [...experiences, newExperience];
-      await updateProfileData({ experiences: convertExperienceItemsToJson(updatedExperiences) });
+      await updateProfileData({ experiences: convertExperienceItemsToJson(updatedExperiences) as any });
       setExperiences(updatedExperiences);
     } catch (error) {
       throw error;
@@ -31,7 +31,7 @@ export function useProfileExperience({ userId, updateProfileData }: UseProfileEx
       const updatedExperiences = experiences.map(exp => 
         exp.id === id ? { ...updatedExperience, id } : exp
       );
-      await updateProfileData({ experiences: convertExperienceItemsToJson(updatedExperiences) });
+      await updateProfileData({ experiences: convertExperienceItemsToJson(updatedExperiences) as any });
       setExperiences(updatedExperiences);
     } catch (error) {
       throw error;
@@ -42,7 +42,7 @@ export function useProfileExperience({ userId, updateProfileData }: UseProfileEx
   const removeExperience = async (id: string) => {
     try {
       const updatedExperiences = experiences.filter(exp => exp.id !== id);
-      await updateProfileData({ experiences: convertExperienceItemsToJson(updatedExperiences) });
+      await updateProfileData({ experiences: convertExperienceItemsToJson(updatedExperiences) as any });
       setExperiences(updatedExperiences);
     } catch (error) {
       throw error;
