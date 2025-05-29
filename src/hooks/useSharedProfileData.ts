@@ -117,24 +117,24 @@ export function useSharedProfileData(urlParam: string | undefined) {
       
       // Process the profile data to ensure proper types
       const processedExperiences = profileData?.experiences 
-        ? processExperiencesData(profileData.experiences, answers)
+        ? convertJsonToExperienceItems(profileData.experiences)
         : [];
         
       const processedEducation = profileData?.education 
-        ? processEducationData(profileData.education, answers)
+        ? convertJsonToEducationItems(profileData.education)
         : [];
         
       const processedSkills = processSkillsData(profileData?.skills, answers);
       
-      // Get proper role and goal based on either legacy or new onboarding answers
-      const role = getProfileRole(answers?.question1, answers?.identity) || 
+      // Use profile title if available, otherwise fall back to generated role
+      const role = profileData?.title || 
+                  getProfileRole(answers?.question1, answers?.identity) || 
                   profileData?.identity || "Professional";
                   
       const goal = getProfileGoal(answers?.question3, answers?.desired_outcome) || 
                   profileData?.desired_outcome || "Advance my career";
       
       // Get blocker from answers.question2 or use a default value
-      // Note: profileData doesn't have a blocker field directly
       const blocker = answers?.question2 || "Identifying my unique value proposition";
       
       // Create a properly typed UserProfile object from profileData
@@ -149,8 +149,8 @@ export function useSharedProfileData(urlParam: string | undefined) {
         highlight_color: profileData.highlight_color,
         profile_image: profileData.profile_image,
         skills: profileData.skills,
-        experiences: convertJsonToExperienceItems(profileData.experiences),
-        education: convertJsonToEducationItems(profileData.education),
+        experiences: processedExperiences,
+        education: processedEducation,
         created_at: profileData.created_at,
         updated_at: profileData.updated_at
       };

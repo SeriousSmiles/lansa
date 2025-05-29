@@ -3,6 +3,7 @@ import { useState } from "react";
 import { v4 as uuidv4 } from "@/utils/uuid";
 import { UserProfile } from "../profile/profileTypes";
 import { EducationItem } from "../profile/profileTypes";
+import { convertEducationItemsToJson } from "@/utils/profileDataConverters";
 
 interface UseProfileEducationProps {
   userId: string | undefined;
@@ -17,7 +18,7 @@ export function useProfileEducation({ userId, updateProfileData }: UseProfileEdu
     try {
       const newEducation = { ...education, id: uuidv4() };
       const updatedEducation = [...educationItems, newEducation];
-      await updateProfileData({ education: updatedEducation });
+      await updateProfileData({ education: convertEducationItemsToJson(updatedEducation) });
       setEducationItems(updatedEducation);
     } catch (error) {
       throw error;
@@ -30,7 +31,7 @@ export function useProfileEducation({ userId, updateProfileData }: UseProfileEdu
       const updatedEducationItems = educationItems.map(edu => 
         edu.id === id ? { ...updatedEducation, id } : edu
       );
-      await updateProfileData({ education: updatedEducationItems });
+      await updateProfileData({ education: convertEducationItemsToJson(updatedEducationItems) });
       setEducationItems(updatedEducationItems);
     } catch (error) {
       throw error;
@@ -41,7 +42,7 @@ export function useProfileEducation({ userId, updateProfileData }: UseProfileEdu
   const removeEducation = async (id: string) => {
     try {
       const updatedEducationItems = educationItems.filter(edu => edu.id !== id);
-      await updateProfileData({ education: updatedEducationItems });
+      await updateProfileData({ education: convertEducationItemsToJson(updatedEducationItems) });
       setEducationItems(updatedEducationItems);
     } catch (error) {
       throw error;

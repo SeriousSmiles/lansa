@@ -3,6 +3,7 @@ import { useState } from "react";
 import { v4 as uuidv4 } from "@/utils/uuid";
 import { UserProfile } from "../profile/profileTypes";
 import { ExperienceItem } from "../profile/profileTypes";
+import { convertExperienceItemsToJson } from "@/utils/profileDataConverters";
 
 interface UseProfileExperienceProps {
   userId: string | undefined;
@@ -17,7 +18,7 @@ export function useProfileExperience({ userId, updateProfileData }: UseProfileEx
     try {
       const newExperience = { ...experience, id: uuidv4() };
       const updatedExperiences = [...experiences, newExperience];
-      await updateProfileData({ experiences: updatedExperiences });
+      await updateProfileData({ experiences: convertExperienceItemsToJson(updatedExperiences) });
       setExperiences(updatedExperiences);
     } catch (error) {
       throw error;
@@ -30,7 +31,7 @@ export function useProfileExperience({ userId, updateProfileData }: UseProfileEx
       const updatedExperiences = experiences.map(exp => 
         exp.id === id ? { ...updatedExperience, id } : exp
       );
-      await updateProfileData({ experiences: updatedExperiences });
+      await updateProfileData({ experiences: convertExperienceItemsToJson(updatedExperiences) });
       setExperiences(updatedExperiences);
     } catch (error) {
       throw error;
@@ -41,7 +42,7 @@ export function useProfileExperience({ userId, updateProfileData }: UseProfileEx
   const removeExperience = async (id: string) => {
     try {
       const updatedExperiences = experiences.filter(exp => exp.id !== id);
-      await updateProfileData({ experiences: updatedExperiences });
+      await updateProfileData({ experiences: convertExperienceItemsToJson(updatedExperiences) });
       setExperiences(updatedExperiences);
     } catch (error) {
       throw error;

@@ -1,6 +1,6 @@
 
 import { Card } from "@/components/ui/card";
-import { Mail } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 
 interface SharedProfileSidebarProps {
   userName: string;
@@ -32,15 +32,21 @@ export function SharedProfileSidebar({
   return (
     <div className="lg:col-span-4 space-y-4">
       <Card className="bg-white rounded-xl p-6 shadow">
-        {/* Rearranged to have profile image at top-left */}
+        {/* Profile header with cover color */}
+        <div 
+          className="h-16 -m-6 mb-4 rounded-t-xl" 
+          style={{ backgroundColor: coverColor }}
+        ></div>
+        
+        {/* Profile content */}
         <div className="flex flex-col sm:flex-row gap-4 items-start mb-4">
           {profileImage && (
             <div>
               <img 
                 src={profileImage} 
                 alt={`${userName}'s profile`}
-                className="w-24 h-24 rounded-full object-cover border-4 border-white shadow" 
-                style={{ borderColor: `${coverColor}30` }}
+                className="w-24 h-24 rounded-full object-cover border-4 border-white shadow -mt-8" 
+                style={{ borderColor: `${highlightColor}30` }}
               />
             </div>
           )}
@@ -48,16 +54,11 @@ export function SharedProfileSidebar({
           <div className="flex-1">
             <div className="text-2xl font-semibold">{userName}</div>
             <div 
-              className="text-gray-600"
-              style={{ color: coverColor }}
+              className="text-lg font-medium"
+              style={{ color: highlightColor }}
             >
-              {role}
+              {userTitle || role}
             </div>
-            {userTitle && (
-              <div className="text-sm text-gray-500 mt-1">
-                {userTitle}
-              </div>
-            )}
           </div>
         </div>
         
@@ -71,7 +72,7 @@ export function SharedProfileSidebar({
           )}
           {phoneNumber && (
             <div className="flex items-center gap-2">
-              <span>Phone:</span>
+              <Phone className="h-4 w-4" style={{ color: highlightColor }} />
               <span>{phoneNumber}</span>
             </div>
           )}

@@ -1,4 +1,3 @@
-
 import { ExperienceItem, EducationItem } from "@/hooks/profile/profileTypes";
 import { v4 as uuidv4 } from "@/utils/uuid";
 import { Json } from "@/integrations/supabase/types";
@@ -12,7 +11,9 @@ export const convertJsonToExperienceItems = (jsonData: any): ExperienceItem[] =>
   return jsonData.map((item: any) => ({
     id: item.id || uuidv4(),
     title: item.title || "",
-    description: item.description || ""
+    description: item.description || "",
+    startYear: item.startYear || undefined,
+    endYear: item.endYear === null ? null : item.endYear || undefined
   }));
 };
 
@@ -25,7 +26,9 @@ export const convertExperienceItemsToJson = (items: ExperienceItem[]): Json => {
   return items.map(item => ({
     id: item.id || uuidv4(),
     title: item.title || "",
-    description: item.description || ""
+    description: item.description || "",
+    startYear: item.startYear || null,
+    endYear: item.endYear === undefined ? null : item.endYear
   }));
 };
 
@@ -38,7 +41,9 @@ export const convertJsonToEducationItems = (jsonData: any): EducationItem[] => {
   return jsonData.map((item: any) => ({
     id: item.id || uuidv4(),
     title: item.title || "",
-    description: item.description || ""
+    description: item.description || "",
+    startYear: item.startYear || undefined,
+    endYear: item.endYear === null ? null : item.endYear || undefined
   }));
 };
 
@@ -51,7 +56,9 @@ export const convertEducationItemsToJson = (items: EducationItem[]): Json => {
   return items.map(item => ({
     id: item.id || uuidv4(),
     title: item.title || "",
-    description: item.description || ""
+    description: item.description || "",
+    startYear: item.startYear || null,
+    endYear: item.endYear === undefined ? null : item.endYear
   }));
 };
 
