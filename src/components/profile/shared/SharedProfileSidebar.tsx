@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Mail, Phone } from "lucide-react";
 
@@ -50,7 +49,7 @@ export function SharedProfileSidebar({
                 src={profileImage} 
                 alt={`${userName}'s profile`}
                 className="w-24 h-24 rounded-full object-cover border-4 border-white shadow -mt-8" 
-                style={{ borderColor: `${highlightColor}30` }}
+                style={{ borderColor: "#FFFFFF" }}
               />
             </div>
           )}
