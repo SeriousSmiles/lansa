@@ -88,47 +88,49 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
       </div>
       
       {/* Right Column - Experience & Education */}
-      <div ref={contentRef} className="lg:col-span-8 space-y-8">
-        {/* About Me */}
-        <div className="content-section hover-lift">
-          <AboutSection 
-            role={profile.role}
-            goal={profile.goal}
-            blocker={profile.blocker}
-            aboutText={profile.aboutText}
-            onUpdate={profile.updateUserAnswer}
-            onUpdateAbout={profile.updateAboutText}
-            themeColor={profile.coverColor}
-            highlightColor={profile.highlightColor}
-          />
+      <div ref={contentRef} className="lg:col-span-8">
+        <div className="space-y-8">
+          {/* About Me */}
+          <div className="content-section hover-lift">
+            <AboutSection 
+              role={profile.role}
+              goal={profile.goal}
+              blocker={profile.blocker}
+              aboutText={profile.aboutText}
+              onUpdate={profile.updateUserAnswer}
+              onUpdateAbout={profile.updateAboutText}
+              themeColor={profile.coverColor}
+              highlightColor={profile.highlightColor}
+            />
+          </div>
+          
+          {/* Experience */}
+          <div className="content-section hover-lift">
+            <ExperienceSection 
+              experiences={profile.experiences}
+              onAddExperience={profile.addExperience}
+              onEditExperience={profile.editExperience}
+              onRemoveExperience={profile.removeExperience}
+              themeColor={profile.coverColor}
+              highlightColor={profile.highlightColor}
+            />
+          </div>
+          
+          {/* Education */}
+          <div className="content-section hover-lift">
+            <EducationSection 
+              education={profile.educationItems}
+              onAddEducation={profile.addEducation}
+              onEditEducation={profile.editEducation}
+              onRemoveEducation={profile.removeEducation}
+              themeColor={profile.coverColor}
+              highlightColor={profile.highlightColor}
+            />
+          </div>
         </div>
         
-        {/* Experience */}
-        <div className="content-section hover-lift">
-          <ExperienceSection 
-            experiences={profile.experiences}
-            onAddExperience={profile.addExperience}
-            onEditExperience={profile.editExperience}
-            onRemoveExperience={profile.removeExperience}
-            themeColor={profile.coverColor}
-            highlightColor={profile.highlightColor}
-          />
-        </div>
-        
-        {/* Education */}
-        <div className="content-section hover-lift">
-          <EducationSection 
-            education={profile.educationItems}
-            onAddEducation={profile.addEducation}
-            onEditEducation={profile.editEducation}
-            onRemoveEducation={profile.removeEducation}
-            themeColor={profile.coverColor}
-            highlightColor={profile.highlightColor}
-          />
-        </div>
-        
-        {/* Actions Section */}
-        <div className="flex justify-center animate-fade-in">
+        {/* Actions Section with better spacing */}
+        <div className="flex justify-center animate-fade-in mt-12 mb-8">
           <Button 
             onClick={() => navigate("/dashboard")} 
             className="py-2 h-auto btn-animate"
