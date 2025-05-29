@@ -46,9 +46,9 @@ export function SharedProfileContainer({ profileData, urlParam }: SharedProfileC
           educationItems={profileData.educationItems}
           highlightColor={profileData.highlightColor}
         />
-        
-        <ProfileFooter coverColor={profileData.coverColor} />
       </ProfileLayout>
+      
+      <ProfileFooter coverColor={profileData.coverColor} />
     </div>
   );
 }

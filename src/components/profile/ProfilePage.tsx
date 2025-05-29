@@ -22,24 +22,26 @@ export function ProfilePage() {
   }
 
   return (
-    <ProfileLayout
-      userName={profile.userName}
-      role={profile.role}
-      user={profile.user}
-      userId={user?.id}
-      coverColor={profile.coverColor}
-      highlightColor={profile.highlightColor}
-      onCoverColorChange={profile.updateCoverColor}
-      onHighlightColorChange={profile.updateHighlightColor}
-      mainContentRef={mainContentRef}
-    >
-      <ProfileContent 
-        profile={profile}
-        textColor={profile.coverColor}
-        navigate={navigate}
-      />
+    <div className="min-h-screen flex flex-col">
+      <ProfileLayout
+        userName={profile.userName}
+        role={profile.role}
+        user={profile.user}
+        userId={user?.id}
+        coverColor={profile.coverColor}
+        highlightColor={profile.highlightColor}
+        onCoverColorChange={profile.updateCoverColor}
+        onHighlightColorChange={profile.updateHighlightColor}
+        mainContentRef={mainContentRef}
+      >
+        <ProfileContent 
+          profile={profile}
+          textColor={profile.coverColor}
+          navigate={navigate}
+        />
+      </ProfileLayout>
       
       <ProfileFooter coverColor={profile.coverColor} />
-    </ProfileLayout>
+    </div>
   );
 }
