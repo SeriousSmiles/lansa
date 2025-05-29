@@ -45,7 +45,7 @@ export function ProfileHeader({
   
   return (
     <header 
-      className="flex min-h-[72px] w-full px-4 md:px-16 items-center shadow-sm"
+      className="flex min-h-[72px] w-full px-4 sm:px-6 md:px-16 items-center shadow-sm"
       style={{
         backgroundColor: `${coverColor}15`, // Very light version of theme color
         borderBottom: `1px solid ${coverColor}30`
@@ -56,7 +56,7 @@ export function ProfileHeader({
           variant={isDarkTheme ? "contrast" : "ghost"}
           size="icon" 
           onClick={() => navigate("/dashboard")}
-          className="mr-2"
+          className="mr-2 flex-shrink-0"
           style={{
             color: textColor
           }}
@@ -68,7 +68,7 @@ export function ProfileHeader({
       <img
         src="https://cdn.builder.io/api/v1/image/assets/TEMP/41285a6d1f6906d8349429ceb652f953bf730d06?placeholderIfAbsent=true"
         alt="Lansa Logo"
-        className={`aspect-[2.7] object-contain w-[92px] ${!hideBackButton ? "" : "ml-0"}`}
+        className={`aspect-[2.7] object-contain w-[80px] sm:w-[92px] flex-shrink-0 ${!hideBackButton ? "" : "ml-0"}`}
       />
       
       {isMobile && !readOnly ? (
@@ -77,7 +77,7 @@ export function ProfileHeader({
             variant={isDarkTheme ? "contrast" : "ghost"}
             size="icon"
             onClick={() => setMobileMenuOpen(true)}
-            className="ml-auto"
+            className="ml-auto flex-shrink-0"
             style={{
               color: textColor
             }}
@@ -107,17 +107,19 @@ export function ProfileHeader({
         </>
       ) : (
         !readOnly && (
-          <ProfileHeaderActions
-            userId={userId}
-            userName={userName}
-            coverColor={coverColor}
-            highlightColor={highlightColor}
-            onCoverColorChange={onCoverColorChange}
-            onHighlightColorChange={onHighlightColorChange}
-            textColor={textColor}
-            isDarkTheme={isDarkTheme}
-            isMobile={false}
-          />
+          <div className="ml-auto">
+            <ProfileHeaderActions
+              userId={userId}
+              userName={userName}
+              coverColor={coverColor}
+              highlightColor={highlightColor}
+              onCoverColorChange={onCoverColorChange}
+              onHighlightColorChange={onHighlightColorChange}
+              textColor={textColor}
+              isDarkTheme={isDarkTheme}
+              isMobile={false}
+            />
+          </div>
         )
       )}
     </header>

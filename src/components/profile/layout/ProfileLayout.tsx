@@ -58,8 +58,8 @@ export function ProfileLayout({
         hideBackButton={hideBackButton}
       />
 
-      <main ref={mainContentRef} className="flex-1 container mx-auto px-4 py-8 md:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <main ref={mainContentRef} className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           {children}
         </div>
       </main>

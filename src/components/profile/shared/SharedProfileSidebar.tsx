@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { Mail, Phone } from "lucide-react";
 
@@ -33,31 +34,31 @@ export function SharedProfileSidebar({
   biggestChallenge,
 }: SharedProfileSidebarProps) {
   return (
-    <div className="lg:col-span-4 space-y-4">
-      <Card className="bg-white rounded-xl p-6 shadow">
+    <div className="lg:col-span-4 space-y-4 lg:space-y-6">
+      <Card className="bg-white rounded-xl p-4 sm:p-6 shadow">
         {/* Profile header with cover color */}
         <div 
-          className="h-16 -m-6 mb-4 rounded-t-xl" 
+          className="h-12 sm:h-16 -m-4 sm:-m-6 mb-4 rounded-t-xl" 
           style={{ backgroundColor: coverColor }}
         ></div>
         
         {/* Profile content */}
-        <div className="flex flex-col sm:flex-row gap-4 items-start mb-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start mb-4">
           {profileImage && (
-            <div>
+            <div className="flex-shrink-0">
               <img 
                 src={profileImage} 
                 alt={`${userName}'s profile`}
-                className="w-24 h-24 rounded-full object-cover border-4 border-white shadow -mt-8" 
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white shadow -mt-6 sm:-mt-8" 
                 style={{ borderColor: "#FFFFFF" }}
               />
             </div>
           )}
           
-          <div className="flex-1">
-            <div className="text-2xl font-semibold">{userName}</div>
+          <div className="flex-1 min-w-0">
+            <div className="text-xl sm:text-2xl font-semibold truncate">{userName}</div>
             <div 
-              className="text-lg font-medium"
+              className="text-base sm:text-lg font-medium"
               style={{ color: highlightColor }}
             >
               {userTitle || role}
@@ -69,13 +70,13 @@ export function SharedProfileSidebar({
         <div className="mt-4 space-y-2 text-sm text-gray-600">
           {userEmail && (
             <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4" style={{ color: highlightColor }} />
-              <span>{userEmail}</span>
+              <Mail className="h-4 w-4 flex-shrink-0" style={{ color: highlightColor }} />
+              <span className="truncate">{userEmail}</span>
             </div>
           )}
           {phoneNumber && (
             <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4" style={{ color: highlightColor }} />
+              <Phone className="h-4 w-4 flex-shrink-0" style={{ color: highlightColor }} />
               <span>{phoneNumber}</span>
             </div>
           )}
@@ -85,7 +86,7 @@ export function SharedProfileSidebar({
         {userSkills.length > 0 && (
           <div className="mt-6">
             <h3 
-              className="font-semibold text-lg mb-2"
+              className="font-semibold text-base sm:text-lg mb-2"
               style={{ color: coverColor }}
             >
               Skills
@@ -94,7 +95,7 @@ export function SharedProfileSidebar({
               {userSkills.map((skill, index) => (
                 <span
                   key={index}
-                  className="px-3 py-1 rounded-full text-sm"
+                  className="px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm"
                   style={{ 
                     backgroundColor: `${highlightColor}20`,
                     color: highlightColor 
@@ -111,12 +112,12 @@ export function SharedProfileSidebar({
         {professionalGoal && (
           <div className="mt-6">
             <h3 
-              className="font-semibold text-lg mb-2"
+              className="font-semibold text-base sm:text-lg mb-2"
               style={{ color: coverColor }}
             >
               Professional Goal
             </h3>
-            <p className="text-gray-700">{professionalGoal}</p>
+            <p className="text-sm sm:text-base text-gray-700">{professionalGoal}</p>
           </div>
         )}
         
@@ -124,13 +125,13 @@ export function SharedProfileSidebar({
         {(biggestChallenge || blocker) && (
           <div className="mt-6">
             <h3 
-              className="font-semibold text-lg mb-2"
+              className="font-semibold text-base sm:text-lg mb-2"
               style={{ color: coverColor }}
             >
               Biggest Challenge
             </h3>
             <blockquote 
-              className="border-l-4 pl-4 italic text-gray-700"
+              className="border-l-4 pl-3 sm:pl-4 italic text-sm sm:text-base text-gray-700"
               style={{ borderColor: highlightColor }}
             >
               "{biggestChallenge || blocker}"

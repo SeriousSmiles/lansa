@@ -35,28 +35,30 @@ export function SidebarPersonalInfo({
   return (
     <Card className="overflow-hidden">
       <div 
-        className="h-24" 
+        className="h-20 sm:h-24" 
         style={{ backgroundColor: highlightColor }}
       ></div>
-      <div className="p-6 pt-0 -mt-12 flex flex-col items-center">
+      <div className="p-4 sm:p-6 pt-0 -mt-10 sm:-mt-12 flex flex-col items-center">
         <ProfileAvatar
           userName={userName}
           profileImage={profileImage}
           onUploadProfileImage={onUploadProfileImage}
         />
         
-        <EditableUserName
-          userName={userName}
-          onUpdateUserName={onUpdateUserName}
-        />
-        
-        <p className="font-medium text-center" style={{ color: highlightColor }}>{role}</p>
-        
-        <EditableTitle
-          title={title}
-          onUpdateTitle={onUpdateTitle}
-          highlightColor={highlightColor}
-        />
+        <div className="w-full text-center mt-4">
+          <EditableUserName
+            userName={userName}
+            onUpdateUserName={onUpdateUserName}
+          />
+          
+          <p className="font-medium text-center mt-1" style={{ color: highlightColor }}>{role}</p>
+          
+          <EditableTitle
+            title={title}
+            onUpdateTitle={onUpdateTitle}
+            highlightColor={highlightColor}
+          />
+        </div>
         
         <ContactInfo
           email={email}

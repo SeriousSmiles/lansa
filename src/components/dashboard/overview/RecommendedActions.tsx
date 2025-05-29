@@ -31,11 +31,11 @@ export function RecommendedActions({ role, highlightActions }: RecommendedAction
   const actionPoints = getPersonalizedActionPoints(role);
 
   return (
-    <>
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-xl md:text-2xl font-semibold animate-fade-in">Recommended Actions</h2>
+    <div className="space-y-3 sm:space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-semibold animate-fade-in">Recommended Actions</h2>
         {highlightActions && (
-          <div className="bg-[#FF6B4A]/20 text-[#FF6B4A] px-3 py-1 rounded-full text-sm font-medium animate-pulse">
+          <div className="bg-[#FF6B4A]/20 text-[#FF6B4A] px-3 py-1 rounded-full text-sm font-medium animate-pulse self-start sm:self-center">
             Start here
           </div>
         )}
@@ -43,8 +43,8 @@ export function RecommendedActions({ role, highlightActions }: RecommendedAction
       
       <div 
         ref={recommendedActionsRef}
-        className={`grid grid-cols-1 md:grid-cols-3 gap-4 ${
-          highlightActions ? 'ring-2 ring-[#FF6B4A] ring-offset-4 rounded-lg p-4 animate-[scale-in_0.5s_ease-out]' : ''
+        className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 ${
+          highlightActions ? 'ring-2 ring-[#FF6B4A] ring-offset-4 rounded-lg p-3 sm:p-4 animate-[scale-in_0.5s_ease-out]' : ''
         }`}
       >
         {actionPoints.map((action, index) => (
@@ -57,6 +57,6 @@ export function RecommendedActions({ role, highlightActions }: RecommendedAction
           />
         ))}
       </div>
-    </>
+    </div>
   );
 }
