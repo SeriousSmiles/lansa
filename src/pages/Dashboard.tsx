@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { 
   getUserAnswers, 
   getProfileRole, 
@@ -20,43 +20,78 @@ export default function Dashboard() {
   const [aiInsight, setAiInsight] = useState<string | undefined>();
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
   const [hasTrackedVisit, setHasTrackedVisit] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(false);
   const { user } = useAuth();
   const { track } = useActionTracking();
+  const mountedRef = useRef(true);
+  
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
   
   useEffect(() => {
     async function loadDashboard() {
-      if (!user?.id) return;
+      if (!user?.id || isLoadingData) return;
       
-      // Track dashboard visit only once per session
-      if (!hasTrackedVisit) {
-        track('dashboard_visited');
-        setHasTrackedVisit(true);
-      }
+      setIsLoadingData(true);
       
-      const answers = await getUserAnswers(user.id);
-      if (answers) {
-        setUserAnswers(answers);
+      try {
+        // Track dashboard visit only once per session
+        if (!hasTrackedVisit) {
+          track('dashboard_visited');
+          setHasTrackedVisit(true);
+        }
         
-        // Check if we have a stored AI insight
-        if (answers.ai_insight) {
-          setAiInsight(answers.ai_insight);
-        } else {
-          // Generate insight if we don't have one stored
-          setIsLoadingInsight(true);
-          try {
-            const insight = await getPersonalizedInsight(user.id, answers);
-            setAiInsight(insight);
-          } catch (error) {
-            console.error("Failed to get AI insight:", error);
-            // Fallback to basic insight
-            setAiInsight(getBasicInsightFromAnswers(answers));
-          } finally {
-            setIsLoadingInsight(false);
+        const answers = await getUserAnswers(user.id);
+        
+        // Check if component is still mounted
+        if (!mountedRef.current) return;
+        
+        if (answers) {
+          setUserAnswers(answers);
+          
+          // Check if we have a stored AI insight
+          if (answers.ai_insight) {
+            setAiInsight(answers.ai_insight);
+          } else {
+            // Generate insight if we don't have one stored
+            setIsLoadingInsight(true);
+            try {
+              const insight = await getPersonalizedInsight(user.id, answers);
+              
+              // Check if component is still mounted
+              if (!mountedRef.current) return;
+              
+              setAiInsight(insight);
+            } catch (error) {
+              console.error("Failed to get AI insight:", error);
+              // Fallback to basic insight
+              if (mountedRef.current) {
+                setAiInsight(getBasicInsightFromAnswers(answers));
+              }
+            } finally {
+              if (mountedRef.current) {
+                setIsLoadingInsight(false);
+              }
+            }
           }
         }
+        
+        if (mountedRef.current) {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Error loading dashboard:", error);
+        if (mountedRef.current) {
+          setIsLoading(false);
+        }
+      } finally {
+        if (mountedRef.current) {
+          setIsLoadingData(false);
+        }
       }
-      
-      setIsLoading(false);
     }
     
     loadDashboard();
@@ -68,7 +103,7 @@ export default function Dashboard() {
       // Clean up the flag after using it to prevent multiple highlights
       localStorage.removeItem('highlightRecommendedActions');
     }
-  }, [user, track, hasTrackedVisit]);
+  }, [user?.id, track, hasTrackedVisit, isLoadingData]);
   
   useEffect(() => {
     // Show welcome toast if highlighting actions

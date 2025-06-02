@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -45,17 +44,27 @@ export function useGrowthCards(userId: string | undefined) {
   const [currentPrompt, setCurrentPrompt] = useState<GrowthPrompt | null>(null);
   const [userStats, setUserStats] = useState<UserGrowthStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDataLoading, setIsDataLoading] = useState(false);
   const { toast } = useToast();
+  const mountedRef = useRef(true);
 
   useEffect(() => {
-    if (userId) {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (userId && !isDataLoading) {
       fetchGrowthData();
     }
-  }, [userId]);
+  }, [userId, isDataLoading]);
 
   const fetchGrowthData = async () => {
-    if (!userId) return;
+    if (!userId || isDataLoading) return;
 
+    setIsDataLoading(true);
+    
     try {
       // First, get or create user stats
       let { data: stats, error: statsError } = await supabase
@@ -67,6 +76,9 @@ export function useGrowthCards(userId: string | undefined) {
       if (statsError && statsError.code !== 'PGRST116') {
         throw statsError;
       }
+
+      // Check if component is still mounted
+      if (!mountedRef.current) return;
 
       // If no stats exist, create them
       if (!stats) {
@@ -100,6 +112,8 @@ export function useGrowthCards(userId: string | undefined) {
         }
       }
 
+      if (!mountedRef.current) return;
+      
       setUserStats(stats);
 
       // Get current prompt or assign a new one
@@ -107,13 +121,18 @@ export function useGrowthCards(userId: string | undefined) {
       
     } catch (error) {
       console.error('Error fetching growth data:', error);
-      toast({
-        title: "Error loading growth cards",
-        description: "Could not load your growth challenge data.",
-        variant: "destructive",
-      });
+      if (mountedRef.current) {
+        toast({
+          title: "Error loading growth cards",
+          description: "Could not load your growth challenge data.",
+          variant: "destructive",
+        });
+      }
     } finally {
-      setIsLoading(false);
+      if (mountedRef.current) {
+        setIsLoading(false);
+        setIsDataLoading(false);
+      }
     }
   };
 
@@ -126,7 +145,7 @@ export function useGrowthCards(userId: string | undefined) {
         .eq('id', stats.current_prompt_id)
         .single();
 
-      if (!error && prompt) {
+      if (!error && prompt && mountedRef.current) {
         setCurrentPrompt(prompt);
         return;
       }
@@ -180,7 +199,10 @@ export function useGrowthCards(userId: string | undefined) {
             .single();
 
           if (updateError) throw updateError;
-          setUserStats(updatedStats);
+          
+          if (mountedRef.current) {
+            setUserStats(updatedStats);
+          }
 
           // Get first prompt from next stage
           let nextStageQuery = supabase
@@ -203,7 +225,7 @@ export function useGrowthCards(userId: string | undefined) {
         }
       }
 
-      if (nextPrompt) {
+      if (nextPrompt && mountedRef.current) {
         // Update user stats with current prompt
         await supabase
           .from('user_growth_stats')
@@ -267,24 +289,30 @@ export function useGrowthCards(userId: string | undefined) {
 
       if (statsError) throw statsError;
 
-      setUserStats(updatedStats);
-      setCurrentPrompt(null);
+      if (mountedRef.current) {
+        setUserStats(updatedStats);
+        setCurrentPrompt(null);
+      }
 
       // Assign next prompt
       await assignNewPrompt(updatedStats);
 
-      toast({
-        title: "Challenge completed! 🎉",
-        description: "Great job! Your next challenge is ready.",
-      });
+      if (mountedRef.current) {
+        toast({
+          title: "Challenge completed! 🎉",
+          description: "Great job! Your next challenge is ready.",
+        });
+      }
 
     } catch (error) {
       console.error('Error completing prompt:', error);
-      toast({
-        title: "Error completing challenge",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
+      if (mountedRef.current) {
+        toast({
+          title: "Error completing challenge",
+          description: "Please try again later.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
