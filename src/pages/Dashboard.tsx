@@ -19,11 +19,11 @@ export default function Dashboard() {
   const [highlightActions, setHighlightActions] = useState(false);
   const [aiInsight, setAiInsight] = useState<string | undefined>();
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
-  const [hasTrackedVisit, setHasTrackedVisit] = useState(false);
-  const [isLoadingData, setIsLoadingData] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
   const { user } = useAuth();
   const { track } = useActionTracking();
   const mountedRef = useRef(true);
+  const initializingRef = useRef(false);
   
   useEffect(() => {
     return () => {
@@ -33,16 +33,17 @@ export default function Dashboard() {
   
   useEffect(() => {
     async function loadDashboard() {
-      if (!user?.id || isLoadingData) return;
+      // Prevent duplicate initialization
+      if (!user?.id || hasInitialized || initializingRef.current) return;
       
-      setIsLoadingData(true);
+      initializingRef.current = true;
+      setIsLoading(true);
       
       try {
-        // Track dashboard visit only once per session
-        if (!hasTrackedVisit) {
-          track('dashboard_visited');
-          setHasTrackedVisit(true);
-        }
+        console.log('Dashboard: Starting initialization for user:', user.id);
+        
+        // Track dashboard visit only once
+        track('dashboard_visited');
         
         const answers = await getUserAnswers(user.id);
         
@@ -50,6 +51,7 @@ export default function Dashboard() {
         if (!mountedRef.current) return;
         
         if (answers) {
+          console.log('Dashboard: User answers loaded successfully');
           setUserAnswers(answers);
           
           // Check if we have a stored AI insight
@@ -79,40 +81,40 @@ export default function Dashboard() {
           }
         }
         
+        // Check if we should highlight the recommended actions
+        const shouldHighlight = localStorage.getItem('highlightRecommendedActions') === 'true';
+        if (shouldHighlight) {
+          setHighlightActions(true);
+          // Clean up the flag after using it to prevent multiple highlights
+          localStorage.removeItem('highlightRecommendedActions');
+          
+          // Show welcome toast
+          setTimeout(() => {
+            if (mountedRef.current) {
+              toast.success("Welcome! Here are your recommended actions to get started.", {
+                duration: 5000
+              });
+            }
+          }, 500);
+        }
+        
         if (mountedRef.current) {
+          setHasInitialized(true);
           setIsLoading(false);
         }
       } catch (error) {
         console.error("Error loading dashboard:", error);
         if (mountedRef.current) {
           setIsLoading(false);
+          setHasInitialized(true);
         }
       } finally {
-        if (mountedRef.current) {
-          setIsLoadingData(false);
-        }
+        initializingRef.current = false;
       }
     }
     
     loadDashboard();
-    
-    // Check if we should highlight the recommended actions
-    const shouldHighlight = localStorage.getItem('highlightRecommendedActions') === 'true';
-    if (shouldHighlight) {
-      setHighlightActions(true);
-      // Clean up the flag after using it to prevent multiple highlights
-      localStorage.removeItem('highlightRecommendedActions');
-    }
-  }, [user?.id, track, hasTrackedVisit, isLoadingData]);
-  
-  useEffect(() => {
-    // Show welcome toast if highlighting actions
-    if (highlightActions && !isLoading) {
-      toast.success("Welcome! Here are your recommended actions to get started.", {
-        duration: 5000
-      });
-    }
-  }, [highlightActions, isLoading]);
+  }, [user?.id, hasInitialized, track]);
   
   if (isLoading) {
     return <DashboardLoadingState />;

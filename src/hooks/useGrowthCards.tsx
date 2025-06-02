@@ -14,9 +14,10 @@ export function useGrowthCards(userId: string | undefined) {
   const [currentPrompt, setCurrentPrompt] = useState<GrowthPrompt | null>(null);
   const [userStats, setUserStats] = useState<UserGrowthStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDataLoading, setIsDataLoading] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
   const { toast } = useToast();
   const mountedRef = useRef(true);
+  const initializingRef = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -25,55 +26,63 @@ export function useGrowthCards(userId: string | undefined) {
   }, []);
 
   useEffect(() => {
-    if (userId && !isDataLoading) {
-      fetchGrowthData();
+    async function fetchGrowthData() {
+      // Prevent duplicate initialization
+      if (!userId || hasInitialized || initializingRef.current) return;
+
+      initializingRef.current = true;
+      setIsLoading(true);
+      
+      try {
+        console.log('Growth Cards: Starting initialization for user:', userId);
+        
+        // First, get or create user stats
+        let stats = await getUserStats(userId);
+
+        // Check if component is still mounted
+        if (!mountedRef.current) return;
+
+        // If no stats exist, create them
+        if (!stats) {
+          stats = await createUserStats(userId);
+        }
+
+        if (!mountedRef.current) return;
+        
+        setUserStats(stats);
+        console.log('Growth Cards: User stats loaded');
+
+        // Get current prompt or assign a new one
+        const prompt = await getCurrentOrAssignPrompt(stats, userId, mountedRef);
+        
+        if (mountedRef.current && prompt) {
+          setCurrentPrompt(prompt);
+          console.log('Growth Cards: Current prompt loaded');
+        }
+        
+        if (mountedRef.current) {
+          setHasInitialized(true);
+        }
+        
+      } catch (error) {
+        console.error('Error fetching growth data:', error);
+        if (mountedRef.current) {
+          toast({
+            title: "Error loading growth cards",
+            description: "Could not load your growth challenge data.",
+            variant: "destructive",
+          });
+        }
+      } finally {
+        if (mountedRef.current) {
+          setIsLoading(false);
+        }
+        initializingRef.current = false;
+      }
     }
-  }, [userId, isDataLoading]);
 
-  const fetchGrowthData = async () => {
-    if (!userId || isDataLoading) return;
-
-    setIsDataLoading(true);
-    
-    try {
-      // First, get or create user stats
-      let stats = await getUserStats(userId);
-
-      // Check if component is still mounted
-      if (!mountedRef.current) return;
-
-      // If no stats exist, create them
-      if (!stats) {
-        stats = await createUserStats(userId);
-      }
-
-      if (!mountedRef.current) return;
-      
-      setUserStats(stats);
-
-      // Get current prompt or assign a new one
-      const prompt = await getCurrentOrAssignPrompt(stats, userId, mountedRef);
-      
-      if (mountedRef.current && prompt) {
-        setCurrentPrompt(prompt);
-      }
-      
-    } catch (error) {
-      console.error('Error fetching growth data:', error);
-      if (mountedRef.current) {
-        toast({
-          title: "Error loading growth cards",
-          description: "Could not load your growth challenge data.",
-          variant: "destructive",
-        });
-      }
-    } finally {
-      if (mountedRef.current) {
-        setIsLoading(false);
-        setIsDataLoading(false);
-      }
-    }
-  };
+    fetchGrowthData();
+  }, [userId, hasInitialized, toast]);
 
   const completePrompt = async (promptId: string) => {
     if (!userId || !userStats) return;
@@ -129,12 +138,18 @@ export function useGrowthCards(userId: string | undefined) {
     }
   };
 
+  const refreshGrowthData = async () => {
+    if (!userId || initializingRef.current) return;
+    
+    setHasInitialized(false);
+  };
+
   return {
     currentPrompt,
     userStats,
     isLoading,
     completePrompt,
-    refreshGrowthData: fetchGrowthData,
+    refreshGrowthData,
     getStageDisplayName
   };
 }
