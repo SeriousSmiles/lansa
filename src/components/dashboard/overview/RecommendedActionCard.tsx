@@ -55,7 +55,7 @@ export function RecommendedActionCard({
               ? 'bg-[#FF6B4A] hover:bg-[#E55A3A] text-white shadow-md hover:shadow-lg' 
               : 'border border-gray-300 bg-white text-gray-700 hover:bg-[#FF6B4A] hover:text-white hover:border-[#FF6B4A]'
           }`}
-          variant={isHighlighted ? "default" : "outline"}
+          variant={isHighlighted ? "primary" : "outline"}
         >
           {buttonText}
         </Button>
