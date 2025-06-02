@@ -19,6 +19,7 @@ export default function Dashboard() {
   const [highlightActions, setHighlightActions] = useState(false);
   const [aiInsight, setAiInsight] = useState<string | undefined>();
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
+  const [hasTrackedVisit, setHasTrackedVisit] = useState(false);
   const { user } = useAuth();
   const { track } = useActionTracking();
   
@@ -26,8 +27,11 @@ export default function Dashboard() {
     async function loadDashboard() {
       if (!user?.id) return;
       
-      // Track dashboard visit
-      track('dashboard_visited');
+      // Track dashboard visit only once per session
+      if (!hasTrackedVisit) {
+        track('dashboard_visited');
+        setHasTrackedVisit(true);
+      }
       
       const answers = await getUserAnswers(user.id);
       if (answers) {
@@ -64,7 +68,7 @@ export default function Dashboard() {
       // Clean up the flag after using it to prevent multiple highlights
       localStorage.removeItem('highlightRecommendedActions');
     }
-  }, [user, track]);
+  }, [user, track, hasTrackedVisit]);
   
   useEffect(() => {
     // Show welcome toast if highlighting actions

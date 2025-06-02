@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -81,8 +82,22 @@ export function useGrowthCards(userId: string | undefined) {
           .select()
           .single();
 
-        if (createStatsError) throw createStatsError;
-        stats = newStats;
+        if (createStatsError) {
+          console.error('Error creating user stats:', createStatsError);
+          // If there's a duplicate key error, try to fetch existing stats
+          if (createStatsError.code === '23505') {
+            const { data: existingStats } = await supabase
+              .from('user_growth_stats')
+              .select('*')
+              .eq('user_id', userId)
+              .single();
+            stats = existingStats;
+          } else {
+            throw createStatsError;
+          }
+        } else {
+          stats = newStats;
+        }
       }
 
       setUserStats(stats);
@@ -133,14 +148,20 @@ export function useGrowthCards(userId: string | undefined) {
       const completedPromptIds = completedProgress?.map(p => p.prompt_id) || [];
 
       // Get next available prompt in current stage
-      const { data: availablePrompts, error } = await supabase
+      let query = supabase
         .from('growth_prompts')
         .select('*')
         .eq('stage', stats.current_stage)
         .eq('is_active', true)
-        .not('id', 'in', `(${completedPromptIds.length > 0 ? completedPromptIds.join(',') : 'null'})`)
         .order('order_index')
         .limit(1);
+
+      // Only add the not.in filter if there are completed prompts
+      if (completedPromptIds.length > 0) {
+        query = query.not('id', 'in', `(${completedPromptIds.join(',')})`);
+      }
+
+      const { data: availablePrompts, error } = await query;
 
       if (error) throw error;
 
@@ -162,14 +183,20 @@ export function useGrowthCards(userId: string | undefined) {
           setUserStats(updatedStats);
 
           // Get first prompt from next stage
-          const { data: nextStagePrompts, error: nextStageError } = await supabase
+          let nextStageQuery = supabase
             .from('growth_prompts')
             .select('*')
             .eq('stage', nextStage)
             .eq('is_active', true)
-            .not('id', 'in', `(${completedPromptIds.length > 0 ? completedPromptIds.join(',') : 'null'})`)
             .order('order_index')
             .limit(1);
+
+          // Only add the not.in filter if there are completed prompts
+          if (completedPromptIds.length > 0) {
+            nextStageQuery = nextStageQuery.not('id', 'in', `(${completedPromptIds.join(',')})`);
+          }
+
+          const { data: nextStagePrompts, error: nextStageError } = await nextStageQuery;
 
           if (nextStageError) throw nextStageError;
           nextPrompt = nextStagePrompts?.[0];
