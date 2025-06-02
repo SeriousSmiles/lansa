@@ -7,8 +7,8 @@ interface RecommendedActionCardProps {
   title: string;
   description: string;
   buttonText: string;
-  icon: LucideIcon;
-  onClick: () => void;
+  icon?: LucideIcon;
+  onClick?: () => void;
   isHighlighted?: boolean;
 }
 
@@ -26,9 +26,11 @@ export function RecommendedActionCard({
     }`}>
       <CardHeader className="pb-3">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-[#FF6B4A]/10 rounded-lg">
-            <Icon className="h-5 w-5 text-[#FF6B4A]" />
-          </div>
+          {Icon && (
+            <div className="p-2 bg-[#FF6B4A]/10 rounded-lg">
+              <Icon className="h-5 w-5 text-[#FF6B4A]" />
+            </div>
+          )}
           <CardTitle className="text-lg">{title}</CardTitle>
         </div>
       </CardHeader>
@@ -37,7 +39,7 @@ export function RecommendedActionCard({
         <Button 
           onClick={onClick}
           className="w-full transition-colors duration-200"
-          variant={isHighlighted ? "default" : "outline"}
+          variant={isHighlighted ? "primary" : "outline"}
         >
           {buttonText}
         </Button>

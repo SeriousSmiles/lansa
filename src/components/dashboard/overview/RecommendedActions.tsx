@@ -30,6 +30,11 @@ export function RecommendedActions({ role, highlightActions }: RecommendedAction
   // Get personalized action points based on role
   const actionPoints = getPersonalizedActionPoints(role);
 
+  const handleActionClick = (actionTitle: string) => {
+    console.log(`Action clicked: ${actionTitle}`);
+    // Add action handling logic here
+  };
+
   return (
     <div className="space-y-3 sm:space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -53,7 +58,9 @@ export function RecommendedActions({ role, highlightActions }: RecommendedAction
             title={action.title}
             description={action.description}
             buttonText={action.buttonText}
-            delay={0.3 + (index * 0.1)}
+            icon={action.icon}
+            onClick={() => handleActionClick(action.title)}
+            isHighlighted={highlightActions}
           />
         ))}
       </div>
