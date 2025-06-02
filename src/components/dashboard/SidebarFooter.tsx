@@ -5,7 +5,7 @@ import {
   SidebarSeparator
 } from "@/components/ui/sidebar";
 import { SidebarMenuItems } from "./SidebarMenu";
-import { UserProfile } from "./UserProfile";
+import { AnimatedProfileButton } from "./AnimatedProfileButton";
 import { HelpCircle, Settings } from "lucide-react";
 
 interface SidebarFooterContentProps {
@@ -36,11 +36,10 @@ export function SidebarFooterContent({ userName, email, handleLogout, themeColor
         <SidebarMenuItems items={footerItems} themeColor={themeColor} />
       </div>
       <SidebarSeparator />
-      <UserProfile 
+      <AnimatedProfileButton 
         userName={userName} 
         email={email} 
         handleLogout={handleLogout}
-        themeColor={themeColor}
       />
       <div className="mt-4 text-xs text-center text-[#1A1F71]">
         &copy; {new Date().getFullYear()} Lansa N.V.
