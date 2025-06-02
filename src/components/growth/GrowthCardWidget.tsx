@@ -77,7 +77,7 @@ export function GrowthCardWidget({ userId }: GrowthCardWidgetProps) {
 
   if (!currentPrompt) {
     return (
-      <Card className="p-6 text-center bg-gradient-to-r from-green-50 to-blue-50">
+      <Card className="p-6 text-center bg-gradient-to-br from-green-50/50 via-blue-50/30 to-cyan-50/40 border border-green-200/50">
         <div className="flex items-center justify-center gap-2 mb-4">
           <Sparkles className="h-6 w-6 text-yellow-500" />
           <h3 className="text-xl font-semibold text-gray-800">All Caught Up!</h3>
