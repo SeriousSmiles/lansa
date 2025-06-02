@@ -18,6 +18,11 @@ export function useProfileText({ userId, updateProfileData }: UseProfileTextProp
 
   // Function to update user name
   const updateUserName = async (name: string) => {
+    if (!userId) {
+      console.error("Cannot update name: userId is undefined");
+      return;
+    }
+    
     try {
       await updateProfileData({ name });
       setUserName(name);
@@ -39,6 +44,11 @@ export function useProfileText({ userId, updateProfileData }: UseProfileTextProp
 
   // Function to update user email
   const updateUserEmail = async (email: string) => {
+    if (!userId) {
+      console.error("Cannot update email: userId is undefined");
+      return;
+    }
+    
     try {
       await updateProfileData({ email });
       setUserEmail(email);
@@ -60,6 +70,11 @@ export function useProfileText({ userId, updateProfileData }: UseProfileTextProp
 
   // Function to update user title
   const updateUserTitle = async (title: string) => {
+    if (!userId) {
+      console.error("Cannot update title: userId is undefined");
+      return;
+    }
+    
     try {
       await updateProfileData({ title });
       setUserTitle(title);
@@ -81,9 +96,19 @@ export function useProfileText({ userId, updateProfileData }: UseProfileTextProp
 
   // Function to update phone number
   const updatePhoneNumber = async (phone: string) => {
+    if (!userId) {
+      console.error("Cannot update phone: userId is undefined");
+      return;
+    }
+    
     try {
       await updateProfileData({ phone_number: phone });
       setPhoneNumber(phone);
+      
+      toast({
+        title: "Phone number updated",
+        description: "Your phone number has been updated successfully.",
+      });
     } catch (error) {
       console.error("Error updating phone number:", error);
       toast({
@@ -97,9 +122,19 @@ export function useProfileText({ userId, updateProfileData }: UseProfileTextProp
 
   // Function to update about text
   const updateAboutText = async (text: string) => {
+    if (!userId) {
+      console.error("Cannot update about text: userId is undefined");
+      return;
+    }
+    
     try {
       await updateProfileData({ about_text: text });
       setAboutText(text);
+      
+      toast({
+        title: "About text updated",
+        description: "Your about text has been updated successfully.",
+      });
     } catch (error) {
       console.error("Error updating about text:", error);
       toast({

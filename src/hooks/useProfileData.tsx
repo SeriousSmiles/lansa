@@ -27,6 +27,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [professionalGoal, setProfessionalGoal] = useState("");
   const [biggestChallenge, setBiggestChallenge] = useState("");
+  const [hasInitialized, setHasInitialized] = useState(false);
   const { toast } = useToast();
   
   // Use specialized hooks
@@ -37,21 +38,26 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
   const profileImage = useProfileImage({ userId, updateProfileData: profileBasics.updateProfileData });
 
   useEffect(() => {
-    // Load all profile data
+    // Only load data once per userId
+    if (!userId || hasInitialized) return;
+    
     loadProfileData();
-  }, [userId]);
+  }, [userId, hasInitialized]);
 
   const loadProfileData = async () => {
     if (!userId) return;
     
-    // Get user's onboarding answers
-    const answers = await getUserAnswers(userId);
-    if (answers) {
-      setUserAnswers(answers);
-    }
+    setIsLoading(true);
     
     try {
+      // Get user's onboarding answers
+      const answers = await getUserAnswers(userId);
+      if (answers) {
+        setUserAnswers(answers);
+      }
+      
       await loadProfileFromDatabase(answers);
+      setHasInitialized(true);
     } catch (error) {
       console.error("Error loading profile data:", error);
       toast({
@@ -62,9 +68,10 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
       
       // If there's an error, set up basic profile data
       handleProfileLoadError(answers, profileSkills, profileExperience, profileEducation);
+      setHasInitialized(true);
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   // Load profile from the database
@@ -76,9 +83,10 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
       .from('user_profiles')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
       
-    if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
+    if (error) {
+      console.error("Error fetching profile:", error);
       throw error;
     }
     

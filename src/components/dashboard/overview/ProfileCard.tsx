@@ -23,10 +23,10 @@ export function ProfileCard({ role, goal }: ProfileCardProps) {
     isLoading 
   } = useProfileData(user?.id);
 
-  // Use database values if available, otherwise fall back to props
-  const displayTitle = userTitle || role;
-  const displayGoal = professionalGoal || goal;
-  const displayChallenge = biggestChallenge || "Identifying my unique value proposition";
+  // Only use props as fallbacks when database values are empty or loading
+  const displayTitle = (userTitle && userTitle.trim()) ? userTitle : role;
+  const displayGoal = (professionalGoal && professionalGoal.trim()) ? professionalGoal : goal;
+  const displayChallenge = (biggestChallenge && biggestChallenge.trim()) ? biggestChallenge : "Identifying my unique value proposition";
 
   return (
     <AnimatedCard delay={0.1} className="h-auto transition-shadow duration-200 hover:shadow-md">

@@ -9,9 +9,14 @@ interface UseProfileDataCoreProps {
 export function useProfileDataCore({ userId }: UseProfileDataCoreProps) {
   // Update or create profile data function
   const updateProfileData = async (updatedData: Partial<UserProfile>) => {
-    if (!userId) return;
+    if (!userId) {
+      console.error("Cannot update profile: userId is undefined");
+      return;
+    }
     
     try {
+      console.log("Updating profile data for user:", userId, "with data:", updatedData);
+      
       // Prepare data for Supabase by converting typed objects to raw JSON
       const supabaseData: any = { ...updatedData };
       
@@ -22,7 +27,8 @@ export function useProfileDataCore({ userId }: UseProfileDataCoreProps) {
         .eq('user_id', userId)
         .maybeSingle();
       
-      if (fetchError && fetchError.code !== 'PGRST116') {
+      if (fetchError) {
+        console.error("Error checking existing profile:", fetchError);
         throw fetchError;
       }
       
@@ -30,19 +36,25 @@ export function useProfileDataCore({ userId }: UseProfileDataCoreProps) {
       
       if (existingProfile) {
         // Update existing profile
+        console.log("Updating existing profile");
         result = await supabase
           .from('user_profiles')
           .update(supabaseData)
           .eq('user_id', userId);
       } else {
         // Create new profile
+        console.log("Creating new profile");
         result = await supabase
           .from('user_profiles')
           .insert({ user_id: userId, ...supabaseData });
       }
       
-      if (result.error) throw result.error;
+      if (result.error) {
+        console.error("Database operation failed:", result.error);
+        throw result.error;
+      }
       
+      console.log("Profile data updated successfully");
       return result;
     } catch (error) {
       console.error("Error updating profile data:", error);
@@ -52,16 +64,22 @@ export function useProfileDataCore({ userId }: UseProfileDataCoreProps) {
 
   // Function to update user answers in the database
   const updateUserAnswer = async (field: string, value: string) => {
-    if (!userId) return;
+    if (!userId) {
+      console.error("Cannot update user answer: userId is undefined");
+      return;
+    }
 
     try {
+      console.log("Updating user answer for field:", field, "with value:", value);
+      
       const { data: existingAnswer, error: fetchError } = await supabase
         .from('user_answers')
         .select('id')
         .eq('user_id', userId)
         .maybeSingle();
       
-      if (fetchError && fetchError.code !== 'PGRST116') {
+      if (fetchError) {
+        console.error("Error checking existing answer:", fetchError);
         throw fetchError;
       }
       
@@ -84,6 +102,8 @@ export function useProfileDataCore({ userId }: UseProfileDataCoreProps) {
         console.error('Error updating answer:', result.error);
         throw new Error('Failed to update profile');
       }
+      
+      console.log("User answer updated successfully");
     } catch (error) {
       console.error('Error updating answer:', error);
       throw error;
