@@ -21,25 +21,41 @@ export function RecommendedActionCard({
   isHighlighted = false
 }: RecommendedActionCardProps) {
   return (
-    <Card className={`transition-shadow duration-200 hover:shadow-md ${
-      isHighlighted ? 'ring-2 ring-[#FF6B4A] ring-opacity-50 bg-orange-50/30' : ''
+    <Card className={`group h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
+      isHighlighted 
+        ? 'ring-2 ring-[#FF6B4A] ring-opacity-50 bg-gradient-to-br from-white to-orange-50/40 shadow-md' 
+        : 'bg-white border border-gray-200 hover:border-gray-300'
     }`}>
       <CardHeader className="pb-3">
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-3">
           {Icon && (
-            <div className="p-2 bg-[#FF6B4A]/10 rounded-lg">
-              <Icon className="h-5 w-5 text-[#FF6B4A]" />
+            <div className={`p-2.5 rounded-lg transition-colors duration-200 ${
+              isHighlighted 
+                ? 'bg-[#FF6B4A]/15 group-hover:bg-[#FF6B4A]/20' 
+                : 'bg-gray-100 group-hover:bg-[#FF6B4A]/10'
+            }`}>
+              <Icon className={`h-5 w-5 transition-colors duration-200 ${
+                isHighlighted 
+                  ? 'text-[#FF6B4A]' 
+                  : 'text-gray-600 group-hover:text-[#FF6B4A]'
+              }`} />
             </div>
           )}
-          <CardTitle className="text-lg">{title}</CardTitle>
+          <div className="flex-1">
+            <CardTitle className="text-lg leading-tight text-gray-900">{title}</CardTitle>
+          </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <p className="text-gray-600 mb-4">{description}</p>
+      <CardContent className="space-y-4">
+        <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">{description}</p>
         <Button 
           onClick={onClick}
-          className="w-full transition-colors duration-200"
-          variant={isHighlighted ? "primary" : "outline"}
+          className={`w-full transition-all duration-200 font-medium ${
+            isHighlighted 
+              ? 'bg-[#FF6B4A] hover:bg-[#E55A3A] text-white shadow-md hover:shadow-lg' 
+              : 'border border-gray-300 bg-white text-gray-700 hover:bg-[#FF6B4A] hover:text-white hover:border-[#FF6B4A]'
+          }`}
+          variant={isHighlighted ? "default" : "outline"}
         >
           {buttonText}
         </Button>
