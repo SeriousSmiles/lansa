@@ -48,6 +48,45 @@ export type Database = {
         }
         Relationships: []
       }
+      growth_prompts: {
+        Row: {
+          action_label: string
+          action_type: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          order_index: number
+          stage: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          action_label?: string
+          action_type?: string
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean
+          order_index?: number
+          stage: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          action_label?: string
+          action_type?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          order_index?: number
+          stage?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_actions: {
         Row: {
           action_type: string
@@ -116,6 +155,97 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_growth_progress: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          is_completed: boolean
+          prompt_id: string
+          updated_at: string
+          user_id: string
+          week_assigned: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          prompt_id: string
+          updated_at?: string
+          user_id: string
+          week_assigned?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          prompt_id?: string
+          updated_at?: string
+          user_id?: string
+          week_assigned?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_growth_progress_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "growth_prompts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_growth_stats: {
+        Row: {
+          created_at: string
+          current_prompt_assigned_at: string | null
+          current_prompt_id: string | null
+          current_stage: string
+          current_streak: number
+          id: string
+          last_completion_date: string | null
+          longest_streak: number
+          total_completed: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_prompt_assigned_at?: string | null
+          current_prompt_id?: string | null
+          current_stage?: string
+          current_streak?: number
+          id?: string
+          last_completion_date?: string | null
+          longest_streak?: number
+          total_completed?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_prompt_assigned_at?: string | null
+          current_prompt_id?: string | null
+          current_stage?: string
+          current_streak?: number
+          id?: string
+          last_completion_date?: string | null
+          longest_streak?: number
+          total_completed?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_growth_stats_current_prompt_id_fkey"
+            columns: ["current_prompt_id"]
+            isOneToOne: false
+            referencedRelation: "growth_prompts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_profiles: {
         Row: {

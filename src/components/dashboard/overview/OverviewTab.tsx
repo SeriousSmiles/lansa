@@ -1,38 +1,22 @@
-
-import { useRef } from "react";
+import { Card } from "@/components/ui/card";
 import { ProfileCard } from "./ProfileCard";
-import { InsightCard } from "./InsightCard";
 import { RecommendedActions } from "./RecommendedActions";
+import { GrowthCardSection } from "./GrowthCardSection";
+import { useAuth } from "@/contexts/AuthContext";
 
-interface OverviewTabProps {
-  userName: string;
-  role: string;
-  goal: string;
-  insight: string;
-  highlightActions: boolean;
-  isLoading?: boolean;
-}
+export function OverviewTab() {
+  const { user } = useAuth();
 
-export function OverviewTab({ 
-  userName,
-  role,
-  goal,
-  insight,
-  highlightActions,
-  isLoading = false
-}: OverviewTabProps) {
-  
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 sm:mb-6">
-        <ProfileCard role={role} goal={goal} />
-        <InsightCard insight={insight} isLoading={isLoading} />
-      </div>
+    <div className="space-y-6">
+      {/* Growth Card System - Featured prominently at the top */}
+      <GrowthCardSection userId={user?.id} />
       
-      <RecommendedActions 
-        role={role}
-        highlightActions={highlightActions}
-      />
+      {/* Existing Overview Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ProfileCard />
+        <RecommendedActions />
+      </div>
     </div>
   );
 }
