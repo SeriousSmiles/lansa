@@ -1,8 +1,11 @@
 
+import { LucideIcon, Target, Users, TrendingUp, FileText, MessageCircle, Briefcase, User, Network, School, Building, Lightbulb, Map } from "lucide-react";
+
 interface ActionPoint {
   title: string;
   description: string;
   buttonText: string;
+  icon?: LucideIcon;
 }
 
 export function getPersonalizedActionPoints(role: string): ActionPoint[] {
@@ -11,17 +14,20 @@ export function getPersonalizedActionPoints(role: string): ActionPoint[] {
     {
       title: "Define Your Message",
       description: "Clarify how you talk about yourself and your work to resonate with your audience.",
-      buttonText: "Start Exercise"
+      buttonText: "Start Exercise",
+      icon: MessageCircle
     },
     {
       title: "Build Your Presence",
       description: "Create a standout online profile that showcases your unique value.",
-      buttonText: "Start Building"
+      buttonText: "Start Building",
+      icon: User
     },
     {
       title: "Track Progress",
       description: "See your journey toward greater clarity and professional visibility.",
-      buttonText: "View Progress"
+      buttonText: "View Progress",
+      icon: TrendingUp
     }
   ];
   
@@ -32,27 +38,32 @@ export function getPersonalizedActionPoints(role: string): ActionPoint[] {
         {
           title: "Craft Your Pitch",
           description: "Define your unique value proposition that makes clients choose you over competitors.",
-          buttonText: "Create Pitch"
+          buttonText: "Create Pitch",
+          icon: MessageCircle
         },
         {
           title: "Portfolio Optimization",
           description: "Showcase your best work in a way that attracts your ideal clients.",
-          buttonText: "Optimize Now"
+          buttonText: "Optimize Now",
+          icon: Briefcase
         },
         {
           title: "Pricing Strategy",
           description: "Set rates that reflect your value and position you properly in the market.",
-          buttonText: "Set Strategy"
+          buttonText: "Set Strategy",
+          icon: Target
         },
         {
           title: "Client Communication",
           description: "Develop templates and systems for professional client interactions.",
-          buttonText: "Develop System"
+          buttonText: "Develop System",
+          icon: Users
         },
         {
           title: "Visibility Plan",
           description: "Create a strategy to become more visible to your target client base.",
-          buttonText: "Create Plan"
+          buttonText: "Create Plan",
+          icon: TrendingUp
         }
       ];
     
@@ -61,27 +72,32 @@ export function getPersonalizedActionPoints(role: string): ActionPoint[] {
         {
           title: "Resume Revamp",
           description: "Transform your resume to highlight your unique strengths and value.",
-          buttonText: "Start Revamp"
+          buttonText: "Start Revamp",
+          icon: FileText
         },
         {
           title: "Interview Storytelling",
           description: "Develop compelling stories that showcase your experience and capabilities.",
-          buttonText: "Craft Stories"
+          buttonText: "Craft Stories",
+          icon: MessageCircle
         },
         {
           title: "Network Building",
           description: "Create a strategic plan to connect with professionals in your target roles.",
-          buttonText: "Build Network"
+          buttonText: "Build Network",
+          icon: Network
         },
         {
           title: "Role Alignment",
           description: "Identify the roles that best match your skills, values, and aspirations.",
-          buttonText: "Find Alignment"
+          buttonText: "Find Alignment",
+          icon: Target
         },
         {
           title: "Application Strategy",
           description: "Develop a targeted approach to job applications that stands out.",
-          buttonText: "Create Strategy"
+          buttonText: "Create Strategy",
+          icon: Briefcase
         }
       ];
 
@@ -90,27 +106,32 @@ export function getPersonalizedActionPoints(role: string): ActionPoint[] {
         {
           title: "Career Path Exploration",
           description: "Research potential career paths aligned with your interests and strengths.",
-          buttonText: "Explore Paths"
+          buttonText: "Explore Paths",
+          icon: Map
         },
         {
           title: "Skills Inventory",
           description: "Identify and document your marketable skills and knowledge gaps.",
-          buttonText: "Build Inventory"
+          buttonText: "Build Inventory",
+          icon: FileText
         },
         {
           title: "Experience Design",
           description: "Plan strategic experiences to build your resume while still in school.",
-          buttonText: "Design Plan"
+          buttonText: "Design Plan",
+          icon: School
         },
         {
           title: "Professional Brand",
           description: "Start building your professional identity before graduation.",
-          buttonText: "Build Brand"
+          buttonText: "Build Brand",
+          icon: User
         },
         {
           title: "Mentor Connection",
           description: "Find mentors who can guide your transition from education to career.",
-          buttonText: "Find Mentors"
+          buttonText: "Find Mentors",
+          icon: Users
         }
       ];
       
@@ -119,27 +140,32 @@ export function getPersonalizedActionPoints(role: string): ActionPoint[] {
         {
           title: "Value Proposition",
           description: "Refine how you communicate your business's unique value to customers.",
-          buttonText: "Refine Value"
+          buttonText: "Refine Value",
+          icon: Target
         },
         {
           title: "Target Market Definition",
           description: "Clearly define your ideal customer and their specific needs.",
-          buttonText: "Define Market"
+          buttonText: "Define Market",
+          icon: Users
         },
         {
           title: "Messaging Framework",
           description: "Create consistent language to talk about your business across channels.",
-          buttonText: "Create Framework"
+          buttonText: "Create Framework",
+          icon: MessageCircle
         },
         {
           title: "Business Roadmap",
           description: "Plot your next growth milestones with achievable timelines.",
-          buttonText: "Build Roadmap"
+          buttonText: "Build Roadmap",
+          icon: Map
         },
         {
           title: "Competitive Analysis",
           description: "Understand your position in the market and identify opportunities.",
-          buttonText: "Analyze Market"
+          buttonText: "Analyze Market",
+          icon: TrendingUp
         }
       ];
       
@@ -148,27 +174,32 @@ export function getPersonalizedActionPoints(role: string): ActionPoint[] {
         {
           title: "Vision Articulation",
           description: "Transform your big ideas into clear, compelling language that inspires others.",
-          buttonText: "Articulate Vision"
+          buttonText: "Articulate Vision",
+          icon: Lightbulb
         },
         {
           title: "Impact Framework",
           description: "Define how you'll measure the success and impact of your vision.",
-          buttonText: "Create Framework"
+          buttonText: "Create Framework",
+          icon: Target
         },
         {
           title: "Stakeholder Mapping",
           description: "Identify key allies and influencers needed to bring your vision to life.",
-          buttonText: "Map Stakeholders"
+          buttonText: "Map Stakeholders",
+          icon: Network
         },
         {
           title: "Resource Strategy",
           description: "Plan how to acquire the resources needed to execute your vision.",
-          buttonText: "Plan Strategy"
+          buttonText: "Plan Strategy",
+          icon: Building
         },
         {
           title: "Narrative Development",
           description: "Craft the story that will help others understand and support your vision.",
-          buttonText: "Develop Narrative"
+          buttonText: "Develop Narrative",
+          icon: MessageCircle
         }
       ];
       
