@@ -67,6 +67,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
       });
       
       // If there's an error, set up basic profile data
+      const answers = await getUserAnswers(userId);
       handleProfileLoadError(answers, profileSkills, profileExperience, profileEducation);
       setHasInitialized(true);
     } finally {
