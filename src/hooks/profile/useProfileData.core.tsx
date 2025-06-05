@@ -15,12 +15,14 @@ export function useProfileDataCore({ userId }: UseProfileDataCoreProps) {
     }
     
     try {
-      console.log("Updating profile data for user:", userId, "with data:", updatedData);
+      console.log("🔄 Starting profile update for user:", userId);
+      console.log("📝 Data to update:", updatedData);
       
       // Prepare data for Supabase by converting typed objects to raw JSON
       const supabaseData: any = { ...updatedData };
       
       // Check if profile exists
+      console.log("🔍 Checking if profile exists...");
       const { data: existingProfile, error: fetchError } = await supabase
         .from('user_profiles')
         .select('user_id')
@@ -28,7 +30,7 @@ export function useProfileDataCore({ userId }: UseProfileDataCoreProps) {
         .maybeSingle();
       
       if (fetchError) {
-        console.error("Error checking existing profile:", fetchError);
+        console.error("❌ Error checking existing profile:", fetchError);
         throw fetchError;
       }
       
@@ -36,28 +38,36 @@ export function useProfileDataCore({ userId }: UseProfileDataCoreProps) {
       
       if (existingProfile) {
         // Update existing profile
-        console.log("Updating existing profile");
+        console.log("📝 Updating existing profile...");
         result = await supabase
           .from('user_profiles')
           .update(supabaseData)
           .eq('user_id', userId);
       } else {
         // Create new profile
-        console.log("Creating new profile");
+        console.log("🆕 Creating new profile...");
         result = await supabase
           .from('user_profiles')
           .insert({ user_id: userId, ...supabaseData });
       }
       
       if (result.error) {
-        console.error("Database operation failed:", result.error);
+        console.error("❌ Database operation failed:", result.error);
+        console.error("❌ Error details:", {
+          message: result.error.message,
+          details: result.error.details,
+          hint: result.error.hint,
+          code: result.error.code
+        });
         throw result.error;
       }
       
-      console.log("Profile data updated successfully");
+      console.log("✅ Profile data updated successfully");
+      console.log("📊 Update result:", result);
       return result;
     } catch (error) {
-      console.error("Error updating profile data:", error);
+      console.error("❌ Error updating profile data:", error);
+      console.error("❌ Full error object:", JSON.stringify(error, null, 2));
       throw error;
     }
   };
@@ -70,7 +80,7 @@ export function useProfileDataCore({ userId }: UseProfileDataCoreProps) {
     }
 
     try {
-      console.log("Updating user answer for field:", field, "with value:", value);
+      console.log("🔄 Starting user answer update for field:", field, "with value:", value);
       
       const { data: existingAnswer, error: fetchError } = await supabase
         .from('user_answers')
@@ -79,7 +89,7 @@ export function useProfileDataCore({ userId }: UseProfileDataCoreProps) {
         .maybeSingle();
       
       if (fetchError) {
-        console.error("Error checking existing answer:", fetchError);
+        console.error("❌ Error checking existing answer:", fetchError);
         throw fetchError;
       }
       
@@ -87,25 +97,35 @@ export function useProfileDataCore({ userId }: UseProfileDataCoreProps) {
       
       if (existingAnswer) {
         // Update existing answer
+        console.log("📝 Updating existing user answer...");
         result = await supabase
           .from('user_answers')
           .update({ [field]: value })
           .eq('user_id', userId);
       } else {
         // Create new answer
+        console.log("🆕 Creating new user answer...");
         result = await supabase
           .from('user_answers')
           .insert({ user_id: userId, [field]: value });
       }
       
       if (result.error) {
-        console.error('Error updating answer:', result.error);
+        console.error('❌ Error updating answer:', result.error);
+        console.error("❌ Answer update error details:", {
+          message: result.error.message,
+          details: result.error.details,
+          hint: result.error.hint,
+          code: result.error.code
+        });
         throw new Error('Failed to update profile');
       }
       
-      console.log("User answer updated successfully");
+      console.log("✅ User answer updated successfully");
+      console.log("📊 Answer update result:", result);
     } catch (error) {
-      console.error('Error updating answer:', error);
+      console.error('❌ Error updating answer:', error);
+      console.error("❌ Full answer error object:", JSON.stringify(error, null, 2));
       throw error;
     }
   };

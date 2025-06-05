@@ -24,15 +24,17 @@ export function useProfileText({ userId, updateProfileData }: UseProfileTextProp
     }
     
     try {
+      console.log("🔄 Updating user name to:", name);
       await updateProfileData({ name });
       setUserName(name);
       
+      console.log("✅ User name updated successfully");
       toast({
         title: "Name updated",
         description: "Your name has been updated successfully.",
       });
     } catch (error) {
-      console.error("Error updating name:", error);
+      console.error("❌ Error updating name:", error);
       toast({
         title: "Error updating name",
         description: "There was an error updating your name. Please try again.",
@@ -50,15 +52,17 @@ export function useProfileText({ userId, updateProfileData }: UseProfileTextProp
     }
     
     try {
+      console.log("🔄 Updating user email to:", email);
       await updateProfileData({ email });
       setUserEmail(email);
       
+      console.log("✅ User email updated successfully");
       toast({
         title: "Email updated",
         description: "Your email has been updated successfully.",
       });
     } catch (error) {
-      console.error("Error updating email:", error);
+      console.error("❌ Error updating email:", error);
       toast({
         title: "Error updating email",
         description: "There was an error updating your email. Please try again.",
@@ -76,15 +80,17 @@ export function useProfileText({ userId, updateProfileData }: UseProfileTextProp
     }
     
     try {
+      console.log("🔄 Updating user title to:", title);
       await updateProfileData({ title });
       setUserTitle(title);
       
+      console.log("✅ User title updated successfully");
       toast({
         title: "Title updated",
         description: "Your title has been updated successfully.",
       });
     } catch (error) {
-      console.error("Error updating title:", error);
+      console.error("❌ Error updating title:", error);
       toast({
         title: "Error updating title",
         description: "There was an error updating your title. Please try again.",
@@ -102,15 +108,17 @@ export function useProfileText({ userId, updateProfileData }: UseProfileTextProp
     }
     
     try {
+      console.log("🔄 Updating phone number to:", phone);
       await updateProfileData({ phone_number: phone });
       setPhoneNumber(phone);
       
+      console.log("✅ Phone number updated successfully");
       toast({
         title: "Phone number updated",
         description: "Your phone number has been updated successfully.",
       });
     } catch (error) {
-      console.error("Error updating phone number:", error);
+      console.error("❌ Error updating phone number:", error);
       toast({
         title: "Error updating phone number",
         description: "There was an error updating your phone number. Please try again.",
@@ -128,15 +136,17 @@ export function useProfileText({ userId, updateProfileData }: UseProfileTextProp
     }
     
     try {
+      console.log("🔄 Updating about text to:", text);
       await updateProfileData({ about_text: text });
       setAboutText(text);
       
+      console.log("✅ About text updated successfully");
       toast({
         title: "About text updated",
         description: "Your about text has been updated successfully.",
       });
     } catch (error) {
-      console.error("Error updating about text:", error);
+      console.error("❌ Error updating about text:", error);
       toast({
         title: "Error updating about text",
         description: "There was an error updating your about text. Please try again.",

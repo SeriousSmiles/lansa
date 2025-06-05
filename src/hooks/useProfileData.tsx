@@ -30,6 +30,9 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
   const [hasInitialized, setHasInitialized] = useState(false);
   const { toast } = useToast();
   
+  // Debug logging for userId
+  console.log("🔍 useProfileData called with userId:", userId);
+  
   // Use specialized hooks
   const profileBasics = useProfileBasics(userId);
   const profileSkills = useProfileSkills({ userId, updateProfileData: profileBasics.updateProfileData });
@@ -41,6 +44,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     // Only load data once per userId
     if (!userId || hasInitialized) return;
     
+    console.log("🚀 Loading profile data for userId:", userId);
     loadProfileData();
   }, [userId, hasInitialized]);
 
@@ -50,16 +54,18 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     setIsLoading(true);
     
     try {
+      console.log("📥 Getting user answers...");
       // Get user's onboarding answers
       const answers = await getUserAnswers(userId);
       if (answers) {
         setUserAnswers(answers);
+        console.log("✅ User answers loaded:", answers);
       }
       
       await loadProfileFromDatabase(answers);
       setHasInitialized(true);
     } catch (error) {
-      console.error("Error loading profile data:", error);
+      console.error("❌ Error loading profile data:", error);
       toast({
         title: "Error loading profile",
         description: "Could not load your profile data.",
@@ -79,6 +85,8 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
   const loadProfileFromDatabase = async (answers: any) => {
     if (!userId) return;
     
+    console.log("🔍 Loading profile from database for userId:", userId);
+    
     // Try to fetch the user profile
     const { data: profileData, error } = await supabase
       .from('user_profiles')
@@ -87,16 +95,18 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
       .maybeSingle();
       
     if (error) {
-      console.error("Error fetching profile:", error);
+      console.error("❌ Error fetching profile:", error);
       throw error;
     }
     
     if (profileData) {
+      console.log("✅ Profile data found:", profileData);
       // If profile exists, set all the values from it
       populateFromExistingProfile(profileData, answers, profileBasics, profileSkills, profileExperience, profileEducation, profileImage);
       setProfessionalGoal(profileData.professional_goal || "");
       setBiggestChallenge(profileData.biggest_challenge || answers?.question2 || "Identifying my unique value proposition");
     } else {
+      console.log("ℹ️ No profile found, using generated data");
       // If no profile exists, use generated data
       populateFromGeneratedData(answers, userId, profileBasics, profileSkills, profileExperience, profileEducation);
       setBiggestChallenge(answers?.question2 || "Identifying my unique value proposition");
@@ -105,14 +115,17 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
 
   // Function to update professional goal
   const updateProfessionalGoal = async (goal: string) => {
+    console.log("🔄 Updating professional goal to:", goal);
     try {
       await profileBasics.updateProfileData({ professional_goal: goal });
       setProfessionalGoal(goal);
+      console.log("✅ Professional goal updated successfully");
       toast({
         title: "Professional goal updated",
         description: "Your professional goal has been saved.",
       });
     } catch (error) {
+      console.error("❌ Error updating professional goal:", error);
       toast({
         title: "Error updating goal",
         description: "Please try again later.",
@@ -124,14 +137,17 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
 
   // Function to update biggest challenge
   const updateBiggestChallenge = async (challenge: string) => {
+    console.log("🔄 Updating biggest challenge to:", challenge);
     try {
       await profileBasics.updateProfileData({ biggest_challenge: challenge });
       setBiggestChallenge(challenge);
+      console.log("✅ Biggest challenge updated successfully");
       toast({
         title: "Biggest challenge updated",
         description: "Your biggest challenge has been saved.",
       });
     } catch (error) {
+      console.error("❌ Error updating biggest challenge:", error);
       toast({
         title: "Error updating challenge",
         description: "Please try again later.",
