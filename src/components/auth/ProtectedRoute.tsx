@@ -10,22 +10,17 @@ export default function ProtectedRoute() {
   const { user, updateDisplayName } = useAuth();
   const location = useLocation();
   const [loading, setLoading] = useState(true);
-  const [initialCheck, setInitialCheck] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
 
   useEffect(() => {
-    // Add a small delay to ensure auth state is properly loaded
-    const timer = setTimeout(() => {
-      if (!user) {
-        setLoading(false);
-        setInitialCheck(true);
-        return;
-      }
-      
-      checkUserProfile();
-    }, 150);
+    if (!user) {
+      console.log('No user in ProtectedRoute, finishing loading');
+      setLoading(false);
+      return;
+    }
     
-    return () => clearTimeout(timer);
+    console.log('ProtectedRoute: Checking user profile for user:', user.id);
+    checkUserProfile();
     
     async function checkUserProfile() {
       if (user?.id) {
@@ -55,16 +50,13 @@ export default function ProtectedRoute() {
         } catch (error) {
           console.error("Failed to fetch user profile:", error);
         }
-        setLoading(false);
-      } else {
-        setLoading(false);
       }
-      setInitialCheck(true);
+      setLoading(false);
     }
-  }, [user, updateDisplayName, location.pathname]);
+  }, [user, updateDisplayName]);
 
-  // If we're still on the first load, show a loading indicator
-  if (!initialCheck) {
+  // Show loading while checking user status
+  if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-[rgba(253,248,242,1)]">
         <div className="w-16 h-16 border-4 border-[#FF6B4A] border-solid rounded-full border-t-transparent animate-spin mb-4"></div>
@@ -75,12 +67,13 @@ export default function ProtectedRoute() {
 
   // If there's no user, redirect to auth page
   if (!user) {
+    console.log('No user in ProtectedRoute, redirecting to auth');
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   // Special handling for card page - allow access regardless of onboarding status
   if (location.pathname === "/card") {
-    console.log("On card page, allowing access regardless of onboarding status");
+    console.log("On card page, allowing access");
     return <Outlet />;
   }
 
@@ -91,6 +84,6 @@ export default function ProtectedRoute() {
     return <Navigate to="/onboarding" state={{ from: location }} replace />;
   }
 
-  // If we get here, the user is authenticated, so allow access to the requested route
+  console.log('ProtectedRoute: Allowing access to', location.pathname);
   return <Outlet />;
 }
