@@ -1,7 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useProfileData } from "@/hooks/useProfileData";
 import {
   Sidebar,
   SidebarContent,
@@ -10,8 +9,9 @@ import {
   SidebarGroupContent,
   SidebarProvider,
 } from "@/components/ui/sidebar";
+import { Home, BookOpen, Video, User } from "lucide-react";
 import { DashboardSidebarHeader } from "./SidebarHeader";
-import { ProfileAwareSidebarMenu } from "./ProfileAwareSidebarMenu";
+import { SidebarMenuItems } from "./SidebarMenu";
 import { SidebarFooterContent } from "./SidebarFooter";
 import { MobileHeader } from "./MobileHeader";
 import { gsap } from "gsap";
@@ -24,16 +24,36 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children, userName, email, themeColor }: DashboardLayoutProps) {
-  const { signOut, user } = useAuth();
+  const { signOut } = useAuth();
   const mainContentRef = useRef<HTMLDivElement>(null);
   const [isContentVisible, setIsContentVisible] = useState(false);
-  
-  // Get profile data to access profile image
-  const { profileImage } = useProfileData(user?.id);
 
   const handleLogout = async () => {
     await signOut();
   };
+
+  const menuItems = [
+    {
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: Home,
+    },
+    {
+      title: "Resources",
+      url: "/resources",
+      icon: BookOpen,
+    },
+    {
+      title: "Content Library",
+      url: "/content",
+      icon: Video,
+    },
+    {
+      title: "My Profile",
+      url: "/profile",
+      icon: User,
+    }
+  ];
   
   // Animation for content loading
   useEffect(() => {
@@ -62,11 +82,7 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
             <SidebarGroup>
               <SidebarGroupLabel>Main Navigation</SidebarGroupLabel>
               <SidebarGroupContent>
-                <ProfileAwareSidebarMenu 
-                  themeColor={themeColor} 
-                  userName={userName}
-                  profileImage={profileImage}
-                />
+                <SidebarMenuItems items={menuItems} themeColor={themeColor} />
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>

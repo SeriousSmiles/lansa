@@ -1,22 +1,11 @@
 
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { LoginForm } from "@/components/auth/LoginForm";
 
 export default function IndexPage() {
   const [isLogin, setIsLogin] = useState(false);
-  const { user } = useAuth();
-
-  console.log('Index page - user:', user ? 'logged in' : 'not logged in');
-
-  // If user is authenticated, redirect to dashboard
-  if (user) {
-    console.log('User is authenticated, redirecting to dashboard');
-    return <Navigate to="/dashboard" replace />;
-  }
 
   return (
     <AuthLayout imageSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/21db5620684d4cbbfb27b61d5dfc0736c8a7cd9c?placeholderIfAbsent=true">

@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -28,9 +28,9 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
-              {/* Default route now handles both authenticated and unauthenticated users */}
-              <Route path="/" element={<PageTransition><Index /></PageTransition>} />
               <Route path="/auth" element={<PageTransition><Index /></PageTransition>} />
+              {/* Change the default route to redirect to /auth instead of /dashboard */}
+              <Route path="/" element={<Navigate to="/auth" replace />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/onboarding" element={<PageTransition><Onboarding /></PageTransition>} />
                 <Route path="/card" element={<PageTransition><Card /></PageTransition>} />

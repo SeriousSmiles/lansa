@@ -1,11 +1,13 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
+import { getUserAnswers, hasCompletedOnboarding } from "@/services/question";
+import { supabase } from "@/integrations/supabase/client";
 
 interface LoginFormData {
   email: string;
@@ -18,6 +20,7 @@ export function LoginForm() {
   const [loginError, setLoginError] = useState<string | null>(null);
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const onSubmit = async (data: LoginFormData) => {
     if (isLoading) return;
@@ -26,22 +29,36 @@ export function LoginForm() {
     setLoginError(null);
     
     try {
-      console.log('Starting login process...');
       const { error } = await signIn(data.email, data.password);
       
       if (error) {
-        console.error('Login error:', error);
         setLoginError(error.message || "Invalid login credentials");
         setIsLoading(false);
         return;
       }
       
-      console.log('Login successful, redirecting to dashboard...');
-      // Simple redirect - let the auth context and protected routes handle the rest
-      navigate('/dashboard', { replace: true });
+      // Get the current session to check user ID
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user?.id) {
+        // Check if user has completed onboarding
+        const userAnswers = await getUserAnswers(session.user.id);
+        const onboardingCompleted = hasCompletedOnboarding(userAnswers);
+        
+        if (onboardingCompleted) {
+          // User has completed onboarding, go to dashboard
+          navigate('/dashboard', { replace: true });
+        } else {
+          // User hasn't completed onboarding, go to onboarding
+          navigate('/onboarding', { replace: true });
+        }
+      } else {
+        // Fallback to onboarding if we can't determine status
+        navigate('/onboarding', { replace: true });
+      }
       
     } catch (error: any) {
-      console.error('Login exception:', error);
+      console.error(error);
       setLoginError(error.message || "An error occurred during login");
       setIsLoading(false);
     }

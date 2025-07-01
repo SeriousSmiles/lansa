@@ -18,23 +18,14 @@ export function OverviewTab({ userName, role, goal, insight, highlightActions, i
   const { user } = useAuth();
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Growth Card System - Featured prominently at the top */}
-      <div className="bg-gradient-to-br from-white to-gray-50/50 rounded-xl shadow-sm border border-gray-200/50 p-6">
-        <GrowthCardSection userId={user?.id} />
-      </div>
+      <GrowthCardSection userId={user?.id} />
       
-      {/* Main Dashboard Content */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Profile Card - Takes up 1 column */}
-        <div className="xl:col-span-1">
-          <ProfileCard role={role} goal={goal} />
-        </div>
-        
-        {/* Recommended Actions - Takes up 2 columns */}
-        <div className="xl:col-span-2">
-          <RecommendedActions role={role} highlightActions={highlightActions} />
-        </div>
+      {/* Existing Overview Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ProfileCard role={role} goal={goal} />
+        <RecommendedActions role={role} highlightActions={highlightActions} />
       </div>
     </div>
   );
