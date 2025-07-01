@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -67,18 +66,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Handle auth state changes
-  const handleAuthStateChange = async (session: Session | null) => {
+  // Handle auth state changes - CRITICAL: Keep this synchronous to prevent deadlocks
+  const handleAuthStateChange = (session: Session | null) => {
+    console.log('Auth state changed:', session ? 'logged in' : 'logged out');
     setSession(session);
     
     if (session?.user) {
-      const displayName = await fetchUserProfile(session.user.id);
-      
+      // Set basic user info immediately
       setUser({
         id: session.user.id,
         email: session.user.email,
-        displayName: displayName || session.user.email?.split('@')[0] || 'Lansa User'
+        displayName: session.user.email?.split('@')[0] || 'Lansa User'
       });
+      
+      // Defer profile fetching to avoid blocking auth state updates
+      setTimeout(() => {
+        fetchUserProfile(session.user.id).then(displayName => {
+          if (displayName) {
+            setUser(prev => prev ? { ...prev, displayName } : null);
+          }
+        });
+      }, 0);
     } else {
       setUser(null);
     }
@@ -87,18 +95,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Clean up any stale auth state before initializing
-    const cleanupStorage = () => {
-      // Clear any potentially corrupted session data
-      const currentSession = localStorage.getItem('sb-hrmklkcdxkeyttboosgr-auth-token');
-      if (currentSession && !JSON.parse(currentSession)?.access_token) {
-        localStorage.removeItem('sb-hrmklkcdxkeyttboosgr-auth-token');
-      }
-    };
+    console.log('Setting up auth listener...');
     
-    cleanupStorage();
-
-    // Set up auth state listener FIRST (critical for preventing double login issue)
+    // Set up auth state listener FIRST (critical for preventing issues)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       handleAuthStateChange(session);
     });
@@ -108,7 +107,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       handleAuthStateChange(session);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('Cleaning up auth listener...');
+      subscription.unsubscribe();
+    };
   }, []);
 
   const value = {
@@ -116,18 +118,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     session,
     signIn: async (email: string, password: string) => {
       try {
-        // Clear existing session data before signing in to prevent conflicts
-        localStorage.removeItem('sb-hrmklkcdxkeyttboosgr-auth-token');
-        
+        console.log('Attempting sign in...');
         const result = await supabase.auth.signInWithPassword({ email, password });
         
-        // If login is successful but we're still waiting for the auth state to update
-        // ensure we don't show an error
-        if (!result.error && result.data?.session) {
-          return { error: null };
+        if (result.error) {
+          console.error('Sign in error:', result.error);
+          return { error: result.error };
         }
         
-        return result;
+        console.log('Sign in successful');
+        return { error: null };
       } catch (error) {
         console.error("Error signing in:", error);
         toast.error("Failed to sign in. Please check your internet connection.");
@@ -136,7 +136,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     signUp: async (email: string, password: string) => {
       try {
-        return await supabase.auth.signUp({ email, password });
+        const redirectUrl = `${window.location.origin}/`;
+        return await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            emailRedirectTo: redirectUrl
+          }
+        });
       } catch (error) {
         console.error("Error signing up:", error);
         toast.error("Failed to sign up. Please check your internet connection.");
