@@ -37,8 +37,9 @@ export async function getProfileStatus(userId: string): Promise<ProfileStatus> {
       (profileData?.skills && Array.isArray(profileData.skills) && profileData.skills.length > 0)
     );
 
-    // Profile is considered "ready" if user has basic info and either about text or professional info
-    const isProfileReady = hasBasicInfo && (hasAboutText || hasProfessionalInfo);
+    // Profile is considered "ready" for dashboard if onboarding is complete
+    // Full profile completeness is checked separately for other features
+    const isProfileReady = isOnboardingComplete;
 
     return {
       isOnboardingComplete,
