@@ -21,18 +21,30 @@ export function ProfilePage() {
     if (location.state?.fromStarter && location.state?.starterData) {
       const { headline, summary } = location.state.starterData;
       
-      // Pre-fill profile with starter data
-      if (headline && profile.updateUserTitle) {
-        profile.updateUserTitle(headline).catch(console.error);
-      }
-      if (summary && profile.updateAboutText) {
-        profile.updateAboutText(summary).catch(console.error);
-      }
+      // Pre-fill profile with starter data, but handle errors gracefully
+      const updateProfile = async () => {
+        try {
+          if (headline && profile.updateUserTitle) {
+            await profile.updateUserTitle(headline);
+          }
+          if (summary && profile.updateAboutText) {
+            await profile.updateAboutText(summary);
+          }
+          
+          // Show welcome message only if updates succeed
+          toast.success("Profile started! You can now customize everything to make it uniquely yours.", {
+            duration: 4000
+          });
+        } catch (error) {
+          console.error("Error updating profile with starter data:", error);
+          // Show success message anyway since the data is there
+          toast.success("Profile starter loaded! You can now customize everything.", {
+            duration: 4000
+          });
+        }
+      };
       
-      // Show welcome message
-      toast.success("Profile started! You can now customize everything to make it uniquely yours.", {
-        duration: 4000
-      });
+      updateProfile();
       
       // Clear the navigation state to prevent re-applying on refresh
       window.history.replaceState({}, document.title);

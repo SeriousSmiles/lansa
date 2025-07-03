@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserAnswers } from "@/services/question/types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -70,16 +70,17 @@ export function SimplifiedOnboardingForm({
     }
   };
 
-  // If already complete, redirect to profile-starter
-  if (isComplete() && answers.onboarding_completed) {
-    navigate('/profile-starter', { 
-      state: { 
-        identity: answers.identity,
-        desiredOutcome: answers.desired_outcome
-      } 
-    });
-    return null;
-  }
+  // If already complete, redirect to profile-starter using useEffect
+  useEffect(() => {
+    if (isComplete() && answers.onboarding_completed) {
+      navigate('/profile-starter', { 
+        state: { 
+          identity: answers.identity,
+          desired_outcome: answers.desired_outcome
+        } 
+      });
+    }
+  }, [isComplete, answers, navigate]);
 
   const currentQuestion = essentialQuestions[currentQuestionIndex];
   if (!currentQuestion) {

@@ -246,14 +246,25 @@ export default function ProfileStarter() {
             >
               Make This My Public Profile
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/onboarding')}
-              className="text-lg py-6 px-8 h-auto rounded-lg w-full md:w-auto animate-scale-in"
-              style={{ animationDelay: '0.3s' }}
-            >
-              Start Over
-            </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              // Clear onboarding completion and restart
+              if (user?.id) {
+                const resetAnswers = { ...userAnswers, onboarding_completed: false };
+                // Don't await this, just navigate immediately
+                getUserAnswers(user.id).then(() => {
+                  navigate('/onboarding', { replace: true });
+                });
+              } else {
+                navigate('/onboarding', { replace: true });
+              }
+            }}
+            className="text-lg py-6 px-8 h-auto rounded-lg w-full md:w-auto animate-scale-in"
+            style={{ animationDelay: '0.3s' }}
+          >
+            Start Over
+          </Button>
           </div>
         </div>
       </main>
