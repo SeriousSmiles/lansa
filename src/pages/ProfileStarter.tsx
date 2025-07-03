@@ -27,7 +27,7 @@ export default function ProfileStarter() {
       try {
         // Try to get from navigation state first
         const stateAnswers = location.state;
-        if (stateAnswers?.identity && stateAnswers?.desiredOutcome) {
+        if (stateAnswers?.identity && stateAnswers?.desired_outcome) {
           setUserAnswers(stateAnswers);
         } else {
           // Fallback to fetching from database
