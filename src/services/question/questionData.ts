@@ -1,24 +1,50 @@
 import { OnboardingQuestion } from "./types";
 
-// Define all questions across steps
+// PHASE 1: Simplified 2-question onboarding for speed-to-value
+export const essentialQuestions: OnboardingQuestion[] = [
+  {
+    id: "desired_outcome",
+    question: "What are you trying to achieve?",
+    options: [
+      "Land the job I really want",
+      "Get recognition for my creative work", 
+      "Gain clarity on my professional direction",
+      "Attract better clients and opportunities",
+      "Build confidence in how I present myself"
+    ]
+  },
+  {
+    id: "identity",
+    question: "How do you see yourself professionally?",
+    options: [
+      "Freelancer",
+      "Job-seeker", 
+      "Creative Professional",
+      "Entrepreneur",
+      "Visionary"
+    ]
+  }
+];
+
+// Legacy questions - keeping for backward compatibility
 export const demographicsQuestions: OnboardingQuestion[] = [
   {
     id: "gender",
     question: "What's your gender?",
     options: [
       "Male",
-      "Female",
+      "Female", 
       "Prefer not to say",
       "Prefer to self-describe"
     ]
   },
   {
     id: "age_group",
-    question: "What's your age range?",
+    question: "What's your age range?", 
     options: [
       "Under 18",
       "18–24",
-      "25–34",
+      "25–34", 
       "35–44",
       "45–54",
       "55+"
@@ -34,7 +60,7 @@ export const identityQuestions: OnboardingQuestion[] = [
       "Freelancer",
       "Job-seeker",
       "Student",
-      "Entrepreneur",
+      "Entrepreneur", 
       "Visionary"
     ]
   }

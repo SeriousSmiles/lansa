@@ -39,7 +39,14 @@ export function QuestionCard({
     "Entrepreneur": "Business builders turning ideas into sustainable ventures",
     "Visionary": "Forward-thinkers with ambitious goals and innovative perspectives",
     
-    // Outcome clarifying text
+    // New simplified outcome clarifying text
+    "Land the job I really want": "Stand out from other candidates and get noticed by the right employers",
+    "Get recognition for my creative work": "Build credibility and attract opportunities in your creative field", 
+    "Gain clarity on my professional direction": "Discover what makes you unique and where to focus your energy",
+    "Attract better clients and opportunities": "Position yourself to work with ideal clients who value your expertise",
+    "Build confidence in how I present myself": "Present yourself authentically and powerfully in any professional setting",
+    
+    // Legacy outcome clarifying text - keeping for backward compatibility
     "Be taken seriously as a freelancer or creative professional": "Establish credibility and attract quality clients in your niche",
     "Stand out and get hired for the kind of job I really want": "Differentiate yourself from other candidates in competitive markets",
     "Figure out what makes me different and valuable": "Discover and articulate your unique professional strengths",
@@ -60,11 +67,28 @@ export function QuestionCard({
     }
     
     // Identity icons
-    if (["Freelancer", "Job-seeker", "Student", "Entrepreneur", "Visionary"].includes(option)) {
+    if (["Freelancer", "Job-seeker", "Student", "Entrepreneur", "Visionary", "Creative Professional"].includes(option)) {
       return <Briefcase size={24} className="text-white" />;
     }
     
-    // Outcome icons
+    // New simplified outcome icons
+    if (option === "Land the job I really want") {
+      return <Star size={24} className="text-white" />;
+    }
+    if (option === "Get recognition for my creative work") {
+      return <Award size={24} className="text-white" />;
+    }
+    if (option === "Gain clarity on my professional direction") {
+      return <Lightbulb size={24} className="text-white" />;
+    }
+    if (option === "Attract better clients and opportunities") {
+      return <Rocket size={24} className="text-white" />;
+    }
+    if (option === "Build confidence in how I present myself") {
+      return <Check size={24} className="text-white" />;
+    }
+    
+    // Legacy outcome icons - keeping for backward compatibility
     if (option === "Be taken seriously as a freelancer or creative professional") {
       return <Award size={24} className="text-white" />;
     }

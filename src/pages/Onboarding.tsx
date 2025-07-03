@@ -6,11 +6,9 @@ import { toast } from "sonner";
 import { 
   getUserAnswers, 
   saveUserAnswers, 
-  demographicsQuestions,
-  identityQuestions,
-  outcomeQuestions
+  essentialQuestions
 } from "@/services/question";
-import { MultiStepForm } from "@/components/onboarding/MultiStepForm";
+import { SimplifiedOnboardingForm } from "@/components/onboarding/SimplifiedOnboardingForm";
 
 export default function Onboarding() {
   const [isLoading, setIsLoading] = useState(true);
@@ -78,12 +76,9 @@ export default function Onboarding() {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-8">
-        <MultiStepForm
+        <SimplifiedOnboardingForm
           initialAnswers={userAnswers}
           onSaveAnswers={handleSaveAnswers}
-          demographicsQuestions={demographicsQuestions}
-          identityQuestions={identityQuestions}
-          outcomeQuestions={outcomeQuestions}
         />
       </main>
 

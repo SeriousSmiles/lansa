@@ -8,6 +8,7 @@ import { PageTransition } from "@/components/transitions/PageTransition";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
+import ProfileStarter from "./pages/ProfileStarter";
 import Profile from "./pages/Profile";
 import SharedProfile from "./pages/SharedProfile";
 import Dashboard from "./pages/Dashboard";
@@ -33,6 +34,7 @@ const App = () => {
               <Route path="/" element={<Navigate to="/auth" replace />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/onboarding" element={<PageTransition><Onboarding /></PageTransition>} />
+                <Route path="/profile-starter" element={<PageTransition><ProfileStarter /></PageTransition>} />
                 <Route path="/card" element={<PageTransition><Card /></PageTransition>} />
                 <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
                 <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />

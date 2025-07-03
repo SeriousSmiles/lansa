@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserAnswers, hasCompletedOnboarding } from "@/services/question";
+import { getProfileStatus } from "@/services/profileStatus";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,6 +13,7 @@ export default function ProtectedRoute() {
   const [loading, setLoading] = useState(true);
   const [initialCheck, setInitialCheck] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
+  const [profileReady, setProfileReady] = useState(false);
 
   useEffect(() => {
     // Add a small delay to ensure auth state is properly loaded
@@ -43,14 +45,14 @@ export default function ProtectedRoute() {
             }
           }
           
-          // Check if user has completed onboarding
+          // Check onboarding and profile status
           const userAnswers = await getUserAnswers(user.id);
-          console.log("User answers in ProtectedRoute:", userAnswers);
-          
           const completed = hasCompletedOnboarding(userAnswers);
-          console.log("Onboarding completed:", completed);
-          
           setOnboardingCompleted(completed);
+          
+          // Check if profile is ready for dashboard access
+          const profileStatus = await getProfileStatus(user.id);
+          setProfileReady(profileStatus.isProfileReady);
           
         } catch (error) {
           console.error("Failed to fetch user profile:", error);
@@ -85,10 +87,15 @@ export default function ProtectedRoute() {
   }
 
   // Check if the user is accessing the dashboard page
-  if (location.pathname === "/dashboard" && !onboardingCompleted) {
-    console.log("User hasn't completed onboarding, redirecting to onboarding");
-    toast.info("Please complete onboarding before accessing the dashboard");
-    return <Navigate to="/onboarding" state={{ from: location }} replace />;
+  if (location.pathname === "/dashboard") {
+    if (!onboardingCompleted) {
+      toast.info("Please complete onboarding first");
+      return <Navigate to="/onboarding" state={{ from: location }} replace />;
+    }
+    if (!profileReady) {
+      toast.info("Complete your profile to unlock your dashboard");
+      return <Navigate to="/profile" state={{ from: location }} replace />;
+    }
   }
 
   // If we get here, the user is authenticated, so allow access to the requested route
