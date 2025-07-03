@@ -87,7 +87,7 @@ export const CompletionCard: React.FC<CompletionCardProps> = ({
               </p>
             ) : (
               <p className="text-xl text-[#2E2E2E] font-medium relative">
-                {displayedText}
+                "{displayedText}"
                 {isTyping && (
                   <span className="inline-block w-0.5 h-5 bg-[#2E2E2E] ml-0.5 animate-ping"></span>
                 )}
