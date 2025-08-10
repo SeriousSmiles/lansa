@@ -1,6 +1,5 @@
-
-import { ProfilePage } from "@/components/profile/ProfilePage";
+import ProfileStudent from "./ProfileStudent";
 
 export default function Profile() {
-  return <ProfilePage />;
+  return <ProfileStudent />;
 }
