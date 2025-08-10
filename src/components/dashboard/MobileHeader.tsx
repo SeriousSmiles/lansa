@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 import { getContrastTextColor } from "@/utils/colorUtils";
 
 interface MobileHeaderProps {
@@ -26,12 +27,17 @@ export function MobileHeader({ themeColor }: MobileHeaderProps) {
           className="aspect-[2.7] object-contain w-[92px]"
         />
       </Link>
-      <SidebarTrigger 
-        style={themeColor ? { 
-          color: themeColor,
-          ...(isDarkTheme && { backgroundColor: 'rgba(0, 0, 0, 0.1)' })
-        } : {}} 
-      />
+      <div className="flex items-center gap-2">
+        <Link to="/profile">
+          <Button size="sm" className="btn-animate">Resume Builder</Button>
+        </Link>
+        <SidebarTrigger 
+          style={themeColor ? { 
+            color: themeColor,
+            ...(isDarkTheme && { backgroundColor: 'rgba(0, 0, 0, 0.1)' })
+          } : {}} 
+        />
+      </div>
     </div>
   );
 }

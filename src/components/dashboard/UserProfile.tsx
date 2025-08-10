@@ -51,7 +51,7 @@ export function UserProfile({ userName, email, handleLogout, themeColor }: UserP
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem asChild>
-              <Link to="/profile">Profile</Link>
+              <Link to="/profile">Resume Builder</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to="/settings">Settings</Link>

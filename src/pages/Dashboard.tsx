@@ -12,6 +12,9 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { toast } from "sonner";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { useActionTracking } from "@/hooks/useActionTracking";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { ProfileCard } from "@/components/dashboard/overview/ProfileCard";
 
 export default function Dashboard() {
   const [userAnswers, setUserAnswers] = useState<any>(null);
@@ -130,16 +133,28 @@ export default function Dashboard() {
   return (
     <DashboardLayout userName={userName} email={user?.email || ""}>
       <div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
-        <h1 className="text-2xl md:text-3xl font-bold mb-4 animate-fade-in">Dashboard</h1>
+        <div className="flex items-center justify-between mb-4 animate-fade-in">
+          <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
+          <Link to="/profile">
+            <Button className="btn-animate">Resume Builder</Button>
+          </Link>
+        </div>
         
-        <DashboardTabs
-          userName={userName}
-          role={role}
-          goal={goal}
-          insight={insight}
-          highlightActions={highlightActions}
-          isLoading={isLoadingInsight}
-        />
+        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+          <aside className="order-last lg:order-first lg:sticky lg:top-4">
+            <ProfileCard role={role} goal={goal} />
+          </aside>
+          <section>
+            <DashboardTabs
+              userName={userName}
+              role={role}
+              goal={goal}
+              insight={insight}
+              highlightActions={highlightActions}
+              isLoading={isLoadingInsight}
+            />
+          </section>
+        </div>
       </div>
     </DashboardLayout>
   );

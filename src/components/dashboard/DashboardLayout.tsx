@@ -49,7 +49,7 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
       icon: Video,
     },
     {
-      title: "My Profile",
+      title: "Resume Builder",
       url: "/profile",
       icon: User,
     }
