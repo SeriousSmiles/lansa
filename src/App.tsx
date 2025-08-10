@@ -20,6 +20,8 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { PROTOTYPE_MODE } from "./config";
 import DashboardStudent from "./pages/DashboardStudent";
 import PublicProfileStudent from "./pages/PublicProfileStudent";
+import OnboardingStudent from "./pages/OnboardingStudent";
+import ProfileStarterStudent from "./pages/ProfileStarterStudent";
 
 const queryClient = new QueryClient();
 
