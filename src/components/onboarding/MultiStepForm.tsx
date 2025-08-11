@@ -143,7 +143,7 @@ export function MultiStepForm({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full max-w-2xl mx-auto">
+    <div className="flex flex-col items-center justify-center w-full max-w-[1100px] mx-auto">
       {renderCurrentStep()}
     </div>
   );

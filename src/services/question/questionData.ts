@@ -3,17 +3,6 @@ import { OnboardingQuestion } from "./types";
 // PHASE 1: Simplified 2-question onboarding for speed-to-value
 export const essentialQuestions: OnboardingQuestion[] = [
   {
-    id: "desired_outcome",
-    question: "What are you trying to achieve?",
-    options: [
-      "Land the job I really want",
-      "Get recognition for my creative work", 
-      "Gain clarity on my professional direction",
-      "Attract better clients and opportunities",
-      "Build confidence in how I present myself"
-    ]
-  },
-  {
     id: "identity",
     question: "How do you see yourself professionally?",
     options: [
@@ -22,6 +11,17 @@ export const essentialQuestions: OnboardingQuestion[] = [
       "Creative Professional",
       "Entrepreneur",
       "Visionary"
+    ]
+  },
+  {
+    id: "desired_outcome",
+    question: "What are you trying to achieve?",
+    options: [
+      "Land the job I really want",
+      "Get recognition for my creative work", 
+      "Gain clarity on my professional direction",
+      "Attract better clients and opportunities",
+      "Build confidence in how I present myself"
     ]
   }
 ];
