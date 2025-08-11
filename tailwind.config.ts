@@ -8,8 +8,10 @@ export default {
 		"./components/**/*.{ts,tsx}",
 		"./app/**/*.{ts,tsx}",
 		"./src/**/*.{ts,tsx}",
+		"./node_modules/@relume_io/relume-ui/dist/**/*.{js,ts,jsx,tsx}",
 	],
 	prefix: "",
+	presets: [require("@relume_io/relume-tailwind")],
 	theme: {
 		container: {
 			center: true,
