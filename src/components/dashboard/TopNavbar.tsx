@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getContrastTextColor } from "@/utils/colorUtils";
 import { LucideIcon } from "lucide-react";
+import { UserProfile } from "./UserProfile";
 
 type MenuItem = {
   title: string;
@@ -61,6 +62,12 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
           <Link to="/profile">
             <Button className="btn-animate" size="sm">Resume Builder</Button>
           </Link>
+          <UserProfile 
+            userName={userName}
+            email={email}
+            handleLogout={onLogout}
+            themeColor={themeColor}
+          />
         </div>
       </div>
     </header>
