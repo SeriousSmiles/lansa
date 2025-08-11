@@ -135,9 +135,6 @@ export default function Dashboard() {
       <div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
         <div className="flex items-center justify-between mb-4 animate-fade-in">
           <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
-          <Link to="/profile">
-            <Button className="btn-animate">Resume Builder</Button>
-          </Link>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">

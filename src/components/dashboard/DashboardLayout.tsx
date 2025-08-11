@@ -1,20 +1,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
-import { Home, BookOpen, Video, User } from "lucide-react";
-import { DashboardSidebarHeader } from "./SidebarHeader";
-import { SidebarMenuItems } from "./SidebarMenu";
-import { SidebarFooterContent } from "./SidebarFooter";
-import { MobileHeader } from "./MobileHeader";
 import { gsap } from "gsap";
+import { TopNavbar } from "./TopNavbar";
+import { Home, BookOpen, Video, User } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -73,35 +62,19 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
   }, []);
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-[rgba(253,248,242,1)]">
-        <Sidebar className="animate-fade-in-left">
-          <DashboardSidebarHeader />
-          
-          <SidebarContent className="mt-4 lg:mt-6">
-            <SidebarGroup>
-              <SidebarGroupLabel>Main Navigation</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenuItems items={menuItems} themeColor={themeColor} />
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-          
-          <SidebarFooterContent 
-            userName={userName} 
-            email={email} 
-            handleLogout={handleLogout}
-            themeColor={themeColor}
-          />
-        </Sidebar>
-        
-        <main className="flex-1">
-          <MobileHeader themeColor={themeColor} />
-          <div ref={mainContentRef} className="container mx-auto pt-0 md:pt-0">
-            {children}
-          </div>
-        </main>
-      </div>
-    </SidebarProvider>
+    <div className="flex min-h-screen w-full bg-[rgba(253,248,242,1)] flex-col">
+      <TopNavbar 
+        items={menuItems}
+        userName={userName}
+        email={email}
+        onLogout={handleLogout}
+        themeColor={themeColor}
+      />
+      <main className="flex-1">
+        <div ref={mainContentRef} className="container mx-auto pt-0 md:pt-0">
+          {children}
+        </div>
+      </main>
+    </div>
   );
 }
