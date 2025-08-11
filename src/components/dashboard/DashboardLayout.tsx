@@ -71,7 +71,7 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
         themeColor={themeColor}
       />
       <main className="flex-1">
-        <div ref={mainContentRef} className="container mx-auto pt-0 md:pt-0">
+        <div ref={mainContentRef} className="w-full pt-0 md:pt-0">
           {children}
         </div>
       </main>

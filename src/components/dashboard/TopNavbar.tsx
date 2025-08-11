@@ -24,10 +24,10 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
 
   return (
     <header
-      className="sticky top-0 z-40 border-b bg-background"
+      className="sticky top-0 z-40 w-full border-b bg-background"
       style={themeColor ? { borderColor: `${themeColor}30` } : {}}
     >
-      <div className="container mx-auto px-4 md:px-6 h-14 flex items-center justify-between gap-4">
+      <div className="flex w-full flex-wrap items-center justify-between px-6 lg:px-8 h-14 gap-4">
         {/* Logo */}
         <Link to="/dashboard" className="flex items-center gap-2">
           <img
