@@ -1,17 +1,16 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { MoreHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UserProfileProps {
   userName: string;
@@ -21,48 +20,65 @@ interface UserProfileProps {
 }
 
 export function UserProfile({ userName, email, handleLogout, themeColor }: UserProfileProps) {
+  const { user } = useAuth();
+  const [profileImage, setProfileImage] = useState<string>("");
+
+  useEffect(() => {
+    let isMounted = true;
+    const load = async () => {
+      if (!user?.id) return;
+      const { data, error } = await supabase
+.from("user_profiles")
+        .select("profile_image")
+        .eq("user_id", user.id)
+        .single();
+      if (!error && data?.profile_image && isMounted) {
+        setProfileImage(data.profile_image);
+      }
+    };
+    load();
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id]);
+
   return (
-    <div className="flex items-center justify-between px-2">
-      <div className="grid grid-cols-[max-content_1fr] items-center gap-3">
-        <div 
-          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-          style={{ backgroundColor: themeColor || "#FF6B4A" }}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label="Open user menu"
+          className="rounded-full focus:outline-none focus:ring-2 focus:ring-ring"
         >
-          {userName.charAt(0).toUpperCase()}
-        </div>
-        <div>
-          <p className="text-sm font-medium">{userName}</p>
+          <Avatar className="h-10 w-10">
+            {profileImage ? (
+              <AvatarImage src={profileImage} alt={`${userName} avatar`} />
+            ) : (
+              <AvatarFallback
+                className="text-white font-bold"
+                style={{ backgroundColor: themeColor || "#FF6B4A" }}
+              >
+                {userName?.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            )}
+          </Avatar>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <div className="px-3 py-2">
+          <p className="text-sm font-medium leading-none">{userName}</p>
           <p className="text-xs text-muted-foreground">{email}</p>
         </div>
-      </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="rounded-full h-8 w-8"
-            style={themeColor ? { color: themeColor } : {}}
-          >
-            <MoreHorizontal className="h-5 w-5" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem asChild>
-              <Link to="/profile">Resume Builder</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/settings">Settings</Link>
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout}>
-            Log out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link to="/profile">Resume Builder</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/settings">Settings</Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
