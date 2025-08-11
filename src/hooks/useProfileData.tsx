@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserAnswers, getProfileRole, getProfileGoal } from "@/services/question";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +29,9 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
   const [biggestChallenge, setBiggestChallenge] = useState("");
   const { toast } = useToast();
   
+  // Prevent duplicate fetches and race conditions
+  const isFetchingRef = useRef(false);
+  
   // Use specialized hooks
   const profileBasics = useProfileBasics(userId);
   const profileSkills = useProfileSkills({ userId, updateProfileData: profileBasics.updateProfileData });
@@ -42,7 +45,9 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
   }, [userId]);
 
   const loadProfileData = async () => {
-    if (!userId) return;
+    if (!userId || isFetchingRef.current) return;
+    isFetchingRef.current = true;
+    setIsLoading(true);
     
     // Get user's onboarding answers
     const answers = await getUserAnswers(userId);
@@ -62,9 +67,10 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
       
       // If there's an error, set up basic profile data
       handleProfileLoadError(answers, profileSkills, profileExperience, profileEducation);
+    } finally {
+      setIsLoading(false);
+      isFetchingRef.current = false;
     }
-    
-    setIsLoading(false);
   };
 
   // Load profile from the database
@@ -76,9 +82,9 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
       .from('user_profiles')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
       
-    if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
+    if (error) {
       throw error;
     }
     

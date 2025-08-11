@@ -49,7 +49,7 @@ export function ProfilePage() {
       // Clear the navigation state to prevent re-applying on refresh
       window.history.replaceState({}, document.title);
     }
-  }, [location.state, profile.updateUserTitle, profile.updateAboutText]);
+  }, [location.state]);
   
   if (profile.isLoading) {
     return (
