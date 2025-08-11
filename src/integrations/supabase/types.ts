@@ -324,6 +324,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles_public: {
+        Row: {
+          about_text: string | null
+          cover_color: string | null
+          created_at: string
+          education: Json | null
+          experiences: Json | null
+          highlight_color: string | null
+          name: string | null
+          professional_goal: string | null
+          profile_image: string | null
+          skills: string[] | null
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          about_text?: string | null
+          cover_color?: string | null
+          created_at?: string
+          education?: Json | null
+          experiences?: Json | null
+          highlight_color?: string | null
+          name?: string | null
+          professional_goal?: string | null
+          profile_image?: string | null
+          skills?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          about_text?: string | null
+          cover_color?: string | null
+          created_at?: string
+          education?: Json | null
+          experiences?: Json | null
+          highlight_color?: string | null
+          name?: string | null
+          professional_goal?: string | null
+          profile_image?: string | null
+          skills?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

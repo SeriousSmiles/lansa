@@ -57,12 +57,12 @@ export function useSharedProfileData(urlParam: string | undefined) {
 
     // Real-time subscription
     const channel = supabase
-      .channel('public:user_profiles')
+      .channel('public:user_profiles_public')
       .on('postgres_changes', 
         { 
           event: 'UPDATE', 
           schema: 'public', 
-          table: 'user_profiles',
+          table: 'user_profiles_public',
           filter: `user_id=eq.${userId}`
         }, 
         (payload) => {
@@ -89,10 +89,9 @@ export function useSharedProfileData(urlParam: string | undefined) {
     try {
       // Fetch the user profile first
       const { data: profileData, error: profileError } = await supabase
-        .from('user_profiles')
+        .from('user_profiles_public')
         .select('*')
         .eq('user_id', userId)
-        .eq('is_public', true)
         .maybeSingle();
         
       if (profileError) {
@@ -129,44 +128,23 @@ export function useSharedProfileData(urlParam: string | undefined) {
         
       const processedSkills = processSkillsData(profileData?.skills, answers);
       
-      // Use profile title if available, otherwise fall back to generated role
-      const role = profileData?.title || 
-                  getProfileRole(answers?.question1, answers?.identity) || 
-                  profileData?.identity || "Professional";
+      // Determine role and goal from safe sources (avoid sensitive fields)
+      const role = profileData?.title ||
+                   getProfileRole(answers?.question1, answers?.identity) ||
+                   "Professional";
       
-      // Use profile desired_outcome if available, otherwise fall back to generated goal
-      const goal = profileData?.desired_outcome || 
-                  getProfileGoal(answers?.question3, answers?.desired_outcome) || 
-                  "Advance my career";
+      const goal = getProfileGoal(answers?.question3, answers?.desired_outcome) ||
+                   "Advance my career";
       
-      // Get blocker from profile biggest_challenge or answers.question2 or use a default value
-      const blocker = profileData?.biggest_challenge || 
-                     answers?.question2 || 
-                     "Identifying my unique value proposition";
+      // Do not expose sensitive blocker info in public view
+      const blocker = answers?.question2 || "Identifying my unique value proposition";
       
-      // Create a properly typed UserProfile object from profileData
-      const typedUserProfile: UserProfile = {
-        user_id: profileData.user_id,
-        name: profileData.name,
-        email: profileData.email,
-        title: profileData.title,
-        about_text: profileData.about_text,
-        phone_number: profileData.phone_number,
-        cover_color: profileData.cover_color,
-        highlight_color: profileData.highlight_color,
-        profile_image: profileData.profile_image,
-        skills: profileData.skills,
-        experiences: processedExperiences,
-        education: processedEducation,
-        professional_goal: profileData.professional_goal,
-        biggest_challenge: profileData.biggest_challenge,
-        created_at: profileData.created_at,
-        updated_at: profileData.updated_at
-      };
+      // Do not include full internal profile object for public view
+      const typedUserProfile: UserProfile | null = null;
       
       // Create a properly typed profile object
       const profile: SharedProfileData = {
-        userProfile: typedUserProfile,
+        userProfile: null,
         userName: profileData?.name || userId.split('@')[0],
         role: role,
         goal: goal,
@@ -178,11 +156,11 @@ export function useSharedProfileData(urlParam: string | undefined) {
         coverColor: profileData?.cover_color || "#1A1F71",
         highlightColor: profileData?.highlight_color || "#FF6B4A",
         profileImage: profileData?.profile_image || "",
-        phoneNumber: profileData?.phone_number || "",
-        userEmail: profileData?.email || "",
+        phoneNumber: "",
+        userEmail: "",
         userTitle: profileData?.title || "",
         professionalGoal: profileData?.professional_goal || "",
-        biggestChallenge: profileData?.biggest_challenge || blocker
+        biggestChallenge: ""
       };
       
       console.log("Processed profile data:", profile);
