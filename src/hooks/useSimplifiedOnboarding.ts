@@ -11,8 +11,8 @@ export function useSimplifiedOnboarding({ initialAnswers }: UseSimplifiedOnboard
 
   // Check if we already have answers and should start from a later question
   const getInitialQuestionIndex = () => {
-    if (!answers.desired_outcome) return 0;
-    if (!answers.identity) return 1;
+    if (!answers.identity) return 0;
+    if (!answers.desired_outcome) return 1;
     return 2; // Both answered, ready to complete
   };
 
