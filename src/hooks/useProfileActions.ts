@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UseProfileActionsProps {
   coverColor: string;
@@ -43,8 +44,21 @@ export function useProfileActions({
     onActionComplete?.();
   };
   
-  const handleShare = () => {
+  const handleShare = async () => {
     if (!userId) return;
+
+    try {
+      // Mark profile as public before sharing
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ is_public: true })
+        .eq('user_id', userId);
+      if (error) {
+        console.error('Failed to mark profile as public:', error);
+      }
+    } catch (e) {
+      console.error('Error updating profile visibility:', e);
+    }
     
     // Format the user name for the URL (remove spaces, lowercase)
     const urlFriendlyName = userName 

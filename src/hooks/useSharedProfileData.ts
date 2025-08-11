@@ -92,6 +92,7 @@ export function useSharedProfileData(urlParam: string | undefined) {
         .from('user_profiles')
         .select('*')
         .eq('user_id', userId)
+        .eq('is_public', true)
         .maybeSingle();
         
       if (profileError) {

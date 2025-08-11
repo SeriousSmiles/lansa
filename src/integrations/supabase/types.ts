@@ -266,6 +266,7 @@ export type Database = {
           gender: string | null
           highlight_color: string | null
           identity: string | null
+          is_public: boolean
           name: string | null
           phone_number: string | null
           professional_goal: string | null
@@ -288,6 +289,7 @@ export type Database = {
           gender?: string | null
           highlight_color?: string | null
           identity?: string | null
+          is_public?: boolean
           name?: string | null
           phone_number?: string | null
           professional_goal?: string | null
@@ -310,6 +312,7 @@ export type Database = {
           gender?: string | null
           highlight_color?: string | null
           identity?: string | null
+          is_public?: boolean
           name?: string | null
           phone_number?: string | null
           professional_goal?: string | null
