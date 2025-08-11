@@ -36,11 +36,6 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
       title: "Content Library",
       url: "/content",
       icon: Video,
-    },
-    {
-      title: "Resume Builder",
-      url: "/profile",
-      icon: User,
     }
   ];
   
