@@ -1,4 +1,5 @@
 
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.43.0';
 
@@ -7,7 +8,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const NEBIUS_AI_API_KEY = Deno.env.get('NEBIUS_AI_API_KEY');
+const OPENAI_API_KEY = Deno.env.get('ONBOARDING_AI_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -28,8 +29,8 @@ serve(async (req) => {
     }
 
     // Check if API key is configured
-    if (!NEBIUS_AI_API_KEY) {
-      console.error('NEBIUS_AI_API_KEY is not configured');
+    if (!OPENAI_API_KEY) {
+      console.error('ONBOARDING_AI_API_KEY is not configured');
       throw new Error('AI API key is not configured');
     }
 
@@ -66,20 +67,19 @@ serve(async (req) => {
       ${JSON.stringify(userAnswers, null, 2)}
     `;
 
-    console.log('Calling Nebius AI with prompt');
+    console.log('Calling OpenAI with prompt');
     
     try {
-      // Updated code to use the JWT token format for the new API key
-      const nebiusResponse = await fetch('https://api.nebius.ai/v1/llm/completions', {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${NEBIUS_AI_API_KEY}`,
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          modelUri: 'ngc-gpt-lite/latest',
+          model: 'gpt-4o-mini',
           messages: [
-            { role: 'system', text: `You are the Lansa In-App AI Coach — an expert guide in professional growth, visibility, and goal achievement.
+            { role: 'system', content: `You are the Lansa In-App AI Coach — an expert guide in professional growth, visibility, and goal achievement.
 
 Core purpose: help users communicate their unique value, take clear next steps, and build consistent visibility on Lansa.
 
@@ -92,23 +92,21 @@ Response guidelines:
 - Include both: 1) a concise insight, and 2) one concrete action the user can take now (end with this step).
 - Use simple examples if helpful.
 - Reinforce the Lansa promise: actions today improve visibility tomorrow.` },
-            { role: 'user', text: prompt }
+            { role: 'user', content: prompt }
           ],
-          generationOptions: {
-            temperature: 0.7,
-            maxTokens: 200
-          }
+          temperature: 0.7,
+          max_tokens: 200
         }),
       });
 
-      if (!nebiusResponse.ok) {
-        const errorBody = await nebiusResponse.text();
-        console.error('Nebius AI API error:', nebiusResponse.status, errorBody);
-        throw new Error(`Nebius AI API error: ${nebiusResponse.status}`);
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error('OpenAI API error:', response.status, errorBody);
+        throw new Error(`OpenAI API error: ${response.status}`);
       }
 
-      const nebiusData = await nebiusResponse.json();
-      const insight = nebiusData.result.alternatives[0].message.text;
+      const data = await response.json();
+      const insight = data.choices?.[0]?.message?.content ?? '';
       console.log('Generated insight:', insight);
 
       // Store the generated insight in Supabase
