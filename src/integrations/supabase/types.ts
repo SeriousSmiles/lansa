@@ -119,12 +119,14 @@ export type Database = {
       user_answers: {
         Row: {
           age_group: string | null
+          ai_onboarding_card: Json | null
           created_at: string
           desired_outcome: string | null
           gender: string | null
           id: string
           identity: string | null
           onboarding_completed: boolean | null
+          onboarding_inputs: Json | null
           question1: string | null
           question2: string | null
           question3: string | null
@@ -133,12 +135,14 @@ export type Database = {
         }
         Insert: {
           age_group?: string | null
+          ai_onboarding_card?: Json | null
           created_at?: string
           desired_outcome?: string | null
           gender?: string | null
           id?: string
           identity?: string | null
           onboarding_completed?: boolean | null
+          onboarding_inputs?: Json | null
           question1?: string | null
           question2?: string | null
           question3?: string | null
@@ -147,12 +151,14 @@ export type Database = {
         }
         Update: {
           age_group?: string | null
+          ai_onboarding_card?: Json | null
           created_at?: string
           desired_outcome?: string | null
           gender?: string | null
           id?: string
           identity?: string | null
           onboarding_completed?: boolean | null
+          onboarding_inputs?: Json | null
           question1?: string | null
           question2?: string | null
           question3?: string | null

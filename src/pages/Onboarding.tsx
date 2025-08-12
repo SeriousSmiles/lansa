@@ -5,10 +5,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { 
   getUserAnswers, 
-  saveUserAnswers, 
-  essentialQuestions
+  saveUserAnswers
 } from "@/services/question";
-import { SimplifiedOnboardingForm } from "@/components/onboarding/SimplifiedOnboardingForm";
+import EnhancedOnboardingForm from "@/components/onboarding/EnhancedOnboardingForm";
 
 export default function Onboarding() {
   const [isLoading, setIsLoading] = useState(true);
@@ -76,7 +75,7 @@ export default function Onboarding() {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-8">
-        <SimplifiedOnboardingForm
+        <EnhancedOnboardingForm
           initialAnswers={userAnswers}
           onSaveAnswers={handleSaveAnswers}
         />

@@ -76,3 +76,6 @@ port = 54321
 
 [functions.generate-insight]
 verify_jwt = true
+
+[functions.generate-onboarding-card]
+verify_jwt = true
