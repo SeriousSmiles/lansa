@@ -16,6 +16,7 @@ interface DesktopProfileActionsProps {
   onCoverColorChange: (color: string) => Promise<void>;
   onHighlightColorChange?: (color: string) => Promise<void>;
   onActionComplete?: () => void;
+  onOpenGuidedSetup?: () => void;
 }
 
 export function DesktopProfileActions({
@@ -27,7 +28,8 @@ export function DesktopProfileActions({
   isDarkTheme,
   onCoverColorChange,
   onHighlightColorChange,
-  onActionComplete
+  onActionComplete,
+  onOpenGuidedSetup
 }: DesktopProfileActionsProps) {
   const {
     isColorPickerOpen,
@@ -90,6 +92,22 @@ export function DesktopProfileActions({
       </ProfileActionButton>
       
       <ProfileActionButton
+        onClick={() => onOpenGuidedSetup?.()}
+        textColor={textColor}
+        coverColor={coverColor}
+        isDarkTheme={isDarkTheme}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+          <path d="M12 2v4" />
+          <path d="M20 12h-4" />
+          <path d="M4 12h4" />
+          <path d="M12 18v4" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+        <span>Fill with Guide</span>
+      </ProfileActionButton>
+      
+      <ProfileActionButton
         onClick={handleShare}
         textColor={textColor}
         coverColor={coverColor}
@@ -97,6 +115,22 @@ export function DesktopProfileActions({
       >
         <Share size={16} />
         <span>Share Profile</span>
+      </ProfileActionButton>
+      
+      <ProfileActionButton
+        onClick={() => onOpenGuidedSetup?.()}
+        textColor={textColor}
+        coverColor={coverColor}
+        isDarkTheme={isDarkTheme}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+          <path d="M12 2v4" />
+          <path d="M20 12h-4" />
+          <path d="M4 12h-4" />
+          <path d="M12 18v4" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+        <span>Fill with Guide</span>
       </ProfileActionButton>
       
       {/* Dialog Components */}

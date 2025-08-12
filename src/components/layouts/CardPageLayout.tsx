@@ -30,7 +30,7 @@ export const CardPageLayout: React.FC<CardPageLayoutProps> = ({
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-6 sm:py-8 max-w-5xl mx-auto w-full">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-6 sm:py-8 max-w-[1100px] mx-auto w-full">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-[#2E2E2E] mb-6 sm:mb-8 text-center">
           Your Personal Blueprint
         </h1>

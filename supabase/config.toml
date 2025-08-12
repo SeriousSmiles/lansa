@@ -79,3 +79,6 @@ verify_jwt = true
 
 [functions.generate-onboarding-card]
 verify_jwt = true
+
+[functions.generate-profile-suggestions]
+verify_jwt = true

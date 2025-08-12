@@ -13,6 +13,7 @@ interface ProfileHeaderActionsProps {
   isDarkTheme: boolean;
   isMobile?: boolean;
   onActionComplete?: () => void;
+  onOpenGuidedSetup?: () => void;
 }
 
 export function ProfileHeaderActions({ 
@@ -37,6 +38,7 @@ export function ProfileHeaderActions({
         onCoverColorChange={onCoverColorChange}
         onHighlightColorChange={onHighlightColorChange}
         onActionComplete={onActionComplete}
+        onOpenGuidedSetup={onOpenGuidedSetup}
       />
     );
   }
@@ -52,6 +54,7 @@ export function ProfileHeaderActions({
       onCoverColorChange={onCoverColorChange}
       onHighlightColorChange={onHighlightColorChange}
       onActionComplete={onActionComplete}
+      onOpenGuidedSetup={onOpenGuidedSetup}
     />
   );
 }
