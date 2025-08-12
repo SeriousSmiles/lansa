@@ -203,7 +203,7 @@ export function ProfileGuidedSetupModal({
             {step === 3 && <Button onClick={applyExperience} disabled={loading}>Add experience</Button>}
             {step === 4 && <Button onClick={applyEducation} disabled={loading}>Finish</Button>}
             {step < steps.length - 1 && (
-              <Button variant="secondary" onClick={() => setStep((s) => Math.min(steps.length - 1, s + 1))}>
+              <Button variant="outline" onClick={() => setStep((s) => Math.min(steps.length - 1, s + 1))}>
                 Next
               </Button>
             )}

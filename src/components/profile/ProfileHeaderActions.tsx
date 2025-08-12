@@ -26,7 +26,8 @@ export function ProfileHeaderActions({
   textColor,
   isDarkTheme,
   isMobile = false,
-  onActionComplete
+  onActionComplete,
+  onOpenGuidedSetup
 }: ProfileHeaderActionsProps) {
   if (isMobile) {
     return (

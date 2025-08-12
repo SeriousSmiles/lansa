@@ -16,6 +16,7 @@ interface ProfileLayoutProps {
   mainContentRef: React.RefObject<HTMLDivElement>;
   readOnly?: boolean;
   hideBackButton?: boolean;
+  onOpenGuidedSetup?: () => void;
 }
 
 export function ProfileLayout({ 
@@ -30,7 +31,8 @@ export function ProfileLayout({
   onHighlightColorChange,
   mainContentRef,
   readOnly = false,
-  hideBackButton = false
+  hideBackButton = false,
+  onOpenGuidedSetup
 }: ProfileLayoutProps) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -56,6 +58,7 @@ export function ProfileLayout({
         onHighlightColorChange={onHighlightColorChange}
         readOnly={readOnly}
         hideBackButton={hideBackButton}
+        onOpenGuidedSetup={onOpenGuidedSetup}
       />
 
       <main ref={mainContentRef} className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
