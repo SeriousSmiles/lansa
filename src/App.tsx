@@ -20,7 +20,6 @@ import ContentLibrary from "./pages/ContentLibrary";
 import Card from "./pages/Card";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import TestComponent from "./components/TestComponent";
 
 console.log("App.tsx loading, React available:", !!React);
 console.log("React hooks available:", typeof React.useState, typeof React.useEffect);
@@ -29,9 +28,7 @@ const queryClient = new QueryClient();
 
 const App: React.FC = () => {
   return (
-    <div>
-      <TestComponent />
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
           <Toaster />
@@ -60,7 +57,6 @@ const App: React.FC = () => {
         </TooltipProvider>
         </AuthProvider>
       </QueryClientProvider>
-    </div>
   );
 };
 
