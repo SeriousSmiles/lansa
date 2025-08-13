@@ -1,5 +1,4 @@
-
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import * as React from "react";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,20 +18,20 @@ interface AuthContextType {
   updateDisplayName: (name: string) => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserType>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = React.useState<UserType>(null);
+  const [session, setSession] = React.useState<Session | null>(null);
+  const [loading, setLoading] = React.useState(true);
 
-  const updateDisplayName = (name: string) => {
+  const updateDisplayName = React.useCallback((name: string) => {
     if (user) {
       setUser({ ...user, displayName: name });
     }
-  };
+  }, [user]);
 
-  const fetchUserProfile = async (userId: string) => {
+  const fetchUserProfile = React.useCallback(async (userId: string) => {
     try {
       const { data: profile } = await supabase
         .from('user_profiles')
@@ -65,10 +64,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Error fetching user profile:', error);
       return null;
     }
-  };
+  }, []);
 
   // Handle auth state changes
-  const handleAuthStateChange = async (session: Session | null) => {
+  const handleAuthStateChange = React.useCallback(async (session: Session | null) => {
     setSession(session);
     
     if (session?.user) {
@@ -84,14 +83,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     
     setLoading(false);
-  };
+  }, [fetchUserProfile]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     // Clean up any stale auth state before initializing
     const cleanupStorage = () => {
-      // Clear any potentially corrupted session data
-      const currentSession = localStorage.getItem('sb-hrmklkcdxkeyttboosgr-auth-token');
-      if (currentSession && !JSON.parse(currentSession)?.access_token) {
+      try {
+        // Clear any potentially corrupted session data
+        const currentSession = localStorage.getItem('sb-hrmklkcdxkeyttboosgr-auth-token');
+        if (currentSession && !JSON.parse(currentSession)?.access_token) {
+          localStorage.removeItem('sb-hrmklkcdxkeyttboosgr-auth-token');
+        }
+      } catch (e) {
+        // Ignore JSON parse errors
         localStorage.removeItem('sb-hrmklkcdxkeyttboosgr-auth-token');
       }
     };
@@ -109,50 +113,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
+  }, [handleAuthStateChange]);
+
+  const signIn = React.useCallback(async (email: string, password: string) => {
+    try {
+      // Clear existing session data before signing in to prevent conflicts
+      localStorage.removeItem('sb-hrmklkcdxkeyttboosgr-auth-token');
+      
+      const result = await supabase.auth.signInWithPassword({ email, password });
+      
+      // If login is successful but we're still waiting for the auth state to update
+      // ensure we don't show an error
+      if (!result.error && result.data?.session) {
+        return { error: null };
+      }
+      
+      return result;
+    } catch (error) {
+      console.error("Error signing in:", error);
+      toast.error("Failed to sign in. Please check your internet connection.");
+      return { error };
+    }
   }, []);
 
-  const value = {
+  const signUp = React.useCallback(async (email: string, password: string) => {
+    try {
+      return await supabase.auth.signUp({ email, password });
+    } catch (error) {
+      console.error("Error signing up:", error);
+      toast.error("Failed to sign up. Please check your internet connection.");
+      return { error, data: null };
+    }
+  }, []);
+
+  const signOut = React.useCallback(async () => {
+    try {
+      return await supabase.auth.signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+      return { error };
+    }
+  }, []);
+
+  const value = React.useMemo(() => ({
     user,
     session,
-    signIn: async (email: string, password: string) => {
-      try {
-        // Clear existing session data before signing in to prevent conflicts
-        localStorage.removeItem('sb-hrmklkcdxkeyttboosgr-auth-token');
-        
-        const result = await supabase.auth.signInWithPassword({ email, password });
-        
-        // If login is successful but we're still waiting for the auth state to update
-        // ensure we don't show an error
-        if (!result.error && result.data?.session) {
-          return { error: null };
-        }
-        
-        return result;
-      } catch (error) {
-        console.error("Error signing in:", error);
-        toast.error("Failed to sign in. Please check your internet connection.");
-        return { error };
-      }
-    },
-    signUp: async (email: string, password: string) => {
-      try {
-        return await supabase.auth.signUp({ email, password });
-      } catch (error) {
-        console.error("Error signing up:", error);
-        toast.error("Failed to sign up. Please check your internet connection.");
-        return { error, data: null };
-      }
-    },
-    signOut: async () => {
-      try {
-        return await supabase.auth.signOut();
-      } catch (error) {
-        console.error("Error signing out:", error);
-        return { error };
-      }
-    },
+    signIn,
+    signUp,
+    signOut,
     updateDisplayName,
-  };
+  }), [user, session, signIn, signUp, signOut, updateDisplayName]);
 
   return (
     <AuthContext.Provider value={value}>
@@ -162,7 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
+  const context = React.useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
