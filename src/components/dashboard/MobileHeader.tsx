@@ -38,6 +38,11 @@ export function MobileHeader({ themeColor, items }: MobileHeaderProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="bg-background border shadow-lg">
+            <DropdownMenuItem asChild>
+              <Link to="/discovery" className="w-full">
+                Discovery
+              </Link>
+            </DropdownMenuItem>
             {items.filter(item => item.title !== "Dashboard").map((item) => (
               <DropdownMenuItem key={item.title} asChild>
                 <Link to={item.url} className="w-full">
@@ -48,6 +53,11 @@ export function MobileHeader({ themeColor, items }: MobileHeaderProps) {
             <DropdownMenuItem asChild>
               <Link to="/profile" className="w-full">
                 Resume Builder
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/profile" className="w-full">
+                Settings
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>

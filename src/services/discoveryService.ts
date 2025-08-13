@@ -30,7 +30,42 @@ export const discoveryService = {
     limit: number = 10
   ): Promise<DiscoveryProfile[]> {
     try {
-      // For demo purposes, return mock data with filtering
+      // Try to fetch from user_profiles_public table for real data
+      const { data: publicProfiles, error } = await supabase
+        .from('user_profiles_public')
+        .select('*')
+        .limit(limit);
+
+      if (publicProfiles && publicProfiles.length > 0) {
+        // Convert database records to DiscoveryProfile format
+        const discoveryProfiles: DiscoveryProfile[] = publicProfiles.map(profile => ({
+          user_id: profile.user_id,
+          name: profile.name || 'Professional',
+          title: profile.title || 'Seeking Opportunities',
+          about_text: profile.about_text,
+          profile_image: profile.profile_image,
+          skills: profile.skills || [],
+          cover_color: profile.cover_color,
+          highlight_color: profile.highlight_color || '#FF6B4A',
+          professional_goal: profile.professional_goal
+        }));
+
+        // Apply skill filtering if provided
+        let filteredProfiles = discoveryProfiles;
+        if (filters.skills && filters.skills.length > 0) {
+          filteredProfiles = discoveryProfiles.filter(profile =>
+            filters.skills!.some(skill => 
+              profile.skills.some(profileSkill => 
+                profileSkill.toLowerCase().includes(skill.toLowerCase())
+              )
+            )
+          );
+        }
+
+        return filteredProfiles;
+      }
+
+      // Fallback to mock data if no public profiles
       let filteredProfiles = [...mockFrontendCandidates];
       
       // Apply skill filtering if provided
@@ -49,7 +84,9 @@ export const discoveryService = {
       return shuffled.slice(0, limit);
     } catch (error) {
       console.error('Error fetching discovery profiles:', error);
-      return [];
+      // Return mock data on error
+      const shuffled = [...mockFrontendCandidates].sort(() => Math.random() - 0.5);
+      return shuffled.slice(0, limit);
     }
   },
 

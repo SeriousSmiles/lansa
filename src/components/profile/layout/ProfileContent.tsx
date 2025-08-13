@@ -6,6 +6,7 @@ import { ProfileSidebar } from "../ProfileSidebar";
 import { AboutSection } from "../AboutSection";
 import { ExperienceSection } from "../ExperienceSection";
 import { EducationSection } from "../EducationSection";
+import { OpenMarketButton } from "../buttons/OpenMarketButton";
 import { gsap } from "gsap";
 import { getContrastTextColor } from "@/utils/colorUtils";
 import { ProfileDataReturn } from "@/hooks/useProfileData";
@@ -89,6 +90,11 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
           onRemoveSkill={profile.removeSkill}
           onUploadProfileImage={profile.uploadProfileImage}
         />
+        
+        {/* Open Market Button */}
+        <div className="mt-6">
+          <OpenMarketButton highlightColor={profile.highlightColor} />
+        </div>
       </div>
       
       {/* Right Column - Experience & Education */}

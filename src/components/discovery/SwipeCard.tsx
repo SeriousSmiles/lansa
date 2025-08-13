@@ -63,7 +63,6 @@ export function SwipeCard({ profile, onSwipe, isActive, zIndex }: SwipeCardProps
     const handleEnd = () => {
       if (!isDragging || !isActive) return;
       setIsDragging(false);
-      setSwipeDirection(null);
       
       const threshold = 120;
       const deltaX = currentX.current;
@@ -79,10 +78,14 @@ export function SwipeCard({ profile, onSwipe, isActive, zIndex }: SwipeCardProps
           opacity: 0,
           duration: 0.3,
           ease: "power2.out",
-          onComplete: () => onSwipe(direction)
+          onComplete: () => {
+            setSwipeDirection(null);
+            onSwipe(direction);
+          }
         });
       } else {
         // Snap back to center
+        setSwipeDirection(null);
         animation = gsap.to(card, {
           x: 0,
           rotation: 0,
@@ -148,58 +151,78 @@ export function SwipeCard({ profile, onSwipe, isActive, zIndex }: SwipeCardProps
         </div>
       )}
       
-      <CardContent className="p-6 h-full flex flex-col">
-        <div className="flex items-start gap-4 mb-4">
-          <Avatar className="w-16 h-16 ring-2 ring-white/20">
-            <AvatarImage src={profile.profile_image} alt={profile.name} />
-            <AvatarFallback style={{ backgroundColor: profile.highlight_color }}>
-              <User className="w-8 h-8 text-white" />
-            </AvatarFallback>
-          </Avatar>
-          
-          <div className="flex-1 text-white">
-            <h3 className="text-xl font-semibold">{profile.name}</h3>
-            <p className="text-white/80 text-sm">{profile.title}</p>
-          </div>
-        </div>
-
-        {profile.professional_goal && (
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Briefcase className="w-4 h-4 text-white/80" />
-              <span className="text-sm font-medium text-white/80">Goal</span>
-            </div>
-            <p className="text-white text-sm">{profile.professional_goal}</p>
-          </div>
-        )}
-
-        {profile.about_text && (
-          <div className="mb-4 flex-1">
-            <p className="text-white/90 text-sm line-clamp-4">{profile.about_text}</p>
-          </div>
-        )}
-
-        {profile.skills && profile.skills.length > 0 && (
-          <div className="space-y-2">
-            <span className="text-sm font-medium text-white/80">Skills</span>
-            <div className="flex flex-wrap gap-2">
-              {profile.skills.slice(0, 6).map((skill, index) => (
-                <Badge 
-                  key={index} 
-                  variant="secondary" 
-                  className="bg-white/20 text-white border-white/30 text-xs"
-                >
-                  {skill}
-                </Badge>
-              ))}
-              {profile.skills.length > 6 && (
-                <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs">
-                  +{profile.skills.length - 6} more
-                </Badge>
+      <CardContent className="p-0 h-full flex flex-col relative overflow-hidden">
+        {/* Cover header with gradient */}
+        <div 
+          className="relative p-6 pb-16"
+          style={{ 
+            background: profile.cover_color 
+              ? `linear-gradient(135deg, ${profile.cover_color}, ${profile.highlight_color || '#FF6B4A'})` 
+              : 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary)))'
+          }}
+        >
+          <div className="flex items-start gap-4">
+            <Avatar className="w-20 h-20 ring-4 ring-white/30 shadow-lg">
+              <AvatarImage src={profile.profile_image} alt={profile.name} />
+              <AvatarFallback 
+                style={{ backgroundColor: profile.highlight_color || '#FF6B4A' }}
+                className="text-white text-xl font-semibold"
+              >
+                {profile.name?.charAt(0) || <User className="w-8 h-8" />}
+              </AvatarFallback>
+            </Avatar>
+            
+            <div className="flex-1 text-white">
+              <h2 className="text-2xl font-bold mb-1">{profile.name}</h2>
+              <p className="text-white/90 text-lg mb-2">{profile.title}</p>
+              {profile.professional_goal && (
+                <p className="text-white/80 text-sm font-medium">{profile.professional_goal}</p>
               )}
             </div>
           </div>
-        )}
+        </div>
+
+        {/* Main content */}
+        <div className="flex-1 p-6 bg-white relative -mt-8 rounded-t-3xl">
+          {profile.about_text && (
+            <div className="mb-6">
+              <h4 className="font-semibold text-foreground mb-3 text-lg">About</h4>
+              <p className="text-muted-foreground text-sm leading-relaxed line-clamp-4">
+                {profile.about_text}
+              </p>
+            </div>
+          )}
+
+          {profile.skills && profile.skills.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="font-semibold text-foreground text-lg">Skills</h4>
+              <div className="flex flex-wrap gap-2">
+                {profile.skills.slice(0, 8).map((skill, index) => (
+                  <Badge 
+                    key={index} 
+                    variant="secondary" 
+                    className="bg-secondary/10 text-secondary-foreground border-secondary/20 text-xs font-medium"
+                    style={{ 
+                      backgroundColor: `${profile.highlight_color || '#FF6B4A'}15`,
+                      borderColor: `${profile.highlight_color || '#FF6B4A'}30`,
+                      color: profile.highlight_color || '#FF6B4A'
+                    }}
+                  >
+                    {skill}
+                  </Badge>
+                ))}
+                {profile.skills.length > 8 && (
+                  <Badge 
+                    variant="outline" 
+                    className="text-xs border-muted"
+                  >
+                    +{profile.skills.length - 8} more
+                  </Badge>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
