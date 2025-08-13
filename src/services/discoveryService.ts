@@ -1,6 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { SwipeContext } from "./swipeService";
+import { mockFrontendCandidates } from "@/data/mockCandidates";
 
+// Use mock data for demo purposes
 export interface DiscoveryProfile {
   user_id: string;
   name: string;
@@ -28,36 +30,23 @@ export const discoveryService = {
     limit: number = 10
   ): Promise<DiscoveryProfile[]> {
     try {
-      // Get users that haven't been swiped on yet
-      const { data: swipedUsers } = await supabase
-        .from('swipes')
-        .select('target_user_id')
-        .eq('swiper_user_id', userId)
-        .eq('context', context);
-
-      const swipedUserIds = swipedUsers?.map(s => s.target_user_id) || [];
+      // For demo purposes, return mock data with filtering
+      let filteredProfiles = [...mockFrontendCandidates];
       
-      let query = supabase
-        .from('user_profiles_public')
-        .select('*')
-        .neq('user_id', userId);
-
-      // Exclude already swiped users
-      if (swipedUserIds.length > 0) {
-        query = query.not('user_id', 'in', `(${swipedUserIds.join(',')})`);
-      }
-
-      // Apply filters
+      // Apply skill filtering if provided
       if (filters.skills && filters.skills.length > 0) {
-        query = query.overlaps('skills', filters.skills);
+        filteredProfiles = filteredProfiles.filter(profile =>
+          filters.skills!.some(skill => 
+            profile.skills.some(profileSkill => 
+              profileSkill.toLowerCase().includes(skill.toLowerCase())
+            )
+          )
+        );
       }
-
-      const { data, error } = await query
-        .limit(limit)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data || [];
+      
+      // Shuffle for variety and take requested limit
+      const shuffled = filteredProfiles.sort(() => Math.random() - 0.5);
+      return shuffled.slice(0, limit);
     } catch (error) {
       console.error('Error fetching discovery profiles:', error);
       return [];
@@ -66,41 +55,21 @@ export const discoveryService = {
 
   async getJobListings(userId: string, filters: DiscoveryFilters = {}, limit: number = 10) {
     try {
-      const { data: swipedJobs } = await supabase
-        .from('swipes')
-        .select('job_listing_id')
-        .eq('swiper_user_id', userId)
-        .eq('context', 'employee')
-        .not('job_listing_id', 'is', null);
+      // For demo purposes, create mock job listings from our candidates
+      const mockJobs = mockFrontendCandidates.slice(0, limit).map((candidate, index) => ({
+        id: `job-${index + 1}`,
+        title: `${candidate.title} Position`,
+        description: `Join our team as a ${candidate.title}. We're looking for someone with expertise in ${candidate.skills.slice(0, 3).join(', ')}.`,
+        business_profiles: {
+          company_name: ['TechCorp', 'InnovateLabs', 'DevStudio', 'CodeCraft', 'FutureWeb'][index % 5],
+          location: ['San Francisco, CA', 'New York, NY', 'Austin, TX', 'Seattle, WA', 'Remote'][index % 5],
+          industry: 'Technology'
+        },
+        top_skills: candidate.skills.slice(0, 5),
+        location: ['San Francisco, CA', 'New York, NY', 'Austin, TX', 'Seattle, WA', 'Remote'][index % 5]
+      }));
 
-      const swipedJobIds = swipedJobs?.map(s => s.job_listing_id).filter(Boolean) || [];
-
-      let query = supabase
-        .from('job_listings')
-        .select(`
-          *,
-          business_profiles(company_name, location, industry)
-        `)
-        .eq('is_active', true);
-
-      if (swipedJobIds.length > 0) {
-        query = query.not('id', 'in', `(${swipedJobIds.join(',')})`);
-      }
-
-      if (filters.location) {
-        query = query.ilike('location', `%${filters.location}%`);
-      }
-
-      if (filters.skills && filters.skills.length > 0) {
-        query = query.overlaps('top_skills', filters.skills);
-      }
-
-      const { data, error } = await query
-        .limit(limit)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data || [];
+      return mockJobs;
     } catch (error) {
       console.error('Error fetching job listings:', error);
       return [];
