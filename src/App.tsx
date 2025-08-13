@@ -1,4 +1,5 @@
 
+import * as React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,12 +20,18 @@ import ContentLibrary from "./pages/ContentLibrary";
 import Card from "./pages/Card";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import TestComponent from "./components/TestComponent";
+
+console.log("App.tsx loading, React available:", !!React);
+console.log("React hooks available:", typeof React.useState, typeof React.useEffect);
 
 const queryClient = new QueryClient();
 
-const App = () => {
+const App: React.FC = () => {
   return (
-    <QueryClientProvider client={queryClient}>
+    <div>
+      <TestComponent />
+      <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
           <Toaster />
@@ -51,8 +58,9 @@ const App = () => {
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </div>
   );
 };
 
