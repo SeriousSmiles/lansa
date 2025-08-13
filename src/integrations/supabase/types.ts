@@ -53,6 +53,42 @@ export type Database = {
         }
         Relationships: []
       }
+      business_onboarding_data: {
+        Row: {
+          business_services: string | null
+          business_size: string | null
+          company_name: string | null
+          created_at: string
+          id: string
+          open_job_listings: Json | null
+          role_function: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          business_services?: string | null
+          business_size?: string | null
+          company_name?: string | null
+          created_at?: string
+          id?: string
+          open_job_listings?: Json | null
+          role_function?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          business_services?: string | null
+          business_size?: string | null
+          company_name?: string | null
+          created_at?: string
+          id?: string
+          open_job_listings?: Json | null
+          role_function?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       business_profiles: {
         Row: {
           company_name: string
@@ -419,6 +455,7 @@ export type Database = {
           question3: string | null
           updated_at: string
           user_id: string
+          user_type: string | null
         }
         Insert: {
           age_group?: string | null
@@ -435,6 +472,7 @@ export type Database = {
           question3?: string | null
           updated_at?: string
           user_id: string
+          user_type?: string | null
         }
         Update: {
           age_group?: string | null
@@ -451,6 +489,7 @@ export type Database = {
           question3?: string | null
           updated_at?: string
           user_id?: string
+          user_type?: string | null
         }
         Relationships: []
       }

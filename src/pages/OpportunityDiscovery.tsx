@@ -123,8 +123,8 @@ export default function OpportunityDiscovery() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="min-h-screen bg-background overflow-x-hidden">
+      <div className="container mx-auto px-4 py-8 max-w-4xl overflow-x-hidden">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">Opportunity Discovery</h1>
           <p className="text-muted-foreground">

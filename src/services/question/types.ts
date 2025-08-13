@@ -17,4 +17,5 @@ export interface UserAnswers {
   ai_insight?: string;
   onboarding_inputs?: any;
   ai_onboarding_card?: any;
+  user_type?: 'job_seeker' | 'employer';
 }

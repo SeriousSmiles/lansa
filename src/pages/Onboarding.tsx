@@ -7,11 +7,15 @@ import {
   getUserAnswers, 
   saveUserAnswers
 } from "@/services/question";
+import { UserTypeSelection } from "@/components/onboarding/UserTypeSelection";
+import { BusinessOnboardingForm } from "@/components/onboarding/BusinessOnboardingForm";
 import EnhancedOnboardingForm from "@/components/onboarding/EnhancedOnboardingForm";
 
 export default function Onboarding() {
   const [isLoading, setIsLoading] = useState(true);
   const [userAnswers, setUserAnswers] = useState<any>({});
+  const [userType, setUserType] = useState<'job_seeker' | 'employer' | null>(null);
+  const [showTypeSelection, setShowTypeSelection] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -28,6 +32,11 @@ export default function Onboarding() {
         
         if (answers) {
           setUserAnswers(answers);
+          // Check if user has already selected a type
+          if (answers.user_type) {
+            setUserType(answers.user_type);
+            setShowTypeSelection(false);
+          }
         }
         
         setIsLoading(false);
@@ -41,9 +50,15 @@ export default function Onboarding() {
     loadUserAnswers();
   }, [user]);
 
+  const handleUserTypeSelect = (selectedType: 'job_seeker' | 'employer') => {
+    setUserType(selectedType);
+    setShowTypeSelection(false);
+  };
+
   const handleSaveAnswers = async (userId: string, answers: any) => {
     try {
-      const result = await saveUserAnswers(userId, answers);
+      const answersWithType = { ...answers, user_type: userType };
+      const result = await saveUserAnswers(userId, answersWithType);
       if (!result.success) {
         toast.error("Failed to save your answers. Please try again.");
         return { success: false };
@@ -75,10 +90,16 @@ export default function Onboarding() {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-8">
-        <EnhancedOnboardingForm
-          initialAnswers={userAnswers}
-          onSaveAnswers={handleSaveAnswers}
-        />
+        {showTypeSelection ? (
+          <UserTypeSelection onSelect={handleUserTypeSelect} />
+        ) : userType === 'employer' ? (
+          <BusinessOnboardingForm onComplete={() => navigate('/dashboard')} />
+        ) : (
+          <EnhancedOnboardingForm
+            initialAnswers={userAnswers}
+            onSaveAnswers={handleSaveAnswers}
+          />
+        )}
       </main>
 
       <footer className="text-center py-6 text-sm text-[#1A1F71]">
