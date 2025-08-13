@@ -122,10 +122,11 @@ export default function Dashboard() {
   if (isLoading) {
     return <DashboardLoadingState />;
   }
-  
-  const role = getProfileRole(userAnswers?.question1, userAnswers?.identity);
-  const goal = getProfileGoal(userAnswers?.question3, userAnswers?.desired_outcome);
-  const insight = aiInsight || getBasicInsightFromAnswers(userAnswers);
+
+  // Defensive fallbacks to avoid rendering issues when answers are missing
+  const role = getProfileRole(userAnswers?.question1, userAnswers?.identity) || "Professional seeking clarity";
+  const goal = getProfileGoal(userAnswers?.question3, userAnswers?.desired_outcome) || "Gaining professional clarity";
+  const insight = aiInsight || getBasicInsightFromAnswers(userAnswers || null);
   
   // Use the display name from the user object
   const userName = user?.displayName || "Lansa User";

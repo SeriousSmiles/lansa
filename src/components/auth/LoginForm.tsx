@@ -39,21 +39,20 @@ export function LoginForm() {
       
       // Get the current session to check user ID
       const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session?.user?.id) {
-        // Check if user has completed onboarding
-        const userAnswers = await getUserAnswers(session.user.id);
-        const onboardingCompleted = hasCompletedOnboarding(userAnswers);
-        
-        if (onboardingCompleted) {
-          // User has completed onboarding, go to dashboard
-          navigate('/dashboard', { replace: true });
-        } else {
-          // User hasn't completed onboarding, go to onboarding
-          navigate('/onboarding', { replace: true });
-        }
+
+      // Failsafe: if session missing, just send to /dashboard and let ProtectedRoute decide
+      if (!session?.user?.id) {
+        navigate('/dashboard', { replace: true });
+        return;
+      }
+
+      // Check if user has completed onboarding
+      const userAnswers = await getUserAnswers(session.user.id);
+      const onboardingCompleted = hasCompletedOnboarding(userAnswers);
+
+      if (onboardingCompleted) {
+        navigate('/dashboard', { replace: true });
       } else {
-        // Fallback to onboarding if we can't determine status
         navigate('/onboarding', { replace: true });
       }
       

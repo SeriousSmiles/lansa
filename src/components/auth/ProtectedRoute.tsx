@@ -16,6 +16,15 @@ export default function ProtectedRoute() {
   const [profileReady, setProfileReady] = useState(false);
 
   useEffect(() => {
+    let didCancel = false;
+    const timeoutId = setTimeout(() => {
+      // Failsafe: if something hangs > 6s, allow navigation and let routes handle finer checks
+      if (!didCancel) {
+        setLoading(false);
+        setInitialCheck(true);
+      }
+    }, 6000);
+
     // Add a small delay to ensure auth state is properly loaded
     const timer = setTimeout(() => {
       if (!user) {
@@ -23,12 +32,9 @@ export default function ProtectedRoute() {
         setInitialCheck(true);
         return;
       }
-      
       checkUserProfile();
     }, 150);
-    
-    return () => clearTimeout(timer);
-    
+
     async function checkUserProfile() {
       if (user?.id) {
         try {
@@ -39,34 +45,45 @@ export default function ProtectedRoute() {
               .select('name')
               .eq('user_id', user.id)
               .maybeSingle();
-              
+
             if (profileData?.name && typeof updateDisplayName === 'function') {
               updateDisplayName(profileData.name);
             }
           }
-          
+
           // Check onboarding and profile status
           const userAnswers = await getUserAnswers(user.id);
           const completed = hasCompletedOnboarding(userAnswers);
           setOnboardingCompleted(completed);
-          
+
           // Check if profile is ready for dashboard access
           const profileStatus = await getProfileStatus(user.id);
           setProfileReady(profileStatus.isProfileReady);
-          
         } catch (error) {
           console.error("Failed to fetch user profile:", error);
+        } finally {
+          if (!didCancel) {
+            setLoading(false);
+            setInitialCheck(true);
+          }
         }
-        setLoading(false);
       } else {
-        setLoading(false);
+        if (!didCancel) {
+          setLoading(false);
+          setInitialCheck(true);
+        }
       }
-      setInitialCheck(true);
     }
+
+    return () => {
+      didCancel = true;
+      clearTimeout(timer);
+      clearTimeout(timeoutId);
+    };
   }, [user, updateDisplayName, location.pathname]);
 
-  // If we're still on the first load, show a loading indicator
-  if (!initialCheck) {
+  // If we're still on the first load, show a loading indicator, but auto-advance after failsafe
+  if (!initialCheck && loading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-[rgba(253,248,242,1)]">
         <div className="w-16 h-16 border-4 border-[#FF6B4A] border-solid rounded-full border-t-transparent animate-spin mb-4"></div>
@@ -89,12 +106,14 @@ export default function ProtectedRoute() {
   // Check if the user is accessing the dashboard page
   if (location.pathname === "/dashboard") {
     if (!onboardingCompleted) {
+      // Let user into onboarding; prevent dead-end loops
       toast.info("Please complete onboarding first");
       return <Navigate to="/onboarding" state={{ from: location }} replace />;
     }
-    if (!profileReady) {
-      toast.info("Complete your profile to unlock your dashboard");
-      return <Navigate to="/profile" state={{ from: location }} replace />;
+    // If onboarding complete but profile check failed to resolve, still allow access
+    if (profileReady === false) {
+      // Soft gate: nudge to profile but do not block access indefinitely
+      toast.info("Complete your profile to unlock more features.");
     }
   }
 
