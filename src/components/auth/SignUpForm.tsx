@@ -160,7 +160,7 @@ export function SignUpForm() {
               alt="Google"
               className="w-6 h-6 mr-3"
             />
-            Sign up with Google
+            Sign up with Google (Coming Soon)
           </Button>
         </div>
       </div>

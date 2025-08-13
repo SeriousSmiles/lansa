@@ -112,7 +112,7 @@ export function LoginForm() {
               alt="Google"
               className="w-6 h-6 mr-3"
             />
-            Log In with Google
+            Log In with Google (Coming Soon)
           </Button>
         </div>
       </div>
