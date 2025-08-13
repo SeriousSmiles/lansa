@@ -53,6 +53,164 @@ export type Database = {
         }
         Relationships: []
       }
+      business_profiles: {
+        Row: {
+          company_name: string
+          company_size: string | null
+          created_at: string
+          description: string | null
+          id: string
+          industry: string | null
+          location: string | null
+          updated_at: string
+          user_id: string
+          website: string | null
+        }
+        Insert: {
+          company_name: string
+          company_size?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          industry?: string | null
+          location?: string | null
+          updated_at?: string
+          user_id: string
+          website?: string | null
+        }
+        Update: {
+          company_name?: string
+          company_size?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          industry?: string | null
+          location?: string | null
+          updated_at?: string
+          user_id?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      catalogue_entries: {
+        Row: {
+          availability: string | null
+          created_at: string
+          id: string
+          internship_ready: boolean
+          is_active: boolean
+          job_ready: boolean
+          location: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          availability?: string | null
+          created_at?: string
+          id?: string
+          internship_ready?: boolean
+          is_active?: boolean
+          job_ready?: boolean
+          location?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          availability?: string | null
+          created_at?: string
+          id?: string
+          internship_ready?: boolean
+          is_active?: boolean
+          job_ready?: boolean
+          location?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          read_at: string | null
+          sender_id: string
+          thread_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id: string
+          thread_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_threads: {
+        Row: {
+          context: Database["public"]["Enums"]["match_context"]
+          created_at: string
+          created_by: string
+          id: string
+          job_listing_id: string | null
+          last_message_at: string | null
+          match_id: string | null
+          participant_ids: string[]
+        }
+        Insert: {
+          context: Database["public"]["Enums"]["match_context"]
+          created_at?: string
+          created_by: string
+          id?: string
+          job_listing_id?: string | null
+          last_message_at?: string | null
+          match_id?: string | null
+          participant_ids: string[]
+        }
+        Update: {
+          context?: Database["public"]["Enums"]["match_context"]
+          created_at?: string
+          created_by?: string
+          id?: string
+          job_listing_id?: string | null
+          last_message_at?: string | null
+          match_id?: string | null
+          participant_ids?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_threads_job_listing_id_fkey"
+            columns: ["job_listing_id"]
+            isOneToOne: false
+            referencedRelation: "job_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_threads_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       growth_prompts: {
         Row: {
           action_label: string
@@ -91,6 +249,135 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      job_listings: {
+        Row: {
+          business_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          location: string | null
+          mode: Database["public"]["Enums"]["match_context"]
+          title: string
+          top_skills: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          mode: Database["public"]["Enums"]["match_context"]
+          title: string
+          top_skills?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          mode?: Database["public"]["Enums"]["match_context"]
+          title?: string
+          top_skills?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_listings_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matches: {
+        Row: {
+          context: Database["public"]["Enums"]["match_context"]
+          created_at: string
+          id: string
+          job_listing_id: string | null
+          latest_activity_at: string
+          user_a: string
+          user_b: string
+          user_high: string | null
+          user_low: string | null
+        }
+        Insert: {
+          context: Database["public"]["Enums"]["match_context"]
+          created_at?: string
+          id?: string
+          job_listing_id?: string | null
+          latest_activity_at?: string
+          user_a: string
+          user_b: string
+          user_high?: string | null
+          user_low?: string | null
+        }
+        Update: {
+          context?: Database["public"]["Enums"]["match_context"]
+          created_at?: string
+          id?: string
+          job_listing_id?: string | null
+          latest_activity_at?: string
+          user_a?: string
+          user_b?: string
+          user_high?: string | null
+          user_low?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_job_listing_id_fkey"
+            columns: ["job_listing_id"]
+            isOneToOne: false
+            referencedRelation: "job_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      swipes: {
+        Row: {
+          context: Database["public"]["Enums"]["match_context"]
+          created_at: string
+          direction: Database["public"]["Enums"]["swipe_direction"]
+          id: string
+          job_listing_id: string | null
+          swiper_user_id: string
+          target_user_id: string
+        }
+        Insert: {
+          context: Database["public"]["Enums"]["match_context"]
+          created_at?: string
+          direction: Database["public"]["Enums"]["swipe_direction"]
+          id?: string
+          job_listing_id?: string | null
+          swiper_user_id: string
+          target_user_id: string
+        }
+        Update: {
+          context?: Database["public"]["Enums"]["match_context"]
+          created_at?: string
+          direction?: Database["public"]["Enums"]["swipe_direction"]
+          id?: string
+          job_listing_id?: string | null
+          swiper_user_id?: string
+          target_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swipes_job_listing_id_fkey"
+            columns: ["job_listing_id"]
+            isOneToOne: false
+            referencedRelation: "job_listings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_actions: {
         Row: {
@@ -164,6 +451,45 @@ export type Database = {
           question3?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_certifications: {
+        Row: {
+          assessment_score: number | null
+          certified_at: string | null
+          created_at: string
+          id: string
+          lansa_certified: boolean
+          mini_project_url: string | null
+          updated_at: string
+          user_id: string
+          verified: boolean
+          verified_by: string | null
+        }
+        Insert: {
+          assessment_score?: number | null
+          certified_at?: string | null
+          created_at?: string
+          id?: string
+          lansa_certified?: boolean
+          mini_project_url?: string | null
+          updated_at?: string
+          user_id: string
+          verified?: boolean
+          verified_by?: string | null
+        }
+        Update: {
+          assessment_score?: number | null
+          certified_at?: string | null
+          created_at?: string
+          id?: string
+          lansa_certified?: boolean
+          mini_project_url?: string | null
+          updated_at?: string
+          user_id?: string
+          verified?: boolean
+          verified_by?: string | null
         }
         Relationships: []
       }
@@ -378,15 +704,66 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      catalogue_students: {
+        Row: {
+          about_text: string | null
+          certified_at: string | null
+          cover_color: string | null
+          highlight_color: string | null
+          internship_ready: boolean | null
+          job_ready: boolean | null
+          lansa_certified: boolean | null
+          location: string | null
+          name: string | null
+          professional_goal: string | null
+          profile_image: string | null
+          skills: string[] | null
+          title: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
+      is_thread_participant: {
+        Args: { _thread_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "business" | "student"
+      match_context: "employee" | "internship"
+      swipe_direction: "right" | "left" | "nudge"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -513,6 +890,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "business", "student"],
+      match_context: ["employee", "internship"],
+      swipe_direction: ["right", "left", "nudge"],
+    },
   },
 } as const
