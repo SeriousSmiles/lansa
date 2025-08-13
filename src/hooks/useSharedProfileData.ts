@@ -1,7 +1,5 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getUserAnswers, getProfileRole, getProfileGoal } from "@/services/question";
 import { UserProfile } from "@/hooks/profile/profileTypes";
 import { ExperienceItem, EducationItem } from "@/hooks/profile/profileTypes";
 import { processSkillsData, processExperiencesData, processEducationData } from "@/utils/profileDataUtils";
@@ -107,15 +105,9 @@ export function useSharedProfileData(urlParam: string | undefined) {
       
       console.log("Raw profile data:", profileData);
 
-      // Try to fetch user answers (optional)
-      let answers = null;
-      try {
-        answers = await getUserAnswers(userId);
-        console.log("User answers:", answers);
-      } catch (error) {
-        console.error("Error fetching user answers:", error);
-        // Continue without answers - use profile data only
-      }
+      // Skip fetching private user_answers on public views
+      const answers = null as any;
+
       
       // Process the profile data to ensure proper types
       const processedExperiences = profileData?.experiences 
@@ -129,16 +121,10 @@ export function useSharedProfileData(urlParam: string | undefined) {
       const processedSkills = processSkillsData(profileData?.skills, answers);
       
       // Determine role and goal from safe sources (avoid sensitive fields)
-      const role = profileData?.title ||
-                   getProfileRole(answers?.question1, answers?.identity) ||
-                   "Professional";
-      
-      const goal = getProfileGoal(answers?.question3, answers?.desired_outcome) ||
-                   "Advance my career";
-      
-      // Do not expose sensitive blocker info in public view
-      const blocker = answers?.question2 || "Identifying my unique value proposition";
-      
+      const role = profileData?.title || "Professional";
+      const goal = profileData?.professional_goal || "Advance my career";
+      const blocker = ""; // no blocker on public view
+
       // Do not include full internal profile object for public view
       const typedUserProfile: UserProfile | null = null;
       
