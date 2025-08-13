@@ -31,7 +31,7 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
       className="sticky top-0 z-40 w-full border-b bg-background"
       style={themeColor ? { borderColor: `${themeColor}30` } : {}}
     >
-      <div className="flex w-full flex-wrap items-center justify-between px-6 lg:px-8 h-14 gap-4">
+      <div className="flex w-full flex-wrap items-center justify-between px-8 lg:px-12 h-14 gap-4">
         {/* Logo */}
         <Link to="/dashboard" className="flex items-center gap-2">
           <img
@@ -43,7 +43,7 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
 
         {/* Nav links */}
         <nav className="hidden md:flex items-center gap-2 lg:gap-4">
-          {items.map((item) => (
+          {items.filter(item => item.title !== "Dashboard").map((item) => (
             <Link
               key={item.title}
               to={item.url}
@@ -56,11 +56,6 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
         </nav>
         {/* Actions */}
         <div className="flex items-center gap-2">
-          <div className="hidden lg:block w-56">
-            <div className="relative">
-              <Input placeholder={t('navbar.search')} className="h-9" />
-            </div>
-          </div>
           <Link to="/profile">
             <Button className="btn-animate" size="sm">{t('navbar.resumeBuilder')}</Button>
           </Link>

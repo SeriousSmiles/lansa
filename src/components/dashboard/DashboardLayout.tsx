@@ -3,8 +3,10 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { gsap } from "gsap";
 import { TopNavbar } from "./TopNavbar";
+import { MobileHeader } from "./MobileHeader";
 import { Home, BookOpen, Video, User } from "lucide-react";
 import { AnnouncementBanner } from "@/components/common/AnnouncementBanner";
+import { useIsMobile } from "@/hooks/use-mobile";
 interface DashboardLayoutProps {
   children: React.ReactNode;
   userName: string;
@@ -16,17 +18,13 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
   const { signOut } = useAuth();
   const mainContentRef = useRef<HTMLDivElement>(null);
   const [isContentVisible, setIsContentVisible] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleLogout = async () => {
     await signOut();
   };
 
   const menuItems = [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: Home,
-    },
     {
       title: "Resources",
       url: "/resources",
@@ -59,13 +57,17 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
   return (
     <div className="flex min-h-screen w-full bg-[rgba(253,248,242,1)] flex-col">
       <AnnouncementBanner />
-      <TopNavbar 
-        items={menuItems}
-        userName={userName}
-        email={email}
-        onLogout={handleLogout}
-        themeColor={themeColor}
-      />
+      {isMobile ? (
+        <MobileHeader themeColor={themeColor} items={menuItems} />
+      ) : (
+        <TopNavbar 
+          items={menuItems}
+          userName={userName}
+          email={email}
+          onLogout={handleLogout}
+          themeColor={themeColor}
+        />
+      )}
       <main className="flex-1">
         <div ref={mainContentRef} className="w-full pt-2 md:pt-3">
           {children}

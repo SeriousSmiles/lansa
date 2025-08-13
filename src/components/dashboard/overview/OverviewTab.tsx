@@ -17,9 +17,6 @@ export function OverviewTab({ userName, role, goal, insight, highlightActions, i
 
   return (
     <div className="space-y-6">
-      {/* Growth Card System - Featured prominently at the top */}
-      <GrowthCardSection userId={user?.id} />
-      
       {/* Existing Overview Content */}
         <div>
           <RecommendedActions role={role} highlightActions={highlightActions} />

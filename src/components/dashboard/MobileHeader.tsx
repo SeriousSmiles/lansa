@@ -2,13 +2,16 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Menu } from "lucide-react";
 import { getContrastTextColor } from "@/utils/colorUtils";
 
 interface MobileHeaderProps {
   themeColor?: string;
+  items: Array<{ title: string; url: string; }>;
 }
 
-export function MobileHeader({ themeColor }: MobileHeaderProps) {
+export function MobileHeader({ themeColor, items }: MobileHeaderProps) {
   // Determine if the theme is dark based on luminance
   const isDarkTheme = themeColor ? getContrastTextColor(themeColor) === "#FFFFFF" : false;
   
@@ -28,15 +31,27 @@ export function MobileHeader({ themeColor }: MobileHeaderProps) {
         />
       </Link>
       <div className="flex items-center gap-2">
-        <Link to="/profile">
-          <Button size="sm" className="btn-animate">Resume Builder</Button>
-        </Link>
-        <SidebarTrigger 
-          style={themeColor ? { 
-            color: themeColor,
-            ...(isDarkTheme && { backgroundColor: 'rgba(0, 0, 0, 0.1)' })
-          } : {}} 
-        />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <Menu className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-background border shadow-lg">
+            {items.filter(item => item.title !== "Dashboard").map((item) => (
+              <DropdownMenuItem key={item.title} asChild>
+                <Link to={item.url} className="w-full">
+                  {item.title}
+                </Link>
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuItem asChild>
+              <Link to="/profile" className="w-full">
+                Resume Builder
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
