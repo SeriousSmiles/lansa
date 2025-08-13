@@ -8,6 +8,7 @@ import { PageTransition } from "@/components/transitions/PageTransition";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
+import OpportunityDiscovery from "./pages/OpportunityDiscovery";
 import ProfileStarter from "./pages/ProfileStarter";
 import Profile from "./pages/Profile";
 import SharedProfile from "./pages/SharedProfile";
@@ -40,6 +41,7 @@ const App = () => {
                 <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
                 <Route path="/resources" element={<PageTransition><Resources /></PageTransition>} />
                 <Route path="/content" element={<PageTransition><ContentLibrary /></PageTransition>} />
+                <Route path="/discovery" element={<PageTransition><OpportunityDiscovery /></PageTransition>} />
               </Route>
               {/* Public shared profile route - no authentication required */}
               <Route path="/profile/share/:userId" element={<PageTransition><SharedProfile /></PageTransition>} />

@@ -7,6 +7,7 @@ import { LucideIcon } from "lucide-react";
 import { UserProfile } from "./UserProfile";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { Heart } from "lucide-react";
 
 type MenuItem = {
   title: string;
@@ -43,6 +44,14 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
 
         {/* Nav links */}
         <nav className="hidden md:flex items-center gap-2 lg:gap-4">
+          <Link
+            to="/discovery"
+            className="px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors flex items-center gap-2"
+            style={themeColor ? { color: themeColor } : {}}
+          >
+            <Heart className="w-4 h-4" />
+            Discovery
+          </Link>
           {items.filter(item => item.title !== "Dashboard").map((item) => (
             <Link
               key={item.title}
