@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,137 +19,134 @@ export function SwipeCard({ profile, onSwipe, isActive, zIndex }: SwipeCardProps
   const [isDragging, setIsDragging] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   
-  const startX = useRef(0);
-  const currentX = useRef(0);
-  const currentRotation = useRef(0);
+  const velocityRef = useRef({ x: 0, lastX: 0, lastTime: 0 });
+  const positionRef = useRef({ x: 0, y: 0 });
+  
+  const updateVelocity = useCallback((clientX: number) => {
+    const now = Date.now();
+    const dt = now - velocityRef.current.lastTime || 1;
+    velocityRef.current.x = (clientX - velocityRef.current.lastX) / dt;
+    velocityRef.current.lastX = clientX;
+    velocityRef.current.lastTime = now;
+  }, []);
 
-  useEffect(() => {
-    if (!cardRef.current || !isActive) return;
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    if (!isActive || !cardRef.current) return;
+    
+    cardRef.current.setPointerCapture(e.pointerId);
+    setIsDragging(true);
+    
+    // Initialize tracking
+    velocityRef.current = { x: 0, lastX: e.clientX, lastTime: Date.now() };
+    positionRef.current = { x: 0, y: 0 };
+    
+    gsap.killTweensOf(cardRef.current);
+  }, [isActive]);
 
-    const card = cardRef.current;
-    let animation: gsap.core.Tween;
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (!isDragging || !isActive || !cardRef.current) return;
+    
+    updateVelocity(e.clientX);
+    
+    positionRef.current.x += e.movementX;
+    positionRef.current.y += e.movementY;
+    
+    const rotation = positionRef.current.x * 0.1;
+    const opacity = Math.max(0.3, 1 - Math.abs(positionRef.current.x) / 300);
+    
+    gsap.set(cardRef.current, {
+      x: positionRef.current.x,
+      y: positionRef.current.y,
+      rotation: rotation,
+      opacity: opacity,
+    });
 
-    const handleStart = (clientX: number) => {
-      if (!isActive) return;
-      setIsDragging(true);
-      startX.current = clientX;
-      gsap.killTweensOf(card);
-    };
-
-    const handleMove = (clientX: number) => {
-      if (!isDragging || !isActive) return;
-      
-      const deltaX = clientX - startX.current;
-      const rotation = deltaX * 0.1;
-      const opacity = Math.max(0.3, 1 - Math.abs(deltaX) / 300);
-      
-      currentX.current = deltaX;
-      currentRotation.current = rotation;
-      
-      gsap.set(card, {
-        x: deltaX,
-        rotation: rotation,
-        opacity: opacity,
-      });
-
-      // Update swipe direction indicator
-      if (Math.abs(deltaX) > 50) {
-        setSwipeDirection(deltaX > 0 ? 'right' : 'left');
-      } else {
-        setSwipeDirection(null);
-      }
-    };
-
-    const handleEnd = () => {
-      if (!isDragging || !isActive) return;
-      setIsDragging(false);
+    // Update swipe direction indicator
+    if (Math.abs(positionRef.current.x) > 50) {
+      setSwipeDirection(positionRef.current.x > 0 ? 'right' : 'left');
+    } else {
       setSwipeDirection(null);
+    }
+  }, [isDragging, isActive, updateVelocity]);
+
+  const handlePointerUp = useCallback((e: React.PointerEvent) => {
+    if (!isDragging || !isActive || !cardRef.current) return;
+    
+    cardRef.current.releasePointerCapture(e.pointerId);
+    setIsDragging(false);
+    setSwipeDirection(null);
+    
+    const { x } = positionRef.current;
+    const { x: vx } = velocityRef.current;
+    
+    // Enhanced threshold logic: distance OR velocity
+    const distance = Math.abs(x);
+    const flick = Math.abs(vx) > 0.8; // Velocity threshold
+    const passed = distance > 120 || flick;
+    
+    if (passed) {
+      // Animate card off screen
+      const direction = x < 0 ? 'left' : 'right';
+      const exitX = x < 0 ? -window.innerWidth : window.innerWidth;
+      const exitRotation = x < 0 ? -15 : 15;
       
-      const threshold = 100;
-      const deltaX = currentX.current;
-      
-      if (Math.abs(deltaX) > threshold) {
-        // Animate card off screen
-        const direction = deltaX > 0 ? 'right' : 'left';
-        const exitX = direction === 'right' ? window.innerWidth * 1.5 : -window.innerWidth * 1.5;
-        const exitRotation = direction === 'right' ? 15 : -15;
-        
-        animation = gsap.to(card, {
-          x: exitX,
-          rotation: exitRotation,
-          opacity: 0,
-          duration: 0.4,
-          ease: "power2.out",
-          onComplete: () => {
-            // Reset card position immediately after animation
-            gsap.set(card, {
+      gsap.to(cardRef.current, {
+        x: exitX,
+        y: positionRef.current.y,
+        rotation: exitRotation,
+        opacity: 0,
+        duration: 0.3,
+        ease: "power2.out",
+        onComplete: () => {
+          if (cardRef.current) {
+            gsap.set(cardRef.current, {
               x: 0,
+              y: 0,
               rotation: 0,
               opacity: 1
             });
-            onSwipe(direction);
           }
-        });
-      } else {
-        // Snap back to center
-        animation = gsap.to(card, {
-          x: 0,
-          rotation: 0,
-          opacity: 1,
-          duration: 0.3,
-          ease: "back.out(1.7)"
-        });
-      }
-      
-      // Reset tracking values
-      currentX.current = 0;
-      currentRotation.current = 0;
-    };
-
-    // Mouse events
-    const handleMouseDown = (e: MouseEvent) => handleStart(e.clientX);
-    const handleMouseMove = (e: MouseEvent) => handleMove(e.clientX);
-    const handleMouseUp = () => handleEnd();
-
-    // Touch events
-    const handleTouchStart = (e: TouchEvent) => handleStart(e.touches[0].clientX);
-    const handleTouchMove = (e: TouchEvent) => {
-      e.preventDefault();
-      handleMove(e.touches[0].clientX);
-    };
-    const handleTouchEnd = () => handleEnd();
-
-    card.addEventListener('mousedown', handleMouseDown);
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-    card.addEventListener('touchstart', handleTouchStart);
-    document.addEventListener('touchmove', handleTouchMove);
-    document.addEventListener('touchend', handleTouchEnd);
-
-    return () => {
-      card.removeEventListener('mousedown', handleMouseDown);
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      card.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
-      if (animation) animation.kill();
-    };
-  }, [isActive, isDragging, onSwipe]);
+          onSwipe(direction);
+        }
+      });
+    } else {
+      // Snap back to center
+      gsap.to(cardRef.current, {
+        x: 0,
+        y: 0,
+        rotation: 0,
+        opacity: 1,
+        duration: 0.25,
+        ease: "back.out(1.4)"
+      });
+    }
+    
+    // Reset tracking values
+    positionRef.current = { x: 0, y: 0 };
+    velocityRef.current = { x: 0, lastX: 0, lastTime: 0 };
+  }, [isDragging, isActive, onSwipe]);
 
   return (
     <Card 
       ref={cardRef}
       className={cn(
-        "absolute inset-0 cursor-grab select-none overflow-hidden",
+        "absolute inset-0 select-none overflow-hidden will-change-transform",
         "bg-card border-border shadow-lg",
+        "touch-none cursor-grab",
         isDragging && "cursor-grabbing",
         !isActive && "pointer-events-none"
       )}
       style={{ 
         zIndex,
+        WebkitUserDrag: "none" as const,
+        userSelect: "none" as const,
+        touchAction: "none" as const,
         backgroundImage: profile.cover_color ? `linear-gradient(135deg, ${profile.cover_color}, ${profile.highlight_color || '#FF6B4A'})` : undefined
-      }}
+      } as React.CSSProperties}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
     >
       {/* Swipe indicators */}
       {swipeDirection && (
