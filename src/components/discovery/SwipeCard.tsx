@@ -63,29 +63,35 @@ export function SwipeCard({ profile, onSwipe, isActive, zIndex }: SwipeCardProps
     const handleEnd = () => {
       if (!isDragging || !isActive) return;
       setIsDragging(false);
+      setSwipeDirection(null);
       
-      const threshold = 120;
+      const threshold = 100;
       const deltaX = currentX.current;
       
       if (Math.abs(deltaX) > threshold) {
         // Animate card off screen
         const direction = deltaX > 0 ? 'right' : 'left';
-        const exitX = direction === 'right' ? window.innerWidth : -window.innerWidth;
+        const exitX = direction === 'right' ? window.innerWidth * 1.5 : -window.innerWidth * 1.5;
+        const exitRotation = direction === 'right' ? 15 : -15;
         
         animation = gsap.to(card, {
           x: exitX,
-          rotation: currentRotation.current * 2,
+          rotation: exitRotation,
           opacity: 0,
-          duration: 0.3,
+          duration: 0.4,
           ease: "power2.out",
           onComplete: () => {
-            setSwipeDirection(null);
+            // Reset card position immediately after animation
+            gsap.set(card, {
+              x: 0,
+              rotation: 0,
+              opacity: 1
+            });
             onSwipe(direction);
           }
         });
       } else {
         // Snap back to center
-        setSwipeDirection(null);
         animation = gsap.to(card, {
           x: 0,
           rotation: 0,
@@ -94,6 +100,10 @@ export function SwipeCard({ profile, onSwipe, isActive, zIndex }: SwipeCardProps
           ease: "back.out(1.7)"
         });
       }
+      
+      // Reset tracking values
+      currentX.current = 0;
+      currentRotation.current = 0;
     };
 
     // Mouse events
