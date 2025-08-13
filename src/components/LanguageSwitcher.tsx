@@ -12,8 +12,8 @@ export function LanguageSwitcher() {
 
   return (
     <div className="flex items-center gap-2" aria-label="Language selector">
-      <Button variant="ghost" size="sm" onClick={toggle} title={isPap ? t('language.english') : t('language.papiamentu')}>
-        {isPap ? 'PAP' : 'EN'}
+      <Button variant="ghost" size="sm" onClick={toggle} title={isPap ? t('language.english') : t('language.papiamentu')} aria-label={isPap ? t('language.english') : t('language.papiamentu')}>
+        {isPap ? '🇨🇼' : '🇺🇸'}
       </Button>
     </div>
   );

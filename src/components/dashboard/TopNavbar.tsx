@@ -54,17 +54,17 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
             </Link>
           ))}
         </nav>
-
         {/* Actions */}
         <div className="flex items-center gap-2">
           <div className="hidden lg:block w-56">
             <div className="relative">
-              <Input placeholder="Search" className="h-9" />
+              <Input placeholder={t('navbar.search')} className="h-9" />
             </div>
           </div>
           <Link to="/profile">
-            <Button className="btn-animate" size="sm">Resume Builder</Button>
+            <Button className="btn-animate" size="sm">{t('navbar.resumeBuilder')}</Button>
           </Link>
+          <LanguageSwitcher />
           <UserProfile 
             userName={userName}
             email={email}

@@ -12,12 +12,12 @@ export default function IndexPage() {
     <AuthLayout imageSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/21db5620684d4cbbfb27b61d5dfc0736c8a7cd9c?placeholderIfAbsent=true">
       <div className="w-full text-[#2E2E2E] font-normal text-center max-md:max-w-full">
         <h1 className="text-5xl leading-[1.2] tracking-[-0.48px] max-md:max-w-full max-md:text-[40px]">
-          {isLogin ? "Welcome Back" : "Sign Up"}
+          {isLogin ? t('auth.titleWelcomeBack') : t('auth.titleSignup')}
         </h1>
         <p className="text-lg mt-6 max-md:max-w-full">
           {isLogin 
-            ? "Good to see you again!" 
-            : "Every journey of a thousand steps, started with one!"}
+            ? t('auth.subtitleLogin')
+            : t('auth.subtitleSignup')}
         </p>
       </div>
       <div className="flex flex-col items-center w-full">
@@ -28,7 +28,7 @@ export default function IndexPage() {
             className="text-[#FF6B4A] font-medium hover:underline focus:outline-none"
             data-testid="toggle-auth-mode"
           >
-            {isLogin ? "Need an account? Sign Up" : "Already have an account? Log In"}
+            {isLogin ? t('auth.toggleToSignup') : t('auth.toggleToLogin')}
           </button>
         </div>
       </div>
