@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { getContrastTextColor } from "@/utils/colorUtils";
 import { LucideIcon } from "lucide-react";
 import { UserProfile } from "./UserProfile";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 type MenuItem = {
   title: string;
@@ -22,6 +24,7 @@ interface TopNavbarProps {
 
 export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopNavbarProps) {
   const isDarkTheme = themeColor ? getContrastTextColor(themeColor) === "#FFFFFF" : false;
+  const { t } = useTranslation();
 
   return (
     <header

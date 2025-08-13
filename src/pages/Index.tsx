@@ -1,11 +1,12 @@
-
 import { useState } from "react";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { useTranslation } from "react-i18next";
 
 export default function IndexPage() {
   const [isLogin, setIsLogin] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <AuthLayout imageSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/21db5620684d4cbbfb27b61d5dfc0736c8a7cd9c?placeholderIfAbsent=true">
