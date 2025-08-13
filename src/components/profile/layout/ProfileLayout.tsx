@@ -2,7 +2,7 @@
 import { ReactNode, useRef } from "react";
 import { ProfileHeader } from "../ProfileHeader";
 import { getContrastTextColor, generateThemeColors } from "@/utils/colorUtils";
-
+import { AnnouncementBanner } from "@/components/common/AnnouncementBanner";
 interface ProfileLayoutProps {
   children: ReactNode;
   userName: string;
@@ -47,6 +47,7 @@ export function ProfileLayout({
         backgroundColor: themeColors.light,
       }}
     >
+      <AnnouncementBanner />
       <ProfileHeader 
         userName={userName} 
         role={role} 

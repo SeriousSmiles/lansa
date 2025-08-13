@@ -1,6 +1,6 @@
 
 import React from "react";
-
+import { AnnouncementBanner } from "@/components/common/AnnouncementBanner";
 interface CardPageLayoutProps {
   children: React.ReactNode;
   isLoading?: boolean;
@@ -20,6 +20,7 @@ export const CardPageLayout: React.FC<CardPageLayoutProps> = ({
 
   return (
     <div className="min-h-screen bg-[rgba(253,248,242,1)] flex flex-col">
+      <AnnouncementBanner />
       <header className="flex min-h-[72px] w-full px-4 sm:px-6 md:px-16 items-center justify-between">
         <div className="flex items-center gap-4">
           <img

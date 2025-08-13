@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { gsap } from "gsap";
 import { TopNavbar } from "./TopNavbar";
 import { Home, BookOpen, Video, User } from "lucide-react";
-
+import { AnnouncementBanner } from "@/components/common/AnnouncementBanner";
 interface DashboardLayoutProps {
   children: React.ReactNode;
   userName: string;
@@ -58,6 +58,7 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
 
   return (
     <div className="flex min-h-screen w-full bg-[rgba(253,248,242,1)] flex-col">
+      <AnnouncementBanner />
       <TopNavbar 
         items={menuItems}
         userName={userName}
