@@ -48,8 +48,8 @@ export default function EmployerDashboard() {
 
   if (isLoading) {
     return (
-      <div className="h-screen bg-background flex items-center justify-center">
-        <div className="text-heading text-foreground animate-pulse">Loading your employer dashboard...</div>
+      <div className="h-screen bg-[rgba(253,248,242,1)] flex items-center justify-center">
+        <div className="text-2xl text-[#2E2E2E] animate-pulse">Loading your employer dashboard...</div>
       </div>
     );
   }
@@ -58,13 +58,13 @@ export default function EmployerDashboard() {
 
   return (
     <DashboardLayout userName={userName} email={user?.email || ""}>
-      <div className="p-6 md:p-8 h-[calc(100vh-72px)] overflow-y-auto">
-        <div className="max-w-7xl mx-auto space-y-8">
-          <div className="flex items-center justify-between animate-fade-in">
-            <div className="space-y-2">
-              <h1 className="text-display text-foreground">Employer Dashboard</h1>
+      <div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-4 animate-fade-in">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold">Employer Dashboard</h1>
               {businessData?.company_name && (
-                <p className="text-caption">{businessData.company_name}</p>
+                <p className="text-[#666666] mt-1">{businessData.company_name}</p>
               )}
             </div>
           </div>
