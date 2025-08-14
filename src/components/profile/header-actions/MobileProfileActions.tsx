@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Palette, Share, Eye } from "lucide-react";
+import { IconPalette, IconShare, IconEye } from "@tabler/icons-react";
 import { ThemeColorPicker } from "../dialogs/ThemeColorPicker";
 import { HighlightColorPicker } from "../dialogs/HighlightColorPicker";
 import { ShareProfileDialog } from "../dialogs/ShareProfileDialog";
@@ -65,9 +65,9 @@ export function MobileProfileActions({
         onClick={() => setIsColorPickerOpen(true)}
         className="w-full justify-start"
         variant="outline"
-      >
-        <Palette className="h-4 w-4 mr-2" />
-        Change Theme
+        >
+          <IconPalette className="h-4 w-4 mr-2" />
+          Change Theme
       </Button>
       
       <Button
@@ -100,7 +100,7 @@ export function MobileProfileActions({
           className="w-full justify-start"
           variant="outline"
         >
-          <Eye size={16} className="mr-2" />
+          <IconEye size={16} className="mr-2" />
           Preview Card
         </Button>
       )}
@@ -109,9 +109,9 @@ export function MobileProfileActions({
         onClick={handleShare}
         className="w-full justify-start"
         variant="outline"
-      >
-        <Share size={16} className="mr-2" />
-        Share Profile
+        >
+          <IconShare size={16} className="mr-2" />
+          Share Profile
       </Button>
       
       <Button

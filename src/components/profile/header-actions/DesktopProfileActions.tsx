@@ -1,6 +1,6 @@
 
 import { ProfileActionButton } from "../buttons/ProfileActionButton";
-import { Palette, Share, Eye } from "lucide-react";
+import { IconPalette, IconShare, IconEye } from "@tabler/icons-react";
 import { ThemeColorPicker } from "../dialogs/ThemeColorPicker";
 import { HighlightColorPicker } from "../dialogs/HighlightColorPicker";
 import { ShareProfileDialog } from "../dialogs/ShareProfileDialog";
@@ -70,9 +70,9 @@ export function DesktopProfileActions({
         textColor={textColor}
         coverColor={coverColor}
         isDarkTheme={isDarkTheme}
-      >
-        <Palette className="h-4 w-4" />
-        <span>Change Theme</span>
+        >
+          <IconPalette className="h-4 w-4" />
+          <span>Change Theme</span>
       </ProfileActionButton>
       
       {userType === 'job_seeker' && (
@@ -82,7 +82,7 @@ export function DesktopProfileActions({
           coverColor={coverColor}
           isDarkTheme={isDarkTheme}
         >
-          <Eye className="h-4 w-4" />
+          <IconEye className="h-4 w-4" />
           <span>Preview Card</span>
         </ProfileActionButton>
       )}
@@ -133,9 +133,9 @@ export function DesktopProfileActions({
         textColor={textColor}
         coverColor={coverColor}
         isDarkTheme={isDarkTheme}
-      >
-        <Share size={16} />
-        <span>Share Profile</span>
+        >
+          <IconShare size={16} />
+          <span>Share Profile</span>
       </ProfileActionButton>
       
       

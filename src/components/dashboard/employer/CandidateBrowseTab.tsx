@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { SwipeDeck } from "@/components/discovery/SwipeDeck";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Heart, TrendingUp } from "lucide-react";
+import { IconUsers, IconHeart, IconTrendingUp } from "@tabler/icons-react";
 import { discoveryService, DiscoveryProfile } from "@/services/discoveryService";
 import { swipeService, SwipeDirection } from "@/services/swipeService";
 import { matchService } from "@/services/matchService";
@@ -116,7 +116,7 @@ export function CandidateBrowseTab() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-lg">
-                <Heart className="w-5 h-5 text-green-600" />
+                <IconHeart className="w-5 h-5 text-green-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{matchCount}</p>
@@ -130,7 +130,7 @@ export function CandidateBrowseTab() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <TrendingUp className="w-5 h-5 text-blue-600" />
+                <IconTrendingUp className="w-5 h-5 text-blue-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{swipeCount}</p>
@@ -144,7 +144,7 @@ export function CandidateBrowseTab() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-purple-100 rounded-lg">
-                <Users className="w-5 h-5 text-purple-600" />
+                <IconUsers className="w-5 h-5 text-purple-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{profiles.length}</p>

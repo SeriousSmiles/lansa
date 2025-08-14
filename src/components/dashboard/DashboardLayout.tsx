@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { gsap } from "gsap";
 import { TopNavbar } from "./TopNavbar";
 import { MobileHeader } from "./MobileHeader";
-import { Home, BookOpen, Video, User } from "lucide-react";
+import { IconHome, IconBook, IconVideo, IconUser } from "@tabler/icons-react";
 import { AnnouncementBanner } from "@/components/common/AnnouncementBanner";
 import { useIsMobile } from "@/hooks/use-mobile";
 interface DashboardLayoutProps {
@@ -28,12 +28,12 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
     {
       title: "Resources",
       url: "/resources",
-      icon: BookOpen,
+      icon: IconBook,
     },
     {
-      title: "Content Library",
+      title: "Content Library", 
       url: "/content",
-      icon: Video,
+      icon: IconVideo,
     }
   ];
   

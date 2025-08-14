@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { SwipeCard } from "./SwipeCard";
 import { Button } from "@/components/ui/button";
-import { Heart, X, Zap } from "lucide-react";
+import { IconHeart, IconX, IconBolt } from "@tabler/icons-react";
 import { DiscoveryProfile } from "@/services/discoveryService";
 import { SwipeDirection } from "@/services/swipeService";
 import { cn } from "@/lib/utils";
@@ -107,7 +107,7 @@ export function SwipeDeck({ profiles, onSwipe, onEndReached, isLoading }: SwipeD
             "border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
           )}
         >
-          <X className="w-6 h-6" />
+          <IconX className="w-6 h-6" />
         </Button>
         
         <Button
@@ -120,7 +120,7 @@ export function SwipeDeck({ profiles, onSwipe, onEndReached, isLoading }: SwipeD
             "border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white"
           )}
         >
-          <Zap className="w-6 h-6" />
+          <IconBolt className="w-6 h-6" />
         </Button>
         
         <Button
@@ -133,7 +133,7 @@ export function SwipeDeck({ profiles, onSwipe, onEndReached, isLoading }: SwipeD
             "border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
           )}
         >
-          <Heart className="w-6 h-6" />
+          <IconHeart className="w-6 h-6" />
         </Button>
       </div>
     </div>
