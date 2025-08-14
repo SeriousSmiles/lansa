@@ -32,6 +32,13 @@ export default function Onboarding() {
         
         if (answers) {
           setUserAnswers(answers);
+          
+          // If user has already completed onboarding, redirect to dashboard
+          if (answers.onboarding_completed) {
+            navigate('/dashboard');
+            return;
+          }
+          
           // Check if user has already selected a type
           if (answers.user_type) {
             setUserType(answers.user_type);
