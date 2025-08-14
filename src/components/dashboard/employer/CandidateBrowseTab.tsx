@@ -100,29 +100,29 @@ export function CandidateBrowseTab() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-[#666666] animate-pulse">Loading candidates...</div>
+        <div className="text-subheading text-muted-foreground animate-pulse">Loading candidates...</div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-[#2E2E2E]">Browse Candidates</h2>
-          <p className="text-[#666666]">Discover talented professionals for your open positions</p>
+        <div className="space-y-2">
+          <h2 className="text-heading text-foreground">Browse Candidates</h2>
+          <p className="text-caption">Discover talented professionals for your open positions</p>
         </div>
       </div>
 
       {/* Search and Filters */}
       <div className="flex gap-4">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#666666]" />
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by name, title, or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-12"
           />
         </div>
         <div className="w-64">
@@ -135,7 +135,7 @@ export function CandidateBrowseTab() {
       </div>
 
       {/* Results */}
-      <div className="text-sm text-[#666666] mb-4">
+      <div className="text-caption">
         Showing {filteredCandidates.length} candidate{filteredCandidates.length !== 1 ? 's' : ''}
       </div>
 
@@ -147,8 +147,8 @@ export function CandidateBrowseTab() {
                 <Search className="h-8 w-8 text-gray-400" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-[#2E2E2E]">No candidates found</h3>
-                <p className="text-[#666666]">Try adjusting your search criteria</p>
+                <h3 className="text-subheading text-foreground">No candidates found</h3>
+                <p className="text-caption">Try adjusting your search criteria</p>
               </div>
             </div>
           </CardContent>

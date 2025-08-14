@@ -55,7 +55,7 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
   }, []);
 
   return (
-    <div className="flex min-h-screen w-full bg-[rgba(253,248,242,1)] flex-col">
+    <div className="flex min-h-screen w-full bg-background flex-col">
       <AnnouncementBanner />
       {isMobile ? (
         <MobileHeader themeColor={themeColor} items={menuItems} />
@@ -69,7 +69,7 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
         />
       )}
       <main className="flex-1">
-        <div ref={mainContentRef} className="w-full pt-2 md:pt-3">
+        <div ref={mainContentRef} className="w-full pt-4 md:pt-6">
           {children}
         </div>
       </main>

@@ -133,19 +133,19 @@ export function JobManagementTab() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-[#666666] animate-pulse">Loading job listings...</div>
+        <div className="text-subheading text-muted-foreground animate-pulse">Loading job listings...</div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-[#2E2E2E]">Job Listings</h2>
-          <p className="text-[#666666]">Manage your active job postings</p>
+        <div className="space-y-2">
+          <h2 className="text-heading text-foreground">Job Listings</h2>
+          <p className="text-caption">Manage your active job postings</p>
         </div>
-        <Button onClick={handleCreateJob} className="bg-[#FF6B4A] hover:bg-[#FF6B4A]/90">
+        <Button onClick={handleCreateJob}>
           <Plus className="h-4 w-4 mr-2" />
           Post New Job
         </Button>
@@ -159,10 +159,10 @@ export function JobManagementTab() {
                 <Plus className="h-8 w-8 text-gray-400" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-[#2E2E2E]">No job listings yet</h3>
-                <p className="text-[#666666]">Create your first job posting to start attracting candidates</p>
+                <h3 className="text-subheading text-foreground">No job listings yet</h3>
+                <p className="text-caption">Create your first job posting to start attracting candidates</p>
               </div>
-              <Button onClick={handleCreateJob} className="bg-[#FF6B4A] hover:bg-[#FF6B4A]/90">
+              <Button onClick={handleCreateJob}>
                 <Plus className="h-4 w-4 mr-2" />
                 Post Your First Job
               </Button>
@@ -170,9 +170,9 @@ export function JobManagementTab() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-6">
           {jobListings.map((job) => (
-            <Card key={job.id}>
+            <Card key={job.id} className="hover:shadow-lg transition-all duration-300">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
