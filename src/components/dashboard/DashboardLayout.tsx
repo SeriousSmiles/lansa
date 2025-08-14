@@ -69,7 +69,7 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
         />
       )}
       <main className="flex-1">
-        <div ref={mainContentRef} className="w-full pt-2 md:pt-3">
+        <div ref={mainContentRef} className="w-full max-w-[1440px] mx-auto pt-2 md:pt-3">
           {children}
         </div>
       </main>

@@ -62,7 +62,7 @@ export function ProfileLayout({
         onOpenGuidedSetup={onOpenGuidedSetup}
       />
 
-      <main ref={mainContentRef} className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
+      <main ref={mainContentRef} className="flex-1 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           {children}
         </div>
