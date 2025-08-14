@@ -17,6 +17,7 @@ interface ProfileLayoutProps {
   readOnly?: boolean;
   hideBackButton?: boolean;
   onOpenGuidedSetup?: () => void;
+  userProfile?: any; // Add profile data for preview
 }
 
 export function ProfileLayout({ 
@@ -32,7 +33,8 @@ export function ProfileLayout({
   mainContentRef,
   readOnly = false,
   hideBackButton = false,
-  onOpenGuidedSetup
+  onOpenGuidedSetup,
+  userProfile
 }: ProfileLayoutProps) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -60,6 +62,7 @@ export function ProfileLayout({
         readOnly={readOnly}
         hideBackButton={hideBackButton}
         onOpenGuidedSetup={onOpenGuidedSetup}
+        userProfile={userProfile}
       />
 
       <main ref={mainContentRef} className="flex-1 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12">

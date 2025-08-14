@@ -85,6 +85,7 @@ export function ProfilePage() {
         onHighlightColorChange={profile.updateHighlightColor}
         mainContentRef={mainContentRef}
         onOpenGuidedSetup={() => setGuidedOpen(true)}
+        userProfile={profile}
       >
         <ProfileContent 
           profile={profile}

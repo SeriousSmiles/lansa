@@ -20,6 +20,7 @@ interface ProfileHeaderProps {
   readOnly?: boolean;
   hideBackButton?: boolean;
   onOpenGuidedSetup?: () => void;
+  userProfile?: any; // Add profile data for preview
 }
 
 export function ProfileHeader({ 
@@ -33,7 +34,8 @@ export function ProfileHeader({
   onHighlightColorChange,
   readOnly = false,
   hideBackButton = false,
-  onOpenGuidedSetup
+  onOpenGuidedSetup,
+  userProfile
 }: ProfileHeaderProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -103,6 +105,7 @@ export function ProfileHeader({
                   isMobile={true}
                   onActionComplete={() => setMobileMenuOpen(false)}
                   onOpenGuidedSetup={onOpenGuidedSetup}
+                  userProfile={userProfile}
                 />
               </div>
             </SheetContent>
@@ -122,6 +125,7 @@ export function ProfileHeader({
               isDarkTheme={isDarkTheme}
               isMobile={false}
               onOpenGuidedSetup={onOpenGuidedSetup}
+              userProfile={userProfile}
             />
           </div>
         )

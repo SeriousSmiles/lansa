@@ -8,6 +8,7 @@ import { UserProfile } from "./UserProfile";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Heart } from "lucide-react";
+import { useUserType } from "@/hooks/useUserType";
 
 type MenuItem = {
   title: string;
@@ -26,6 +27,7 @@ interface TopNavbarProps {
 export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopNavbarProps) {
   const isDarkTheme = themeColor ? getContrastTextColor(themeColor) === "#FFFFFF" : false;
   const { t } = useTranslation();
+  const { userType } = useUserType();
 
   return (
     <header
@@ -65,9 +67,11 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
         </nav>
         {/* Actions */}
         <div className="flex items-center gap-2">
-          <Link to="/profile">
-            <Button className="btn-animate" size="sm">{t('navbar.resumeBuilder')}</Button>
-          </Link>
+          {userType !== 'employer' && (
+            <Link to="/profile">
+              <Button className="btn-animate" size="sm">{t('navbar.resumeBuilder')}</Button>
+            </Link>
+          )}
           <LanguageSwitcher />
           <UserProfile 
             userName={userName}

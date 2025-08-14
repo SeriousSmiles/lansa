@@ -14,6 +14,7 @@ interface ProfileHeaderActionsProps {
   isMobile?: boolean;
   onActionComplete?: () => void;
   onOpenGuidedSetup?: () => void;
+  userProfile?: any; // Add profile data for preview
 }
 
 export function ProfileHeaderActions({ 
@@ -27,7 +28,8 @@ export function ProfileHeaderActions({
   isDarkTheme,
   isMobile = false,
   onActionComplete,
-  onOpenGuidedSetup
+  onOpenGuidedSetup,
+  userProfile
 }: ProfileHeaderActionsProps) {
   if (isMobile) {
     return (
@@ -40,6 +42,7 @@ export function ProfileHeaderActions({
         onHighlightColorChange={onHighlightColorChange}
         onActionComplete={onActionComplete}
         onOpenGuidedSetup={onOpenGuidedSetup}
+        userProfile={userProfile}
       />
     );
   }
@@ -56,6 +59,7 @@ export function ProfileHeaderActions({
       onHighlightColorChange={onHighlightColorChange}
       onActionComplete={onActionComplete}
       onOpenGuidedSetup={onOpenGuidedSetup}
+      userProfile={userProfile}
     />
   );
 }

@@ -1,10 +1,14 @@
 
 import { Button } from "@/components/ui/button";
-import { Palette, Share } from "lucide-react";
+import { Palette, Share, Eye } from "lucide-react";
 import { ThemeColorPicker } from "../dialogs/ThemeColorPicker";
 import { HighlightColorPicker } from "../dialogs/HighlightColorPicker";
 import { ShareProfileDialog } from "../dialogs/ShareProfileDialog";
+import { ProfilePreviewModal } from "../dialogs/ProfilePreviewModal";
 import { useProfileActions } from "@/hooks/useProfileActions";
+import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUserType } from "@/hooks/useUserType";
 
 interface MobileProfileActionsProps {
   userId?: string;
@@ -15,6 +19,7 @@ interface MobileProfileActionsProps {
   onHighlightColorChange?: (color: string) => Promise<void>;
   onActionComplete?: () => void;
   onOpenGuidedSetup?: () => void;
+  userProfile?: any; // Add profile data for preview
 }
 
 export function MobileProfileActions({
@@ -25,8 +30,12 @@ export function MobileProfileActions({
   onCoverColorChange,
   onHighlightColorChange,
   onActionComplete,
-  onOpenGuidedSetup
+  onOpenGuidedSetup,
+  userProfile
 }: MobileProfileActionsProps) {
+  const { user } = useAuth();
+  const { userType } = useUserType();
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const {
     isColorPickerOpen,
     setIsColorPickerOpen,
@@ -85,6 +94,17 @@ export function MobileProfileActions({
         Change Highlights
       </Button>
       
+      {userType === 'job_seeker' && (
+        <Button
+          onClick={() => setIsPreviewOpen(true)}
+          className="w-full justify-start"
+          variant="outline"
+        >
+          <Eye size={16} className="mr-2" />
+          Preview Card
+        </Button>
+      )}
+      
       <Button
         onClick={handleShare}
         className="w-full justify-start"
@@ -108,6 +128,25 @@ export function MobileProfileActions({
         </svg>
         Fill with Guide
       </Button>
+      
+      {/* Create preview profile data */}
+      {userProfile && (
+        <ProfilePreviewModal
+          isOpen={isPreviewOpen}
+          onClose={() => setIsPreviewOpen(false)}
+          profile={{
+            user_id: user?.id || '',
+            name: userProfile.name || userName || 'Your Name',
+            title: userProfile.title || 'Your Professional Title',
+            about_text: userProfile.about_text || 'Your professional summary will appear here.',
+            profile_image: userProfile.profile_image || '',
+            skills: userProfile.skills || [],
+            cover_color: coverColor,
+            highlight_color: highlightColor,
+            professional_goal: userProfile.professional_goal || 'Your career goals will appear here.'
+          }}
+        />
+      )}
       
       {/* Dialog Components */}
       <ThemeColorPicker

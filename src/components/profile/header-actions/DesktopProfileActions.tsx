@@ -1,10 +1,14 @@
 
 import { ProfileActionButton } from "../buttons/ProfileActionButton";
-import { Palette, Share } from "lucide-react";
+import { Palette, Share, Eye } from "lucide-react";
 import { ThemeColorPicker } from "../dialogs/ThemeColorPicker";
 import { HighlightColorPicker } from "../dialogs/HighlightColorPicker";
 import { ShareProfileDialog } from "../dialogs/ShareProfileDialog";
+import { ProfilePreviewModal } from "../dialogs/ProfilePreviewModal";
 import { useProfileActions } from "@/hooks/useProfileActions";
+import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUserType } from "@/hooks/useUserType";
 
 interface DesktopProfileActionsProps {
   userId?: string;
@@ -17,6 +21,7 @@ interface DesktopProfileActionsProps {
   onHighlightColorChange?: (color: string) => Promise<void>;
   onActionComplete?: () => void;
   onOpenGuidedSetup?: () => void;
+  userProfile?: any; // Add profile data for preview
 }
 
 export function DesktopProfileActions({
@@ -29,8 +34,12 @@ export function DesktopProfileActions({
   onCoverColorChange,
   onHighlightColorChange,
   onActionComplete,
-  onOpenGuidedSetup
+  onOpenGuidedSetup,
+  userProfile
 }: DesktopProfileActionsProps) {
+  const { user } = useAuth();
+  const { userType } = useUserType();
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const {
     isColorPickerOpen,
     setIsColorPickerOpen,
@@ -65,6 +74,18 @@ export function DesktopProfileActions({
         <Palette className="h-4 w-4" />
         <span>Change Theme</span>
       </ProfileActionButton>
+      
+      {userType === 'job_seeker' && (
+        <ProfileActionButton
+          onClick={() => setIsPreviewOpen(true)}
+          textColor={textColor}
+          coverColor={coverColor}
+          isDarkTheme={isDarkTheme}
+        >
+          <Eye className="h-4 w-4" />
+          <span>Preview Card</span>
+        </ProfileActionButton>
+      )}
       
       <ProfileActionButton
         onClick={() => setIsHighlightPickerOpen(true)}
@@ -117,21 +138,25 @@ export function DesktopProfileActions({
         <span>Share Profile</span>
       </ProfileActionButton>
       
-      <ProfileActionButton
-        onClick={() => onOpenGuidedSetup?.()}
-        textColor={textColor}
-        coverColor={coverColor}
-        isDarkTheme={isDarkTheme}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-          <path d="M12 2v4" />
-          <path d="M20 12h-4" />
-          <path d="M4 12h-4" />
-          <path d="M12 18v4" />
-          <circle cx="12" cy="12" r="3" />
-        </svg>
-        <span>Fill with Guide</span>
-      </ProfileActionButton>
+      
+      {/* Create preview profile data */}
+      {userProfile && (
+        <ProfilePreviewModal
+          isOpen={isPreviewOpen}
+          onClose={() => setIsPreviewOpen(false)}
+          profile={{
+            user_id: user?.id || '',
+            name: userProfile.name || userName || 'Your Name',
+            title: userProfile.title || 'Your Professional Title',
+            about_text: userProfile.about_text || 'Your professional summary will appear here.',
+            profile_image: userProfile.profile_image || '',
+            skills: userProfile.skills || [],
+            cover_color: coverColor,
+            highlight_color: highlightColor,
+            professional_goal: userProfile.professional_goal || 'Your career goals will appear here.'
+          }}
+        />
+      )}
       
       {/* Dialog Components */}
       <ThemeColorPicker
