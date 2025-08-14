@@ -15,6 +15,7 @@ import ProfileStarter from "./pages/ProfileStarter";
 import Profile from "./pages/Profile";
 import SharedProfile from "./pages/SharedProfile";
 import Dashboard from "./pages/Dashboard";
+import EmployerDashboard from "./pages/EmployerDashboard";
 import Resources from "./pages/Resources";
 import ContentLibrary from "./pages/ContentLibrary";
 import Card from "./pages/Card";

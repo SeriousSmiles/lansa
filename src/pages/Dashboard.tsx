@@ -15,6 +15,8 @@ import { useActionTracking } from "@/hooks/useActionTracking";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ProfileCard } from "@/components/dashboard/overview/ProfileCard";
+import { useUserType } from "@/hooks/useUserType";
+import EmployerDashboard from "./EmployerDashboard";
 
 export default function Dashboard() {
   const [userAnswers, setUserAnswers] = useState<any>(null);
@@ -25,6 +27,7 @@ export default function Dashboard() {
   const [hasInitialized, setHasInitialized] = useState(false);
   const { user } = useAuth();
   const { track } = useActionTracking();
+  const { userType, isLoading: isLoadingUserType } = useUserType();
   const mountedRef = useRef(true);
   const initializingRef = useRef(false);
   
@@ -119,8 +122,13 @@ export default function Dashboard() {
     loadDashboard();
   }, [user?.id, hasInitialized, track]);
   
-  if (isLoading) {
+  if (isLoading || isLoadingUserType) {
     return <DashboardLoadingState />;
+  }
+
+  // Redirect employers to their dedicated dashboard
+  if (userType === 'employer') {
+    return <EmployerDashboard />;
   }
 
   // Defensive fallbacks to avoid rendering issues when answers are missing
