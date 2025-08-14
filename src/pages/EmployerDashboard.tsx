@@ -59,16 +59,18 @@ export default function EmployerDashboard() {
   return (
     <DashboardLayout userName={userName} email={user?.email || ""}>
       <div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4 animate-fade-in">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold">Employer Dashboard</h1>
-            {businessData?.company_name && (
-              <p className="text-[#666666] mt-1">{businessData.company_name}</p>
-            )}
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-4 animate-fade-in">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold">Employer Dashboard</h1>
+              {businessData?.company_name && (
+                <p className="text-[#666666] mt-1">{businessData.company_name}</p>
+              )}
+            </div>
           </div>
+          
+          <EmployerDashboardTabs businessData={businessData} />
         </div>
-        
-        <EmployerDashboardTabs businessData={businessData} />
       </div>
     </DashboardLayout>
   );

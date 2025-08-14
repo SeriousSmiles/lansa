@@ -258,13 +258,14 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
+            <Button variant="outline" onClick={onClose} disabled={isSubmitting} size="sm">
               Cancel
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={!isFormValid || isSubmitting}
               className="bg-[#FF6B4A] hover:bg-[#FF6B4A]/90"
+              size="sm"
             >
               {isSubmitting ? "Saving..." : editingJob ? "Update Job" : "Post Job"}
             </Button>

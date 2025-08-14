@@ -59,10 +59,11 @@ export default function DashboardReady() {
       ) : (
         <DashboardLayout userName={userName} email={user?.email || ""}>
           <div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
-            <h1 className="text-2xl md:text-3xl font-bold mb-4 animate-fade-in">Welcome to Your Dashboard</h1>
-            
-            {/* Placeholder content that shows behind the modal */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6">
+            <div className="max-w-7xl mx-auto">
+              <h1 className="text-2xl md:text-3xl font-bold mb-4 animate-fade-in">Welcome to Your Dashboard</h1>
+              
+              {/* Placeholder content that shows behind the modal */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6">
               <AnimatedCard delay={0.1}>
                 <CardHeader>
                   <CardTitle>Getting Started</CardTitle>
@@ -102,6 +103,7 @@ export default function DashboardReady() {
                   </div>
                 </CardContent>
               </AnimatedCard>
+            </div>
             </div>
           </div>
           

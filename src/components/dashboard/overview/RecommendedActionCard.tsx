@@ -18,7 +18,7 @@ export function RecommendedActionCard({ title, description, buttonText, delay }:
       </CardHeader>
       <CardContent>
         <p className="mb-3 text-sm">{description}</p>
-        <Button variant="outline" size="sm" className="w-full btn-animate">{buttonText}</Button>
+        <Button variant="outline" size="full" className="btn-animate">{buttonText}</Button>
       </CardContent>
     </AnimatedCard>
   );

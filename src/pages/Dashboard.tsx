@@ -142,24 +142,26 @@ export default function Dashboard() {
   return (
     <DashboardLayout userName={userName} email={user?.email || ""}>
       <div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4 animate-fade-in">
-          <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-          <aside className="order-last lg:order-first lg:sticky lg:top-4">
-            <ProfileCard role={role} goal={goal} />
-          </aside>
-          <section>
-            <DashboardTabs
-              userName={userName}
-              role={role}
-              goal={goal}
-              insight={insight}
-              highlightActions={highlightActions}
-              isLoading={isLoadingInsight}
-            />
-          </section>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-4 animate-fade-in">
+            <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+            <aside className="order-last lg:order-first lg:sticky lg:top-4">
+              <ProfileCard role={role} goal={goal} />
+            </aside>
+            <section>
+              <DashboardTabs
+                userName={userName}
+                role={role}
+                goal={goal}
+                insight={insight}
+                highlightActions={highlightActions}
+                isLoading={isLoadingInsight}
+              />
+            </section>
+          </div>
         </div>
       </div>
     </DashboardLayout>
