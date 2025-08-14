@@ -127,6 +127,7 @@ export function SignUpForm() {
           <Button
             type="submit"
             disabled={isLoading}
+            className="w-full"
           >
             {isLoading ? 'Creating Account...' : 'Sign Up'}
           </Button>
