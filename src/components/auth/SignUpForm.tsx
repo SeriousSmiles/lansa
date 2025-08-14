@@ -136,7 +136,7 @@ export function SignUpForm() {
             type="button"
             variant="google"
             disabled={isLoading}
-            className="mt-4"
+            className="mt-4 w-full"
             onClick={() => console.log("Google signup is not implemented in this MVP")}
           >
             <img
