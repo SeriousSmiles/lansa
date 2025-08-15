@@ -102,7 +102,8 @@ export function CandidateBrowseTab() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="h-full overflow-hidden">
+      <div className="space-y-4 h-full">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold text-[#2E2E2E]">Browse Candidates</h2>
@@ -111,7 +112,7 @@ export function CandidateBrowseTab() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -156,7 +157,7 @@ export function CandidateBrowseTab() {
       </div>
 
       {/* Swipe Interface */}
-      <div className="flex flex-col items-center">
+      <div className="flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden">
         <SwipeDeck
           profiles={profiles}
           onSwipe={handleSwipe}
@@ -166,7 +167,7 @@ export function CandidateBrowseTab() {
       </div>
 
       {/* Instructions */}
-      <Card className="mt-8">
+      <Card className="mt-4">
         <CardHeader>
           <CardTitle className="text-lg">How to Browse Candidates</CardTitle>
         </CardHeader>
@@ -204,6 +205,7 @@ export function CandidateBrowseTab() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

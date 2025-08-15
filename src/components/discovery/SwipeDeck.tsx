@@ -58,9 +58,9 @@ export function SwipeDeck({ profiles, onSwipe, onEndReached, isLoading }: SwipeD
   }
 
   return (
-    <div className="flex flex-col items-center overflow-x-hidden">
+    <div className="flex flex-col items-center overflow-hidden w-full h-full">
       {/* Card Stack */}
-      <div className="relative w-full max-w-sm h-[600px] mb-8 overflow-x-hidden">
+      <div className="relative w-full max-w-sm h-[700px] mb-6 overflow-hidden">
         {visibleCards.map((profile, index) => {
           const cardIndex = currentIndex + index;
           const isActive = index === 0 && !isAnimating;

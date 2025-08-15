@@ -123,8 +123,8 @@ export default function OpportunityDiscovery() {
   };
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      <div className="container mx-auto px-4 py-8 max-w-4xl overflow-x-hidden">
+    <div className="min-h-screen bg-background overflow-hidden">
+      <div className="container mx-auto px-4 py-6 max-w-4xl h-full overflow-hidden flex flex-col">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">Opportunity Discovery</h1>
           <p className="text-muted-foreground">
@@ -133,7 +133,7 @@ export default function OpportunityDiscovery() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 flex-shrink-0">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -178,8 +178,8 @@ export default function OpportunityDiscovery() {
         </div>
 
         {/* Discovery Mode Tabs */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'networking' | 'jobs')} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'networking' | 'jobs')} className="w-full flex-1 flex flex-col min-h-0">
+          <TabsList className="grid w-full grid-cols-2 mb-4 flex-shrink-0">
             <TabsTrigger value="networking" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Networking
@@ -190,41 +190,45 @@ export default function OpportunityDiscovery() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="networking" className="space-y-6">
-            <div className="text-center mb-6">
+          <TabsContent value="networking" className="flex-1 flex flex-col min-h-0">
+            <div className="text-center mb-4 flex-shrink-0">
               <h2 className="text-xl font-semibold mb-2">Professional Networking</h2>
               <p className="text-muted-foreground">
                 Connect with like-minded professionals and expand your network
               </p>
             </div>
             
-            <SwipeDeck
-              profiles={profiles}
-              onSwipe={handleSwipe}
-              onEndReached={handleEndReached}
-              isLoading={isLoading}
-            />
+            <div className="flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden">
+              <SwipeDeck
+                profiles={profiles}
+                onSwipe={handleSwipe}
+                onEndReached={handleEndReached}
+                isLoading={isLoading}
+              />
+            </div>
           </TabsContent>
 
-          <TabsContent value="jobs" className="space-y-6">
-            <div className="text-center mb-6">
+          <TabsContent value="jobs" className="flex-1 flex flex-col min-h-0">
+            <div className="text-center mb-4 flex-shrink-0">
               <h2 className="text-xl font-semibold mb-2">Job Opportunities</h2>
               <p className="text-muted-foreground">
                 Discover exciting job opportunities that match your skills
               </p>
             </div>
             
-            <SwipeDeck
-              profiles={profiles}
-              onSwipe={handleSwipe}
-              onEndReached={handleEndReached}
-              isLoading={isLoading}
-            />
+            <div className="flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden">
+              <SwipeDeck
+                profiles={profiles}
+                onSwipe={handleSwipe}
+                onEndReached={handleEndReached}
+                isLoading={isLoading}
+              />
+            </div>
           </TabsContent>
         </Tabs>
 
         {/* Instructions */}
-        <Card className="mt-8">
+        <Card className="mt-4 flex-shrink-0">
           <CardHeader>
             <CardTitle className="text-lg">How to Use</CardTitle>
           </CardHeader>
