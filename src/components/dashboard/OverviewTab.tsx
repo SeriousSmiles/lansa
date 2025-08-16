@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { ProfileCard } from "./overview/ProfileCard";
 import { RecommendedActions } from "./overview/RecommendedActions";
 import { GrowthCardSection } from "./overview/GrowthCardSection";
+import { DiscoveryPreviewCard } from "./overview/DiscoveryPreviewCard";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface OverviewTabProps {
@@ -23,8 +24,9 @@ export function OverviewTab({ userName, role, goal, insight, highlightActions, i
       <GrowthCardSection userId={user?.id} />
       
       {/* Existing Overview Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <ProfileCard role={role} goal={goal} />
+        <DiscoveryPreviewCard />
         <RecommendedActions role={role} highlightActions={highlightActions} />
       </div>
     </div>
