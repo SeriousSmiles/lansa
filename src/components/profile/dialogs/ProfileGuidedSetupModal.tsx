@@ -162,7 +162,7 @@ export function ProfileGuidedSetupModal({
 
           {!loading && step === 0 && (
             <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-6 border border-primary/20">
-              <div className="flex items-start gap-4">
+              <div className="flex flex-col md:flex-row md:items-start gap-4">
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-2xl">💼</span>
                 </div>
@@ -181,7 +181,7 @@ export function ProfileGuidedSetupModal({
 
           {!loading && step === 1 && (
             <div className="bg-gradient-to-r from-secondary/5 to-primary/5 rounded-xl p-6 border border-secondary/20">
-              <div className="flex items-start gap-4">
+              <div className="flex flex-col md:flex-row md:items-start gap-4">
                 <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-2xl">📝</span>
                 </div>
@@ -202,7 +202,7 @@ export function ProfileGuidedSetupModal({
 
           {!loading && step === 2 && (
             <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-6 border border-primary/20">
-              <div className="flex items-start gap-4">
+              <div className="flex flex-col md:flex-row md:items-start gap-4">
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-2xl">🚀</span>
                 </div>
@@ -233,7 +233,7 @@ export function ProfileGuidedSetupModal({
 
           {!loading && step === 3 && (
             <div className="bg-gradient-to-r from-secondary/5 to-primary/5 rounded-xl p-6 border border-secondary/20">
-              <div className="flex items-start gap-4">
+              <div className="flex flex-col md:flex-row md:items-start gap-4">
                 <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-2xl">💼</span>
                 </div>
@@ -263,7 +263,7 @@ export function ProfileGuidedSetupModal({
 
           {!loading && step === 4 && (
             <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-6 border border-primary/20">
-              <div className="flex items-start gap-4">
+              <div className="flex flex-col md:flex-row md:items-start gap-4">
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-2xl">🎓</span>
                 </div>
