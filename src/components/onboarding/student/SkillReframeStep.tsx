@@ -89,7 +89,7 @@ export function SkillReframeStep({
       </div>
 
       <Card className="shadow-lg border-border">
-        <CardContent className="p-8">
+        <CardContent className="md:p-8">
           <div className="space-y-6">
 
             <div className="bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-950/20 dark:to-yellow-950/20 p-6 rounded-xl border border-orange-200 dark:border-orange-800 space-y-4">
