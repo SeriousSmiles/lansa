@@ -166,7 +166,7 @@ export function NinetyDayPromiseStep({
                 ) : isSubmitting ? (
                   "Saving..."
                 ) : (
-                  "Create My 90-Day Promise 🎯"
+                  "Create My Promise"
                 )}
               </Button>
             </div>
