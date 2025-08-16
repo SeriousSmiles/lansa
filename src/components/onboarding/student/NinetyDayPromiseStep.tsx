@@ -82,16 +82,16 @@ export function NinetyDayPromiseStep({
       </div>
 
       <Card className="shadow-lg border-border">
-        <CardContent className="p-8">
+        <CardContent className="md:p-8">
           <div className="space-y-6">
 
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-6 rounded-xl border border-green-200 dark:border-green-800 space-y-4">
-              <div className="flex items-start space-x-3">
+              <div className="flex flex-col md:flex-row md:items-start space-y-3 md:space-y-0 md:space-x-3">
                 <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                   <span className="text-green-600 dark:text-green-400 text-sm">🎯</span>
                 </div>
                 <div className="space-y-3">
-                  <p className="text-lg font-semibold text-foreground bg-white/50 dark:bg-gray-800/50 p-4 rounded-lg border-l-4 border-primary">
+                  <p className="text-base md:text-lg font-semibold text-foreground bg-white/50 dark:bg-gray-800/50 p-4 rounded-lg border-l-4 border-primary text-left">
                     "If a company hired you today, what's one result you'd try to deliver in your first 3 months?"
                   </p>
                   <p className="text-sm text-muted-foreground">
@@ -141,7 +141,7 @@ export function NinetyDayPromiseStep({
                 className="min-h-[140px] text-base p-4 bg-background border-2 border-border focus:border-primary transition-colors resize-none"
                 maxLength={500}
               />
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-2 md:space-y-0">
                 <div className="text-xs text-muted-foreground">
                   💡 Tip: Think specific outcomes, not just activities
                 </div>

@@ -58,7 +58,7 @@ export function PowerMirrorStep({
 
   if (isGenerating) {
     return (
-      <Card className="w-full max-w-2xl mx-auto p-8 bg-card border-border">
+      <Card className="w-full max-w-2xl mx-auto md:p-8 bg-card border-border">
         <div className="text-center space-y-6">
           <div className="space-y-2">
             <div className="text-sm text-muted-foreground">
@@ -107,14 +107,14 @@ export function PowerMirrorStep({
       </div>
 
       <Card className="shadow-lg border-border">
-        <CardContent className="p-8">
+        <CardContent className="md:p-8">
           <div className="space-y-6">
 
         {mirror && (
           <div className="space-y-6">
             {/* Main Mirror Message */}
             <div className="bg-primary/5 border border-primary/20 p-6 rounded-lg">
-              <p className="text-lg text-foreground font-medium leading-relaxed">
+              <p className="text-base md:text-lg text-foreground font-medium leading-relaxed">
                 "{mirror.mirror_message}"
               </p>
             </div>
