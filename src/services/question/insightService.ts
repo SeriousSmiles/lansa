@@ -95,7 +95,7 @@ export async function getPersonalizedInsight(
     userId,
     answers?.identity,
     answers?.desired_outcome,
-    answers?.question2,
+    null, // Legacy field removed
     answers?.gender,
     answers?.age_group
   );

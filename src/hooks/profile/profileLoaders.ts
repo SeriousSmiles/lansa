@@ -41,7 +41,7 @@ export const populateFromExistingProfile = (
     profileExperience.setExperiences(convertJsonToExperienceItems(profileData.experiences));
   } else {
     // Fall back to generated experiences
-    const role = getProfileRole(answers?.question1);
+    const role = getProfileRole(answers?.identity, answers?.career_path);
     const generatedExperiences = getExperienceBasedOnRole(role);
     profileExperience.setExperiences(generatedExperiences.map(exp => ({
       ...exp,
@@ -53,7 +53,7 @@ export const populateFromExistingProfile = (
     profileEducation.setEducationItems(convertJsonToEducationItems(profileData.education));
   } else {
     // Fall back to generated education
-    const goal = getProfileGoal(answers?.question3);
+    const goal = getProfileGoal(answers?.desired_outcome);
     const generatedEducation = getEducationBasedOnAnswers(answers, goal);
     profileEducation.setEducationItems(generatedEducation.map(edu => ({
       ...edu,
@@ -73,8 +73,8 @@ export const populateFromGeneratedData = (
 ) => {
   if (!answers) return;
   
-  const role = getProfileRole(answers.question1);
-  const goal = getProfileGoal(answers.question3);
+  const role = getProfileRole(answers.identity, answers.career_path);
+  const goal = getProfileGoal(answers.desired_outcome);
   
   profileSkills.setUserSkills(getSkillsBasedOnAnswers(answers));
   
@@ -105,8 +105,8 @@ export const handleProfileLoadError = (
   profileEducation: any
 ) => {
   if (answers) {
-    const role = getProfileRole(answers.question1);
-    const goal = getProfileGoal(answers.question3);
+    const role = getProfileRole(answers.identity, answers.career_path);
+    const goal = getProfileGoal(answers.desired_outcome);
     
     profileSkills.setUserSkills(getSkillsBasedOnAnswers(answers));
     profileExperience.setExperiences(getExperienceBasedOnRole(role).map(exp => ({

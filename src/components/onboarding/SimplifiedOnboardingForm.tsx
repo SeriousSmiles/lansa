@@ -72,12 +72,12 @@ export function SimplifiedOnboardingForm({
 
   // If already complete, redirect to profile-starter using useEffect
   useEffect(() => {
-    if (isComplete() && answers.onboarding_completed) {
+    if (isComplete() && answers.career_path_onboarding_completed) {
       navigate('/profile-starter', { 
         state: { 
           identity: answers.identity,
           desired_outcome: answers.desired_outcome
-        } 
+        }
       });
     }
   }, [isComplete, answers, navigate]);

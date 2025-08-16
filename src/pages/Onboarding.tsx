@@ -38,7 +38,7 @@ export default function Onboarding() {
           setUserAnswers(answers);
           
           // If user has already completed onboarding, redirect to dashboard
-          if (answers.onboarding_completed) {
+          if (answers.career_path_onboarding_completed) {
             navigate('/dashboard');
             return;
           }

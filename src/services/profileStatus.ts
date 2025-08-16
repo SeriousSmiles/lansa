@@ -25,7 +25,7 @@ export async function getProfileStatus(userId: string): Promise<ProfileStatus> {
       .maybeSingle();
 
     const isOnboardingComplete = Boolean(
-      answersData?.onboarding_completed && 
+      answersData?.career_path_onboarding_completed && 
       (answersData?.identity || answersData?.desired_outcome)
     );
 

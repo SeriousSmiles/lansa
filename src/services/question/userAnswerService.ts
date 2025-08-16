@@ -33,16 +33,15 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
       const { error } = await supabase
         .from('user_answers')
         .update({ 
-          question1: answers.question1 ?? existingAnswers.question1,
-          question2: answers.question2 ?? existingAnswers.question2,
-          question3: answers.question3 ?? existingAnswers.question3,
           gender: answers.gender ?? existingAnswers.gender,
           age_group: answers.age_group ?? existingAnswers.age_group,
           identity: answers.identity ?? existingAnswers.identity,
           desired_outcome: answers.desired_outcome ?? existingAnswers.desired_outcome,
-          onboarding_completed: answers.onboarding_completed !== undefined ? answers.onboarding_completed : existingAnswers.onboarding_completed,
+          career_path: answers.career_path ?? existingAnswers.career_path,
+          career_path_onboarding_completed: answers.career_path_onboarding_completed !== undefined ? answers.career_path_onboarding_completed : existingAnswers.career_path_onboarding_completed,
           onboarding_inputs: answers.onboarding_inputs ?? existingAnswers.onboarding_inputs,
           ai_onboarding_card: answers.ai_onboarding_card ?? existingAnswers.ai_onboarding_card,
+          user_type: answers.user_type ?? existingAnswers.user_type,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', userId);
@@ -59,16 +58,15 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
         .from('user_answers')
         .insert([{ 
           user_id: userId, 
-          question1: answers.question1,
-          question2: answers.question2,
-          question3: answers.question3,
           gender: answers.gender,
           age_group: answers.age_group,
           identity: answers.identity,
           desired_outcome: answers.desired_outcome,
-          onboarding_completed: answers.onboarding_completed,
+          career_path: answers.career_path,
+          career_path_onboarding_completed: answers.career_path_onboarding_completed,
           onboarding_inputs: answers.onboarding_inputs || {},
-          ai_onboarding_card: answers.ai_onboarding_card || null
+          ai_onboarding_card: answers.ai_onboarding_card || null,
+          user_type: answers.user_type
         }]);
       
       if (error) {
@@ -125,7 +123,7 @@ export async function getUserAnswers(userId: string): Promise<UserAnswers | null
     console.log("Fetching user answers for:", userId);
     const { data, error } = await supabase
       .from('user_answers')
-      .select('question1, question2, question3, gender, age_group, identity, desired_outcome, onboarding_completed, onboarding_inputs, ai_onboarding_card')
+      .select('gender, age_group, identity, desired_outcome, career_path, career_path_onboarding_completed, onboarding_inputs, ai_onboarding_card, user_type')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(1);

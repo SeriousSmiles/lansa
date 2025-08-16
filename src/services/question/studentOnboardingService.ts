@@ -72,16 +72,61 @@ export async function saveNinetyDayGoal(goal: NinetyDayGoal): Promise<string> {
   return data.id;
 }
 
-export async function markStudentOnboardingComplete(userId: string) {
-  const { error } = await supabase
-    .from('user_answers')
-    .upsert({
-      user_id: userId,
-      student_onboarding_completed: true,
-      updated_at: new Date().toISOString()
-    });
+export async function markStudentOnboardingComplete(userId: string): Promise<void> {
+  try {
+    // Get user's auth metadata for name extraction
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    // Mark onboarding as complete with unified flag
+    const { error } = await supabase
+      .from('user_answers')
+      .upsert({
+        user_id: userId,
+        career_path: 'student',
+        career_path_onboarding_completed: true,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id'
+      });
 
-  if (error) {
+    if (error) {
+      console.error('Error marking student onboarding complete:', error);
+      throw error;
+    }
+
+    // Update or create user profile with real name from auth metadata
+    if (user) {
+      const firstName = user.user_metadata?.first_name;
+      const lastName = user.user_metadata?.last_name;
+      const fullName = user.user_metadata?.full_name;
+      
+      let displayName = 'Lansa User';
+      if (firstName && lastName) {
+        displayName = `${firstName} ${lastName}`;
+      } else if (fullName) {
+        displayName = fullName;
+      } else if (firstName) {
+        displayName = firstName;
+      }
+
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .upsert({
+          user_id: userId,
+          name: displayName,
+          first_name: firstName,
+          last_name: lastName,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (profileError) {
+        console.error('Error updating user profile:', profileError);
+        // Don't throw here as the main onboarding completion succeeded
+      }
+    }
+  } catch (error) {
     console.error('Error marking student onboarding complete:', error);
     throw error;
   }

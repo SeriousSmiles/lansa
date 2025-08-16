@@ -92,11 +92,11 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
       // If profile exists, set all the values from it
       populateFromExistingProfile(profileData, answers, profileBasics, profileSkills, profileExperience, profileEducation, profileImage);
       setProfessionalGoal(profileData.professional_goal || "");
-      setBiggestChallenge(profileData.biggest_challenge || answers?.question2 || "Identifying my unique value proposition");
+      setBiggestChallenge(profileData.biggest_challenge || "Identifying my unique value proposition");
     } else {
       // If no profile exists, use generated data
       populateFromGeneratedData(answers, userId, profileBasics, profileSkills, profileExperience, profileEducation);
-      setBiggestChallenge(answers?.question2 || "Identifying my unique value proposition");
+      setBiggestChallenge("Identifying my unique value proposition");
     }
   };
 
@@ -138,9 +138,9 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     }
   };
 
-  const role = getProfileRole(userAnswers?.question1);
-  const goal = getProfileGoal(userAnswers?.question3);
-  const blocker = biggestChallenge || userAnswers?.question2 || "Identifying my unique value proposition";
+  const role = getProfileRole(userAnswers?.identity, userAnswers?.career_path);
+  const goal = getProfileGoal(userAnswers?.desired_outcome);
+  const blocker = biggestChallenge || "Identifying my unique value proposition";
 
   return {
     // User data

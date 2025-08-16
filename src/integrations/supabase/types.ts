@@ -473,17 +473,14 @@ export type Database = {
         Row: {
           age_group: string | null
           ai_onboarding_card: Json | null
+          career_path: Database["public"]["Enums"]["career_path_type"] | null
+          career_path_onboarding_completed: boolean | null
           created_at: string
           desired_outcome: string | null
           gender: string | null
           id: string
           identity: string | null
-          onboarding_completed: boolean | null
           onboarding_inputs: Json | null
-          question1: string | null
-          question2: string | null
-          question3: string | null
-          student_onboarding_completed: boolean | null
           updated_at: string
           user_id: string
           user_type: string | null
@@ -491,17 +488,14 @@ export type Database = {
         Insert: {
           age_group?: string | null
           ai_onboarding_card?: Json | null
+          career_path?: Database["public"]["Enums"]["career_path_type"] | null
+          career_path_onboarding_completed?: boolean | null
           created_at?: string
           desired_outcome?: string | null
           gender?: string | null
           id?: string
           identity?: string | null
-          onboarding_completed?: boolean | null
           onboarding_inputs?: Json | null
-          question1?: string | null
-          question2?: string | null
-          question3?: string | null
-          student_onboarding_completed?: boolean | null
           updated_at?: string
           user_id: string
           user_type?: string | null
@@ -509,17 +503,14 @@ export type Database = {
         Update: {
           age_group?: string | null
           ai_onboarding_card?: Json | null
+          career_path?: Database["public"]["Enums"]["career_path_type"] | null
+          career_path_onboarding_completed?: boolean | null
           created_at?: string
           desired_outcome?: string | null
           gender?: string | null
           id?: string
           identity?: string | null
-          onboarding_completed?: boolean | null
           onboarding_inputs?: Json | null
-          question1?: string | null
-          question2?: string | null
-          question3?: string | null
-          student_onboarding_completed?: boolean | null
           updated_at?: string
           user_id?: string
           user_type?: string | null
@@ -700,10 +691,12 @@ export type Database = {
           email: string | null
           experiences: Json | null
           field_of_study: string | null
+          first_name: string | null
           gender: string | null
           highlight_color: string | null
           identity: string | null
           is_public: boolean
+          last_name: string | null
           name: string | null
           phone_number: string | null
           professional_goal: string | null
@@ -726,10 +719,12 @@ export type Database = {
           email?: string | null
           experiences?: Json | null
           field_of_study?: string | null
+          first_name?: string | null
           gender?: string | null
           highlight_color?: string | null
           identity?: string | null
           is_public?: boolean
+          last_name?: string | null
           name?: string | null
           phone_number?: string | null
           professional_goal?: string | null
@@ -752,10 +747,12 @@ export type Database = {
           email?: string | null
           experiences?: Json | null
           field_of_study?: string | null
+          first_name?: string | null
           gender?: string | null
           highlight_color?: string | null
           identity?: string | null
           is_public?: boolean
+          last_name?: string | null
           name?: string | null
           phone_number?: string | null
           professional_goal?: string | null
@@ -873,6 +870,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "business" | "student"
+      career_path_type:
+        | "student"
+        | "visionary"
+        | "entrepreneur"
+        | "freelancer"
+        | "business"
       match_context: "employee" | "internship"
       swipe_direction: "right" | "left" | "nudge"
     }
@@ -1003,6 +1006,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "business", "student"],
+      career_path_type: [
+        "student",
+        "visionary",
+        "entrepreneur",
+        "freelancer",
+        "business",
+      ],
       match_context: ["employee", "internship"],
       swipe_direction: ["right", "left", "nudge"],
     },

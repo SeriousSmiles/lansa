@@ -59,7 +59,7 @@ const EnhancedOnboardingForm: React.FC<EnhancedOnboardingFormProps> = ({ initial
   };
 
   const handleExpectations = async (value: string) => {
-    await persist({ onboarding_completed: true }, { expectations_text: value });
+    await persist({ career_path_onboarding_completed: true }, { expectations_text: value });
     // After last step, go to card page
     navigate('/card', {
       state: { identity: answers.identity, desiredOutcome: answers.desired_outcome }

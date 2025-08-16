@@ -9,7 +9,7 @@ import visionaryImage from "@/assets/onboarding/visionary.jpg";
 import entrepreneurImage from "@/assets/onboarding/entrepreneur.jpg";
 import freelancerImage from "@/assets/onboarding/freelancer.jpg";
 
-export type CareerPath = 'student' | 'visionary' | 'entrepreneur' | 'freelancer';
+export type CareerPath = 'student' | 'visionary' | 'entrepreneur' | 'freelancer' | 'business';
 
 interface CareerPathSegmentationProps {
   onSelect: (path: CareerPath) => void;

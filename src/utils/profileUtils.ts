@@ -24,8 +24,8 @@ export function getSkillsBasedOnAnswers(answers: UserAnswers | null): string[] {
   
   if (answers?.identity && skillsMap[answers.identity]) {
     skills = skillsMap[answers.identity];
-  } else if (answers?.question1 && skillsMap[answers.question1]) {
-    skills = skillsMap[answers.question1];
+  } else if (answers?.career_path && skillsMap[answers.career_path]) {
+    skills = skillsMap[answers.career_path];
   }
 
   return skills;
@@ -88,7 +88,7 @@ export function getEducationBasedOnAnswers(answers: UserAnswers | null, goal: st
   ];
 
   // If the user mentioned being a student or identity is Student, customize the education section
-  if ((answers.question1 && answers.question1.includes("student")) || answers.identity === "Student") {
+  if (answers.identity === "Student" || answers.career_path === "student") {
     return [
       {
         title: "Current Academic Program",

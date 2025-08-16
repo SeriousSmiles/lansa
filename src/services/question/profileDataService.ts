@@ -1,7 +1,8 @@
 
 import { UserAnswers } from "./types";
 
-export function getProfileRole(answer1: string | undefined, identity?: string): string {
+export function getProfileRole(identity?: string, careerPath?: string): string {
+  // Priority: use identity first, then career path
   if (identity) {
     switch (identity) {
       case "Freelancer": return "Freelancer seeking recognition";
@@ -11,42 +12,32 @@ export function getProfileRole(answer1: string | undefined, identity?: string): 
       case "Visionary": return "Visionary creating impact";
     }
   }
-
-  // Legacy fallback logic
-  if (!answer1) return "Professional seeking clarity";
   
-  if (answer1.includes("freelancer")) return "Freelancer seeking recognition";
-  if (answer1.includes("job")) return "Job seeker finding their fit";
-  if (answer1.includes("business")) return "Business owner seeking clarity";
-  if (answer1.includes("student")) return "Student preparing for the future";
+  // Fallback to career path
+  if (careerPath) {
+    switch (careerPath) {
+      case 'student': return "Student preparing for the future";
+      case 'visionary': return "Visionary creating impact";
+      case 'entrepreneur': return "Business owner seeking clarity";
+      case 'freelancer': return "Freelancer seeking recognition";
+      case 'business': return "Business professional";
+      default: return careerPath;
+    }
+  }
   
   return "Professional seeking clarity";
 }
 
-export function getProfileGoal(answer3?: string, desiredOutcome?: string): string {
-  if (desiredOutcome) {
-    return desiredOutcome;
-  }
-  
-  return answer3 || "Gaining professional clarity";
+export function getProfileGoal(desiredOutcome?: string): string {
+  return desiredOutcome || "Gaining professional clarity";
 }
 
-// Function to determine if user has completed the multi-step onboarding
+// Function to determine if user has completed the career path onboarding
 export function hasCompletedOnboarding(answers: UserAnswers | null): boolean {
   if (!answers) return false;
   
-  // Check if onboarding_completed flag is explicitly set
-  if (answers.onboarding_completed === true) {
-    return true;
-  }
-  
-  // Check if legacy onboarding was completed
-  if (answers.question3) {
-    return true;
-  }
-  
-  // Check if new multi-step onboarding was completed
-  return Boolean(answers.gender && answers.age_group && answers.identity && answers.desired_outcome);
+  // Check the unified career path onboarding completion flag
+  return !!(answers.career_path_onboarding_completed);
 }
 
 // Function to get a personalized insight based on user's answers

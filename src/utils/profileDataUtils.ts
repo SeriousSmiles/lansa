@@ -28,13 +28,7 @@ export function processSkillsData(
     // If no skills data, try to extract from answers
     if (answers) {
       const skills: string[] = [];
-      // Example: Extract skills from answers (customize based on your questions)
-      if (answers.question1 && answers.question1.includes("freelancer")) {
-        skills.push("Freelancing");
-      }
-      if (answers.question2 && answers.question2.includes("industry")) {
-        skills.push("Industry Knowledge");
-      }
+      // Extract skills from career path and identity
       if (answers.identity === "Freelancer") {
         skills.push("Client Management", "Self-Marketing");
       }
@@ -134,14 +128,12 @@ export function processExperiencesData(
         }];
       }
       
-      // Legacy fallback
-      if (answers.question1 && answers.question1.includes("freelancer")) {
-        return [{
+      // Default fallback
+      return [{
           id: "placeholder-1",
-          title: "Freelancer",
-          description: "Started freelancing career"
+          title: "Professional",
+          description: "Professional experience"
         }];
-      }
     }
 
     // Default to empty array if no data available

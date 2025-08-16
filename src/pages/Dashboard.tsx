@@ -132,8 +132,8 @@ export default function Dashboard() {
   }
 
   // Defensive fallbacks to avoid rendering issues when answers are missing
-  const role = getProfileRole(userAnswers?.question1, userAnswers?.identity) || "Professional seeking clarity";
-  const goal = getProfileGoal(userAnswers?.question3, userAnswers?.desired_outcome) || "Gaining professional clarity";
+  const role = getProfileRole(userAnswers?.identity, userAnswers?.career_path) || "Professional seeking clarity";
+  const goal = getProfileGoal(userAnswers?.desired_outcome) || "Gaining professional clarity";
   const insight = aiInsight || getBasicInsightFromAnswers(userAnswers || null);
   
   // Use the display name from the user object
