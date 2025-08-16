@@ -90,12 +90,10 @@ export function StudentDemographicsStep({
             <div className="space-y-4">
               <Label className="text-lg font-semibold text-foreground">What's your current academic status?</Label>
               <RadioGroup value={academicStatus} onValueChange={setAcademicStatus} className="grid sm:grid-cols-2 gap-3">
-                {academicOptions.map(option => <div key={option.value} className="relative">
-                    <RadioGroupItem value={option.value} id={`academic_${option.value}`} className="peer sr-only" />
-                    <Label htmlFor={`academic_${option.value}`} className="flex items-center justify-center p-4 bg-muted/30 hover:bg-muted/50 border border-border hover:border-primary/50 rounded-lg cursor-pointer transition-all peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary font-medium">
-                      {option.label}
-                    </Label>
-                  </div>)}
+                {academicOptions.map(option => <Label key={option.value} htmlFor={`academic_${option.value}`} className={`flex items-center justify-center p-4 border rounded-lg cursor-pointer transition-all font-medium ${academicStatus === option.value ? 'bg-primary/10 border-primary text-primary' : 'bg-muted/30 hover:bg-muted/50 border-border hover:border-primary/50'}`}>
+                    <RadioGroupItem value={option.value} id={`academic_${option.value}`} className="sr-only" />
+                    {option.label}
+                  </Label>)}
               </RadioGroup>
             </div>
 
@@ -113,12 +111,10 @@ export function StudentDemographicsStep({
                 Which of these best describes your career goal right now?
               </Label>
               <RadioGroup value={careerGoal} onValueChange={setCareerGoal} className="grid sm:grid-cols-2 gap-3">
-                {careerOptions.map(option => <div key={option.value} className="relative">
-                    <RadioGroupItem value={option.value} id={`career_${option.value}`} className="peer sr-only" />
-                    <Label htmlFor={`career_${option.value}`} className="flex items-center justify-center p-4 bg-muted/30 hover:bg-muted/50 border border-border hover:border-primary/50 rounded-lg cursor-pointer transition-all peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary font-medium text-center">
-                      {option.label}
-                    </Label>
-                  </div>)}
+                {careerOptions.map(option => <Label key={option.value} htmlFor={`career_${option.value}`} className={`flex items-center justify-center p-4 border rounded-lg cursor-pointer transition-all font-medium text-center ${careerGoal === option.value ? 'bg-primary/10 border-primary text-primary' : 'bg-muted/30 hover:bg-muted/50 border-border hover:border-primary/50'}`}>
+                    <RadioGroupItem value={option.value} id={`career_${option.value}`} className="sr-only" />
+                    {option.label}
+                  </Label>)}
               </RadioGroup>
             </div>
 
