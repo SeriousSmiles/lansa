@@ -93,7 +93,7 @@ export function SkillReframeStep({
           <div className="space-y-6">
 
             <div className="bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-950/20 dark:to-yellow-950/20 p-6 rounded-xl border border-orange-200 dark:border-orange-800 space-y-4">
-              <div className="flex items-start space-x-3">
+              <div className="flex flex-col md:flex-row md:items-start space-y-3 md:space-y-0 md:space-x-3">
                 <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                   <span className="text-orange-600 dark:text-orange-400 text-sm">💡</span>
                 </div>
@@ -104,7 +104,7 @@ export function SkillReframeStep({
                   <p className="text-sm font-medium text-foreground">
                     Let's try something different:
                   </p>
-                  <p className="text-lg font-semibold text-foreground bg-white/50 dark:bg-gray-800/50 p-4 rounded-lg border-l-4 border-primary">
+                  <p className="text-base md:text-lg font-semibold text-foreground bg-white/50 dark:bg-gray-800/50 p-4 rounded-lg border-l-4 border-primary text-left">
                     "What's something you learned in school that could actually solve a problem for a company today?"
                   </p>
                 </div>
