@@ -10,13 +10,16 @@ import {
 import { UserTypeSelection } from "@/components/onboarding/UserTypeSelection";
 import { BusinessOnboardingForm } from "@/components/onboarding/BusinessOnboardingForm";
 import { StudentOnboardingContainer } from "@/components/onboarding/student/StudentOnboardingContainer";
+import { CareerPathSegmentation, type CareerPath } from "@/components/onboarding/CareerPathSegmentation";
 import EnhancedOnboardingForm from "@/components/onboarding/EnhancedOnboardingForm";
 
 export default function Onboarding() {
   const [isLoading, setIsLoading] = useState(true);
   const [userAnswers, setUserAnswers] = useState<any>({});
   const [userType, setUserType] = useState<'job_seeker' | 'employer' | null>(null);
+  const [careerPath, setCareerPath] = useState<CareerPath | null>(null);
   const [showTypeSelection, setShowTypeSelection] = useState(true);
+  const [showCareerSegmentation, setShowCareerSegmentation] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -44,6 +47,14 @@ export default function Onboarding() {
           if (answers.user_type) {
             setUserType(answers.user_type);
             setShowTypeSelection(false);
+            
+            // Check if user has already selected career path
+            if (answers.career_path) {
+              setCareerPath(answers.career_path);
+              setShowCareerSegmentation(false);
+            } else if (answers.user_type === 'job_seeker') {
+              setShowCareerSegmentation(true);
+            }
           }
         }
         
@@ -61,11 +72,41 @@ export default function Onboarding() {
   const handleUserTypeSelect = (selectedType: 'job_seeker' | 'employer') => {
     setUserType(selectedType);
     setShowTypeSelection(false);
+    
+    // Show career segmentation only for job seekers
+    if (selectedType === 'job_seeker') {
+      setShowCareerSegmentation(true);
+    }
+  };
+
+  const handleCareerPathSelect = async (selectedPath: CareerPath) => {
+    setCareerPath(selectedPath);
+    setShowCareerSegmentation(false);
+    
+    // Save the career path selection
+    if (user?.id) {
+      try {
+        const updatedAnswers = { 
+          ...userAnswers, 
+          user_type: userType, 
+          career_path: selectedPath 
+        };
+        await saveUserAnswers(user.id, updatedAnswers);
+        setUserAnswers(updatedAnswers);
+      } catch (error) {
+        console.error("Error saving career path:", error);
+        toast.error("Failed to save your career path selection.");
+      }
+    }
   };
 
   const handleSaveAnswers = async (userId: string, answers: any) => {
     try {
-      const answersWithType = { ...answers, user_type: userType };
+      const answersWithType = { 
+        ...answers, 
+        user_type: userType,
+        career_path: careerPath 
+      };
       const result = await saveUserAnswers(userId, answersWithType);
       if (!result.success) {
         toast.error("Failed to save your answers. Please try again.");
@@ -97,13 +138,19 @@ export default function Onboarding() {
         />
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8">
+      <main className="flex-1">
         {showTypeSelection ? (
           <UserTypeSelection onSelect={handleUserTypeSelect} />
+        ) : showCareerSegmentation ? (
+          <CareerPathSegmentation onSelect={handleCareerPathSelect} />
         ) : userType === 'employer' ? (
-          <BusinessOnboardingForm onComplete={() => navigate('/dashboard')} />
+          <div className="flex flex-col items-center justify-center px-4 py-8">
+            <BusinessOnboardingForm onComplete={() => navigate('/dashboard')} />
+          </div>
         ) : (
-          <StudentOnboardingContainer />
+          <div className="flex flex-col items-center justify-center px-4 py-8">
+            <StudentOnboardingContainer />
+          </div>
         )}
       </main>
 

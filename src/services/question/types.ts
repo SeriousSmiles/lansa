@@ -18,5 +18,6 @@ export interface UserAnswers {
   onboarding_inputs?: any;
   ai_onboarding_card?: any;
   user_type?: 'job_seeker' | 'employer';
+  career_path?: 'student' | 'visionary' | 'entrepreneur' | 'freelancer';
   student_onboarding_completed?: boolean;
 }
