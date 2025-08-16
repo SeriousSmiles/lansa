@@ -19,6 +19,9 @@ export function CareerPathSegmentation({ onSelect }: CareerPathSegmentationProps
   const [selectedPath, setSelectedPath] = useState<CareerPath | null>(null);
 
   const handleSelect = (path: CareerPath) => {
+    // Only allow selection for student path for now
+    if (path !== 'student') return;
+    
     setSelectedPath(path);
     setTimeout(() => onSelect(path), 300);
   };
@@ -35,7 +38,8 @@ export function CareerPathSegmentation({ onSelect }: CareerPathSegmentationProps
       ],
       icon: GraduationCap,
       image: studentPathImage,
-      gradient: "from-secondary to-secondary/80"
+      gradient: "from-secondary to-secondary/80",
+      comingSoon: false
     },
     visionary: {
       title: "Visionary",
@@ -43,7 +47,8 @@ export function CareerPathSegmentation({ onSelect }: CareerPathSegmentationProps
       features: ["Innovation consulting", "Trend analysis", "Creative direction"],
       icon: Lightbulb,
       image: visionaryImage,
-      gradient: "from-primary to-primary/80"
+      gradient: "from-primary to-primary/80",
+      comingSoon: true
     },
     entrepreneur: {
       title: "Entrepreneur", 
@@ -51,7 +56,8 @@ export function CareerPathSegmentation({ onSelect }: CareerPathSegmentationProps
       features: ["Business mentorship", "Funding opportunities", "Network access"],
       icon: Briefcase,
       image: entrepreneurImage,
-      gradient: "from-secondary to-secondary/80"
+      gradient: "from-secondary to-secondary/80",
+      comingSoon: true
     },
     freelancer: {
       title: "Freelancer",
@@ -59,7 +65,8 @@ export function CareerPathSegmentation({ onSelect }: CareerPathSegmentationProps
       features: ["Project matching", "Skills marketplace", "Client connections"],
       icon: Laptop,
       image: freelancerImage,
-      gradient: "from-primary to-primary/80"
+      gradient: "from-primary to-primary/80",
+      comingSoon: true
     }
   };
 
@@ -138,25 +145,42 @@ export function CareerPathSegmentation({ onSelect }: CareerPathSegmentationProps
             .map(([key, path]) => (
             <Card 
               key={key}
-              className={`group cursor-pointer transition-all duration-500 hover:shadow-xl border-2 overflow-hidden ${
-                selectedPath === key
-                  ? 'border-primary bg-primary/5 shadow-lg scale-[1.02]' 
-                  : 'border-border hover:border-primary/50'
+              className={`group transition-all duration-500 border-2 overflow-hidden relative ${
+                path.comingSoon 
+                  ? 'cursor-not-allowed opacity-60 grayscale border-muted bg-muted/20' 
+                  : `cursor-pointer hover:shadow-xl ${
+                      selectedPath === key
+                        ? 'border-primary bg-primary/5 shadow-lg scale-[1.02]' 
+                        : 'border-border hover:border-primary/50'
+                    }`
               }`}
               onClick={() => handleSelect(key)}
             >
               <CardContent className="p-0">
                 <div className="flex items-center h-48">
+                  {/* Coming Soon Badge */}
+                  {path.comingSoon && (
+                    <div className="absolute top-4 right-4 z-10 bg-muted text-muted-foreground px-3 py-1 rounded-full text-sm font-medium border">
+                      Coming Soon
+                    </div>
+                  )}
+                  
                   {/* Image Section */}
                   <div className="relative w-80 h-full overflow-hidden">
                     <img 
                       src={path.image} 
                       alt={path.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      className={`w-full h-full object-cover transition-transform duration-500 ${
+                        path.comingSoon ? '' : 'group-hover:scale-110'
+                      }`}
                     />
-                    <div className={`absolute inset-0 bg-gradient-to-r ${path.gradient} opacity-80`} />
+                    <div className={`absolute inset-0 bg-gradient-to-r ${path.gradient} ${
+                      path.comingSoon ? 'opacity-40' : 'opacity-80'
+                    }`} />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <path.icon className="w-12 h-12 text-white" />
+                      <path.icon className={`w-12 h-12 ${
+                        path.comingSoon ? 'text-white/60' : 'text-white'
+                      }`} />
                     </div>
                   </div>
                   
@@ -165,15 +189,18 @@ export function CareerPathSegmentation({ onSelect }: CareerPathSegmentationProps
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-2xl font-bold text-foreground">{path.title}</h3>
                       <Button 
-                        variant={selectedPath === key ? "primary" : "outline"}
+                        variant={path.comingSoon ? "outline" : (selectedPath === key ? "primary" : "outline")}
                         size="sm"
+                        disabled={path.comingSoon}
                         className={`transition-all duration-300 ${
-                          selectedPath === key 
-                            ? 'bg-primary hover:bg-primary/90' 
-                            : 'border-primary text-primary hover:bg-primary hover:text-primary-foreground'
+                          path.comingSoon 
+                            ? 'cursor-not-allowed opacity-60' 
+                            : selectedPath === key 
+                              ? 'bg-primary hover:bg-primary/90' 
+                              : 'border-primary text-primary hover:bg-primary hover:text-primary-foreground'
                         }`}
                       >
-                        {selectedPath === key ? '✓ Selected' : 'Select'}
+                        {path.comingSoon ? 'Coming Soon' : (selectedPath === key ? '✓ Selected' : 'Select')}
                       </Button>
                     </div>
                     

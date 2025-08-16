@@ -42,6 +42,7 @@ export function StudentOnboardingContainer() {
   };
 
   const handleWelcomeComplete = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     setCurrentStep('demographics');
   };
 
@@ -52,6 +53,7 @@ export function StudentOnboardingContainer() {
     try {
       await saveStudentDemographics(user.id, demographicsData);
       setDemographics(demographicsData);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       setCurrentStep('skill-reframe');
       
       toast({
@@ -84,6 +86,7 @@ export function StudentOnboardingContainer() {
       });
       
       setSkillData({ original: originalSkill, analysis });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       setCurrentStep('ninety-day');
       
       toast({
@@ -116,6 +119,7 @@ export function StudentOnboardingContainer() {
       });
       
       setGoalData({ statement: goalStatement, analysis });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       setCurrentStep('power-mirror');
       
       toast({
