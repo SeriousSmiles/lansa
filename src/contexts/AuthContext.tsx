@@ -67,17 +67,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Handle auth state changes
-  const handleAuthStateChange = React.useCallback(async (session: Session | null) => {
+  const handleAuthStateChange = React.useCallback((session: Session | null) => {
     setSession(session);
     
     if (session?.user) {
-      const displayName = await fetchUserProfile(session.user.id);
-      
       setUser({
         id: session.user.id,
         email: session.user.email,
-        displayName: displayName || session.user.email?.split('@')[0] || 'Lansa User'
+        displayName: session.user.email?.split('@')[0] || 'Lansa User'
       });
+      
+      // Fetch user profile data asynchronously after state update
+      setTimeout(() => {
+        fetchUserProfile(session.user.id).then((displayName) => {
+          if (displayName) {
+            setUser(prev => prev ? { ...prev, displayName } : null);
+          }
+        });
+      }, 0);
     } else {
       setUser(null);
     }
@@ -138,7 +145,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = React.useCallback(async (email: string, password: string) => {
     try {
-      return await supabase.auth.signUp({ email, password });
+      const redirectUrl = `${window.location.origin}/`;
+      
+      return await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
+      });
     } catch (error) {
       console.error("Error signing up:", error);
       toast.error("Failed to sign up. Please check your internet connection.");
