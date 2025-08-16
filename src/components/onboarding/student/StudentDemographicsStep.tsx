@@ -119,7 +119,7 @@ export function StudentDemographicsStep({
             </div>
 
             <div className="pt-8">
-              <Button onClick={handleSubmit} disabled={!canProceed || isSubmitting} className="w-full py-4 text-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200" size="lg">
+              <Button onClick={handleSubmit} disabled={!canProceed || isSubmitting} className="w-full py-4 text-base md:text-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200" size="lg">
                 {isSubmitting ? "Saving..." : "Continue to Power Skills"}
               </Button>
             </div>

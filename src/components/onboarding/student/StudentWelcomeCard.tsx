@@ -66,7 +66,7 @@ export function StudentWelcomeCard({ onStart }: StudentWelcomeCardProps) {
             <Button 
               onClick={onStart}
               size="lg"
-              className="px-12 py-4 text-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              className="px-12 py-4 text-base md:text-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
               Let's Transform Your Future
             </Button>
