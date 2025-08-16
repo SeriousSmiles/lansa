@@ -117,7 +117,7 @@ export function SignUpForm() {
 
       <div className="w-full text-[#2E2E2E] font-normal mt-6">
         <label className="block mb-2">Password*</label>
-        <Input type="password" {...register("password", {
+        <Input type="password" autoComplete="new-password" {...register("password", {
         required: true
       })} error={!!errors.password} disabled={isLoading} />
       </div>

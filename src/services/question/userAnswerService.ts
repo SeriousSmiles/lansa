@@ -13,67 +13,29 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
       return { success: false, error: authError };
     }
     
-    // Check if the user already has answers
-    const { data: existingAnswers, error: fetchError } = await supabase
+    // Use upsert for simplicity - it handles both insert and update
+    console.log("Upserting user answers for user:", userId);
+    const { error } = await supabase
       .from('user_answers')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle();
+      .upsert({ 
+        user_id: userId, 
+        gender: answers.gender,
+        age_group: answers.age_group,
+        identity: answers.identity,
+        desired_outcome: answers.desired_outcome,
+        career_path: answers.career_path,
+        career_path_onboarding_completed: answers.career_path_onboarding_completed,
+        onboarding_inputs: answers.onboarding_inputs || {},
+        ai_onboarding_card: answers.ai_onboarding_card || null,
+        user_type: answers.user_type,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id'
+      });
     
-    if (fetchError && fetchError.code !== 'PGRST116') {
-      console.error("Error fetching existing answers:", fetchError);
-      return { success: false, error: fetchError };
-    }
-    
-    let result;
-    
-    // If user already has answers, update them
-    if (existingAnswers) {
-      console.log("Updating existing answers for user:", userId);
-      const { error } = await supabase
-        .from('user_answers')
-        .update({ 
-          gender: answers.gender ?? existingAnswers.gender,
-          age_group: answers.age_group ?? existingAnswers.age_group,
-          identity: answers.identity ?? existingAnswers.identity,
-          desired_outcome: answers.desired_outcome ?? existingAnswers.desired_outcome,
-          career_path: answers.career_path ?? existingAnswers.career_path,
-          career_path_onboarding_completed: answers.career_path_onboarding_completed !== undefined ? answers.career_path_onboarding_completed : existingAnswers.career_path_onboarding_completed,
-          onboarding_inputs: answers.onboarding_inputs ?? existingAnswers.onboarding_inputs,
-          ai_onboarding_card: answers.ai_onboarding_card ?? existingAnswers.ai_onboarding_card,
-          user_type: answers.user_type ?? existingAnswers.user_type,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', userId);
-      
-      if (error) {
-        console.error("Error updating answers:", error);
-        return { success: false, error };
-      }
-      result = { success: true };
-    } else {
-      // Otherwise, insert new answers
-      console.log("Inserting new answers for user:", userId);
-      const { error } = await supabase
-        .from('user_answers')
-        .insert([{ 
-          user_id: userId, 
-          gender: answers.gender,
-          age_group: answers.age_group,
-          identity: answers.identity,
-          desired_outcome: answers.desired_outcome,
-          career_path: answers.career_path,
-          career_path_onboarding_completed: answers.career_path_onboarding_completed,
-          onboarding_inputs: answers.onboarding_inputs || {},
-          ai_onboarding_card: answers.ai_onboarding_card || null,
-          user_type: answers.user_type
-        }]);
-      
-      if (error) {
-        console.error("Error inserting answers:", error);
-        return { success: false, error };
-      }
-      result = { success: true };
+    if (error) {
+      console.error("Error upserting answers:", error);
+      return { success: false, error };
     }
     
     // Also update the user profile with the same information
@@ -111,7 +73,7 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
       // Don't prevent the flow if profile update fails
     }
     
-    return result;
+    return { success: true };
   } catch (error) {
     console.error('Error saving user answers:', error);
     return { success: false, error };

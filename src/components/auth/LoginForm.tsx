@@ -85,6 +85,7 @@ export function LoginForm() {
         <label className="block mb-2">Password*</label>
         <Input
           type="password"
+          autoComplete="current-password"
           {...register("password", { required: true })}
           error={!!errors.password}
           disabled={isLoading}
