@@ -140,13 +140,13 @@ export function CareerPathSegmentation({ onSelect }: CareerPathSegmentationProps
           </div>
 
           {/* Right Column - Other Options */}
-          <div className="lg:col-span-2 space-y-4 lg:space-y-6">
+          <div className="lg:col-span-2 flex flex-col gap-4 lg:gap-6">
             {(Object.entries(careerPaths) as [CareerPath, typeof careerPaths.student][])
               .filter(([key]) => key !== 'student')
               .map(([key, path]) => (
               <Card 
                 key={key}
-                className={`group transition-all duration-500 border-2 overflow-hidden relative ${
+                className={`group transition-all duration-500 border-2 overflow-hidden relative flex-1 ${
                   path.comingSoon 
                     ? 'cursor-not-allowed opacity-60 grayscale border-muted bg-muted/20' 
                     : `cursor-pointer hover:shadow-xl ${
@@ -157,8 +157,8 @@ export function CareerPathSegmentation({ onSelect }: CareerPathSegmentationProps
                 }`}
                 onClick={() => handleSelect(key)}
               >
-                <CardContent className="p-0">
-                  <div className="flex flex-col sm:flex-row items-center h-auto sm:h-48">
+                <CardContent className="p-0 h-full">
+                  <div className="flex flex-col sm:flex-row items-center h-full">
                     {/* Coming Soon Badge */}
                     {path.comingSoon && (
                       <div className="absolute top-4 right-4 z-10 bg-muted text-muted-foreground px-3 py-1 rounded-full text-sm font-medium border">
@@ -186,30 +186,16 @@ export function CareerPathSegmentation({ onSelect }: CareerPathSegmentationProps
                     </div>
                     
                     {/* Content Section */}
-                    <div className="flex-1 p-4 lg:p-8">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
-                        <h3 className="text-xl lg:text-2xl font-bold text-foreground">{path.title}</h3>
-                        <Button 
-                          variant={path.comingSoon ? "outline" : (selectedPath === key ? "primary" : "outline")}
-                          size="sm"
-                          disabled={path.comingSoon}
-                          className={`transition-all duration-300 self-start sm:self-auto ${
-                            path.comingSoon 
-                              ? 'cursor-not-allowed opacity-60' 
-                              : selectedPath === key 
-                                ? 'bg-primary hover:bg-primary/90' 
-                                : 'border-primary text-primary hover:bg-primary hover:text-primary-foreground'
-                          }`}
-                        >
-                          {path.comingSoon ? 'Coming Soon' : (selectedPath === key ? '✓ Selected' : 'Select')}
-                        </Button>
+                    <div className="flex-1 p-4 lg:p-8 flex flex-col justify-between h-full">
+                      <div>
+                        <h3 className="text-xl lg:text-2xl font-bold text-foreground mb-4">{path.title}</h3>
+                        
+                        <p className="text-muted-foreground mb-4 text-base lg:text-lg leading-relaxed">
+                          {path.description}
+                        </p>
                       </div>
                       
-                      <p className="text-muted-foreground mb-4 text-base lg:text-lg leading-relaxed">
-                        {path.description}
-                      </p>
-                      
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-2 mt-auto">
                         {path.features.map((feature, index) => (
                           <span 
                             key={index}
