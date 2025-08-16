@@ -118,7 +118,7 @@ export function NinetyDayPromiseStep({
                   <div className="grid gap-3">
                     {examples.map((example, index) => (
                       <div key={index} className="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg border border-white/50">
-                        <div className="flex items-start space-x-2">
+                        <div className="flex flex-col md:flex-row md:items-start space-y-2 md:space-y-0 md:space-x-2">
                           <span className="text-purple-500 font-medium text-sm flex-shrink-0 mt-0.5">✨</span>
                           <span className="text-foreground text-sm font-medium">{example}</span>
                         </div>
