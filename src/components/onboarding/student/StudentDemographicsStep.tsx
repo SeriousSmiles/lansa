@@ -57,7 +57,7 @@ export function StudentDemographicsStep({
       career_goal_type: careerGoal
     });
   };
-  return <div className="min-h-screen bg-background px-4 py-8">
+  return <div className="min-h-screen bg-background md:px-4 md:py-8">
       {/* Centered Logo */}
       
 
