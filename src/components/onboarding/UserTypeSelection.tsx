@@ -57,57 +57,89 @@ export function UserTypeSelection({ onSelect }: UserTypeSelectionProps) {
             } ${expandedCard === 'job_seeker' ? 'md:scale-100' : ''}`}
             onClick={() => handleCardClick('job_seeker')}
           >
-            <div className={`relative ${isMobile ? 'h-24' : 'h-64'} bg-gradient-to-br from-primary to-primary/80 overflow-hidden`}>
+            <div className={`relative ${isMobile ? 'aspect-square' : 'h-64'} bg-gradient-to-br from-primary to-primary/80 overflow-hidden`}>
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center text-white p-4 md:p-8">
                   <div className="relative">
-                    <Users className={`${isMobile ? 'w-8 h-8' : 'w-20 h-20'} mx-auto mb-2 md:mb-4 drop-shadow-lg`} />
+                    <Users className={`${isMobile ? 'w-12 h-12' : 'w-20 h-20'} mx-auto mb-2 md:mb-4 drop-shadow-lg`} />
                     {!isMobile && <div className="absolute -top-2 -right-2 w-8 h-8 bg-white/20 rounded-full animate-pulse" />}
                   </div>
-                  <h3 className={`${isMobile ? 'text-lg' : 'text-3xl'} font-bold mb-1 md:mb-2`}>Seeking Opportunities</h3>
+                  <h3 className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold mb-1 md:mb-2`}>Seeking Opportunities</h3>
                   <p className={`text-primary-foreground/90 ${isMobile ? 'text-sm' : 'text-lg'}`}>Ready to grow your career</p>
-                  {isMobile && (
-                    <ChevronDown className={`w-4 h-4 mx-auto mt-1 transition-transform ${expandedCard === 'job_seeker' ? 'rotate-180' : ''}`} />
-                  )}
                 </div>
               </div>
             </div>
             
-            <CardContent className={`${isMobile && expandedCard !== 'job_seeker' ? 'hidden' : 'block'} p-4 md:p-8`}>
-              <h4 className="text-lg md:text-xl font-semibold text-foreground mb-4">Perfect if you're:</h4>
-              <div className="space-y-2 md:space-y-3 mb-6 md:mb-8">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-primary" />
-                  <span className="text-muted-foreground text-sm md:text-base">Looking for new job opportunities</span>
+            <CardContent className="p-4 md:p-8">
+              {isMobile ? (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-base font-semibold text-foreground">Perfect if you're:</h4>
+                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${expandedCard === 'job_seeker' ? 'rotate-180' : ''}`} />
+                  </div>
+                  {expandedCard !== 'job_seeker' ? (
+                    <p className="text-sm text-muted-foreground mb-4">Looking for opportunities, building network...</p>
+                  ) : (
+                    <div className="space-y-2 mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-primary" />
+                        <span className="text-muted-foreground text-sm">Looking for new job opportunities</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-primary" />
+                        <span className="text-muted-foreground text-sm">Building your professional network</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-primary" />
+                        <span className="text-muted-foreground text-sm">Developing your skills and career</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-primary" />
+                        <span className="text-muted-foreground text-sm">Showcasing your achievements</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-primary" />
-                  <span className="text-muted-foreground text-sm md:text-base">Building your professional network</span>
+              ) : (
+                <div>
+                  <h4 className="text-xl font-semibold text-foreground mb-4">Perfect if you're:</h4>
+                  <div className="space-y-3 mb-8">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                      <span className="text-muted-foreground">Looking for new job opportunities</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                      <span className="text-muted-foreground">Building your professional network</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                      <span className="text-muted-foreground">Developing your skills and career</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                      <span className="text-muted-foreground">Showcasing your achievements</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-primary" />
-                  <span className="text-muted-foreground text-sm md:text-base">Developing your skills and career</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-primary" />
-                  <span className="text-muted-foreground text-sm md:text-base">Showcasing your achievements</span>
-                </div>
-              </div>
+              )}
               
-              <Button 
-                className={`w-full py-4 md:py-6 text-base md:text-lg font-semibold transition-all duration-300 ${
-                  selectedType === 'job_seeker' 
-                    ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
-                    : 'bg-primary/10 hover:bg-primary/20 text-primary border border-primary'
-                }`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSelect('job_seeker');
-                }}
-              >
-                {selectedType === 'job_seeker' ? '✓ Selected' : 'Start Your Journey'}
-              </Button>
+              {(expandedCard === 'job_seeker' || !isMobile) && (
+                <Button 
+                  className={`w-full py-4 md:py-6 text-base md:text-lg font-semibold transition-all duration-300 ${
+                    selectedType === 'job_seeker' 
+                      ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
+                      : 'bg-primary/10 hover:bg-primary/20 text-primary border border-primary'
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelect('job_seeker');
+                  }}
+                >
+                  {selectedType === 'job_seeker' ? '✓ Selected' : 'Start Your Journey'}
+                </Button>
+              )}
             </CardContent>
           </Card>
 
@@ -119,57 +151,89 @@ export function UserTypeSelection({ onSelect }: UserTypeSelectionProps) {
             } ${expandedCard === 'employer' ? 'md:scale-100' : ''}`}
             onClick={() => handleCardClick('employer')}
           >
-            <div className={`relative ${isMobile ? 'h-24' : 'h-64'} bg-gradient-to-br from-secondary to-secondary/80 overflow-hidden`}>
+            <div className={`relative ${isMobile ? 'aspect-square' : 'h-64'} bg-gradient-to-br from-secondary to-secondary/80 overflow-hidden`}>
               <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-secondary/5" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center text-white p-4 md:p-8">
                   <div className="relative">
-                    <Building2 className={`${isMobile ? 'w-8 h-8' : 'w-20 h-20'} mx-auto mb-2 md:mb-4 drop-shadow-lg`} />
+                    <Building2 className={`${isMobile ? 'w-12 h-12' : 'w-20 h-20'} mx-auto mb-2 md:mb-4 drop-shadow-lg`} />
                     {!isMobile && <div className="absolute -top-2 -right-2 w-8 h-8 bg-white/20 rounded-full animate-pulse" />}
                   </div>
-                  <h3 className={`${isMobile ? 'text-lg' : 'text-3xl'} font-bold mb-1 md:mb-2`}>Building Teams</h3>
+                  <h3 className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold mb-1 md:mb-2`}>Building Teams</h3>
                   <p className={`text-secondary-foreground/90 ${isMobile ? 'text-sm' : 'text-lg'}`}>Ready to find great talent</p>
-                  {isMobile && (
-                    <ChevronDown className={`w-4 h-4 mx-auto mt-1 transition-transform ${expandedCard === 'employer' ? 'rotate-180' : ''}`} />
-                  )}
                 </div>
               </div>
             </div>
             
-            <CardContent className={`${isMobile && expandedCard !== 'employer' ? 'hidden' : 'block'} p-4 md:p-8`}>
-              <h4 className="text-lg md:text-xl font-semibold text-foreground mb-4">Perfect if you're:</h4>
-              <div className="space-y-2 md:space-y-3 mb-6 md:mb-8">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-secondary" />
-                  <span className="text-muted-foreground text-sm md:text-base">Hiring for open positions</span>
+            <CardContent className="p-4 md:p-8">
+              {isMobile ? (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-base font-semibold text-foreground">Perfect if you're:</h4>
+                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${expandedCard === 'employer' ? 'rotate-180' : ''}`} />
+                  </div>
+                  {expandedCard !== 'employer' ? (
+                    <p className="text-sm text-muted-foreground mb-4">Hiring for positions, building teams...</p>
+                  ) : (
+                    <div className="space-y-2 mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-secondary" />
+                        <span className="text-muted-foreground text-sm">Hiring for open positions</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-secondary" />
+                        <span className="text-muted-foreground text-sm">Building a strong team</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-secondary" />
+                        <span className="text-muted-foreground text-sm">Connecting with top talent</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-secondary" />
+                        <span className="text-muted-foreground text-sm">Growing your business</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-secondary" />
-                  <span className="text-muted-foreground text-sm md:text-base">Building a strong team</span>
+              ) : (
+                <div>
+                  <h4 className="text-xl font-semibold text-foreground mb-4">Perfect if you're:</h4>
+                  <div className="space-y-3 mb-8">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-secondary" />
+                      <span className="text-muted-foreground">Hiring for open positions</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-secondary" />
+                      <span className="text-muted-foreground">Building a strong team</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-secondary" />
+                      <span className="text-muted-foreground">Connecting with top talent</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-secondary" />
+                      <span className="text-muted-foreground">Growing your business</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-secondary" />
-                  <span className="text-muted-foreground text-sm md:text-base">Connecting with top talent</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-secondary" />
-                  <span className="text-muted-foreground text-sm md:text-base">Growing your business</span>
-                </div>
-              </div>
+              )}
               
-              <Button 
-                className={`w-full py-4 md:py-6 text-base md:text-lg font-semibold transition-all duration-300 ${
-                  selectedType === 'employer' 
-                    ? 'bg-secondary hover:bg-secondary/90 text-secondary-foreground' 
-                    : 'bg-secondary/10 hover:bg-secondary/20 text-secondary border border-secondary'
-                }`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSelect('employer');
-                }}
-              >
-                {selectedType === 'employer' ? '✓ Selected' : 'Find Great Talent'}
-              </Button>
+              {(expandedCard === 'employer' || !isMobile) && (
+                <Button 
+                  className={`w-full py-4 md:py-6 text-base md:text-lg font-semibold transition-all duration-300 ${
+                    selectedType === 'employer' 
+                      ? 'bg-secondary hover:bg-secondary/90 text-secondary-foreground' 
+                      : 'bg-secondary/10 hover:bg-secondary/20 text-secondary border border-secondary'
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelect('employer');
+                  }}
+                >
+                  {selectedType === 'employer' ? '✓ Selected' : 'Find Great Talent'}
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
