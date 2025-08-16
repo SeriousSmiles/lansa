@@ -136,3 +136,16 @@
 .card-pulse {
   animation: card-pulse 0.3s ease-in-out;
 }
+
+/* Lansa container widths */
+.lansa-container {
+  @apply w-full max-w-6xl mx-auto px-4;
+}
+
+.lansa-container-narrow {
+  @apply w-full max-w-4xl mx-auto px-4;
+}
+
+.lansa-container-wide {
+  @apply w-full max-w-7xl mx-auto px-4;
+}

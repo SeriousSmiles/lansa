@@ -62,7 +62,7 @@ export function StudentDemographicsStep({
         />
       </div>
 
-      <div className="w-full max-w-4xl mx-auto">
+      <div className="lansa-container-narrow">{/* Use Lansa container */}
         {/* Header with Image */}
         <div className="relative mb-8">
           <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">

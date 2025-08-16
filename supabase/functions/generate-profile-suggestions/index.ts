@@ -45,26 +45,37 @@ serve(async (req) => {
 
     const { answers } = await req.json();
 
-    const system = `You are a precise profile-coach assistant. Generate practical suggestions to populate a user's professional profile.
+    const system = `You are a precise profile-coach assistant. Generate practical suggestions to populate a user's professional profile based on their onboarding responses.
+
+CRITICAL: Use the user's actual onboarding data to create personalized, relevant suggestions:
+- academic_status, field_of_study, career_goal_type for students
+- identity, desired_outcome for career focus
+- user_type and career_path for customization
+- aspiration_text, challenges_text for personalization
+
 - Output STRICT JSON (no markdown), following this exact schema:
 {
-  "title": string,                   // a concise, role-aligned headline (max ~10 words)
-  "about": string,                   // a short paragraph (3-5 sentences) in first-person
-  "skills": string[],                // 5-8 concrete, resume-appropriate skills
-  "experiences": [                   // 1-2 relevant experiences with short, impact-focused descriptions
+  "title": string,                   // a concise, role-aligned headline based on their field/goals (max ~10 words)
+  "about": string,                   // a short paragraph (3-5 sentences) in first-person reflecting their actual aspirations
+  "skills": string[],                // 5-8 concrete skills relevant to their field_of_study/career_goal_type
+  "experiences": [                   // 1-2 relevant experiences that align with their academic_status and goals
     { "title": string, "description": string, "startYear": number, "endYear": number|null }
   ],
-  "education": [                     // 1-2 relevant education items
+  "education": [                     // 1-2 education items based on their field_of_study and academic_status
     { "title": string, "description": string, "startYear": number, "endYear": number|null }
   ],
-  "prompt_version": "v1"
+  "prompt_version": "v2"
 }
-- Keep tone professional, human, and specific to the user's answers.
-- If information is missing, infer plausible, generic-yet-helpful content without being fictional about employers or schools (use role-generic placeholders).`;
+- Keep tone professional, human, and specific to the user's actual answers.
+- For students: reference their field_of_study, academic_status, and career_goal_type directly
+- If information is missing, use role-appropriate defaults but prioritize user-provided data.`;
 
     const userText = Object.entries(answers || {})
+      .filter(([k, v]) => v !== null && v !== undefined && v !== '')
       .map(([k, v]) => `${k}: ${v}`)
       .join("\n");
+
+    console.log('User answers for profile suggestions:', userText);
 
     const body = {
       model: "gpt-4o-mini",
@@ -111,7 +122,7 @@ serve(async (req) => {
         education: [
           { title: "Relevant Education", description: "Completed courses relevant to my field.", startYear: 2020, endYear: 2022 },
         ],
-        prompt_version: "v1",
+        prompt_version: "v2",
       };
     }
 

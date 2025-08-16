@@ -45,20 +45,33 @@ export function ProfileGuidedSetupModal({
     const fetch = async () => {
       if (!open) return;
       setLoading(true);
+      
+      // Gather comprehensive user onboarding data
       const inputs = {
+        // Basic user data
         ...(userAnswers || {}),
         identity: userAnswers?.identity,
         desired_outcome: userAnswers?.desired_outcome,
+        user_type: userAnswers?.user_type,
+        career_path: userAnswers?.career_path,
+        
+        // Student onboarding data
+        academic_status: userAnswers?.academic_status,
+        field_of_study: userAnswers?.field_of_study,
+        career_goal_type: userAnswers?.career_goal_type,
+        
+        // Additional onboarding inputs
         aspiration_text: (userAnswers as any)?.onboarding_inputs?.aspiration_text,
         challenges_text: (userAnswers as any)?.onboarding_inputs?.challenges_text,
         expectations_text: (userAnswers as any)?.onboarding_inputs?.expectations_text,
       };
+      
       const resp = await generateProfileSuggestions(inputs);
       setSuggestions(resp);
       setLoading(false);
     };
     fetch();
-  }, [open]);
+  }, [open, userAnswers]);
 
   const applyTitle = async () => {
     if (!suggestions?.title) return;
@@ -120,90 +133,229 @@ export function ProfileGuidedSetupModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Set up your profile with AI guidance</DialogTitle>
-          <p className="text-sm text-muted-foreground">Step {step + 1} of {steps.length} • {steps[step]}</p>
+          <div className="text-center mb-4">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets/TEMP/41285a6d1f6906d8349429ceb652f953bf730d06?placeholderIfAbsent=true"
+              alt="Lansa Logo"
+              className="aspect-[2.7] object-contain w-[92px] mx-auto mb-4"
+            />
+            <DialogTitle className="text-2xl font-bold text-foreground">
+              Complete Your Profile with AI Guidance
+            </DialogTitle>
+            <div className="text-sm text-primary font-medium mt-2">
+              Step {step + 1} of {steps.length} • {steps[step]}
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {loading && <p className="text-muted-foreground">Generating suggestions…</p>}
+        <div className="space-y-6">
+          {loading && (
+            <div className="text-center py-12">
+              <div className="inline-flex items-center gap-2 text-muted-foreground">
+                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                Generating personalized suggestions based on your onboarding…
+              </div>
+            </div>
+          )}
 
           {!loading && step === 0 && (
-            <div className="space-y-3">
-              <h4 className="font-medium">Suggested headline</h4>
-              <p className="text-sm text-muted-foreground">Current: {initialTitle || '—'}</p>
-              <Separator />
-              <p className="text-base">{suggestions?.title || 'We will propose a concise headline.'}</p>
+            <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-6 border border-primary/20">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-2xl">💼</span>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-lg font-semibold mb-2">Professional Headline</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Current: <span className="font-medium">{initialTitle || 'Not set yet'}</span>
+                  </p>
+                  <div className="bg-background rounded-lg p-4 border">
+                    <p className="text-base font-medium">{suggestions?.title || 'Generating a compelling headline...'}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
           {!loading && step === 1 && (
-            <div className="space-y-3">
-              <h4 className="font-medium">Suggested about</h4>
-              <p className="text-sm text-muted-foreground">Current: {initialAbout || '—'}</p>
-              <Separator />
-              <p className="text-base whitespace-pre-line">{suggestions?.about || 'We will propose a short, first-person summary.'}</p>
+            <div className="bg-gradient-to-r from-secondary/5 to-primary/5 rounded-xl p-6 border border-secondary/20">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-2xl">📝</span>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-lg font-semibold mb-2">About Section</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Current: <span className="font-medium">{initialAbout || 'Not set yet'}</span>
+                  </p>
+                  <div className="bg-background rounded-lg p-4 border">
+                    <p className="text-base whitespace-pre-line leading-relaxed">
+                      {suggestions?.about || 'Crafting your professional story...'}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
           {!loading && step === 2 && (
-            <div className="space-y-3">
-              <h4 className="font-medium">Suggested skills</h4>
-              <p className="text-sm text-muted-foreground">We’ll add new ones and keep existing skills.</p>
-              <Separator />
-              <div className="flex flex-wrap gap-2">
-                {(suggestions?.skills || []).map((s, i) => (
-                  <span key={i} className="px-2 py-1 rounded border text-sm">{s}</span>
-                ))}
+            <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-6 border border-primary/20">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-2xl">🚀</span>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-lg font-semibold mb-2">Professional Skills</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    We'll add new skills while keeping your existing ones.
+                  </p>
+                  <div className="bg-background rounded-lg p-4 border">
+                    <div className="flex flex-wrap gap-2">
+                      {(suggestions?.skills || []).map((skill, i) => (
+                        <span 
+                          key={i} 
+                          className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary/10 text-primary border border-primary/20 font-medium"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                      {(!suggestions?.skills || suggestions.skills.length === 0) && (
+                        <span className="text-muted-foreground">Identifying your key skills...</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
           {!loading && step === 3 && (
-            <div className="space-y-3">
-              <h4 className="font-medium">Suggested experience</h4>
-              <Separator />
-              <div className="space-y-2">
-                {(suggestions?.experiences || []).map((e, i) => (
-                  <div key={i} className="rounded border p-3">
-                    <div className="font-medium">{e.title}</div>
-                    <div className="text-sm text-muted-foreground">{e.startYear} – {e.endYear ?? 'Present'}</div>
-                    <p className="text-sm mt-1">{e.description}</p>
+            <div className="bg-gradient-to-r from-secondary/5 to-primary/5 rounded-xl p-6 border border-secondary/20">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-2xl">💼</span>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-lg font-semibold mb-2">Work Experience</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Relevant experiences to showcase your background.
+                  </p>
+                  <div className="bg-background rounded-lg p-4 border space-y-3">
+                    {(suggestions?.experiences || []).map((exp, i) => (
+                      <div key={i} className="border border-border rounded-lg p-4 bg-muted/30">
+                        <div className="font-semibold text-foreground">{exp.title}</div>
+                        <div className="text-sm text-primary font-medium mb-2">
+                          {exp.startYear} – {exp.endYear ?? 'Present'}
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{exp.description}</p>
+                      </div>
+                    ))}
+                    {(!suggestions?.experiences || suggestions.experiences.length === 0) && (
+                      <span className="text-muted-foreground">Building your experience profile...</span>
+                    )}
                   </div>
-                ))}
+                </div>
               </div>
             </div>
           )}
 
           {!loading && step === 4 && (
-            <div className="space-y-3">
-              <h4 className="font-medium">Suggested education</h4>
-              <Separator />
-              <div className="space-y-2">
-                {(suggestions?.education || []).map((e, i) => (
-                  <div key={i} className="rounded border p-3">
-                    <div className="font-medium">{e.title}</div>
-                    <div className="text-sm text-muted-foreground">{e.startYear} – {e.endYear ?? 'Present'}</div>
-                    <p className="text-sm mt-1">{e.description}</p>
+            <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-6 border border-primary/20">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-2xl">🎓</span>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-lg font-semibold mb-2">Education & Training</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Educational background that supports your career goals.
+                  </p>
+                  <div className="bg-background rounded-lg p-4 border space-y-3">
+                    {(suggestions?.education || []).map((edu, i) => (
+                      <div key={i} className="border border-border rounded-lg p-4 bg-muted/30">
+                        <div className="font-semibold text-foreground">{edu.title}</div>
+                        <div className="text-sm text-secondary font-medium mb-2">
+                          {edu.startYear} – {edu.endYear ?? 'Present'}
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{edu.description}</p>
+                      </div>
+                    ))}
+                    {(!suggestions?.education || suggestions.education.length === 0) && (
+                      <span className="text-muted-foreground">Preparing education suggestions...</span>
+                    )}
                   </div>
-                ))}
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        <DialogFooter className="flex items-center justify-between gap-2">
-          <Button variant="ghost" onClick={skipForNow}>Skip for now</Button>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}>Back</Button>
-            {step === 0 && <Button onClick={applyTitle} disabled={loading}>Use suggestion</Button>}
-            {step === 1 && <Button onClick={applyAbout} disabled={loading}>Use suggestion</Button>}
-            {step === 2 && <Button onClick={applySkills} disabled={loading}>Add skills</Button>}
-            {step === 3 && <Button onClick={applyExperience} disabled={loading}>Add experience</Button>}
-            {step === 4 && <Button onClick={applyEducation} disabled={loading}>Finish</Button>}
+        <DialogFooter className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6">
+          <Button variant="ghost" onClick={skipForNow} className="order-3 sm:order-1">
+            Skip for now
+          </Button>
+          <div className="flex gap-2 order-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setStep((s) => Math.max(0, s - 1))} 
+              disabled={step === 0}
+              className="min-w-[80px]"
+            >
+              Back
+            </Button>
+            {step === 0 && (
+              <Button 
+                onClick={applyTitle} 
+                disabled={loading} 
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 min-w-[120px]"
+              >
+                Use Headline
+              </Button>
+            )}
+            {step === 1 && (
+              <Button 
+                onClick={applyAbout} 
+                disabled={loading}
+                className="bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70 min-w-[120px]"
+              >
+                Use About
+              </Button>
+            )}
+            {step === 2 && (
+              <Button 
+                onClick={applySkills} 
+                disabled={loading}
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 min-w-[120px]"
+              >
+                Add Skills
+              </Button>
+            )}
+            {step === 3 && (
+              <Button 
+                onClick={applyExperience} 
+                disabled={loading}
+                className="bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70 min-w-[120px]"
+              >
+                Add Experience
+              </Button>
+            )}
+            {step === 4 && (
+              <Button 
+                onClick={applyEducation} 
+                disabled={loading}
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 min-w-[120px]"
+              >
+                Finish Setup
+              </Button>
+            )}
             {step < steps.length - 1 && (
-              <Button variant="outline" onClick={() => setStep((s) => Math.min(steps.length - 1, s + 1))}>
+              <Button 
+                variant="outline" 
+                onClick={() => setStep((s) => Math.min(steps.length - 1, s + 1))}
+                className="min-w-[80px]"
+              >
                 Next
               </Button>
             )}

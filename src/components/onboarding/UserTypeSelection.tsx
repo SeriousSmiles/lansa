@@ -17,7 +17,7 @@ export function UserTypeSelection({ onSelect }: UserTypeSelectionProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 flex items-center justify-center px-4">
-      <div className="w-full max-w-6xl mx-auto">
+      <div className="lansa-container">{/* Use Lansa container */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 mb-6">
             <Sparkles className="w-8 h-8 text-primary" />
