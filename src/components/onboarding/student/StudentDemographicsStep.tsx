@@ -61,7 +61,7 @@ export function StudentDemographicsStep({
       {/* Centered Logo */}
       
 
-      <div className="lansa-container-narrow">{/* Use Lansa container */}
+      <div className="w-full md:lansa-container-narrow">{/* Use Lansa container */}
         {/* Header with Image */}
         <div className="relative mb-8">
           <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
