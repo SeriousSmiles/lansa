@@ -139,13 +139,16 @@
 
 /* Lansa container widths */
 .lansa-container {
-  @apply w-full max-w-4xl mx-auto px-4;
+  @apply w-full mx-auto px-4;
+  max-width: 896px; /* equivalent to max-w-4xl */
 }
 
 .lansa-container-narrow {
-  @apply w-full max-w-4xl mx-auto px-4;
+  @apply w-full mx-auto px-4;
+  max-width: 896px; /* equivalent to max-w-4xl */
 }
 
 .lansa-container-wide {
-  @apply w-full max-w-screen-xl mx-auto px-4;
+  @apply w-full mx-auto px-4;
+  max-width: 1280px; /* equivalent to max-w-screen-xl */
 }
