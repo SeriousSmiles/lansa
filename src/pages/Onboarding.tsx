@@ -9,6 +9,7 @@ import {
 } from "@/services/question";
 import { UserTypeSelection } from "@/components/onboarding/UserTypeSelection";
 import { BusinessOnboardingForm } from "@/components/onboarding/BusinessOnboardingForm";
+import { StudentOnboardingContainer } from "@/components/onboarding/student/StudentOnboardingContainer";
 import EnhancedOnboardingForm from "@/components/onboarding/EnhancedOnboardingForm";
 
 export default function Onboarding() {
@@ -102,10 +103,7 @@ export default function Onboarding() {
         ) : userType === 'employer' ? (
           <BusinessOnboardingForm onComplete={() => navigate('/dashboard')} />
         ) : (
-          <EnhancedOnboardingForm
-            initialAnswers={userAnswers}
-            onSaveAnswers={handleSaveAnswers}
-          />
+          <StudentOnboardingContainer />
         )}
       </main>
 
