@@ -22,7 +22,7 @@ export function DiscoveryPreviewCard() {
   const [discoveryProfile, setDiscoveryProfile] = useState<DiscoveryProfile | null>(null);
 
   useEffect(() => {
-    if (user?.id && userName) {
+    if (user?.id) {
       const profile: DiscoveryProfile = {
         user_id: user.id,
         name: userName || 'Your Name',
