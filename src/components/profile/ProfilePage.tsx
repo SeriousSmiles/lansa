@@ -63,6 +63,14 @@ export function ProfilePage() {
       }
     }
   }, [profile.isLoading, profile.userTitle, profile.aboutText, profile.userSkills, user?.id]);
+
+  // Debug logging
+  console.log("Profile debug:", { 
+    isLoading: profile.isLoading, 
+    userId: user?.id,
+    userName: profile.userName,
+    user: profile.user
+  });
   
   if (profile.isLoading) {
     return (

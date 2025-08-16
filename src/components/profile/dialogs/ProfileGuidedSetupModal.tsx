@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
@@ -144,6 +144,9 @@ export function ProfileGuidedSetupModal({
             <DialogTitle className="text-2xl font-bold text-foreground">
               Complete Your Profile with AI Guidance
             </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground mt-2">
+              We'll help you create a compelling profile using AI-generated suggestions based on your onboarding responses.
+            </DialogDescription>
             <div className="text-sm text-primary font-medium mt-2">
               Step {step + 1} of {steps.length} • {steps[step]}
             </div>
