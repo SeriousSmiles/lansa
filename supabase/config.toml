@@ -82,3 +82,12 @@ verify_jwt = true
 
 [functions.generate-profile-suggestions]
 verify_jwt = true
+
+[functions.analyze-skill-reframe]
+verify_jwt = false
+
+[functions.analyze-90day-goal]
+verify_jwt = false
+
+[functions.generate-power-mirror]
+verify_jwt = false

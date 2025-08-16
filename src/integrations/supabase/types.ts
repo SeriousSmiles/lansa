@@ -415,6 +415,36 @@ export type Database = {
           },
         ]
       }
+      user_90day_goal: {
+        Row: {
+          ai_interpretation: string | null
+          clarity_level: string | null
+          created_at: string
+          goal_statement: string
+          id: string
+          initiative_type: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_interpretation?: string | null
+          clarity_level?: string | null
+          created_at?: string
+          goal_statement: string
+          id?: string
+          initiative_type?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_interpretation?: string | null
+          clarity_level?: string | null
+          created_at?: string
+          goal_statement?: string
+          id?: string
+          initiative_type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_actions: {
         Row: {
           action_type: string
@@ -453,6 +483,7 @@ export type Database = {
           question1: string | null
           question2: string | null
           question3: string | null
+          student_onboarding_completed: boolean | null
           updated_at: string
           user_id: string
           user_type: string | null
@@ -470,6 +501,7 @@ export type Database = {
           question1?: string | null
           question2?: string | null
           question3?: string | null
+          student_onboarding_completed?: boolean | null
           updated_at?: string
           user_id: string
           user_type?: string | null
@@ -487,6 +519,7 @@ export type Database = {
           question1?: string | null
           question2?: string | null
           question3?: string | null
+          student_onboarding_completed?: boolean | null
           updated_at?: string
           user_id?: string
           user_type?: string | null
@@ -623,17 +656,50 @@ export type Database = {
           },
         ]
       }
+      user_power_skills: {
+        Row: {
+          ai_category: string | null
+          business_value_type: string | null
+          created_at: string
+          id: string
+          original_skill: string
+          reframed_skill: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_category?: string | null
+          business_value_type?: string | null
+          created_at?: string
+          id?: string
+          original_skill: string
+          reframed_skill?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_category?: string | null
+          business_value_type?: string | null
+          created_at?: string
+          id?: string
+          original_skill?: string
+          reframed_skill?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           about_text: string | null
+          academic_status: string | null
           age_group: string | null
           biggest_challenge: string | null
+          career_goal_type: string | null
           cover_color: string | null
           created_at: string | null
           desired_outcome: string | null
           education: Json | null
           email: string | null
           experiences: Json | null
+          field_of_study: string | null
           gender: string | null
           highlight_color: string | null
           identity: string | null
@@ -649,14 +715,17 @@ export type Database = {
         }
         Insert: {
           about_text?: string | null
+          academic_status?: string | null
           age_group?: string | null
           biggest_challenge?: string | null
+          career_goal_type?: string | null
           cover_color?: string | null
           created_at?: string | null
           desired_outcome?: string | null
           education?: Json | null
           email?: string | null
           experiences?: Json | null
+          field_of_study?: string | null
           gender?: string | null
           highlight_color?: string | null
           identity?: string | null
@@ -672,14 +741,17 @@ export type Database = {
         }
         Update: {
           about_text?: string | null
+          academic_status?: string | null
           age_group?: string | null
           biggest_challenge?: string | null
+          career_goal_type?: string | null
           cover_color?: string | null
           created_at?: string | null
           desired_outcome?: string | null
           education?: Json | null
           email?: string | null
           experiences?: Json | null
+          field_of_study?: string | null
           gender?: string | null
           highlight_color?: string | null
           identity?: string | null
