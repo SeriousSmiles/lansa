@@ -155,7 +155,7 @@ export function SkillReframeStep({
                 className="min-h-[140px] text-base p-4 bg-background border-2 border-border focus:border-primary transition-colors resize-none"
                 maxLength={500}
               />
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-2 md:space-y-0">
                 <div className="text-xs text-muted-foreground">
                   💡 Tip: Focus on problems you can solve, not just skills you have
                 </div>
