@@ -72,7 +72,7 @@ export function StudentWelcomeCard({ onStart }: StudentWelcomeCardProps) {
             </Button>
           </div>
 
-          <div className="flex items-center justify-center space-x-6 text-xs text-muted-foreground pt-4">
+          <div className="flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-6 text-xs text-muted-foreground pt-4">
             <div className="flex items-center space-x-1">
               <span>⏱️</span>
               <span>5 minutes</span>
