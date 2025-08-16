@@ -140,7 +140,7 @@
 /* Lansa container widths */
 .lansa-container {
   @apply w-full mx-auto px-4;
-  max-width: 896px; /* equivalent to max-w-4xl */
+  max-width: 1024px; /* equivalent to max-w-5xl */
 }
 
 .lansa-container-narrow {
