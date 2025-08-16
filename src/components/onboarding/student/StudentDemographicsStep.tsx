@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { StudentDemographics } from "@/services/question/studentOnboardingService";
+import demographicsImage from "@/assets/onboarding/demographics.jpg";
 
 interface StudentDemographicsStepProps {
   onComplete: (demographics: StudentDemographics) => void;
@@ -51,85 +52,106 @@ export function StudentDemographicsStep({
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto p-8 bg-card border-border">
-      <div className="space-y-6">
-        <div className="text-center space-y-2">
-          <div className="text-sm text-muted-foreground">
-            Step {stepNumber} of {totalSteps}
-          </div>
-          <h2 className="text-2xl font-bold text-foreground">
-            Tell us about yourself
-          </h2>
-          <p className="text-muted-foreground">
-            This helps us give you better guidance.
-          </p>
-        </div>
-
-        <div className="space-y-6">
-          {/* Academic Status */}
-          <div className="space-y-3">
-            <Label className="text-base font-medium">What's your current academic status?</Label>
-            <RadioGroup value={academicStatus} onValueChange={setAcademicStatus}>
-              {academicOptions.map((option) => (
-                <div key={option.value} className="flex items-center space-x-2">
-                  <RadioGroupItem value={option.value} id={option.value} />
-                  <Label htmlFor={option.value} className="text-sm cursor-pointer">
-                    {option.label}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
-
-          {/* Field of Study */}
-          <div className="space-y-2">
-            <Label htmlFor="field_of_study" className="text-base font-medium">
-              What are you studying (or did you study)?
-            </Label>
-            <Input
-              id="field_of_study"
-              value={fieldOfStudy}
-              onChange={(e) => setFieldOfStudy(e.target.value)}
-              placeholder="e.g., Business Administration, Computer Science, Psychology..."
-              className="text-base"
+    <div className="w-full max-w-4xl mx-auto">
+      {/* Header with Image */}
+      <div className="relative mb-8">
+        <div className="flex flex-col md:flex-row items-center gap-8">
+          <div className="md:w-1/2">
+            <img 
+              src={demographicsImage} 
+              alt="Students in academic setting"
+              className="w-full h-64 object-cover rounded-xl shadow-lg"
             />
           </div>
-
-          {/* Career Goal */}
-          <div className="space-y-3">
-            <Label className="text-base font-medium">
-              Which of these best describes your career goal right now?
-            </Label>
-            <RadioGroup value={careerGoal} onValueChange={setCareerGoal}>
-              {careerOptions.map((option) => (
-                <div key={option.value} className="flex items-center space-x-2">
-                  <RadioGroupItem value={option.value} id={option.value} />
-                  <Label htmlFor={option.value} className="text-sm cursor-pointer">
-                    {option.label}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
+          <div className="md:w-1/2 text-center md:text-left">
+            <div className="text-sm text-primary font-medium mb-2">
+              Step {stepNumber} of {totalSteps} • Getting to Know You
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Tell us about yourself
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              This helps us give you personalized guidance tailored to your unique situation.
+            </p>
           </div>
         </div>
-
-        <div className="pt-4">
-          <Button 
-            onClick={handleSubmit}
-            disabled={!canProceed || isSubmitting}
-            className="w-full"
-            size="lg"
-          >
-            {isSubmitting ? "Saving..." : "Continue"}
-          </Button>
-        </div>
-
-        <div className="text-center">
-          <p className="text-xs text-muted-foreground">
-            You're doing great — this helps us personalize your experience.
-          </p>
-        </div>
       </div>
-    </Card>
+
+      <Card className="shadow-lg border-border">
+        <CardContent className="p-8">
+          <div className="space-y-8">
+
+            {/* Academic Status */}
+            <div className="space-y-4">
+              <Label className="text-lg font-semibold text-foreground">What's your current academic status?</Label>
+              <RadioGroup value={academicStatus} onValueChange={setAcademicStatus} className="grid sm:grid-cols-2 gap-3">
+                {academicOptions.map((option) => (
+                  <div key={option.value} className="relative">
+                    <RadioGroupItem value={option.value} id={option.value} className="peer sr-only" />
+                    <Label 
+                      htmlFor={option.value} 
+                      className="flex items-center justify-center p-4 bg-muted/30 hover:bg-muted/50 border border-border hover:border-primary/50 rounded-lg cursor-pointer transition-all peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary font-medium"
+                    >
+                      {option.label}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+
+            {/* Field of Study */}
+            <div className="space-y-3">
+              <Label htmlFor="field_of_study" className="text-lg font-semibold text-foreground">
+                What are you studying (or did you study)?
+              </Label>
+              <Input
+                id="field_of_study"
+                value={fieldOfStudy}
+                onChange={(e) => setFieldOfStudy(e.target.value)}
+                placeholder="e.g., Business Administration, Computer Science, Psychology..."
+                className="text-base p-4 bg-background border-2 border-border focus:border-primary transition-colors"
+              />
+            </div>
+
+            {/* Career Goal */}
+            <div className="space-y-4">
+              <Label className="text-lg font-semibold text-foreground">
+                Which of these best describes your career goal right now?
+              </Label>
+              <RadioGroup value={careerGoal} onValueChange={setCareerGoal} className="grid sm:grid-cols-2 gap-3">
+                {careerOptions.map((option) => (
+                  <div key={option.value} className="relative">
+                    <RadioGroupItem value={option.value} id={option.value} className="peer sr-only" />
+                    <Label 
+                      htmlFor={option.value} 
+                      className="flex items-center justify-center p-4 bg-muted/30 hover:bg-muted/50 border border-border hover:border-primary/50 rounded-lg cursor-pointer transition-all peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary font-medium text-center"
+                    >
+                      {option.label}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+
+            <div className="pt-8">
+              <Button 
+                onClick={handleSubmit}
+                disabled={!canProceed || isSubmitting}
+                className="w-full py-4 text-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+                size="lg"
+              >
+                {isSubmitting ? "Saving..." : "Continue to Power Skills"}
+              </Button>
+            </div>
+
+            <div className="text-center pt-4">
+              <p className="text-sm text-muted-foreground">
+                ✨ You're doing great — this helps us personalize your experience.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LoadingSpinner } from "@/components/loading";
 import { generatePowerMirror, StudentDemographics } from "@/services/question/studentOnboardingService";
+import powerMirrorImage from "@/assets/onboarding/power-mirror.jpg";
 
 interface PowerMirrorStepProps {
   skillReframe: string;
@@ -80,19 +81,34 @@ export function PowerMirrorStep({
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto p-8 bg-card border-border">
-      <div className="space-y-6">
-        <div className="text-center space-y-2">
-          <div className="text-sm text-muted-foreground">
-            Step {stepNumber} of {totalSteps} • Power Mirror
+    <div className="w-full max-w-4xl mx-auto">
+      {/* Header with Image */}
+      <div className="relative mb-8">
+        <div className="flex flex-col md:flex-row items-center gap-8">
+          <div className="md:w-1/2">
+            <img 
+              src={powerMirrorImage} 
+              alt="Professional transformation mirror"
+              className="w-full h-64 object-cover rounded-xl shadow-lg"
+            />
           </div>
-          <h2 className="text-2xl font-bold text-foreground">
-            Show You How Employers Think
-          </h2>
-          <p className="text-muted-foreground">
-            Based on what you wrote, here's how a manager might interpret your answers:
-          </p>
+          <div className="md:w-1/2 text-center md:text-left">
+            <div className="text-sm text-primary font-medium mb-2">
+              Step {stepNumber} of {totalSteps} • Power Mirror
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              How Employers See You
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Based on what you wrote, here's how a hiring manager might interpret your answers.
+            </p>
+          </div>
         </div>
+      </div>
+
+      <Card className="shadow-lg border-border">
+        <CardContent className="p-8">
+          <div className="space-y-6">
 
         {mirror && (
           <div className="space-y-6">
@@ -141,23 +157,25 @@ export function PowerMirrorStep({
           </div>
         )}
 
-        <div className="pt-4">
-          <Button 
-            onClick={handleContinue}
-            disabled={!mirror || isSubmitting}
-            className="w-full"
-            size="lg"
-          >
-            {isSubmitting ? "Completing Setup..." : "Build Your Profile Now"}
-          </Button>
-        </div>
+            <div className="pt-8">
+              <Button 
+                onClick={handleContinue}
+                disabled={!mirror || isSubmitting}
+                className="w-full py-4 text-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+                size="lg"
+              >
+                {isSubmitting ? "Completing Setup..." : "Build Your Profile Now 🚀"}
+              </Button>
+            </div>
 
-        <div className="text-center">
-          <p className="text-xs text-muted-foreground">
-            You're ready to show the world your value! 🚀
-          </p>
-        </div>
-      </div>
-    </Card>
+            <div className="text-center pt-4">
+              <p className="text-sm text-muted-foreground">
+                🎉 You're ready to show the world your value!
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
