@@ -1,15 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { getContrastTextColor } from "@/utils/colorUtils";
-import { LucideIcon } from "lucide-react";
 import { UserProfile } from "./UserProfile";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { IconHeart } from "@tabler/icons-react";
 import { useUserType } from "@/hooks/useUserType";
 import { TablerIcon } from "@tabler/icons-react";
+import { AnimatedTabNav } from "@/components/navigation/AnimatedTabNav";
 
 type MenuItem = {
   title: string;
@@ -45,27 +43,10 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
           />
         </Link>
 
-        {/* Nav links */}
-        <nav className="hidden md:flex items-center gap-2 lg:gap-4">
-          <Link
-            to="/discovery"
-            className="px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors flex items-center gap-2"
-            style={themeColor ? { color: themeColor } : {}}
-          >
-            <IconHeart className="w-4 h-4" />
-            Discovery
-          </Link>
-          {items.filter(item => item.title !== "Dashboard").map((item) => (
-            <Link
-              key={item.title}
-              to={item.url}
-              className="px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors"
-              style={themeColor ? { color: themeColor } : {}}
-            >
-              {item.title}
-            </Link>
-          ))}
-        </nav>
+        {/* Animated Tab Navigation */}
+        <div className="hidden md:flex items-center">
+          <AnimatedTabNav items={items} themeColor={themeColor} />
+        </div>
         {/* Actions */}
         <div className="flex items-center gap-2">
           {userType !== 'employer' && (

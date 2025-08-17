@@ -26,6 +26,11 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
 
   const menuItems = [
     {
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: IconHome,
+    },
+    {
       title: "Resources",
       url: "/resources",
       icon: IconBook,
