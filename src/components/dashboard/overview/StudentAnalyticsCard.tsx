@@ -194,10 +194,11 @@ export function StudentAnalyticsCard() {
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5" />
           Analytics Dashboard
-          <Badge variant="default" className="ml-auto bg-green-500 hover:bg-green-600">
-            <Award className="h-3 w-3 mr-1" />
-            Certified
-          </Badge>
+          <img 
+            src="/lovable-uploads/62496478-1e20-484c-bb96-6f47496037df.png" 
+            alt="Lansa Certified" 
+            className="ml-auto h-8 w-auto"
+          />
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           Listed since {formatListedSince(analytics.listedSince)}
