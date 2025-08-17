@@ -1,6 +1,7 @@
 
 import { RecommendedActions } from "./RecommendedActions";
 import { GrowthCardSection } from "./GrowthCardSection";
+import { StudentAnalyticsCard } from "./StudentAnalyticsCard";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface OverviewTabProps {
@@ -17,10 +18,13 @@ export function OverviewTab({ userName, role, goal, insight, highlightActions, i
 
   return (
     <div className="space-y-6">
+      {/* Student Analytics Dashboard */}
+      <StudentAnalyticsCard />
+      
       {/* Existing Overview Content */}
-        <div>
-          <RecommendedActions role={role} highlightActions={highlightActions} />
-        </div>
+      <div>
+        <RecommendedActions role={role} highlightActions={highlightActions} />
+      </div>
     </div>
   );
 }
