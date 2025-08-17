@@ -14,6 +14,7 @@ export default function ProtectedRoute() {
   const [initialCheck, setInitialCheck] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [profileReady, setProfileReady] = useState(false);
+  const [hasShownProfileNotification, setHasShownProfileNotification] = useState(false);
 
   useEffect(() => {
     let didCancel = false;
@@ -111,9 +112,15 @@ export default function ProtectedRoute() {
       return <Navigate to="/onboarding" state={{ from: location }} replace />;
     }
     // If onboarding complete but profile check failed to resolve, still allow access
-    if (profileReady === false) {
+    if (profileReady === false && !hasShownProfileNotification) {
       // Soft gate: nudge to profile but do not block access indefinitely
-      toast.info("Complete your profile to unlock more features.");
+      // Only show this notification once per session
+      const sessionKey = `profile_notification_shown_${user.id}`;
+      if (!sessionStorage.getItem(sessionKey)) {
+        toast.info("Complete your profile to unlock more features.");
+        sessionStorage.setItem(sessionKey, 'true');
+        setHasShownProfileNotification(true);
+      }
     }
   }
 
