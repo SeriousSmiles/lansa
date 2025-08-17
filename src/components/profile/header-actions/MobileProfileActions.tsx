@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
-import { IconPalette, IconShare, IconEye } from "@tabler/icons-react";
+import { PDFDownloadButton } from "../../pdf/PDFDownloadButton";
+import { IconPalette, IconShare, IconEye, IconDownload } from "@tabler/icons-react";
 import { ThemeColorPicker } from "../dialogs/ThemeColorPicker";
 import { HighlightColorPicker } from "../dialogs/HighlightColorPicker";
 import { ShareProfileDialog } from "../dialogs/ShareProfileDialog";
@@ -9,6 +10,7 @@ import { useProfileActions } from "@/hooks/useProfileActions";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserType } from "@/hooks/useUserType";
+import { useProfileData } from "@/hooks/useProfileData";
 
 interface MobileProfileActionsProps {
   userId?: string;
@@ -35,6 +37,7 @@ export function MobileProfileActions({
 }: MobileProfileActionsProps) {
   const { user } = useAuth();
   const { userType } = useUserType();
+  const profileData = useProfileData(userId);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const {
     isColorPickerOpen,
@@ -113,6 +116,18 @@ export function MobileProfileActions({
           <IconShare size={16} className="mr-2" />
           Share Profile
       </Button>
+      
+      
+      {/* PDF Download Button */}
+      <PDFDownloadButton
+        profileData={profileData}
+        variant="outline"
+        fullWidth
+        className="justify-start"
+      >
+        <IconDownload className="h-4 w-4 mr-2" />
+        Download Resume
+      </PDFDownloadButton>
       
       <Button
         onClick={() => onOpenGuidedSetup?.()}

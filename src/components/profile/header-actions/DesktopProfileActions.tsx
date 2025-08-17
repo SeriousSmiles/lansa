@@ -1,6 +1,8 @@
 
 import { ProfileActionButton } from "../buttons/ProfileActionButton";
-import { IconPalette, IconShare, IconEye } from "@tabler/icons-react";
+import { PDFDownloadButton } from "../../pdf/PDFDownloadButton";
+import { IconPalette, IconShare, IconEye, IconDownload } from "@tabler/icons-react";
+import { useProfileData } from "@/hooks/useProfileData";
 import { ThemeColorPicker } from "../dialogs/ThemeColorPicker";
 import { HighlightColorPicker } from "../dialogs/HighlightColorPicker";
 import { ShareProfileDialog } from "../dialogs/ShareProfileDialog";
@@ -39,6 +41,7 @@ export function DesktopProfileActions({
 }: DesktopProfileActionsProps) {
   const { user } = useAuth();
   const { userType } = useUserType();
+  const profileData = useProfileData(userId);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const {
     isColorPickerOpen,
@@ -127,6 +130,21 @@ export function DesktopProfileActions({
         </svg>
         <span>Fill with Guide</span>
       </ProfileActionButton>
+      
+      
+      {/* PDF Download Button */}
+      <PDFDownloadButton
+        profileData={profileData}
+        variant="outline"
+        style={{
+          borderColor: textColor,
+          color: textColor,
+          backgroundColor: 'transparent'
+        }}
+      >
+        <IconDownload className="h-4 w-4 mr-2" />
+        <span>Download Resume</span>
+      </PDFDownloadButton>
       
       <ProfileActionButton
         onClick={handleShare}
