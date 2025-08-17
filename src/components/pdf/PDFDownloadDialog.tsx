@@ -29,6 +29,8 @@ const templates: {
   icon: React.ReactNode;
   engine: 'html' | 'react-pdf';
   featured?: boolean;
+  colorClass: string;
+  bgClass: string;
 }[] = [
   {
     id: 'professional',
@@ -37,6 +39,8 @@ const templates: {
     icon: <Zap className="w-5 h-5" />,
     engine: 'html',
     featured: true,
+    colorClass: 'text-primary',
+    bgClass: 'bg-primary/5 border-primary/20',
   },
   {
     id: 'modern',
@@ -44,6 +48,8 @@ const templates: {
     description: 'Clean, professional design with your brand colors',
     icon: <Palette className="w-5 h-5" />,
     engine: 'react-pdf',
+    colorClass: 'text-secondary',
+    bgClass: 'bg-secondary/5 border-secondary/20',
   },
   {
     id: 'classic',
@@ -51,6 +57,8 @@ const templates: {
     description: 'Traditional resume format, perfect for corporate roles',
     icon: <FileText className="w-5 h-5" />,
     engine: 'react-pdf',
+    colorClass: 'text-emerald-600',
+    bgClass: 'bg-emerald-50 border-emerald-200',
   },
   {
     id: 'creative',
@@ -58,6 +66,8 @@ const templates: {
     description: 'Bold design that showcases your personality',
     icon: <User className="w-5 h-5" />,
     engine: 'react-pdf',
+    colorClass: 'text-purple-600',
+    bgClass: 'bg-purple-50 border-purple-200',
   },
 ];
 
@@ -166,7 +176,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
               {templates.map((template) => (
                 <Card
                   key={template.id}
-                  className={`cursor-pointer transition-all hover:shadow-md relative ${
+                  className={`cursor-pointer transition-all hover:shadow-md relative ${template.bgClass} ${
                     selectedTemplate === template.id
                       ? 'ring-2 ring-primary border-primary'
                       : 'hover:border-primary/50'
@@ -180,7 +190,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
                   )}
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      <div className="p-2 rounded-md bg-primary/10 text-primary">
+                      <div className={`p-2 rounded-md ${template.bgClass} ${template.colorClass}`}>
                         {template.icon}
                       </div>
                       <div className="flex-1">
