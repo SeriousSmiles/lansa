@@ -7,7 +7,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AnimatedCard } from "@/components/dashboard/AnimatedCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfileData } from "@/hooks/useProfileData";
-import { User, MapPin, Briefcase, GraduationCap, Building2 } from "lucide-react";
+import { User, MapPin, Briefcase, GraduationCap, Building2, Download } from "lucide-react";
+import { usePDFGeneration } from "@/hooks/usePDFGeneration";
+import { convertProfileToPDFData, validatePDFData } from "@/utils/profileToPDFConverter";
 
 interface ProfileCardProps {
   role: string;
@@ -17,6 +19,8 @@ interface ProfileCardProps {
 export function ProfileCard({ role, goal }: ProfileCardProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { generatePDF, isGenerating } = usePDFGeneration();
+  const profileData = useProfileData(user?.id);
   const { 
     userName, 
     userTitle, 
@@ -28,13 +32,29 @@ export function ProfileCard({ role, goal }: ProfileCardProps) {
     coverColor, 
     highlightColor,
     isLoading 
-  } = useProfileData(user?.id);
+  } = profileData;
 
   const handleCardClick = () => {
     if (user?.id && userName) {
       // Create SEO-friendly URL with user name and ID
       const urlName = userName.toLowerCase().replace(/\s+/g, '-');
       navigate(`/profile/share/${urlName}-${user.id}`);
+    }
+  };
+
+  const handleDownloadResume = async () => {
+    try {
+      const pdfData = convertProfileToPDFData(profileData);
+      const validation = validatePDFData(pdfData);
+      
+      if (!validation.isValid) {
+        console.warn('PDF validation failed:', validation.errors);
+        // Still generate PDF but user might want to complete profile first
+      }
+      
+      await generatePDF(pdfData);
+    } catch (error) {
+      console.error('Failed to download resume:', error);
     }
   };
 
@@ -200,6 +220,21 @@ export function ProfileCard({ role, goal }: ProfileCardProps) {
             >
               View Full Profile
             </Button>
+            
+            <Button 
+              onClick={handleDownloadResume}
+              disabled={isGenerating}
+              variant="outline" 
+              className="w-full btn-animate flex items-center gap-2"
+              style={{ 
+                borderColor: highlightColor || '#FF6B4A',
+                color: highlightColor || '#FF6B4A'
+              }}
+            >
+              <Download className="w-4 h-4" />
+              {isGenerating ? 'Generating...' : 'Download Resume'}
+            </Button>
+            
             <Link to="/profile" className="block">
               <Button 
                 variant="outline" 
