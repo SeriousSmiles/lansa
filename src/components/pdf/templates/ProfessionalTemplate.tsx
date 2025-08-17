@@ -156,9 +156,11 @@ export function ProfessionalTemplate({ data }: ProfessionalTemplateProps) {
                         )}
                       </div>
                     </div>
-                    <p className="text-gray-700 leading-relaxed">
-                      {exp.description}
-                    </p>
+                    {exp.description && (
+                      <p className="text-gray-700 leading-relaxed">
+                        {exp.description}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -189,9 +191,11 @@ export function ProfessionalTemplate({ data }: ProfessionalTemplateProps) {
                         )}
                       </div>
                     </div>
-                    <p className="text-gray-700 leading-relaxed">
-                      {edu.description}
-                    </p>
+                    {edu.description && (
+                      <p className="text-gray-700 leading-relaxed">
+                        {edu.description}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
