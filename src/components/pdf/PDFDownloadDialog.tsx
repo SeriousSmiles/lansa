@@ -118,7 +118,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
         {children}
       </DialogTrigger>
       
-      <DialogContent className="max-h-[90vh] overflow-y-auto overflow-x-hidden mx-1 sm:mx-2 md:mx-4 lg:mx-6 w-[98vw] sm:w-[95vw] md:w-[90vw] lg:max-w-[800px] xl:max-w-[1000px] 2xl:max-w-[1200px]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto overflow-x-hidden w-[90vw] max-w-[calc(100vw-2rem)] sm:max-w-[95vw] md:max-w-[90vw] lg:max-w-[800px] xl:max-w-[1000px] 2xl:max-w-[1200px] p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Download className="w-5 h-5" />
@@ -130,21 +130,21 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
           {/* Profile Summary */}
           <Card>
             <CardContent className="p-4">
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-3 sm:gap-4 min-w-0">
                 {profileData.profileImage && (
                   <img
                     src={profileData.profileImage}
                     alt="Profile"
-                    className="w-12 h-12 rounded-full object-cover"
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0"
                   />
                 )}
-                <div className="flex-1">
-                  <h3 className="font-semibold">{profileData.userName || 'Your Name'}</h3>
-                  <p className="text-sm text-muted-foreground">{profileData.userTitle || 'Your Title'}</p>
-                  <div className="flex gap-2 mt-2">
-                    <Badge variant="secondary">{profileData.experiences?.length || 0} Experience{(profileData.experiences?.length || 0) !== 1 ? 's' : ''}</Badge>
-                    <Badge variant="secondary">{profileData.educationItems?.length || 0} Education</Badge>
-                    <Badge variant="secondary">{profileData.userSkills?.length || 0} Skills</Badge>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm sm:text-base truncate">{profileData.userName || 'Your Name'}</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{profileData.userTitle || 'Your Title'}</p>
+                  <div className="flex flex-wrap gap-1 sm:gap-2 mt-2">
+                    <Badge variant="secondary" className="text-xs">{profileData.experiences?.length || 0} Experience{(profileData.experiences?.length || 0) !== 1 ? 's' : ''}</Badge>
+                    <Badge variant="secondary" className="text-xs">{profileData.educationItems?.length || 0} Education</Badge>
+                    <Badge variant="secondary" className="text-xs">{profileData.userSkills?.length || 0} Skills</Badge>
                   </div>
                 </div>
               </div>
@@ -191,13 +191,13 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
                     </Badge>
                   )}
                   <CardContent className="p-3 sm:p-4">
-                    <div className="flex flex-col sm:flex-row items-start gap-2 sm:gap-3">
-                      <div className={`p-2 rounded-md ${template.bgClass} ${template.colorClass} mx-auto sm:mx-0`}>
+                    <div className="flex items-start gap-2 sm:gap-3 min-w-0">
+                      <div className={`p-2 rounded-md ${template.bgClass} ${template.colorClass} flex-shrink-0`}>
                         {template.icon}
                       </div>
-                      <div className="flex-1 text-center sm:text-left">
+                      <div className="flex-1 min-w-0">
                         <h5 className="font-medium text-sm sm:text-base">{template.name}</h5>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                           {template.description}
                         </p>
                         <Badge variant="outline" className="text-xs mt-2">
