@@ -17,6 +17,12 @@ export interface EducationItem {
   endYear?: number | null; // null means "Present"
 }
 
+export interface LanguageItem {
+  id?: string;
+  name: string;
+  level: number; // 1-5 scale (1=Beginner, 2=Elementary, 3=Intermediate, 4=Advanced, 5=Native)
+}
+
 // Define interface for profile data
 export interface UserProfile {
   user_id?: string;
@@ -29,6 +35,7 @@ export interface UserProfile {
   highlight_color?: string;
   profile_image?: string;
   skills?: string[];
+  languages?: LanguageItem[];
   experiences?: ExperienceItem[];
   education?: EducationItem[];
   professional_goal?: string;
@@ -55,6 +62,7 @@ export interface ProfileDataReturn {
   highlightColor: string;
   profileImage: string;
   userSkills: string[];
+  userLanguages: LanguageItem[];
   experiences: ExperienceItem[];
   educationItems: EducationItem[];
   userEmail: string;
@@ -77,6 +85,11 @@ export interface ProfileDataReturn {
   // Skills functions
   addSkill: (skill: string) => Promise<void>;
   removeSkill: (skillToRemove: string) => Promise<void>;
+  
+  // Language functions
+  addLanguage: (language: LanguageItem) => Promise<void>;
+  editLanguage: (id: string, updatedLanguage: LanguageItem) => Promise<void>;
+  removeLanguage: (id: string) => Promise<void>;
   
   // Experience functions
   addExperience: (experience: ExperienceItem) => Promise<void>;

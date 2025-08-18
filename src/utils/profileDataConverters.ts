@@ -1,4 +1,4 @@
-import { ExperienceItem, EducationItem } from "@/hooks/profile/profileTypes";
+import { ExperienceItem, EducationItem, LanguageItem } from "@/hooks/profile/profileTypes";
 import { v4 as uuidv4 } from "@/utils/uuid";
 import { Json } from "@/integrations/supabase/types";
 
@@ -102,6 +102,32 @@ export const convertToNumber = (value: any, defaultValue: number = 0): number =>
   
   const parsed = Number(value);
   return isNaN(parsed) ? defaultValue : parsed;
+};
+
+/**
+ * Convert JSON from database to typed language objects
+ */
+export const convertJsonToLanguageItems = (jsonData: any): LanguageItem[] => {
+  if (!jsonData || !Array.isArray(jsonData)) return [];
+  
+  return jsonData.map((item: any) => ({
+    id: item.id || uuidv4(),
+    name: item.name || "",
+    level: item.level && item.level >= 1 && item.level <= 5 ? item.level : 3
+  }));
+};
+
+/**
+ * Convert typed language objects to JSON format for database storage
+ */
+export const convertLanguageItemsToJson = (items: LanguageItem[]): Json => {
+  if (!items || !Array.isArray(items)) return [];
+  
+  return items.map(item => ({
+    id: item.id || uuidv4(),
+    name: item.name || "",
+    level: item.level || 3
+  }));
 };
 
 /**

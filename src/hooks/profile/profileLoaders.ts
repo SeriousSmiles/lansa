@@ -9,7 +9,7 @@ import {
   getProfileRole, 
   getProfileGoal 
 } from "@/services/question";
-import { convertJsonToExperienceItems, convertJsonToEducationItems } from "@/utils/profileDataConverters";
+import { convertJsonToExperienceItems, convertJsonToEducationItems, convertJsonToLanguageItems } from "@/utils/profileDataConverters";
 
 // Populate the profile from existing database data
 export const populateFromExistingProfile = (
@@ -17,6 +17,7 @@ export const populateFromExistingProfile = (
   answers: any, 
   profileBasics: any,
   profileSkills: any,
+  profileLanguages: any,
   profileExperience: any,
   profileEducation: any,
   profileImage: any

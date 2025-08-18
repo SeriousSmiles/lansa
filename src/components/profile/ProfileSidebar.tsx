@@ -2,7 +2,9 @@
 import { useSidebarHandlers } from "@/hooks/useSidebarHandlers";
 import { SidebarPersonalInfo } from "./sidebar/SidebarPersonalInfo";
 import { SkillsList } from "./sidebar/SkillsList";
+import { LanguagesList } from "./sidebar/LanguagesList";
 import { ProfessionalGoal } from "./sidebar/ProfessionalGoal";
+import { LanguageItem } from "@/hooks/profile/profileTypes";
 
 interface ProfileSidebarProps {
   userName: string;
@@ -10,6 +12,7 @@ interface ProfileSidebarProps {
   email: string;
   title?: string;
   skills: string[];
+  languages?: LanguageItem[];
   goal: string;
   phoneNumber?: string;
   coverColor?: string;
@@ -25,6 +28,9 @@ interface ProfileSidebarProps {
   onUpdateBiggestChallenge?: (challenge: string) => Promise<void>;
   onAddSkill?: (skill: string) => Promise<void>;
   onRemoveSkill?: (skill: string) => Promise<void>;
+  onAddLanguage?: (language: LanguageItem) => Promise<void>;
+  onEditLanguage?: (id: string, language: LanguageItem) => Promise<void>;
+  onRemoveLanguage?: (id: string) => Promise<void>;
   onUploadProfileImage?: (file: File) => Promise<string>;
 }
 
@@ -34,6 +40,7 @@ export function ProfileSidebar({
   email, 
   title = "",
   skills, 
+  languages = [],
   goal,
   phoneNumber,
   coverColor,
@@ -49,6 +56,9 @@ export function ProfileSidebar({
   onUpdateBiggestChallenge,
   onAddSkill,
   onRemoveSkill,
+  onAddLanguage,
+  onEditLanguage,
+  onRemoveLanguage,
   onUploadProfileImage,
 }: ProfileSidebarProps) {
   // Use our custom hook to handle all events
@@ -96,6 +106,15 @@ export function ProfileSidebar({
         skills={skills}
         onAddSkill={handleAddSkill}
         onRemoveSkill={handleRemoveSkill}
+        highlightColor={highlightColor}
+      />
+      
+      {/* Languages */}
+      <LanguagesList
+        languages={languages}
+        onAddLanguage={onAddLanguage}
+        onEditLanguage={onEditLanguage}
+        onRemoveLanguage={onRemoveLanguage}
         highlightColor={highlightColor}
       />
       

@@ -14,45 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      ai_insights: {
-        Row: {
-          created_at: string
-          expires_at: string | null
-          id: string
-          insight_type: string
-          is_read: boolean
-          message: string
-          metadata: Json | null
-          priority: number
-          title: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          expires_at?: string | null
-          id?: string
-          insight_type: string
-          is_read?: boolean
-          message: string
-          metadata?: Json | null
-          priority?: number
-          title: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          expires_at?: string | null
-          id?: string
-          insight_type?: string
-          is_read?: boolean
-          message?: string
-          metadata?: Json | null
-          priority?: number
-          title?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       business_onboarding_data: {
         Row: {
           business_services: string | null
@@ -696,6 +657,7 @@ export type Database = {
           highlight_color: string | null
           identity: string | null
           is_public: boolean
+          languages: Json | null
           last_name: string | null
           name: string | null
           phone_number: string | null
@@ -724,6 +686,7 @@ export type Database = {
           highlight_color?: string | null
           identity?: string | null
           is_public?: boolean
+          languages?: Json | null
           last_name?: string | null
           name?: string | null
           phone_number?: string | null
@@ -752,6 +715,7 @@ export type Database = {
           highlight_color?: string | null
           identity?: string | null
           is_public?: boolean
+          languages?: Json | null
           last_name?: string | null
           name?: string | null
           phone_number?: string | null

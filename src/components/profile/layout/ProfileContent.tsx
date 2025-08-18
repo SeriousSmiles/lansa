@@ -75,6 +75,7 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
           email={profile.userEmail || profile.user?.email || ''}
           title={profile.userTitle}
           skills={profile.userSkills}
+          languages={profile.userLanguages}
           goal={profile.goal}
           phoneNumber={profile.phoneNumber}
           coverColor={profile.coverColor}
@@ -88,6 +89,9 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
           onUpdateProfessionalGoal={profile.updateProfessionalGoal}
           onAddSkill={profile.addSkill}
           onRemoveSkill={profile.removeSkill}
+          onAddLanguage={profile.addLanguage}
+          onEditLanguage={profile.editLanguage}
+          onRemoveLanguage={profile.removeLanguage}
           onUploadProfileImage={profile.uploadProfileImage}
         />
         
