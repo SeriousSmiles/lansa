@@ -45,7 +45,7 @@ export function DashboardReadyModal({ isOpen, onClose }: DashboardReadyModalProp
             
             <div className="bg-[#F1F0FB] p-6 rounded-lg border-l-4 border-[#8B5CF6] shadow-sm">
               <p className="text-[#1A1F2C] font-medium">
-                Your personalized dashboard contains tailored insights and action steps
+                Your personalized dashboard contains tailored recommendations and action steps
                 designed specifically for your professional goals.
               </p>
             </div>

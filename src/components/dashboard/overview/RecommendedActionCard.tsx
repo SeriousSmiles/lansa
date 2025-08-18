@@ -37,11 +37,7 @@ export function RecommendedActionCard({ title, description, buttonText, delay, a
           break;
         case 'modal':
           // Handle modal actions
-          if (action === 'ai-coach') {
-            // Trigger AI coach - for now navigate to dashboard with AI tab
-            navigate('/dashboard');
-            // TODO: Add logic to open AI coach tab/modal
-          } else if (action === 'pdf-download') {
+          if (action === 'pdf-download') {
             // Trigger PDF download modal
             // TODO: Add PDF download logic
             console.log('PDF download action');

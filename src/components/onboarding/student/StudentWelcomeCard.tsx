@@ -83,7 +83,7 @@ export function StudentWelcomeCard({ onStart }: StudentWelcomeCardProps) {
             </div>
             <div className="flex items-center space-x-1">
               <span>✨</span>
-              <span>AI-powered insights</span>
+              <span>Personalized recommendations</span>
             </div>
           </div>
         </div>

@@ -124,7 +124,7 @@ export const CompletionCard: React.FC<CompletionCardProps> = ({
                 </div>
               ) : loadingError ? (
                 <p className="text-xl text-[#2E2E2E] font-medium">
-                  Creating your personalized insights... This will be ready on your dashboard.
+                  Your personalized dashboard is being prepared... This will be ready shortly.
                 </p>
               ) : (
                 <p className="text-xl text-[#2E2E2E] font-medium relative">
