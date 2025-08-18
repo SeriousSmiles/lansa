@@ -16,6 +16,7 @@ import { HTMLPDFPreview } from "./HTMLPDFPreview";
 import { convertProfileToPDFData, validatePDFData } from "@/utils/profileToPDFConverter";
 import { ProfileDataReturn } from "@/hooks/profile/profileTypes";
 import { ResumeTemplate } from "@/types/pdf";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PDFDownloadDialogProps {
   profileData: ProfileDataReturn;
@@ -75,6 +76,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
   const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate | 'professional'>('professional');
   const [isOpen, setIsOpen] = useState(false);
   const [htmlPreviewReady, setHtmlPreviewReady] = useState(false);
+  const isMobile = useIsMobile();
   
   const { generatePDF, previewPDF, isGenerating } = usePDFGeneration();
   const { generatePDF: generateHTMLPDF, previewPDF: previewHTMLPDF, isGenerating: isGeneratingHTML } = useHTMLPDFGeneration();
@@ -209,11 +211,11 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
             </div>
           </div>
 
-          {/* Preview Section for HTML Templates */}
-          {selectedTemplateData?.engine === 'html' && (
+          {/* Preview Section for HTML Templates - Hidden on Mobile */}
+          {selectedTemplateData?.engine === 'html' && !isMobile && (
             <div className="mt-6">
               <h4 className="font-medium mb-3">Live Preview</h4>
-              <div className="border rounded-lg overflow-hidden bg-gray-50 w-full max-w-full h-[200px] sm:h-[300px] md:h-[350px] lg:h-[400px]">
+              <div className="border rounded-lg overflow-hidden bg-gray-50 w-full max-w-full h-[300px] md:h-[350px] lg:h-[400px]">
                 <HTMLPDFPreview 
                   data={pdfData} 
                   template={selectedTemplate as any}
