@@ -13,6 +13,7 @@ import { Download, Eye, FileText, Palette, User, Zap, Settings, Maximize } from 
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { PDFGenerator } from "./PDFGenerator";
 import { usePDFGeneration } from "@/hooks/usePDFGeneration";
+import { usePuppeteerPDFGeneration } from "@/hooks/usePuppeteerPDFGeneration";
 import { HTMLPDFPreview } from "./HTMLPDFPreview";
 import { PDFPreviewControls } from "./PDFPreviewControls";
 import { convertProfileToPDFData, validatePDFData } from "@/utils/profileToPDFConverter";
@@ -76,9 +77,11 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
   const [isOpen, setIsOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [isActualSize, setIsActualSize] = useState(false);
+  const [downloadMethod, setDownloadMethod] = useState<'react-pdf' | 'puppeteer'>('react-pdf');
   const isMobile = useIsMobile();
   
-  const { previewPDF, isGenerating } = usePDFGeneration();
+  const { previewPDF: previewReactPDF, isGenerating: isGeneratingReact } = usePDFGeneration();
+  const { generatePDF: generatePuppeteerPDF, previewPDF: previewPuppeteerPDF, isGenerating: isGeneratingPuppeteer } = usePuppeteerPDFGeneration();
 
   const pdfData = convertProfileToPDFData(profileData);
   const validation = validatePDFData(pdfData);
@@ -86,9 +89,23 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
 
   const handlePreview = async () => {
     try {
-      await previewPDF(pdfData, selectedTemplate);
+      if (downloadMethod === 'puppeteer') {
+        await previewPuppeteerPDF(pdfData, selectedTemplate);
+      } else {
+        await previewReactPDF(pdfData, selectedTemplate);
+      }
     } catch (error) {
       console.error('Failed to preview resume:', error);
+    }
+  };
+
+  const handleDownload = async () => {
+    try {
+      const filename = generateFileName();
+      await generatePuppeteerPDF(pdfData, selectedTemplate, filename);
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Download failed:', error);
     }
   };
 
@@ -96,6 +113,8 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
     const name = pdfData.personalInfo.name.replace(/\s+/g, '_');
     return `${name}_Resume_${selectedTemplate}.pdf`;
   };
+
+  const isGenerating = isGeneratingReact || isGeneratingPuppeteer;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -155,6 +174,64 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
               </CardContent>
             </Card>
           )}
+
+          {/* Download Method Selection */}
+          <div>
+            <h4 className="font-medium mb-3 text-left">Download Method</h4>
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <Card
+                className={`cursor-pointer transition-all hover:shadow-md ${
+                  downloadMethod === 'react-pdf'
+                    ? 'ring-2 ring-primary border-primary bg-primary/5'
+                    : 'hover:border-primary/50'
+                }`}
+                onClick={() => setDownloadMethod('react-pdf')}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-md bg-primary/10 text-primary">
+                      <Zap className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h5 className="font-medium">Standard PDF</h5>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Fast generation using React components
+                      </p>
+                      <Badge variant="outline" className="text-xs mt-2">
+                        Instant
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card
+                className={`cursor-pointer transition-all hover:shadow-md ${
+                  downloadMethod === 'puppeteer'
+                    ? 'ring-2 ring-primary border-primary bg-primary/5'
+                    : 'hover:border-primary/50'
+                }`}
+                onClick={() => setDownloadMethod('puppeteer')}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-md bg-primary/10 text-primary">
+                      <Settings className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h5 className="font-medium">High Quality PDF</h5>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Pixel-perfect rendering with server processing
+                      </p>
+                      <Badge variant="outline" className="text-xs mt-2">
+                        Premium
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
 
           {/* Template Selection */}
           <div>
@@ -251,26 +328,41 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
               Open in New Tab
             </Button>
             
-            <PDFDownloadLink
-              document={<PDFGenerator data={pdfData} />}
-              fileName={generateFileName()}
-              className="flex-1 w-full sm:w-auto"
-            >
-              {({ loading }) => (
-                <Button
-                  className="w-full"
-                  disabled={loading || isGenerating}
-                  style={{
-                    backgroundColor: profileData.highlightColor || '#FF6B4A',
-                    borderColor: profileData.highlightColor || '#FF6B4A',
-                  }}
-                  onClick={() => setIsOpen(false)}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  {loading ? 'Preparing...' : 'Download PDF'}
-                </Button>
-              )}
-            </PDFDownloadLink>
+            {downloadMethod === 'react-pdf' ? (
+              <PDFDownloadLink
+                document={<PDFGenerator data={pdfData} />}
+                fileName={generateFileName()}
+                className="flex-1 w-full sm:w-auto"
+              >
+                {({ loading }) => (
+                  <Button
+                    className="w-full"
+                    disabled={loading || isGenerating}
+                    style={{
+                      backgroundColor: profileData.highlightColor || '#FF6B4A',
+                      borderColor: profileData.highlightColor || '#FF6B4A',
+                    }}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    {loading ? 'Preparing...' : 'Download PDF'}
+                  </Button>
+                )}
+              </PDFDownloadLink>
+            ) : (
+              <Button
+                className="flex-1 w-full sm:w-auto"
+                disabled={isGenerating}
+                onClick={handleDownload}
+                style={{
+                  backgroundColor: profileData.highlightColor || '#FF6B4A',
+                  borderColor: profileData.highlightColor || '#FF6B4A',
+                }}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                {isGenerating ? 'Generating...' : 'Download PDF'}
+              </Button>
+            )}
           </div>
 
           {/* Tips */}
