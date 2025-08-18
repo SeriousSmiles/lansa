@@ -1,10 +1,13 @@
 import React, { useRef, useEffect } from 'react';
 import { PDFResumeData } from '@/types/pdf';
 import { ProfessionalTemplate } from './templates/ProfessionalTemplate';
+import { ModernTemplate } from './templates/ModernTemplate';
+import { CreativeTemplate } from './templates/CreativeTemplate';
+import { ClassicTemplate } from './templates/ClassicTemplate';
 
 interface HTMLPDFPreviewProps {
   data: PDFResumeData;
-  template?: 'professional' | 'modern' | 'classic';
+  template?: 'professional' | 'modern' | 'classic' | 'creative';
   onReady?: () => void;
 }
 
@@ -29,9 +32,12 @@ export function HTMLPDFPreview({
       case 'professional':
         return <ProfessionalTemplate data={data} />;
       case 'modern':
+        return <ModernTemplate data={data} />;
       case 'classic':
+        return <ClassicTemplate data={data} />;
+      case 'creative':
+        return <CreativeTemplate data={data} />;
       default:
-        // Fallback to professional template for now
         return <ProfessionalTemplate data={data} />;
     }
   };

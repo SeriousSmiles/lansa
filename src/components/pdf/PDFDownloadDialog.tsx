@@ -24,7 +24,7 @@ interface PDFDownloadDialogProps {
 }
 
 const templates: { 
-  id: ResumeTemplate | 'professional'; 
+  id: ResumeTemplate | 'professional' | 'creative'; 
   name: string; 
   description: string; 
   icon: React.ReactNode;
@@ -46,36 +46,37 @@ const templates: {
   {
     id: 'modern',
     name: 'Modern',
-    description: 'Clean, professional design with your brand colors',
+    description: 'Clean gradient header with organized sections',
     icon: <Palette className="w-5 h-5" />,
-    engine: 'react-pdf',
-    colorClass: 'text-secondary',
-    bgClass: 'bg-secondary/5 border-secondary/20',
-  },
-  {
-    id: 'classic',
-    name: 'Classic',
-    description: 'Traditional resume format, perfect for corporate roles',
-    icon: <FileText className="w-5 h-5" />,
-    engine: 'react-pdf',
-    colorClass: 'text-emerald-600',
-    bgClass: 'bg-emerald-50 border-emerald-200',
+    engine: 'html',
+    colorClass: 'text-blue-600',
+    bgClass: 'bg-blue-50 border-blue-200',
   },
   {
     id: 'creative',
     name: 'Creative',
-    description: 'Bold design that showcases your personality',
+    description: 'Centered design with decorative elements',
     icon: <User className="w-5 h-5" />,
-    engine: 'react-pdf',
+    engine: 'html',
     colorClass: 'text-purple-600',
     bgClass: 'bg-purple-50 border-purple-200',
+  },
+  {
+    id: 'classic',
+    name: 'Classic',
+    description: 'Traditional three-column format, perfect for corporate roles',
+    icon: <FileText className="w-5 h-5" />,
+    engine: 'html',
+    colorClass: 'text-emerald-600',
+    bgClass: 'bg-emerald-50 border-emerald-200',
   },
 ];
 
 export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogProps) {
-  const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate | 'professional'>('professional');
+  const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate | 'professional' | 'creative'>('professional');
   const [isOpen, setIsOpen] = useState(false);
   const [htmlPreviewReady, setHtmlPreviewReady] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const isMobile = useIsMobile();
   
   const { generatePDF, previewPDF, isGenerating } = usePDFGeneration();
@@ -211,8 +212,25 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
             </div>
           </div>
 
-          {/* Preview Section for HTML Templates - Mobile Responsive */}
-          {selectedTemplateData?.engine === 'html' && (
+          {/* Preview Toggle */}
+          <div className="flex items-center gap-3 mt-4">
+            <label htmlFor="preview-toggle" className="text-sm font-medium">
+              Show Preview
+            </label>
+            <input
+              id="preview-toggle"
+              type="checkbox"
+              checked={showPreview}
+              onChange={(e) => setShowPreview(e.target.checked)}
+              className="rounded border-gray-300"
+            />
+            <span className="text-xs text-muted-foreground">
+              Preview your resume before downloading
+            </span>
+          </div>
+
+          {/* Preview Section - Only show when toggled on */}
+          {showPreview && selectedTemplateData?.engine === 'html' && (
             <div className="mt-6">
               <h4 className="font-medium mb-3 text-left">Live Preview</h4>
               <div className="border rounded-lg overflow-hidden bg-gray-50 w-full max-w-full h-[200px] sm:h-[250px] md:h-[300px] lg:h-[400px]">
@@ -231,7 +249,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
               onClick={handlePreview}
               variant="outline"
               className="flex-1 w-full sm:w-auto"
-              disabled={currentlyGenerating || (selectedTemplateData?.engine === 'html' && !htmlPreviewReady)}
+              disabled={currentlyGenerating || (selectedTemplateData?.engine === 'html' && showPreview && !htmlPreviewReady)}
             >
               <Eye className="w-4 h-4 mr-2" />
               {selectedTemplateData?.engine === 'html' ? 'Open in New Tab' : 'Preview'}
@@ -240,7 +258,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
             <Button
               onClick={handleDownload}
               className="flex-1 w-full sm:w-auto"
-              disabled={currentlyGenerating || (selectedTemplateData?.engine === 'html' && !htmlPreviewReady)}
+              disabled={currentlyGenerating || (selectedTemplateData?.engine === 'html' && showPreview && !htmlPreviewReady)}
               style={{
                 backgroundColor: profileData.highlightColor || '#FF6B4A',
                 borderColor: profileData.highlightColor || '#FF6B4A',
@@ -266,8 +284,8 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
         </div>
       </DialogContent>
 
-      {/* Hidden template for PDF generation - only render when HTML template is selected */}
-      {selectedTemplateData?.engine === 'html' && (
+      {/* Hidden template for PDF generation - only render when HTML template is selected and preview is not shown */}
+      {selectedTemplateData?.engine === 'html' && !showPreview && (
         <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
           <HTMLPDFPreview 
             data={pdfData} 
