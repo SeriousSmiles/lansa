@@ -165,7 +165,7 @@ serve(async (req) => {
         ...corsHeaders,
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${filename || 'resume.pdf'}"`,
-        'Content-Length': pdfBuffer.length.toString()
+        'Content-Length': pdfBuffer.byteLength.toString()
       }
     });
 
