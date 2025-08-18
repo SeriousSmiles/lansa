@@ -19,7 +19,7 @@ export interface PDFResumeData {
   };
 }
 
-export type ResumeTemplate = 'modern' | 'classic' | 'creative';
+export type ResumeTemplate = 'modern' | 'classic' | 'creative' | 'professional';
 
 export interface PDFGenerationOptions {
   template: ResumeTemplate;
