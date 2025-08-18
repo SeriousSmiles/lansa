@@ -116,7 +116,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
         {children}
       </DialogTrigger>
       
-      <DialogContent className="max-h-[90vh] overflow-y-auto mx-4 sm:mx-6" style={{ maxWidth: '1440px', width: '100%' }}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto mx-2 sm:mx-4 md:mx-6 max-w-[95vw] sm:max-w-[90vw] md:max-w-[800px] lg:max-w-[1000px] xl:max-w-[1200px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Download className="w-5 h-5" />
@@ -172,7 +172,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
           {/* Template Selection */}
           <div>
             <h4 className="font-medium mb-3">Choose Template</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {templates.map((template) => (
                 <Card
                   key={template.id}
@@ -224,11 +224,11 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
           )}
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <Button
               onClick={handlePreview}
               variant="outline"
-              className="flex-1"
+              className="flex-1 w-full sm:w-auto"
               disabled={currentlyGenerating || (selectedTemplateData?.engine === 'html' && !htmlPreviewReady)}
             >
               <Eye className="w-4 h-4 mr-2" />
@@ -237,7 +237,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
             
             <Button
               onClick={handleDownload}
-              className="flex-1"
+              className="flex-1 w-full sm:w-auto"
               disabled={currentlyGenerating || (selectedTemplateData?.engine === 'html' && !htmlPreviewReady)}
               style={{
                 backgroundColor: profileData.highlightColor || '#FF6B4A',

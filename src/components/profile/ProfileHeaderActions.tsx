@@ -31,30 +31,13 @@ export function ProfileHeaderActions({
   onOpenGuidedSetup,
   userProfile
 }: ProfileHeaderActionsProps) {
-  if (isMobile) {
-    return (
-      <MobileProfileActions 
-        userId={userId}
-        userName={userName}
-        coverColor={coverColor}
-        highlightColor={highlightColor}
-        onCoverColorChange={onCoverColorChange}
-        onHighlightColorChange={onHighlightColorChange}
-        onActionComplete={onActionComplete}
-        onOpenGuidedSetup={onOpenGuidedSetup}
-        userProfile={userProfile}
-      />
-    );
-  }
-
+  // Use burger menu for all device sizes now
   return (
-    <DesktopProfileActions
+    <MobileProfileActions 
       userId={userId}
       userName={userName}
       coverColor={coverColor}
       highlightColor={highlightColor}
-      textColor={textColor}
-      isDarkTheme={isDarkTheme}
       onCoverColorChange={onCoverColorChange}
       onHighlightColorChange={onHighlightColorChange}
       onActionComplete={onActionComplete}

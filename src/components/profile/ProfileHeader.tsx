@@ -75,60 +75,22 @@ export function ProfileHeader({
         className={`aspect-[2.7] object-contain w-[80px] sm:w-[92px] flex-shrink-0 ${!hideBackButton ? "" : "ml-0"}`}
       />
       
-      {isMobile && !readOnly ? (
-        <>
-          <Button
-            variant={isDarkTheme ? "contrast" : "ghost"}
-            size="icon"
-            onClick={() => setMobileMenuOpen(true)}
-            className="ml-auto flex-shrink-0"
-            style={{
-              color: textColor
-            }}
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-          
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetContent side="right" className="w-[280px]">
-              <div className="flex flex-col space-y-4 pt-6">
-                <h3 className="text-lg font-medium">Profile Actions</h3>
-                <ProfileHeaderActions
-                  userId={userId}
-                  userName={userName}
-                  coverColor={coverColor}
-                  highlightColor={highlightColor}
-                  onCoverColorChange={onCoverColorChange}
-                  onHighlightColorChange={onHighlightColorChange}
-                  textColor={textColor}
-                  isDarkTheme={isDarkTheme}
-                  isMobile={true}
-                  onActionComplete={() => setMobileMenuOpen(false)}
-                  onOpenGuidedSetup={onOpenGuidedSetup}
-                  userProfile={userProfile}
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
-        </>
-      ) : (
-        !readOnly && (
-          <div className="ml-auto">
-            <ProfileHeaderActions
-              userId={userId}
-              userName={userName}
-              coverColor={coverColor}
-              highlightColor={highlightColor}
-              onCoverColorChange={onCoverColorChange}
-              onHighlightColorChange={onHighlightColorChange}
-              textColor={textColor}
-              isDarkTheme={isDarkTheme}
-              isMobile={false}
-              onOpenGuidedSetup={onOpenGuidedSetup}
-              userProfile={userProfile}
-            />
-          </div>
-        )
+      {!readOnly && (
+        <div className="ml-auto">
+          <ProfileHeaderActions
+            userId={userId}
+            userName={userName}
+            coverColor={coverColor}
+            highlightColor={highlightColor}
+            onCoverColorChange={onCoverColorChange}
+            onHighlightColorChange={onHighlightColorChange}
+            textColor={textColor}
+            isDarkTheme={isDarkTheme}
+            isMobile={isMobile}
+            onOpenGuidedSetup={onOpenGuidedSetup}
+            userProfile={userProfile}
+          />
+        </div>
       )}
     </header>
   );
