@@ -8,7 +8,7 @@ import { ProfileFooter } from "./layout/ProfileFooter";
 import { useElementAnimation } from "@/utils/animationHelpers";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ProfileGuidedSetupModal } from "./dialogs/ProfileGuidedSetupModal";
+import { InteractiveProfileGuide } from "./dialogs/InteractiveProfileGuide";
 
 export function ProfilePage() {
   const { user } = useAuth();
@@ -102,7 +102,7 @@ export function ProfilePage() {
         />
       </ProfileLayout>
       
-      <ProfileGuidedSetupModal
+      <InteractiveProfileGuide
         open={guidedOpen}
         onOpenChange={(open) => {
           setGuidedOpen(open);
@@ -111,6 +111,7 @@ export function ProfilePage() {
             localStorage.setItem(`guidedSetupSkipped_${user.id}`, 'true');
           }
         }}
+        userId={user?.id || ''}
         userAnswers={profile.userAnswers as any}
         existingSkills={profile.userSkills}
         initialTitle={profile.userTitle}

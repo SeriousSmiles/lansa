@@ -91,3 +91,6 @@ verify_jwt = false
 
 [functions.generate-power-mirror]
 verify_jwt = false
+
+[functions.generate-interactive-profile-guidance]
+verify_jwt = false
