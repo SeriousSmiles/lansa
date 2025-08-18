@@ -83,6 +83,8 @@ export function InteractiveProfileGuide({
   const initializeConversation = async () => {
     setIsLoading(true);
     try {
+      console.log('Starting conversation initialization for userId:', userId);
+      
       const response = await supabase.functions.invoke('generate-interactive-profile-guidance', {
         body: {
           userId,
@@ -92,7 +94,12 @@ export function InteractiveProfileGuide({
         }
       });
 
-      if (response.error) throw response.error;
+      console.log('Received response:', response);
+
+      if (response.error) {
+        console.error('Response error:', response.error);
+        throw response.error;
+      }
 
       const { guidance } = response.data;
       const assistantMessage: ConversationMessage = {
