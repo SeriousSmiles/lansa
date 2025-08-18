@@ -173,7 +173,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
 
           {/* Template Selection */}
           <div>
-            <h4 className="font-medium mb-3">Choose Template</h4>
+            <h4 className="font-medium mb-3 text-left">Choose Template</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {templates.map((template) => (
                 <Card
@@ -211,11 +211,11 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
             </div>
           </div>
 
-          {/* Preview Section for HTML Templates - Hidden on Mobile */}
-          {selectedTemplateData?.engine === 'html' && !isMobile && (
+          {/* Preview Section for HTML Templates - Mobile Responsive */}
+          {selectedTemplateData?.engine === 'html' && (
             <div className="mt-6">
-              <h4 className="font-medium mb-3">Live Preview</h4>
-              <div className="border rounded-lg overflow-hidden bg-gray-50 w-full max-w-full h-[300px] md:h-[350px] lg:h-[400px]">
+              <h4 className="font-medium mb-3 text-left">Live Preview</h4>
+              <div className="border rounded-lg overflow-hidden bg-gray-50 w-full max-w-full h-[200px] sm:h-[250px] md:h-[300px] lg:h-[400px]">
                 <HTMLPDFPreview 
                   data={pdfData} 
                   template={selectedTemplate as any}
