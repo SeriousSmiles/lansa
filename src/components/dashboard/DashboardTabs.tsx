@@ -1,10 +1,11 @@
 
 import { useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LockKeyhole } from "lucide-react";
+import { LockKeyhole, Brain } from "lucide-react";
 import { gsap } from "gsap";
 import { OverviewTab } from "./overview/OverviewTab";
 import { StoryBuilderTab } from "./StoryBuilderTab";
+import { AICoachTab } from "./AICoachTab";
 
 interface DashboardTabsProps {
   userName: string;

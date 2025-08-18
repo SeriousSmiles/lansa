@@ -20,11 +20,11 @@ export function getPersonalizedActionPoints(role: string): ActionPoint[] {
       priority: 1
     },
     {
-      title: "Complete Your Profile",
-      description: "Add missing details to your profile to increase visibility to potential employers.",
-      buttonText: "Update Profile",
-      action: "/profile",
-      actionType: "navigate",
+      title: "Get AI Career Insights",
+      description: "Receive personalized recommendations to accelerate your professional growth.",
+      buttonText: "Get Insights",
+      action: "ai-coach",
+      actionType: "modal",
       priority: 2
     },
     {
@@ -58,11 +58,11 @@ export function getPersonalizedActionPoints(role: string): ActionPoint[] {
           priority: 2
         },
         {
-          title: "Explore Business Network",
-          description: "Connect with potential partners and business opportunities on Lansa.",
-          buttonText: "Explore Network",
-          action: "/discovery",
-          actionType: "navigate",
+          title: "Get AI Pricing Insights",
+          description: "Receive personalized recommendations on positioning and pricing your services.",
+          buttonText: "Get Insights",
+          action: "ai-coach",
+          actionType: "modal",
           priority: 3
         },
         {
@@ -110,11 +110,11 @@ export function getPersonalizedActionPoints(role: string): ActionPoint[] {
           priority: 3
         },
         {
-          title: "Practice Interview Skills",
-          description: "Prepare for job interviews with our practice tools and resources.",
-          buttonText: "Start Practice",
-          action: "/resources",
-          actionType: "navigate",
+          title: "Get AI Career Coaching",
+          description: "Receive personalized advice on interview prep, networking, and career strategy.",
+          buttonText: "Get Coaching",
+          action: "ai-coach",
+          actionType: "modal",
           priority: 4
         },
         {
@@ -154,11 +154,11 @@ export function getPersonalizedActionPoints(role: string): ActionPoint[] {
           priority: 3
         },
         {
-          title: "Explore Learning Resources",
-          description: "Access career development materials and learning opportunities.",
-          buttonText: "Browse Resources",
-          action: "/resources",
-          actionType: "navigate",
+          title: "Get AI Career Guidance",
+          description: "Receive personalized advice on career paths, skill development, and opportunities.",
+          buttonText: "Get Guidance",
+          action: "ai-coach",
+          actionType: "modal",
           priority: 4
         },
         {
@@ -182,11 +182,11 @@ export function getPersonalizedActionPoints(role: string): ActionPoint[] {
           priority: 1
         },
         {
-          title: "Optimize Business Profile",
-          description: "Enhance your business profile to attract better talent and opportunities.",
-          buttonText: "Optimize Profile",
-          action: "/profile",
-          actionType: "navigate",
+          title: "Get AI Business Insights",
+          description: "Receive personalized recommendations for messaging, positioning, and growth.",
+          buttonText: "Get Insights",
+          action: "ai-coach",
+          actionType: "modal",
           priority: 2
         },
         {
@@ -226,11 +226,11 @@ export function getPersonalizedActionPoints(role: string): ActionPoint[] {
           priority: 1
         },
         {
-          title: "Connect with Community",
-          description: "Join discussions and connect with like-minded visionaries and entrepreneurs.",
-          buttonText: "Join Community",
-          action: "/discovery",
-          actionType: "navigate",
+          title: "Get AI Vision Coaching",
+          description: "Receive guidance on articulating, planning, and executing your vision.",
+          buttonText: "Get Coaching",
+          action: "ai-coach",
+          actionType: "modal",
           priority: 2
         },
         {

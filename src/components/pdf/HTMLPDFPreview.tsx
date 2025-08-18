@@ -1,22 +1,17 @@
 import React, { useRef, useEffect } from 'react';
 import { PDFResumeData } from '@/types/pdf';
 import { ProfessionalTemplate } from './templates/ProfessionalTemplate';
-import { ModernTemplate } from './templates/ModernTemplate';
-import { ClassicTemplate } from './templates/ClassicTemplate';
-import { CreativeTemplate } from './templates/CreativeTemplate';
 
 interface HTMLPDFPreviewProps {
   data: PDFResumeData;
-  template?: 'professional' | 'modern' | 'classic' | 'creative';
+  template?: 'professional' | 'modern' | 'classic';
   onReady?: () => void;
-  isActualSize?: boolean;
 }
 
 export function HTMLPDFPreview({ 
   data, 
   template = 'professional',
-  onReady,
-  isActualSize = false
+  onReady 
 }: HTMLPDFPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -34,12 +29,9 @@ export function HTMLPDFPreview({
       case 'professional':
         return <ProfessionalTemplate data={data} />;
       case 'modern':
-        return <ModernTemplate data={data} />;
       case 'classic':
-        return <ClassicTemplate data={data} />;
-      case 'creative':
-        return <CreativeTemplate data={data} />;
       default:
+        // Fallback to professional template for now
         return <ProfessionalTemplate data={data} />;
     }
   };
@@ -50,12 +42,7 @@ export function HTMLPDFPreview({
       className="w-full h-full overflow-auto bg-gray-100 p-4"
     >
       <div className="flex justify-center">
-        <div 
-          className={isActualSize ? "scale-100" : "scale-[0.6] sm:scale-[0.7] md:scale-[0.8] lg:scale-[0.9]"}
-          style={{ transformOrigin: 'top center' }}
-        >
-          {renderTemplate()}
-        </div>
+        {renderTemplate()}
       </div>
     </div>
   );

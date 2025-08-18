@@ -9,19 +9,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Download, Eye, FileText, Palette, User, Zap, Settings, Maximize } from "lucide-react";
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import { PDFGenerator } from "./PDFGenerator";
+import { Download, Eye, FileText, Palette, User, Zap } from "lucide-react";
 import { usePDFGeneration } from "@/hooks/usePDFGeneration";
-import { usePuppeteerPDFGeneration } from "@/hooks/usePuppeteerPDFGeneration";
+import { useHTMLPDFGeneration } from "@/hooks/useHTMLPDFGeneration";
 import { HTMLPDFPreview } from "./HTMLPDFPreview";
-import { PDFPreviewControls } from "./PDFPreviewControls";
 import { convertProfileToPDFData, validatePDFData } from "@/utils/profileToPDFConverter";
 import { ProfileDataReturn } from "@/hooks/profile/profileTypes";
 import { ResumeTemplate } from "@/types/pdf";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 
 interface PDFDownloadDialogProps {
   profileData: ProfileDataReturn;
@@ -29,92 +24,93 @@ interface PDFDownloadDialogProps {
 }
 
 const templates: { 
-  id: ResumeTemplate; 
+  id: ResumeTemplate | 'professional'; 
   name: string; 
   description: string; 
   icon: React.ReactNode;
+  engine: 'html' | 'react-pdf';
   featured?: boolean;
   colorClass: string;
   bgClass: string;
 }[] = [
   {
-    id: 'modern',
-    name: 'Modern',
-    description: 'Clean design with geometric elements and brand colors',
-    icon: <Palette className="w-5 h-5" />,
+    id: 'professional',
+    name: 'Professional',
+    description: 'Sophisticated two-column design with dark sidebar',
+    icon: <Zap className="w-5 h-5" />,
+    engine: 'html',
     featured: true,
     colorClass: 'text-primary',
     bgClass: 'bg-primary/5 border-primary/20',
   },
   {
-    id: 'classic',
-    name: 'Classic',
-    description: 'Traditional corporate format with elegant typography',
-    icon: <FileText className="w-5 h-5" />,
-    colorClass: 'text-emerald-600',
-    bgClass: 'bg-emerald-50 border-emerald-200',
-  },
-  {
-    id: 'professional',
-    name: 'Professional',
-    description: 'Sophisticated business-focused design with clean layout',
-    icon: <Zap className="w-5 h-5" />,
+    id: 'modern',
+    name: 'Modern',
+    description: 'Clean, professional design with your brand colors',
+    icon: <Palette className="w-5 h-5" />,
+    engine: 'react-pdf',
     colorClass: 'text-secondary',
     bgClass: 'bg-secondary/5 border-secondary/20',
   },
   {
+    id: 'classic',
+    name: 'Classic',
+    description: 'Traditional resume format, perfect for corporate roles',
+    icon: <FileText className="w-5 h-5" />,
+    engine: 'react-pdf',
+    colorClass: 'text-emerald-600',
+    bgClass: 'bg-emerald-50 border-emerald-200',
+  },
+  {
     id: 'creative',
     name: 'Creative',
-    description: 'Modern design with creative elements and visual impact',
+    description: 'Bold design that showcases your personality',
     icon: <User className="w-5 h-5" />,
+    engine: 'react-pdf',
     colorClass: 'text-purple-600',
     bgClass: 'bg-purple-50 border-purple-200',
   },
 ];
 
 export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogProps) {
-  const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate>('modern');
+  const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate | 'professional'>('professional');
   const [isOpen, setIsOpen] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
-  const [isActualSize, setIsActualSize] = useState(false);
-  const [downloadMethod, setDownloadMethod] = useState<'react-pdf' | 'puppeteer'>('react-pdf');
+  const [htmlPreviewReady, setHtmlPreviewReady] = useState(false);
   const isMobile = useIsMobile();
   
-  const { previewPDF: previewReactPDF, isGenerating: isGeneratingReact } = usePDFGeneration();
-  const { generatePDF: generatePuppeteerPDF, previewPDF: previewPuppeteerPDF, isGenerating: isGeneratingPuppeteer } = usePuppeteerPDFGeneration();
+  const { generatePDF, previewPDF, isGenerating } = usePDFGeneration();
+  const { generatePDF: generateHTMLPDF, previewPDF: previewHTMLPDF, isGenerating: isGeneratingHTML } = useHTMLPDFGeneration();
 
   const pdfData = convertProfileToPDFData(profileData);
   const validation = validatePDFData(pdfData);
   const selectedTemplateData = templates.find(t => t.id === selectedTemplate);
 
+  const handleDownload = async () => {
+    try {
+      if (selectedTemplateData?.engine === 'html') {
+        await generateHTMLPDF(pdfData);
+      } else {
+        await generatePDF(pdfData, selectedTemplate as ResumeTemplate);
+      }
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Failed to download resume:', error);
+    }
+  };
+
   const handlePreview = async () => {
     try {
-      if (downloadMethod === 'puppeteer') {
-        await previewPuppeteerPDF(pdfData, selectedTemplate);
+      if (selectedTemplateData?.engine === 'html') {
+        await previewHTMLPDF();
       } else {
-        await previewReactPDF(pdfData, selectedTemplate);
+        await previewPDF(pdfData, selectedTemplate as ResumeTemplate);
       }
     } catch (error) {
       console.error('Failed to preview resume:', error);
     }
   };
 
-  const handleDownload = async () => {
-    try {
-      const filename = generateFileName();
-      await generatePuppeteerPDF(pdfData, selectedTemplate, filename);
-      setIsOpen(false);
-    } catch (error) {
-      console.error('Download failed:', error);
-    }
-  };
-
-  const generateFileName = () => {
-    const name = pdfData.personalInfo.name.replace(/\s+/g, '_');
-    return `${name}_Resume_${selectedTemplate}.pdf`;
-  };
-
-  const isGenerating = isGeneratingReact || isGeneratingPuppeteer;
+  const currentlyGenerating = isGenerating || isGeneratingHTML;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -122,7 +118,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
         {children}
       </DialogTrigger>
       
-      <DialogContent className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] max-h-[90vh] overflow-y-auto overflow-x-hidden w-[95vw] max-w-[calc(100vw-1rem)] sm:max-w-[90vw] md:max-w-[85vw] lg:max-w-[1000px] xl:max-w-[1200px] 2xl:max-w-[1400px] p-3 sm:p-6">
+      <DialogContent className="max-h-[90vh] overflow-y-auto overflow-x-hidden w-[90vw] max-w-[calc(100vw-2rem)] sm:max-w-[95vw] md:max-w-[90vw] lg:max-w-[800px] xl:max-w-[1000px] 2xl:max-w-[1200px] p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Download className="w-5 h-5" />
@@ -175,64 +171,6 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
             </Card>
           )}
 
-          {/* Download Method Selection */}
-          <div>
-            <h4 className="font-medium mb-3 text-left">Download Method</h4>
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <Card
-                className={`cursor-pointer transition-all hover:shadow-md ${
-                  downloadMethod === 'react-pdf'
-                    ? 'ring-2 ring-primary border-primary bg-primary/5'
-                    : 'hover:border-primary/50'
-                }`}
-                onClick={() => setDownloadMethod('react-pdf')}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-md bg-primary/10 text-primary">
-                      <Zap className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h5 className="font-medium">Standard PDF</h5>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Fast generation using React components
-                      </p>
-                      <Badge variant="outline" className="text-xs mt-2">
-                        Instant
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card
-                className={`cursor-pointer transition-all hover:shadow-md ${
-                  downloadMethod === 'puppeteer'
-                    ? 'ring-2 ring-primary border-primary bg-primary/5'
-                    : 'hover:border-primary/50'
-                }`}
-                onClick={() => setDownloadMethod('puppeteer')}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-md bg-primary/10 text-primary">
-                      <Settings className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h5 className="font-medium">High Quality PDF</h5>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Pixel-perfect rendering with server processing
-                      </p>
-                      <Badge variant="outline" className="text-xs mt-2">
-                        Premium
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
           {/* Template Selection */}
           <div>
             <h4 className="font-medium mb-3 text-left">Choose Template</h4>
@@ -263,7 +201,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
                           {template.description}
                         </p>
                         <Badge variant="outline" className="text-xs mt-2">
-                          High Quality
+                          {template.engine === 'html' ? 'Advanced Layout' : 'Standard'}
                         </Badge>
                       </div>
                     </div>
@@ -273,44 +211,15 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
             </div>
           </div>
 
-          {/* Preview Toggle */}
-          <div className="flex items-center gap-3">
-            <Switch
-              id="show-preview"
-              checked={showPreview}
-              onCheckedChange={setShowPreview}
-            />
-            <Label htmlFor="show-preview" className="text-sm font-medium">
-              Show Preview
-            </Label>
-            <span className="text-xs text-muted-foreground">
-              {showPreview ? 'Preview is visible' : 'Enable to see live preview'}
-            </span>
-          </div>
-
-          {/* Preview Section */}
-          {showPreview && (
+          {/* Preview Section for HTML Templates - Mobile Responsive */}
+          {selectedTemplateData?.engine === 'html' && (
             <div className="mt-6">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-medium text-left">Live Preview</h4>
-                <PDFPreviewControls
-                  isActualSize={isActualSize}
-                  onToggleActualSize={() => setIsActualSize(!isActualSize)}
-                  template={selectedTemplate}
-                  onTemplateChange={(template) => setSelectedTemplate(template as ResumeTemplate)}
-                  availableTemplates={templates.map(t => ({ id: t.id, name: t.name }))}
-                />
-              </div>
-              <div className={`border rounded-lg overflow-hidden bg-gray-50 w-full ${
-                isActualSize 
-                  ? 'h-[400px] sm:h-[500px] md:h-[600px] lg:h-[700px]' 
-                  : 'h-[200px] sm:h-[250px] md:h-[300px] lg:h-[400px]'
-              }`}>
+              <h4 className="font-medium mb-3 text-left">Live Preview</h4>
+              <div className="border rounded-lg overflow-hidden bg-gray-50 w-full max-w-full h-[200px] sm:h-[250px] md:h-[300px] lg:h-[400px]">
                 <HTMLPDFPreview 
                   data={pdfData} 
-                  template={selectedTemplate}
-                  onReady={() => {}}
-                  isActualSize={isActualSize}
+                  template={selectedTemplate as any}
+                  onReady={() => setHtmlPreviewReady(true)}
                 />
               </div>
             </div>
@@ -322,47 +231,24 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
               onClick={handlePreview}
               variant="outline"
               className="flex-1 w-full sm:w-auto"
-              disabled={isGenerating}
+              disabled={currentlyGenerating || (selectedTemplateData?.engine === 'html' && !htmlPreviewReady)}
             >
               <Eye className="w-4 h-4 mr-2" />
-              Open in New Tab
+              {selectedTemplateData?.engine === 'html' ? 'Open in New Tab' : 'Preview'}
             </Button>
             
-            {downloadMethod === 'react-pdf' ? (
-              <PDFDownloadLink
-                document={<PDFGenerator data={pdfData} />}
-                fileName={generateFileName()}
-                className="flex-1 w-full sm:w-auto"
-              >
-                {({ loading }) => (
-                  <Button
-                    className="w-full"
-                    disabled={loading || isGenerating}
-                    style={{
-                      backgroundColor: profileData.highlightColor || '#FF6B4A',
-                      borderColor: profileData.highlightColor || '#FF6B4A',
-                    }}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    {loading ? 'Preparing...' : 'Download PDF'}
-                  </Button>
-                )}
-              </PDFDownloadLink>
-            ) : (
-              <Button
-                className="flex-1 w-full sm:w-auto"
-                disabled={isGenerating}
-                onClick={handleDownload}
-                style={{
-                  backgroundColor: profileData.highlightColor || '#FF6B4A',
-                  borderColor: profileData.highlightColor || '#FF6B4A',
-                }}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                {isGenerating ? 'Generating...' : 'Download PDF'}
-              </Button>
-            )}
+            <Button
+              onClick={handleDownload}
+              className="flex-1 w-full sm:w-auto"
+              disabled={currentlyGenerating || (selectedTemplateData?.engine === 'html' && !htmlPreviewReady)}
+              style={{
+                backgroundColor: profileData.highlightColor || '#FF6B4A',
+                borderColor: profileData.highlightColor || '#FF6B4A',
+              }}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              {currentlyGenerating ? 'Generating...' : 'Download PDF'}
+            </Button>
           </div>
 
           {/* Tips */}
@@ -371,16 +257,24 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
               <h5 className="font-medium mb-2">💡 Pro Tips</h5>
               <ul className="text-sm text-muted-foreground space-y-1">
                 <li>• Complete your profile for the best results</li>
-                <li>• Enable preview to see how your resume looks before downloading</li>
+                <li>• Use the preview to see how your resume looks</li>
                 <li>• Choose a template that matches your industry</li>
                 <li>• Your brand colors will be automatically applied</li>
-                <li>• Use "Actual Size" in preview to see the real PDF dimensions</li>
               </ul>
             </CardContent>
           </Card>
         </div>
       </DialogContent>
 
+      {/* Hidden template for PDF generation - only render when HTML template is selected */}
+      {selectedTemplateData?.engine === 'html' && (
+        <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+          <HTMLPDFPreview 
+            data={pdfData} 
+            template={selectedTemplate as any}
+          />
+        </div>
+      )}
     </Dialog>
   );
 }

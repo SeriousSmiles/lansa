@@ -91,6 +91,3 @@ verify_jwt = false
 
 [functions.generate-power-mirror]
 verify_jwt = false
-
-[functions.generate-pdf-puppeteer]
-verify_jwt = true
