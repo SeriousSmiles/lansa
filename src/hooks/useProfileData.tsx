@@ -92,12 +92,12 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     
     if (profileData) {
       // If profile exists, set all the values from it
-      populateFromExistingProfile(profileData, answers, profileBasics, profileSkills, profileExperience, profileEducation, profileImage);
+      populateFromExistingProfile(profileData, answers, profileBasics, profileSkills, profileLanguages, profileExperience, profileEducation, profileImage);
       setProfessionalGoal(profileData.professional_goal || "");
       setBiggestChallenge(profileData.biggest_challenge || "Identifying my unique value proposition");
     } else {
       // If no profile exists, use generated data
-      populateFromGeneratedData(answers, userId, profileBasics, profileSkills, profileExperience, profileEducation);
+      populateFromGeneratedData(answers, userId, profileBasics, profileSkills, profileLanguages, profileExperience, profileEducation);
       setBiggestChallenge("Identifying my unique value proposition");
     }
   };
