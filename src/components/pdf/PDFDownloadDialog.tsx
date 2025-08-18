@@ -116,7 +116,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
         {children}
       </DialogTrigger>
       
-      <DialogContent className="max-h-[90vh] overflow-y-auto mx-2 sm:mx-4 md:mx-6 w-[95vw] sm:w-[90vw] md:max-w-[800px] lg:max-w-[1000px] xl:max-w-[1200px]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto overflow-x-hidden mx-1 sm:mx-2 md:mx-4 lg:mx-6 w-[98vw] sm:w-[95vw] md:w-[90vw] lg:max-w-[800px] xl:max-w-[1000px] 2xl:max-w-[1200px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Download className="w-5 h-5" />
@@ -188,13 +188,13 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
                       New
                     </Badge>
                   )}
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className={`p-2 rounded-md ${template.bgClass} ${template.colorClass}`}>
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex flex-col sm:flex-row items-start gap-2 sm:gap-3">
+                      <div className={`p-2 rounded-md ${template.bgClass} ${template.colorClass} mx-auto sm:mx-0`}>
                         {template.icon}
                       </div>
-                      <div className="flex-1">
-                        <h5 className="font-medium">{template.name}</h5>
+                      <div className="flex-1 text-center sm:text-left">
+                        <h5 className="font-medium text-sm sm:text-base">{template.name}</h5>
                         <p className="text-xs text-muted-foreground mt-1">
                           {template.description}
                         </p>
@@ -213,7 +213,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
           {selectedTemplateData?.engine === 'html' && (
             <div className="mt-6">
               <h4 className="font-medium mb-3">Live Preview</h4>
-              <div className="border rounded-lg overflow-hidden bg-gray-50 w-full h-[250px] sm:h-[350px] md:h-[400px]">
+              <div className="border rounded-lg overflow-hidden bg-gray-50 w-full max-w-full h-[200px] sm:h-[300px] md:h-[350px] lg:h-[400px]">
                 <HTMLPDFPreview 
                   data={pdfData} 
                   template={selectedTemplate as any}

@@ -25,7 +25,7 @@ export function ProfileActionButton({
       variant={isDarkTheme ? "contrast" : "outline"}
       size="sm" 
       onClick={onClick}
-      className={cn("flex items-center gap-1", className)} // Use the cn utility to merge classNames
+      className={cn("flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-center", className)} // Use the cn utility to merge classNames
       style={{
         borderColor: `${coverColor}50`,
         color: textColor

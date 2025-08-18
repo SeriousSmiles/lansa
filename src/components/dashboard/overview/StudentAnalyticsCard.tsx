@@ -205,29 +205,37 @@ export function StudentAnalyticsCard() {
         </p>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center p-4 bg-muted/50 rounded-lg">
-            <Eye className="h-5 w-5 text-primary mx-auto mb-2" />
-            <p className="text-2xl font-bold">{analytics.profileViews}</p>
-            <p className="text-sm text-muted-foreground">Profile Views</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="text-center p-3 sm:p-4 bg-muted/50 rounded-lg">
+            <div className="flex flex-col items-center gap-1 sm:gap-2">
+              <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <p className="text-xl sm:text-2xl font-bold">{analytics.profileViews}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground text-center">Profile Views</p>
+            </div>
           </div>
           
-          <div className="text-center p-4 bg-muted/50 rounded-lg">
-            <Heart className="h-5 w-5 text-green-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold">{analytics.rightSwipes}</p>
-            <p className="text-sm text-muted-foreground">Likes</p>
+          <div className="text-center p-3 sm:p-4 bg-muted/50 rounded-lg">
+            <div className="flex flex-col items-center gap-1 sm:gap-2">
+              <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
+              <p className="text-xl sm:text-2xl font-bold">{analytics.rightSwipes}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground text-center">Likes</p>
+            </div>
           </div>
           
-          <div className="text-center p-4 bg-muted/50 rounded-lg">
-            <MessageCircle className="h-5 w-5 text-blue-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold">{analytics.nudges}</p>
-            <p className="text-sm text-muted-foreground">Nudges</p>
+          <div className="text-center p-3 sm:p-4 bg-muted/50 rounded-lg">
+            <div className="flex flex-col items-center gap-1 sm:gap-2">
+              <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
+              <p className="text-xl sm:text-2xl font-bold">{analytics.nudges}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground text-center">Nudges</p>
+            </div>
           </div>
           
-          <div className="text-center p-4 bg-muted/50 rounded-lg">
-            <Calendar className="h-5 w-5 text-purple-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold">{analytics.matches}</p>
-            <p className="text-sm text-muted-foreground">Matches</p>
+          <div className="text-center p-3 sm:p-4 bg-muted/50 rounded-lg">
+            <div className="flex flex-col items-center gap-1 sm:gap-2">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />
+              <p className="text-xl sm:text-2xl font-bold">{analytics.matches}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground text-center">Matches</p>
+            </div>
           </div>
         </div>
         
