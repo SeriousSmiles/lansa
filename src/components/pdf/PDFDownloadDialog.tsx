@@ -118,7 +118,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
         {children}
       </DialogTrigger>
       
-      <DialogContent className="max-h-[90vh] overflow-y-auto overflow-x-hidden w-[90vw] max-w-[calc(100vw-2rem)] sm:max-w-[95vw] md:max-w-[90vw] lg:max-w-[800px] xl:max-w-[1000px] 2xl:max-w-[1200px] p-4 sm:p-6">
+      <DialogContent className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] max-h-[90vh] overflow-y-auto overflow-x-hidden w-[90vw] max-w-[calc(100vw-2rem)] sm:max-w-[95vw] md:max-w-[90vw] lg:max-w-[800px] xl:max-w-[1000px] 2xl:max-w-[1200px] p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Download className="w-5 h-5" />
@@ -215,12 +215,14 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
           {selectedTemplateData?.engine === 'html' && (
             <div className="mt-6">
               <h4 className="font-medium mb-3 text-left">Live Preview</h4>
-              <div className="border rounded-lg overflow-hidden bg-gray-50 w-full max-w-full h-[200px] sm:h-[250px] md:h-[300px] lg:h-[400px]">
-                <HTMLPDFPreview 
-                  data={pdfData} 
-                  template={selectedTemplate as any}
-                  onReady={() => setHtmlPreviewReady(true)}
-                />
+              <div className="border rounded-lg overflow-hidden bg-gray-50 w-full max-w-full h-[200px] sm:h-[250px] md:h-[300px] lg:h-[400px] relative">
+                <div className="w-full h-full overflow-hidden transform-gpu" style={{ maxWidth: '100%', transform: 'scale(0.8)', transformOrigin: 'top left' }}>
+                  <HTMLPDFPreview 
+                    data={pdfData} 
+                    template={selectedTemplate as any}
+                    onReady={() => setHtmlPreviewReady(true)}
+                  />
+                </div>
               </div>
             </div>
           )}
