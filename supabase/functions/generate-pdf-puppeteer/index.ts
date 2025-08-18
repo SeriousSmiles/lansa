@@ -163,15 +163,16 @@ serve(async (req) => {
     }
     
     const pdfBuffer = doc.output('arraybuffer');
+    const uint8Array = new Uint8Array(pdfBuffer);
 
     console.log('PDF generated successfully');
 
-    return new Response(pdfBuffer, {
+    return new Response(uint8Array, {
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${filename || 'resume.pdf'}"`,
-        'Content-Length': pdfBuffer.byteLength.toString()
+        'Content-Disposition': `inline; filename="${filename || 'resume.pdf'}"`,
+        'Content-Length': uint8Array.byteLength.toString()
       }
     });
 
