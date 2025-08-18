@@ -17,6 +17,7 @@ serve(async (req) => {
     
     const { template, data, filename } = await req.json();
     console.log('Request data:', { template, filename });
+    console.log('Full data received:', JSON.stringify(data, null, 2));
 
     // Generate HTML content based on template
     const htmlContent = generateHTMLTemplate(template, data);
@@ -32,7 +33,12 @@ serve(async (req) => {
     });
     
     // Add content to PDF
-    const { personalInfo, experience, education, skills } = data;
+    const { personalInfo, experience, education, skills } = data || {};
+    
+    // Ensure arrays are properly handled
+    const safeExperience = Array.isArray(experience) ? experience : [];
+    const safeEducation = Array.isArray(education) ? education : [];
+    const safeSkills = Array.isArray(skills) ? skills : [];
     
     let yPosition = 20;
     
@@ -75,14 +81,14 @@ serve(async (req) => {
     }
     
     // Experience
-    if (experience?.length) {
+    if (safeExperience.length > 0) {
       yPosition += 5;
       doc.setFontSize(16);
       doc.setTextColor(60, 60, 60);
       doc.text('Experience', 20, yPosition);
       yPosition += 8;
       
-      experience.forEach(exp => {
+      safeExperience.forEach(exp => {
         if (yPosition > 250) {
           doc.addPage();
           yPosition = 20;
@@ -110,7 +116,7 @@ serve(async (req) => {
     }
     
     // Education
-    if (education?.length) {
+    if (safeEducation.length > 0) {
       yPosition += 5;
       if (yPosition > 250) {
         doc.addPage();
@@ -122,7 +128,7 @@ serve(async (req) => {
       doc.text('Education', 20, yPosition);
       yPosition += 8;
       
-      education.forEach(edu => {
+      safeEducation.forEach(edu => {
         doc.setFontSize(12);
         doc.setTextColor(60, 60, 60);
         doc.text(edu.degree || 'Degree', 20, yPosition);
@@ -137,7 +143,7 @@ serve(async (req) => {
     }
     
     // Skills
-    if (skills?.length) {
+    if (safeSkills.length > 0) {
       yPosition += 5;
       if (yPosition > 250) {
         doc.addPage();
@@ -151,7 +157,7 @@ serve(async (req) => {
       
       doc.setFontSize(10);
       doc.setTextColor(80, 80, 80);
-      const skillsText = skills.join(', ');
+      const skillsText = safeSkills.join(', ');
       const skillsLines = doc.splitTextToSize(skillsText, 170);
       doc.text(skillsLines, 20, yPosition);
     }
