@@ -177,11 +177,19 @@ export function ProfileActionsMenu({
           <DropdownMenuItem 
             onClick={handleMakeProfilePublic}
             disabled={!isLansaCertified || isUpdatingPublicStatus}
-            className={!isLansaCertified ? "opacity-50 cursor-not-allowed" : ""}
+            className={`flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0 ${!isLansaCertified ? "opacity-50 cursor-not-allowed" : ""}`}
           >
-            <IconGlobe className="h-4 w-4 mr-2" />
-            {isProfilePublic ? "Make Profile Private" : "Make Profile Public"}
-            {!isLansaCertified && <span className="ml-auto text-xs text-muted-foreground">Lansa Only</span>}
+            <div className="flex items-center w-full">
+              <IconGlobe className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="text-sm sm:text-base truncate">
+                {isProfilePublic ? "Make Profile Private" : "Make Profile Public"}
+              </span>
+            </div>
+            {!isLansaCertified && (
+              <span className="text-xs text-muted-foreground ml-auto sm:ml-2 whitespace-nowrap">
+                Lansa Only
+              </span>
+            )}
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />
