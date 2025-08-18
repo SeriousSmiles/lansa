@@ -47,7 +47,7 @@ export function AICoachTab() {
     try {
       await checkAndRemoveCompletedInsights(user.id);
       const newInsights = await generateInsights(user.id);
-      await saveInsightsToDatabase(user.id, newInsights);
+      await saveInsightsToDatabase(newInsights);
       await loadInsights();
       
       if (newInsights.length > 0) {

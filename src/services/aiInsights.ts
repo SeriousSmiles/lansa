@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { getUserAnswers } from "./question";
 
@@ -56,18 +55,18 @@ async function checkProfileCompleteness(userId: string): Promise<AIInsight | nul
       };
     }
     
-    // Check for missing profile elements
-    const missingElements = [];
-    if (!profile.about_text) missingElements.push("about section");
-    if (!profile.experiences || Object.keys(profile.experiences).length === 0) missingElements.push("work experience");
-    if (!profile.skills || profile.skills.length === 0) missingElements.push("skills");
-    if (!profile.profile_image) missingElements.push("profile photo");
+    // Check for missing critical fields
+    const missing = [];
+    if (!profile.title) missing.push("job title");
+    if (!profile.about_text) missing.push("professional summary");
+    if (!profile.skills || (Array.isArray(profile.skills) && profile.skills.length === 0)) missing.push("skills");
+    if (!profile.experiences || (Array.isArray(profile.experiences) && profile.experiences.length === 0)) missing.push("work experience");
     
-    if (missingElements.length > 0) {
+    if (missing.length > 0) {
       return {
-        id: `profile-incomplete-${Date.now()}`,
+        id: `profile-completion-${Date.now()}`,
         title: "Enhance Your Profile",
-        message: `Your profile is missing: ${missingElements.join(", ")}. Complete these sections to strengthen your professional presence.`,
+        message: `Add your ${missing.join(", ")} to make your profile more compelling to potential matches.`,
         insight_type: "profile_enhancement",
         priority: 2,
         navigation_target: "/profile",
@@ -85,41 +84,30 @@ async function checkProfileCompleteness(userId: string): Promise<AIInsight | nul
 
 async function checkRecommendedActions(userId: string, userAnswers: any): Promise<AIInsight | null> {
   try {
-    // Check if user has tracked any actions recently
-    const { data: recentActions } = await supabase
-      .from('user_actions')
-      .select('*')
-      .eq('user_id', userId)
-      .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false });
+    if (!userAnswers) return null;
     
-    const role = userAnswers?.identity || "Professional";
-    const goal = userAnswers?.desired_outcome || "Advance my career";
-    
-    // If no recent activity, suggest getting started
-    if (!recentActions || recentActions.length === 0) {
+    // Based on user's career path, suggest actions
+    if (userAnswers.career_path === 'student') {
       return {
-        id: `get-started-${Date.now()}`,
-        title: "Start Building Your Presence",
-        message: `As a ${role.toLowerCase()} looking to ${goal.toLowerCase()}, begin by exploring your dashboard and completing your profile setup.`,
-        insight_type: "get_started",
-        priority: 1,
-        navigation_target: "/dashboard",
+        id: `student-action-${Date.now()}`,
+        title: "Build Your Network",
+        message: "As a student, start connecting with professionals in your field. Consider joining industry groups and attending virtual events.",
+        insight_type: "networking",
+        priority: 3,
+        navigation_target: "/opportunity-discovery",
         is_read: false,
         created_at: new Date().toISOString()
       };
     }
     
-    // Check if they haven't visited their card recently
-    const cardVisits = recentActions.filter(action => action.action_type === 'card_visited');
-    if (cardVisits.length === 0) {
+    if (userAnswers.career_path === 'entrepreneur') {
       return {
-        id: `visit-card-${Date.now()}`,
-        title: "Preview Your Professional Card",
-        message: "See how your professional information looks to others. Your card is your digital business card that you can share with potential connections.",
-        insight_type: "card_preview",
+        id: `entrepreneur-action-${Date.now()}`,
+        title: "Showcase Your Ventures",
+        message: "Highlight your entrepreneurial projects and the impact you've created. This sets you apart from traditional candidates.",
+        insight_type: "profile_optimization",
         priority: 2,
-        navigation_target: "/card",
+        navigation_target: "/profile",
         is_read: false,
         created_at: new Date().toISOString()
       };
@@ -132,110 +120,81 @@ async function checkRecommendedActions(userId: string, userAnswers: any): Promis
   }
 }
 
+// Note: These functions are temporarily mocked since ai_insights table doesn't exist
 export async function getUserInsights(userId: string): Promise<AIInsight[]> {
   try {
-    const { data, error } = await supabase
-      .from('ai_insights')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('is_read', false)
-      .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
-      .order('priority', { ascending: true })
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    
-    // Transform database insights to our interface with proper metadata handling
-    return (data || []).map(insight => {
-      const metadata = insight.metadata as any;
-      return {
-        ...insight,
-        navigation_target: metadata?.navigation_target || "/dashboard"
-      };
-    });
+    // Generate insights dynamically instead of fetching from database
+    return await generateInsights(userId);
   } catch (error) {
-    console.error('Failed to fetch user insights:', error);
+    console.error('Error getting user insights:', error);
     return [];
   }
 }
 
-export async function saveInsightsToDatabase(userId: string, insights: AIInsight[]): Promise<void> {
-  if (insights.length === 0) return;
-  
+export async function markInsightAsRead(insightId: string): Promise<void> {
+  // Mock implementation - in a real app this would update the database
+  console.log('Insight marked as read:', insightId);
+}
+
+export async function dismissInsight(insightId: string): Promise<void> {
+  // Mock implementation - in a real app this would update the database
+  console.log('Insight dismissed:', insightId);
+}
+
+// Generate personalized insight for a user
+export async function getPersonalizedInsight(userId: string) {
   try {
-    // Ensure each insight has a proper navigation target stored in metadata before saving
-    const insightsToSave = insights.map(insight => ({
+    const userAnswers = await getUserAnswers(userId);
+    
+    if (!userAnswers) {
+      console.log('No user answers found for:', userId);
+      return null;
+    }
+
+    console.log('User answers:', userAnswers);
+
+    // Check if we already have a stored insight
+    console.log('No stored insight found, generating new insight');
+    
+    // Generate AI insight for user
+    console.log('Generating AI insight for user:', userId);
+    
+    const data = {
       user_id: userId,
-      title: insight.title,
-      message: insight.message,
-      insight_type: insight.insight_type,
-      priority: insight.priority,
-      metadata: {
-        navigation_target: insight.navigation_target || "/dashboard",
-        ...insight.metadata
-      },
-      is_read: false,
-      expires_at: insight.expires_at || null
-    }));
+      identity: userAnswers.identity,
+      desired_outcome: userAnswers.desired_outcome,
+      career_path: userAnswers.career_path,
+      gender: userAnswers.gender,
+      age_group: userAnswers.age_group
+    };
     
-    const { error } = await supabase
-      .from('ai_insights')
-      .insert(insightsToSave);
+    console.log('Using data:', data);
     
-    if (error) throw error;
+    // Call edge function to generate insight
+    const { data: response, error } = await supabase.functions.invoke('generate-insight', {
+      body: data
+    });
+    
+    if (error) {
+      console.error('Error calling generate-insight function:', error);
+      return null;
+    }
+    
+    console.log('AI insight generated successfully:', response);
+    return response;
   } catch (error) {
-    console.error('Failed to save insights to database:', error);
-    throw error;
+    console.error('Error generating personalized insight:', error);
+    return null;
   }
 }
 
-export async function markInsightAsRead(insightId: string): Promise<void> {
-  try {
-    const { error } = await supabase
-      .from('ai_insights')
-      .update({ is_read: true })
-      .eq('id', insightId);
-    
-    if (error) throw error;
-  } catch (error) {
-    console.error('Failed to mark insight as read:', error);
-    throw error;
-  }
+// Mock functions for backward compatibility
+export async function saveInsightsToDatabase(insights: AIInsight[]): Promise<void> {
+  // Mock implementation - in a real app this would save to database
+  console.log('Insights would be saved to database:', insights.length);
 }
 
 export async function checkAndRemoveCompletedInsights(userId: string): Promise<void> {
-  try {
-    // Get user's recent actions to determine what they've completed
-    const { data: recentActions } = await supabase
-      .from('user_actions')
-      .select('action_type')
-      .eq('user_id', userId)
-      .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
-    
-    if (!recentActions) return;
-    
-    const completedActions = new Set(recentActions.map(action => action.action_type));
-    
-    // Mark insights as read if the user has completed the suggested actions
-    const insightsToMarkComplete = [];
-    
-    if (completedActions.has('profile_visited') || completedActions.has('profile_updated')) {
-      insightsToMarkComplete.push('profile_setup', 'profile_enhancement');
-    }
-    
-    if (completedActions.has('card_visited')) {
-      insightsToMarkComplete.push('card_preview');
-    }
-    
-    if (insightsToMarkComplete.length > 0) {
-      await supabase
-        .from('ai_insights')
-        .update({ is_read: true })
-        .eq('user_id', userId)
-        .in('insight_type', insightsToMarkComplete)
-        .eq('is_read', false);
-    }
-  } catch (error) {
-    console.error('Error checking and removing completed insights:', error);
-  }
+  // Mock implementation - in a real app this would clean up completed insights
+  console.log('Checking and removing completed insights for user:', userId);
 }

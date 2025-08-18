@@ -69,6 +69,7 @@ export const populateFromGeneratedData = (
   userId: string | undefined,
   profileBasics: any,
   profileSkills: any,
+  profileLanguages: any,
   profileExperience: any,
   profileEducation: any
 ) => {
