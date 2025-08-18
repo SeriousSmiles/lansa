@@ -22,7 +22,19 @@ export function AnimatedTabNav({ items, themeColor }: AnimatedTabNavProps) {
 
   // Find active tab based on current route
   useEffect(() => {
-    const currentIndex = items.findIndex(item => location.pathname === item.url);
+    let currentIndex = items.findIndex(item => {
+      // Handle dashboard route - both "/" and "/dashboard" should match dashboard
+      if (item.url === "/dashboard") {
+        return location.pathname === "/" || location.pathname === "/dashboard";
+      }
+      return location.pathname === item.url;
+    });
+    
+    // If no exact match and on root, default to first item (dashboard)
+    if (currentIndex === -1 && location.pathname === "/") {
+      currentIndex = 0;
+    }
+    
     if (currentIndex !== -1) {
       setActiveIndex(currentIndex);
     }
@@ -44,7 +56,7 @@ export function AnimatedTabNav({ items, themeColor }: AnimatedTabNavProps) {
       gsap.to(sliderRef.current, {
         x: relativeLeft,
         width: tabWidth,
-        duration: 0.3,
+        duration: 0.4,
         ease: "power2.out"
       });
     }
@@ -59,25 +71,25 @@ export function AnimatedTabNav({ items, themeColor }: AnimatedTabNavProps) {
         {/* Animated slider background */}
         <div
           ref={sliderRef}
-          className="absolute h-[calc(100%-8px)] rounded-full transition-all duration-300 ease-out"
+          className="absolute h-[calc(100%-8px)] rounded-full transition-all duration-400 ease-out"
           style={{
             backgroundColor: themeColor || 'hsl(var(--primary))',
-            opacity: 0.1,
+            opacity: 0.15,
             top: '4px',
             left: '4px',
+            boxShadow: `0 2px 8px -2px ${themeColor || 'hsl(var(--primary))'}40`,
           }}
         />
         
         {/* Animated slider border */}
         <div
-          className="absolute h-[calc(100%-8px)] rounded-full border-2 transition-all duration-300 ease-out"
+          ref={sliderRef}
+          className="absolute h-[calc(100%-8px)] rounded-full border transition-all duration-400 ease-out"
           style={{
             borderColor: themeColor || 'hsl(var(--primary))',
-            opacity: 0.3,
+            opacity: 0.4,
             top: '4px',
             left: '4px',
-            width: sliderRef.current ? `${sliderRef.current.style.width}` : '0px',
-            transform: sliderRef.current ? `translateX(${sliderRef.current.style.transform?.match(/translateX\(([^)]+)\)/)?.[1] || '0px'})` : 'translateX(0px)',
           }}
         />
 
@@ -89,10 +101,10 @@ export function AnimatedTabNav({ items, themeColor }: AnimatedTabNavProps) {
             <Link
               key={item.title}
               to={item.url}
-              className={`tab-item relative z-10 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+              className={`tab-item relative z-10 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-400 ease-out flex items-center gap-2 ${
                 isActive 
-                  ? 'text-foreground' 
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'text-foreground transform scale-105' 
+                  : 'text-muted-foreground hover:text-foreground hover:scale-102'
               }`}
               style={{
                 color: isActive ? (themeColor || 'hsl(var(--primary))') : undefined
