@@ -3,25 +3,37 @@ interface ActionPoint {
   title: string;
   description: string;
   buttonText: string;
+  action: string; // URL path or action type
+  actionType: 'navigate' | 'modal' | 'external';
+  priority?: number; // For ordering
 }
 
 export function getPersonalizedActionPoints(role: string): ActionPoint[] {
   // Default action points
   const defaultActions: ActionPoint[] = [
     {
-      title: "Define Your Message",
-      description: "Clarify how you talk about yourself and your work to resonate with your audience.",
-      buttonText: "Start Exercise"
+      title: "Complete Your Profile",
+      description: "Build a professional profile that showcases your unique value and attracts opportunities.",
+      buttonText: "Complete Profile",
+      action: "/profile",
+      actionType: "navigate",
+      priority: 1
     },
     {
-      title: "Build Your Presence",
-      description: "Create a standout online profile that showcases your unique value.",
-      buttonText: "Start Building"
+      title: "Get AI Career Insights",
+      description: "Receive personalized recommendations to accelerate your professional growth.",
+      buttonText: "Get Insights",
+      action: "ai-coach",
+      actionType: "modal",
+      priority: 2
     },
     {
-      title: "Track Progress",
-      description: "See your journey toward greater clarity and professional visibility.",
-      buttonText: "View Progress"
+      title: "Generate Professional Resume",
+      description: "Create a polished PDF resume from your profile in seconds.",
+      buttonText: "Generate Resume",
+      action: "pdf-download",
+      actionType: "modal",
+      priority: 3
     }
   ];
   
@@ -30,145 +42,220 @@ export function getPersonalizedActionPoints(role: string): ActionPoint[] {
     case "Freelancer seeking recognition":
       return [
         {
-          title: "Craft Your Pitch",
-          description: "Define your unique value proposition that makes clients choose you over competitors.",
-          buttonText: "Create Pitch"
+          title: "Complete Your Professional Profile",
+          description: "Showcase your expertise and build trust with potential clients through a complete profile.",
+          buttonText: "Complete Profile",
+          action: "/profile",
+          actionType: "navigate",
+          priority: 1
         },
         {
-          title: "Portfolio Optimization",
-          description: "Showcase your best work in a way that attracts your ideal clients.",
-          buttonText: "Optimize Now"
+          title: "Generate Portfolio Resume",
+          description: "Create a professional PDF showcasing your skills and experience for client proposals.",
+          buttonText: "Generate Resume",
+          action: "pdf-download",
+          actionType: "modal",
+          priority: 2
         },
         {
-          title: "Pricing Strategy",
-          description: "Set rates that reflect your value and position you properly in the market.",
-          buttonText: "Set Strategy"
+          title: "Get AI Pricing Insights",
+          description: "Receive personalized recommendations on positioning and pricing your services.",
+          buttonText: "Get Insights",
+          action: "ai-coach",
+          actionType: "modal",
+          priority: 3
         },
         {
-          title: "Client Communication",
-          description: "Develop templates and systems for professional client interactions.",
-          buttonText: "Develop System"
+          title: "Share Professional Profile",
+          description: "Create a shareable link to your professional profile for client outreach.",
+          buttonText: "Share Profile",
+          action: "share-profile",
+          actionType: "modal",
+          priority: 4
         },
         {
-          title: "Visibility Plan",
-          description: "Create a strategy to become more visible to your target client base.",
-          buttonText: "Create Plan"
+          title: "Explore Resources",
+          description: "Access curated content and tools to help grow your freelance business.",
+          buttonText: "Explore Content",
+          action: "/content",
+          actionType: "navigate",
+          priority: 5
         }
       ];
     
     case "Job seeker finding their fit":
       return [
         {
-          title: "Resume Revamp",
-          description: "Transform your resume to highlight your unique strengths and value.",
-          buttonText: "Start Revamp"
+          title: "Build Your Professional Profile",
+          description: "Create a compelling profile that highlights your strengths and attracts recruiters.",
+          buttonText: "Build Profile",
+          action: "/profile",
+          actionType: "navigate",
+          priority: 1
         },
         {
-          title: "Interview Storytelling",
-          description: "Develop compelling stories that showcase your experience and capabilities.",
-          buttonText: "Craft Stories"
+          title: "Generate Professional Resume",
+          description: "Create an ATS-friendly PDF resume optimized for job applications.",
+          buttonText: "Generate Resume",
+          action: "pdf-download",
+          actionType: "modal",
+          priority: 2
         },
         {
-          title: "Network Building",
-          description: "Create a strategic plan to connect with professionals in your target roles.",
-          buttonText: "Build Network"
+          title: "Discover Career Opportunities",
+          description: "Find roles and opportunities that match your skills and career aspirations.",
+          buttonText: "Discover Jobs",
+          action: "/discovery",
+          actionType: "navigate",
+          priority: 3
         },
         {
-          title: "Role Alignment",
-          description: "Identify the roles that best match your skills, values, and aspirations.",
-          buttonText: "Find Alignment"
+          title: "Get AI Career Coaching",
+          description: "Receive personalized advice on interview prep, networking, and career strategy.",
+          buttonText: "Get Coaching",
+          action: "ai-coach",
+          actionType: "modal",
+          priority: 4
         },
         {
-          title: "Application Strategy",
-          description: "Develop a targeted approach to job applications that stands out.",
-          buttonText: "Create Strategy"
+          title: "Complete Growth Challenges",
+          description: "Develop key skills and track your progress toward career readiness.",
+          buttonText: "Start Challenge",
+          action: "growth-card",
+          actionType: "modal",
+          priority: 5
         }
       ];
 
     case "Student preparing for the future":
       return [
         {
-          title: "Career Path Exploration",
-          description: "Research potential career paths aligned with your interests and strengths.",
-          buttonText: "Explore Paths"
+          title: "Complete Your Student Profile",
+          description: "Build a professional profile showcasing your education, skills, and career goals.",
+          buttonText: "Complete Profile",
+          action: "/profile",
+          actionType: "navigate",
+          priority: 1
         },
         {
-          title: "Skills Inventory",
-          description: "Identify and document your marketable skills and knowledge gaps.",
-          buttonText: "Build Inventory"
+          title: "Complete Daily Growth Challenge",
+          description: "Develop essential career skills through our 90-day transformation program.",
+          buttonText: "Start Challenge",
+          action: "growth-card",
+          actionType: "modal",
+          priority: 2
         },
         {
-          title: "Experience Design",
-          description: "Plan strategic experiences to build your resume while still in school.",
-          buttonText: "Design Plan"
+          title: "Generate Student Resume",
+          description: "Create a professional resume highlighting your education and achievements.",
+          buttonText: "Generate Resume",
+          action: "pdf-download",
+          actionType: "modal",
+          priority: 3
         },
         {
-          title: "Professional Brand",
-          description: "Start building your professional identity before graduation.",
-          buttonText: "Build Brand"
+          title: "Get AI Career Guidance",
+          description: "Receive personalized advice on career paths, skill development, and opportunities.",
+          buttonText: "Get Guidance",
+          action: "ai-coach",
+          actionType: "modal",
+          priority: 4
         },
         {
-          title: "Mentor Connection",
-          description: "Find mentors who can guide your transition from education to career.",
-          buttonText: "Find Mentors"
+          title: "Explore Career Resources",
+          description: "Access curated content to help you transition from student to professional.",
+          buttonText: "Explore Resources",
+          action: "/content",
+          actionType: "navigate",
+          priority: 5
         }
       ];
       
     case "Business owner seeking clarity":
       return [
         {
-          title: "Value Proposition",
-          description: "Refine how you communicate your business's unique value to customers.",
-          buttonText: "Refine Value"
+          title: "Build Your Business Profile",
+          description: "Create a professional profile that clearly communicates your business value.",
+          buttonText: "Build Profile",
+          action: "/profile",
+          actionType: "navigate",
+          priority: 1
         },
         {
-          title: "Target Market Definition",
-          description: "Clearly define your ideal customer and their specific needs.",
-          buttonText: "Define Market"
+          title: "Get AI Business Insights",
+          description: "Receive personalized recommendations for messaging, positioning, and growth.",
+          buttonText: "Get Insights",
+          action: "ai-coach",
+          actionType: "modal",
+          priority: 2
         },
         {
-          title: "Messaging Framework",
-          description: "Create consistent language to talk about your business across channels.",
-          buttonText: "Create Framework"
+          title: "Generate Executive Resume",
+          description: "Create a professional overview of your business leadership and achievements.",
+          buttonText: "Generate Resume",
+          action: "pdf-download",
+          actionType: "modal",
+          priority: 3
         },
         {
-          title: "Business Roadmap",
-          description: "Plot your next growth milestones with achievable timelines.",
-          buttonText: "Build Roadmap"
+          title: "Complete Business Challenges",
+          description: "Work through strategic exercises to clarify your business direction.",
+          buttonText: "Start Challenge",
+          action: "growth-card",
+          actionType: "modal",
+          priority: 4
         },
         {
-          title: "Competitive Analysis",
-          description: "Understand your position in the market and identify opportunities.",
-          buttonText: "Analyze Market"
+          title: "Access Business Resources",
+          description: "Explore curated content for business owners and entrepreneurs.",
+          buttonText: "Explore Content",
+          action: "/content",
+          actionType: "navigate",
+          priority: 5
         }
       ];
       
     case "Visionary creating impact":
       return [
         {
-          title: "Vision Articulation",
-          description: "Transform your big ideas into clear, compelling language that inspires others.",
-          buttonText: "Articulate Vision"
+          title: "Build Your Visionary Profile",
+          description: "Create a compelling profile that articulates your vision and impact goals.",
+          buttonText: "Build Profile",
+          action: "/profile",
+          actionType: "navigate",
+          priority: 1
         },
         {
-          title: "Impact Framework",
-          description: "Define how you'll measure the success and impact of your vision.",
-          buttonText: "Create Framework"
+          title: "Get AI Vision Coaching",
+          description: "Receive guidance on articulating, planning, and executing your vision.",
+          buttonText: "Get Coaching",
+          action: "ai-coach",
+          actionType: "modal",
+          priority: 2
         },
         {
-          title: "Stakeholder Mapping",
-          description: "Identify key allies and influencers needed to bring your vision to life.",
-          buttonText: "Map Stakeholders"
+          title: "Generate Impact Resume",
+          description: "Create a professional overview showcasing your vision and achievements.",
+          buttonText: "Generate Resume",
+          action: "pdf-download",
+          actionType: "modal",
+          priority: 3
         },
         {
-          title: "Resource Strategy",
-          description: "Plan how to acquire the resources needed to execute your vision.",
-          buttonText: "Plan Strategy"
+          title: "Complete Vision Challenges",
+          description: "Work through strategic exercises to clarify and strengthen your impact strategy.",
+          buttonText: "Start Challenge",
+          action: "growth-card",
+          actionType: "modal",
+          priority: 4
         },
         {
-          title: "Narrative Development",
-          description: "Craft the story that will help others understand and support your vision.",
-          buttonText: "Develop Narrative"
+          title: "Share Your Vision",
+          description: "Create a shareable profile to attract supporters and collaborators.",
+          buttonText: "Share Profile",
+          action: "share-profile",
+          actionType: "modal",
+          priority: 5
         }
       ];
       

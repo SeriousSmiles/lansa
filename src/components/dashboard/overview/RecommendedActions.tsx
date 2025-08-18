@@ -47,15 +47,20 @@ export function RecommendedActions({ role, highlightActions }: RecommendedAction
           highlightActions ? 'ring-2 ring-[#FF6B4A] ring-offset-4 rounded-lg p-3 sm:p-4 animate-[scale-in_0.5s_ease-out]' : ''
         }`}
       >
-        {actionPoints.map((action, index) => (
-          <RecommendedActionCard
-            key={index}
-            title={action.title}
-            description={action.description}
-            buttonText={action.buttonText}
-            delay={0.3 + (index * 0.1)}
-          />
-        ))}
+        {actionPoints
+          .sort((a, b) => (a.priority || 999) - (b.priority || 999))
+          .slice(0, 6) // Limit to 6 actions for clean layout
+          .map((action, index) => (
+            <RecommendedActionCard
+              key={index}
+              title={action.title}
+              description={action.description}
+              buttonText={action.buttonText}
+              action={action.action}
+              actionType={action.actionType}
+              delay={0.3 + (index * 0.1)}
+            />
+          ))}
       </div>
     </div>
   );

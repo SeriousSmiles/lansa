@@ -9,7 +9,8 @@ export type ActionType =
   | 'insight_opened'
   | 'insight_interacted'
   | 'onboarding_completed'
-  | 'dashboard_visited';
+  | 'dashboard_visited'
+  | 'recommended_action_clicked';
 
 export interface ActionMetadata {
   [key: string]: any;
