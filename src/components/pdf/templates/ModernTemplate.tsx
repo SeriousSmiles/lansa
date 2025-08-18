@@ -11,7 +11,7 @@ export function ModernTemplate({ data }: ModernTemplateProps) {
   return (
     <div 
       id="pdf-resume-template" 
-      className="w-[210mm] h-[297mm] mx-auto bg-white shadow-lg overflow-hidden"
+      className="w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg"
       style={{
         fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
         fontSize: '12px',
