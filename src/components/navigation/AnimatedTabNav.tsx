@@ -80,18 +80,6 @@ export function AnimatedTabNav({ items, themeColor }: AnimatedTabNavProps) {
             boxShadow: `0 2px 8px -2px ${themeColor || 'hsl(var(--primary))'}40`,
           }}
         />
-        
-        {/* Animated slider border */}
-        <div
-          ref={sliderRef}
-          className="absolute h-[calc(100%-8px)] rounded-full border transition-all duration-400 ease-out"
-          style={{
-            borderColor: themeColor || 'hsl(var(--primary))',
-            opacity: 0.4,
-            top: '4px',
-            left: '4px',
-          }}
-        />
 
         {items.map((item, index) => {
           const Icon = item.icon;
