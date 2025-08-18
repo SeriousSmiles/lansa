@@ -21,44 +21,142 @@ serve(async (req) => {
     // Generate HTML content based on template
     const htmlContent = generateHTMLTemplate(template, data);
     
-    // Launch Puppeteer
-    const puppeteer = await import('https://deno.land/x/puppeteer@16.2.0/mod.ts');
+    // Use jsPDF as a fallback since Puppeteer has filesystem restrictions in edge functions
+    const { jsPDF } = await import('https://esm.sh/jspdf@2.5.1');
     
-    const browser = await puppeteer.default.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu'
-      ]
+    // Create a basic PDF with the content
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
     });
-
-    const page = await browser.newPage();
     
-    // Set content and wait for fonts/styles to load
-    await page.setContent(htmlContent, { 
-      waitUntil: 'networkidle0',
-      timeout: 30000 
-    });
-
-    // Generate PDF
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '0.5in',
-        right: '0.5in',
-        bottom: '0.5in',
-        left: '0.5in'
+    // Add content to PDF
+    const { personalInfo, experience, education, skills } = data;
+    
+    let yPosition = 20;
+    
+    // Header
+    doc.setFontSize(24);
+    doc.setTextColor(60, 60, 60);
+    doc.text(personalInfo?.name || 'Your Name', 20, yPosition);
+    yPosition += 10;
+    
+    doc.setFontSize(14);
+    doc.setTextColor(100, 100, 100);
+    doc.text(personalInfo?.title || 'Professional Title', 20, yPosition);
+    yPosition += 15;
+    
+    // Contact info
+    if (personalInfo?.email) {
+      doc.setFontSize(10);
+      doc.text(`Email: ${personalInfo.email}`, 20, yPosition);
+      yPosition += 5;
+    }
+    
+    if (personalInfo?.phone) {
+      doc.text(`Phone: ${personalInfo.phone}`, 20, yPosition);
+      yPosition += 10;
+    }
+    
+    // Summary
+    if (personalInfo?.summary) {
+      yPosition += 5;
+      doc.setFontSize(16);
+      doc.setTextColor(60, 60, 60);
+      doc.text('Summary', 20, yPosition);
+      yPosition += 8;
+      
+      doc.setFontSize(10);
+      doc.setTextColor(80, 80, 80);
+      const summaryLines = doc.splitTextToSize(personalInfo.summary, 170);
+      doc.text(summaryLines, 20, yPosition);
+      yPosition += summaryLines.length * 5 + 10;
+    }
+    
+    // Experience
+    if (experience?.length) {
+      yPosition += 5;
+      doc.setFontSize(16);
+      doc.setTextColor(60, 60, 60);
+      doc.text('Experience', 20, yPosition);
+      yPosition += 8;
+      
+      experience.forEach(exp => {
+        if (yPosition > 250) {
+          doc.addPage();
+          yPosition = 20;
+        }
+        
+        doc.setFontSize(12);
+        doc.setTextColor(60, 60, 60);
+        doc.text(exp.title || 'Position Title', 20, yPosition);
+        yPosition += 5;
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text(exp.company || 'Company Name', 20, yPosition);
+        doc.text(`${exp.startYear || ''} - ${exp.endYear || 'Present'}`, 120, yPosition);
+        yPosition += 8;
+        
+        if (exp.description) {
+          doc.setFontSize(9);
+          doc.setTextColor(80, 80, 80);
+          const descLines = doc.splitTextToSize(exp.description, 170);
+          doc.text(descLines, 20, yPosition);
+          yPosition += descLines.length * 4 + 8;
+        }
+      });
+    }
+    
+    // Education
+    if (education?.length) {
+      yPosition += 5;
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = 20;
       }
-    });
-
-    await browser.close();
+      
+      doc.setFontSize(16);
+      doc.setTextColor(60, 60, 60);
+      doc.text('Education', 20, yPosition);
+      yPosition += 8;
+      
+      education.forEach(edu => {
+        doc.setFontSize(12);
+        doc.setTextColor(60, 60, 60);
+        doc.text(edu.degree || 'Degree', 20, yPosition);
+        yPosition += 5;
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text(edu.institution || 'Institution', 20, yPosition);
+        doc.text(`${edu.startYear || ''} - ${edu.endYear || 'Present'}`, 120, yPosition);
+        yPosition += 8;
+      });
+    }
+    
+    // Skills
+    if (skills?.length) {
+      yPosition += 5;
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = 20;
+      }
+      
+      doc.setFontSize(16);
+      doc.setTextColor(60, 60, 60);
+      doc.text('Skills', 20, yPosition);
+      yPosition += 8;
+      
+      doc.setFontSize(10);
+      doc.setTextColor(80, 80, 80);
+      const skillsText = skills.join(', ');
+      const skillsLines = doc.splitTextToSize(skillsText, 170);
+      doc.text(skillsLines, 20, yPosition);
+    }
+    
+    const pdfBuffer = doc.output('arraybuffer');
 
     console.log('PDF generated successfully');
 
