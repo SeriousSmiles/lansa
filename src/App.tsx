@@ -7,7 +7,6 @@ import { AddToHomeScreenPrompt } from "@/components/mobile/AddToHomeScreenPrompt
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PageTransition } from "@/components/transitions/PageTransition";
-import LandingPage from "./pages/LandingPage";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
@@ -39,8 +38,8 @@ const App: React.FC = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<PageTransition><Index /></PageTransition>} />
-              {/* Landing page as the default route */}
-              <Route path="/" element={<PageTransition><LandingPage /></PageTransition>} />
+              {/* Change the default route to redirect to /auth instead of /dashboard */}
+              <Route path="/" element={<Navigate to="/auth" replace />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/onboarding" element={<PageTransition><Onboarding /></PageTransition>} />
                 <Route path="/profile-starter" element={<PageTransition><ProfileStarter /></PageTransition>} />
