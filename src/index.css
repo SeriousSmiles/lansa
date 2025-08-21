@@ -276,3 +276,10 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* Z-index scale for consistent layering */
+.z-navigation { z-index: 100; }
+.z-dropdown { z-index: 200; }
+.z-modal { z-index: 300; }
+.z-toast { z-index: 400; }
+.z-overlay { z-index: 500; }

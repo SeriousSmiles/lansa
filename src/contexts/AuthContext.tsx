@@ -12,6 +12,7 @@ type UserType = {
 interface AuthContextType {
   user: UserType;
   session: Session | null;
+  loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any; data: any }>;
   signOut: () => Promise<{ error: any }>;
@@ -173,11 +174,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = React.useMemo(() => ({
     user,
     session,
+    loading,
     signIn,
     signUp,
     signOut,
     updateDisplayName,
-  }), [user, session, signIn, signUp, signOut, updateDisplayName]);
+  }), [user, session, loading, signIn, signUp, signOut, updateDisplayName]);
 
   return (
     <AuthContext.Provider value={value}>

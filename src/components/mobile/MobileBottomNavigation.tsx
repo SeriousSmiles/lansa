@@ -2,6 +2,9 @@ import React, { useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, Search, User, Settings, Plus } from "lucide-react";
 import { gsap } from "gsap";
+import { useMobileNavigation } from "@/contexts/MobileNavigationContext";
+import { MobileQuickActions } from "./MobileQuickActions";
+import { useMobileFAB } from "@/hooks/useMobileFAB";
 
 interface NavItem {
   title: string;
@@ -19,6 +22,8 @@ const navItems: NavItem[] = [
 
 export function MobileBottomNavigation() {
   const location = useLocation();
+  const { shouldShowNavigation, showFAB, fabAction } = useMobileNavigation();
+  const { isQuickActionsOpen, closeQuickActions } = useMobileFAB();
   const navRef = useRef<HTMLDivElement>(null);
   const activeIndicatorRef = useRef<HTMLDivElement>(null);
   const fabRef = useRef<HTMLButtonElement>(null);
@@ -63,12 +68,14 @@ export function MobileBottomNavigation() {
       .to(target, { scale: 1, duration: 0.2, ease: "back.out(1.7)" });
   };
 
+  if (!shouldShowNavigation) return null;
+
   return (
     <>
       {/* Bottom Navigation */}
       <div 
         ref={navRef}
-        className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border/50 md:hidden"
+        className="fixed bottom-0 left-0 right-0 z-[100] bg-card/95 backdrop-blur-lg border-t border-border/50 md:hidden"
         style={{
           background: 'linear-gradient(135deg, hsl(var(--card)/0.95), hsl(var(--primary)/0.05))',
           backdropFilter: 'blur(20px)',
@@ -118,27 +125,36 @@ export function MobileBottomNavigation() {
       </div>
 
       {/* Floating Action Button */}
-      <button
-        ref={fabRef}
-        className="fixed bottom-20 right-6 z-50 md:hidden bg-gradient-to-r from-primary to-secondary text-primary-foreground h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
-        onClick={() => {
-          // Add haptic-style feedback animation
-          if (fabRef.current) {
-            gsap.timeline()
-              .to(fabRef.current, { scale: 0.9, duration: 0.1 })
-              .to(fabRef.current, { scale: 1.1, duration: 0.2 })
-              .to(fabRef.current, { scale: 1, duration: 0.1 });
-          }
-        }}
-      >
+      {showFAB && (
+        <button
+          ref={fabRef}
+          className="fixed bottom-20 right-6 z-[99] md:hidden bg-gradient-to-r from-primary to-secondary text-primary-foreground h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
+          onClick={() => {
+            // Add haptic-style feedback animation
+            if (fabRef.current) {
+              gsap.timeline()
+                .to(fabRef.current, { scale: 0.9, duration: 0.1 })
+                .to(fabRef.current, { scale: 1.1, duration: 0.2 })
+                .to(fabRef.current, { scale: 1, duration: 0.1 });
+            }
+            fabAction();
+          }}
+        >
         <Plus className="h-6 w-6 group-hover:rotate-90 transition-transform duration-300" />
         
-        {/* Ripple effect */}
-        <div className="absolute inset-0 rounded-full bg-white/20 scale-0 group-active:scale-150 transition-transform duration-300" />
-      </button>
+          {/* Ripple effect */}
+          <div className="absolute inset-0 rounded-full bg-white/20 scale-0 group-active:scale-150 transition-transform duration-300" />
+        </button>
+      )}
 
       {/* Bottom spacing for content */}
       <div className="h-20 md:hidden" />
+      
+      {/* Quick Actions Modal */}
+      <MobileQuickActions 
+        isOpen={isQuickActionsOpen}
+        onClose={closeQuickActions}
+      />
     </>
   );
 }

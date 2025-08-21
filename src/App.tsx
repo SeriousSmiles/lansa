@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AddToHomeScreenPrompt } from "@/components/mobile/AddToHomeScreenPrompt";
 import { MobileBottomNavigation } from "@/components/mobile/MobileBottomNavigation";
+import { MobileNavigationProvider } from "@/contexts/MobileNavigationContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PageTransition } from "@/components/transitions/PageTransition";
@@ -32,34 +33,36 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <AddToHomeScreenPrompt />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/auth" element={<PageTransition><Index /></PageTransition>} />
-              {/* Change the default route to redirect to /auth instead of /dashboard */}
-              <Route path="/" element={<Navigate to="/auth" replace />} />
-              <Route element={<ProtectedRoute />}>
-                <Route path="/onboarding" element={<PageTransition><Onboarding /></PageTransition>} />
-                <Route path="/profile-starter" element={<PageTransition><ProfileStarter /></PageTransition>} />
-                <Route path="/card" element={<PageTransition><Card /></PageTransition>} />
-                <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
-                <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
-                <Route path="/resources" element={<PageTransition><Resources /></PageTransition>} />
-                <Route path="/content" element={<PageTransition><ContentLibrary /></PageTransition>} />
-                <Route path="/discovery" element={<PageTransition><OpportunityDiscovery /></PageTransition>} />
-              </Route>
-              {/* Public shared profile route - no authentication required */}
-              <Route path="/profile/share/:userId" element={<PageTransition><SharedProfile /></PageTransition>} />
-              <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
-            </Routes>
-            <MobileBottomNavigation />
-          </BrowserRouter>
-        </TooltipProvider>
-        </AuthProvider>
-      </QueryClientProvider>
+        <MobileNavigationProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <AddToHomeScreenPrompt />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/auth" element={<PageTransition><Index /></PageTransition>} />
+                {/* Change the default route to redirect to /auth instead of /dashboard */}
+                <Route path="/" element={<Navigate to="/auth" replace />} />
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/onboarding" element={<PageTransition><Onboarding /></PageTransition>} />
+                  <Route path="/profile-starter" element={<PageTransition><ProfileStarter /></PageTransition>} />
+                  <Route path="/card" element={<PageTransition><Card /></PageTransition>} />
+                  <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
+                  <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
+                  <Route path="/resources" element={<PageTransition><Resources /></PageTransition>} />
+                  <Route path="/content" element={<PageTransition><ContentLibrary /></PageTransition>} />
+                  <Route path="/discovery" element={<PageTransition><OpportunityDiscovery /></PageTransition>} />
+                </Route>
+                {/* Public shared profile route - no authentication required */}
+                <Route path="/profile/share/:userId" element={<PageTransition><SharedProfile /></PageTransition>} />
+                <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+              </Routes>
+              <MobileBottomNavigation />
+            </BrowserRouter>
+          </TooltipProvider>
+        </MobileNavigationProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 };
 
