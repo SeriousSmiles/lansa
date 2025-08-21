@@ -11,7 +11,8 @@ import { UserTypeSelection } from "@/components/onboarding/UserTypeSelection";
 import { BusinessOnboardingForm } from "@/components/onboarding/BusinessOnboardingForm";
 import { StudentOnboardingContainer } from "@/components/onboarding/student/StudentOnboardingContainer";
 import { CareerPathSegmentation, type CareerPath } from "@/components/onboarding/CareerPathSegmentation";
-import EnhancedOnboardingForm from "@/components/onboarding/EnhancedOnboardingForm";
+import { AIOnboardingFlow } from "@/components/onboarding/AIOnboardingFlow";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Onboarding() {
   const [isLoading, setIsLoading] = useState(true);
@@ -31,13 +32,26 @@ export default function Onboarding() {
       }
       
       try {
+        // Check if user has completed new AI onboarding
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('onboarding_completed')
+          .eq('user_id', user.id)
+          .single();
+
+        if (profile?.onboarding_completed) {
+          navigate('/dashboard');
+          return;
+        }
+
+        // Fallback to old onboarding data for migration
         const answers = await getUserAnswers(user.id);
         console.log("Loaded existing user answers:", answers);
         
         if (answers) {
           setUserAnswers(answers);
           
-          // If user has already completed onboarding, redirect to dashboard
+          // If user has already completed old onboarding, redirect to dashboard
           if (answers.career_path_onboarding_completed) {
             navigate('/dashboard');
             return;
@@ -150,6 +164,8 @@ export default function Onboarding() {
           <div className="flex flex-col items-center justify-center px-4 py-8">
             <BusinessOnboardingForm onComplete={() => navigate('/dashboard')} />
           </div>
+        ) : userType === 'job_seeker' && careerPath ? (
+          <AIOnboardingFlow />
         ) : (
           <div className="flex flex-col items-center justify-center px-4 py-8">
             <StudentOnboardingContainer />

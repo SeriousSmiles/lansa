@@ -14,6 +14,105 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_insights: {
+        Row: {
+          action_link: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          insight_text: string
+          priority: number
+          user_id: string
+        }
+        Insert: {
+          action_link?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          insight_text: string
+          priority?: number
+          user_id: string
+        }
+        Update: {
+          action_link?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          insight_text?: string
+          priority?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_logs: {
+        Row: {
+          created_at: string
+          error_flag: boolean
+          expert: string
+          id: string
+          input_hash: string
+          latency_ms: number | null
+          model_used: string
+          token_count: number | null
+          user_id_hash: string
+        }
+        Insert: {
+          created_at?: string
+          error_flag?: boolean
+          expert: string
+          id?: string
+          input_hash: string
+          latency_ms?: number | null
+          model_used: string
+          token_count?: number | null
+          user_id_hash: string
+        }
+        Update: {
+          created_at?: string
+          error_flag?: boolean
+          expert?: string
+          id?: string
+          input_hash?: string
+          latency_ms?: number | null
+          model_used?: string
+          token_count?: number | null
+          user_id_hash?: string
+        }
+        Relationships: []
+      }
+      ai_mirror_reviews: {
+        Row: {
+          created_at: string
+          hire_signal_score: number
+          id: string
+          manager_read: string
+          risks: string[] | null
+          source: string
+          strengths: string[] | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          hire_signal_score?: number
+          id?: string
+          manager_read: string
+          risks?: string[] | null
+          source: string
+          strengths?: string[] | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          hire_signal_score?: number
+          id?: string
+          manager_read?: string
+          risks?: string[] | null
+          source?: string
+          strengths?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       business_onboarding_data: {
         Row: {
           business_services: string | null
@@ -379,29 +478,56 @@ export type Database = {
       user_90day_goal: {
         Row: {
           ai_interpretation: string | null
+          assumptions: string[] | null
           clarity_level: string | null
+          clarity_score: number | null
           created_at: string
+          employer_relevance_score: number | null
+          feedback: string | null
+          follow_up_question: string | null
           goal_statement: string
           id: string
           initiative_type: string | null
+          overall_strength: number | null
+          risk_notes: string[] | null
+          specificity_score: number | null
+          success_metric: string | null
           user_id: string
         }
         Insert: {
           ai_interpretation?: string | null
+          assumptions?: string[] | null
           clarity_level?: string | null
+          clarity_score?: number | null
           created_at?: string
+          employer_relevance_score?: number | null
+          feedback?: string | null
+          follow_up_question?: string | null
           goal_statement: string
           id?: string
           initiative_type?: string | null
+          overall_strength?: number | null
+          risk_notes?: string[] | null
+          specificity_score?: number | null
+          success_metric?: string | null
           user_id: string
         }
         Update: {
           ai_interpretation?: string | null
+          assumptions?: string[] | null
           clarity_level?: string | null
+          clarity_score?: number | null
           created_at?: string
+          employer_relevance_score?: number | null
+          feedback?: string | null
+          follow_up_question?: string | null
           goal_statement?: string
           id?: string
           initiative_type?: string | null
+          overall_strength?: number | null
+          risk_notes?: string[] | null
+          specificity_score?: number | null
+          success_metric?: string | null
           user_id?: string
         }
         Relationships: []
@@ -612,29 +738,53 @@ export type Database = {
         Row: {
           ai_category: string | null
           business_value_type: string | null
+          clarity_score: number | null
           created_at: string
+          employer_relevance_score: number | null
+          feedback: string | null
+          follow_up_question: string | null
           id: string
           original_skill: string
+          overall_strength: number | null
           reframed_skill: string | null
+          specificity_score: number | null
           user_id: string
+          value_statements: string[] | null
+          value_tags: string[] | null
         }
         Insert: {
           ai_category?: string | null
           business_value_type?: string | null
+          clarity_score?: number | null
           created_at?: string
+          employer_relevance_score?: number | null
+          feedback?: string | null
+          follow_up_question?: string | null
           id?: string
           original_skill: string
+          overall_strength?: number | null
           reframed_skill?: string | null
+          specificity_score?: number | null
           user_id: string
+          value_statements?: string[] | null
+          value_tags?: string[] | null
         }
         Update: {
           ai_category?: string | null
           business_value_type?: string | null
+          clarity_score?: number | null
           created_at?: string
+          employer_relevance_score?: number | null
+          feedback?: string | null
+          follow_up_question?: string | null
           id?: string
           original_skill?: string
+          overall_strength?: number | null
           reframed_skill?: string | null
+          specificity_score?: number | null
           user_id?: string
+          value_statements?: string[] | null
+          value_tags?: string[] | null
         }
         Relationships: []
       }
@@ -659,7 +809,9 @@ export type Database = {
           is_public: boolean
           languages: Json | null
           last_name: string | null
+          major: string | null
           name: string | null
+          onboarding_completed: boolean | null
           phone_number: string | null
           professional_goal: string | null
           profile_image: string | null
@@ -688,7 +840,9 @@ export type Database = {
           is_public?: boolean
           languages?: Json | null
           last_name?: string | null
+          major?: string | null
           name?: string | null
+          onboarding_completed?: boolean | null
           phone_number?: string | null
           professional_goal?: string | null
           profile_image?: string | null
@@ -717,7 +871,9 @@ export type Database = {
           is_public?: boolean
           languages?: Json | null
           last_name?: string | null
+          major?: string | null
           name?: string | null
+          onboarding_completed?: boolean | null
           phone_number?: string | null
           professional_goal?: string | null
           profile_image?: string | null

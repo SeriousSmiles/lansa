@@ -94,3 +94,18 @@ verify_jwt = false
 
 [functions.generate-interactive-profile-guidance]
 verify_jwt = false
+
+[functions.ai-skill-reframer]
+verify_jwt = true
+
+[functions.ai-90day-planner]
+verify_jwt = true
+
+[functions.ai-clarity-critic]
+verify_jwt = true
+
+[functions.ai-power-mirror]
+verify_jwt = true
+
+[functions.ai-profile-stylist]
+verify_jwt = true
