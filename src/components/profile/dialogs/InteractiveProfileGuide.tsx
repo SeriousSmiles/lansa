@@ -115,12 +115,18 @@ export function InteractiveProfileGuide({
       setIsInitialized(true);
     } catch (error) {
       console.error('Failed to initialize conversation:', error);
-      setMessages([{
+      const fallbackMessage: ConversationMessage = {
         role: 'assistant',
         content: "Hi! I'm your AI profile guide. I'll help you create a compelling professional profile based on your background and goals. What would you like to work on first - your headline, about section, skills, or experience?",
         timestamp: new Date(),
-        nextSteps: ["Choose a section to improve", "Tell me about your current situation"]
-      }]);
+        nextSteps: ["Choose a section to improve", "Tell me about your current situation"],
+        suggestions: {
+          title: initialTitle || undefined,
+          about: initialAbout || undefined,
+          skills: existingSkills.length > 0 ? [] : ["Communication", "Problem Solving", "Leadership"]
+        }
+      };
+      setMessages([fallbackMessage]);
       setIsInitialized(true);
     } finally {
       setIsLoading(false);
@@ -173,9 +179,14 @@ export function InteractiveProfileGuide({
       console.error('Failed to send message:', error);
       const errorMessage: ConversationMessage = {
         role: 'assistant',
-        content: "I'm having trouble connecting right now. Could you try rephrasing your request?",
+        content: "I'm having trouble connecting right now. Let me help you with some basic suggestions while I get back online. What specific section would you like to work on?",
         timestamp: new Date(),
-        nextSteps: ["Try again", "Check your connection"]
+        nextSteps: ["Try rephrasing your question", "Choose a specific section to improve"],
+        suggestions: {
+          title: !initialTitle ? "Professional [Your Role] | [Key Skills] | [Industry/Focus]" : undefined,
+          about: !initialAbout ? "Brief professional summary highlighting your key strengths and career goals..." : undefined,
+          skills: existingSkills.length === 0 ? ["Communication", "Problem Solving", "Teamwork"] : undefined
+        }
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {

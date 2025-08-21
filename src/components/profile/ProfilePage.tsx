@@ -9,6 +9,7 @@ import { useElementAnimation } from "@/utils/animationHelpers";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { InteractiveProfileGuide } from "./dialogs/InteractiveProfileGuide";
+import { PostOnboardingChoice } from "../onboarding/PostOnboardingChoice";
 
 export function ProfilePage() {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ export function ProfilePage() {
   const profile = useProfileData(user?.id);
   const mainContentRef = useElementAnimation();
   const [guidedOpen, setGuidedOpen] = useState(false);
+  const [choiceModalOpen, setChoiceModalOpen] = useState(false);
 
   // Handle starter data from ProfileStarter page
   useEffect(() => {
@@ -53,16 +55,31 @@ export function ProfilePage() {
     }
   }, [location.state]);
 
-  // Auto-open guided setup when key fields are missing (and not previously skipped)
+  // Auto-open choice modal when key fields are missing (and choice not made yet)
   useEffect(() => {
     if (!profile.isLoading && user?.id) {
       const missingCore = !profile.userTitle || !profile.aboutText || (profile.userSkills?.length || 0) === 0;
-      const skipped = localStorage.getItem(`guidedSetupSkipped_${user.id}`) === 'true';
-      if (missingCore && !skipped) {
-        setGuidedOpen(true);
+      const choiceMade = localStorage.getItem(`profileChoiceMade_${user.id}`) === 'true';
+      if (missingCore && !choiceMade) {
+        setChoiceModalOpen(true);
       }
     }
   }, [profile.isLoading, profile.userTitle, profile.aboutText, profile.userSkills, user?.id]);
+
+  const handleChooseAIGuide = () => {
+    if (user?.id) {
+      localStorage.setItem(`profileChoiceMade_${user.id}`, 'true');
+    }
+    setChoiceModalOpen(false);
+    setGuidedOpen(true);
+  };
+
+  const handleChooseManual = () => {
+    if (user?.id) {
+      localStorage.setItem(`profileChoiceMade_${user.id}`, 'true');
+    }
+    setChoiceModalOpen(false);
+  };
 
   // Debug logging
   console.log("Profile debug:", { 
@@ -102,15 +119,16 @@ export function ProfilePage() {
         />
       </ProfileLayout>
       
+      <PostOnboardingChoice
+        open={choiceModalOpen}
+        onOpenChange={setChoiceModalOpen}
+        onChooseAIGuide={handleChooseAIGuide}
+        onChooseManual={handleChooseManual}
+      />
+
       <InteractiveProfileGuide
         open={guidedOpen}
-        onOpenChange={(open) => {
-          setGuidedOpen(open);
-          if (!open && user?.id) {
-            // mark skip to avoid auto-open next time if user closed without finishing
-            localStorage.setItem(`guidedSetupSkipped_${user.id}`, 'true');
-          }
-        }}
+        onOpenChange={setGuidedOpen}
         userId={user?.id || ''}
         userAnswers={profile.userAnswers as any}
         existingSkills={profile.userSkills}
