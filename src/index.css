@@ -152,3 +152,127 @@
   @apply w-full mx-auto px-4;
   max-width: 1280px; /* equivalent to max-w-screen-xl */
 }
+
+/* Mobile-first animations and effects */
+@keyframes mobile-slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes mobile-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes mobile-bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes mobile-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.7);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px hsl(var(--primary) / 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
+  }
+}
+
+/* Mobile utility classes */
+.mobile-slide-up {
+  animation: mobile-slide-up 0.4s ease-out;
+}
+
+.mobile-fade-in {
+  animation: mobile-fade-in 0.6s ease-out;
+}
+
+.mobile-bounce {
+  animation: mobile-bounce 1s infinite;
+}
+
+.mobile-pulse {
+  animation: mobile-pulse 2s infinite;
+}
+
+/* Touch-optimized interactions */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* App-like glass morphism effects */
+.mobile-glass {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.mobile-glass-dark {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Safe area handling for mobile */
+.mobile-safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.mobile-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.mobile-safe-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.mobile-safe-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Lansa brand gradients for mobile */
+.lansa-gradient-primary {
+  background: linear-gradient(135deg, hsl(var(--lansa-orange)), hsl(var(--lansa-blue)));
+}
+
+.lansa-gradient-subtle {
+  background: linear-gradient(135deg, hsl(var(--lansa-orange) / 0.1), hsl(var(--lansa-blue) / 0.1));
+}
+
+.lansa-gradient-text {
+  background: linear-gradient(135deg, hsl(var(--lansa-orange)), hsl(var(--lansa-blue)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

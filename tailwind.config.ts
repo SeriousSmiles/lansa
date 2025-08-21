@@ -91,11 +91,84 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				// Mobile-optimized animations
+				'mobile-slide-up': {
+					'0%': {
+						transform: 'translateY(100%)',
+						opacity: '0'
+					},
+					'100%': {
+						transform: 'translateY(0)',
+						opacity: '1'
+					}
+				},
+				'mobile-slide-down': {
+					'0%': {
+						transform: 'translateY(-100%)',
+						opacity: '0'
+					},
+					'100%': {
+						transform: 'translateY(0)',
+						opacity: '1'
+					}
+				},
+				'mobile-scale-in': {
+					'0%': {
+						transform: 'scale(0.9)',
+						opacity: '0'
+					},
+					'100%': {
+						transform: 'scale(1)',
+						opacity: '1'
+					}
+				},
+				'mobile-bounce-in': {
+					'0%': {
+						transform: 'scale(0.3)',
+						opacity: '0'
+					},
+					'50%': {
+						transform: 'scale(1.05)',
+						opacity: '1'
+					},
+					'70%': {
+						transform: 'scale(0.9)'
+					},
+					'100%': {
+						transform: 'scale(1)'
+					}
+				},
+				'mobile-pulse': {
+					'0%, 100%': {
+						transform: 'scale(1)',
+						opacity: '1'
+					},
+					'50%': {
+						transform: 'scale(1.05)',
+						opacity: '0.8'
+					}
+				},
+				'mobile-wiggle': {
+					'0%, 7%': { transform: 'rotateZ(0)' },
+					'15%': { transform: 'rotateZ(-15deg)' },
+					'20%': { transform: 'rotateZ(10deg)' },
+					'25%': { transform: 'rotateZ(-10deg)' },
+					'30%': { transform: 'rotateZ(6deg)' },
+					'35%': { transform: 'rotateZ(-4deg)' },
+					'40%, 100%': { transform: 'rotateZ(0)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				// Mobile animations
+				'mobile-slide-up': 'mobile-slide-up 0.4s ease-out',
+				'mobile-slide-down': 'mobile-slide-down 0.4s ease-out',
+				'mobile-scale-in': 'mobile-scale-in 0.3s ease-out',
+				'mobile-bounce-in': 'mobile-bounce-in 0.6s ease-out',
+				'mobile-pulse': 'mobile-pulse 2s ease-in-out infinite',
+				'mobile-wiggle': 'mobile-wiggle 1s ease-in-out'
 			}
 		}
 	},
