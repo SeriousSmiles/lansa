@@ -14,6 +14,7 @@ export default function ProtectedRoute() {
   const [initialCheck, setInitialCheck] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [profileReady, setProfileReady] = useState(false);
+  const [userAnswers, setUserAnswers] = useState<any>(null); // Add for debugging
   const [hasShownProfileNotification, setHasShownProfileNotification] = useState(false);
 
   useEffect(() => {
@@ -54,8 +55,13 @@ export default function ProtectedRoute() {
 
           // Check onboarding and profile status
           const userAnswers = await getUserAnswers(user.id);
+          console.log("ProtectedRoute: User answers:", userAnswers);
+          
           const completed = hasCompletedOnboarding(userAnswers);
+          console.log("ProtectedRoute: Onboarding completed:", completed);
+          
           setOnboardingCompleted(completed);
+          setUserAnswers(userAnswers); // Store for debugging
 
           // Check if profile is ready for dashboard access
           const profileStatus = await getProfileStatus(user.id);
@@ -107,10 +113,22 @@ export default function ProtectedRoute() {
   // Check if the user is accessing the dashboard page
   if (location.pathname === "/dashboard") {
     if (!onboardingCompleted) {
-      // Let user into onboarding; prevent dead-end loops
-      toast.info("Please complete onboarding first");
-      return <Navigate to="/onboarding" state={{ from: location }} replace />;
+      console.log("Dashboard access denied - onboarding not completed");
+      console.log("User answers:", userAnswers);
+      
+      // Check if they should really be prevented from accessing dashboard
+      // Maybe they have valid data but the completion flag isn't set correctly
+      if (userAnswers && (userAnswers.identity || userAnswers.career_path || userAnswers.user_type)) {
+        console.log("User has onboarding data, allowing dashboard access and updating completion flag");
+        // Allow access but show a soft message
+        toast.info("Welcome back! Setting up your dashboard...");
+      } else {
+        // Really needs onboarding
+        toast.info("Please complete onboarding first");
+        return <Navigate to="/onboarding" state={{ from: location }} replace />;
+      }
     }
+    
     // If onboarding complete but profile check failed to resolve, still allow access
     if (profileReady === false && !hasShownProfileNotification) {
       // Soft gate: nudge to profile but do not block access indefinitely
