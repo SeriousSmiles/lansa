@@ -1,0 +1,54 @@
+/* Additional CSS fixes for mobile modals and dropdowns */
+
+/* Ensure proper modal positioning on mobile */
+@media (max-width: 768px) {
+  [data-radix-dialog-content] {
+    margin: 0.5rem !important;
+    width: calc(100vw - 1rem) !important;
+    max-width: calc(100vw - 1rem) !important;
+    left: 50% !important;
+    transform: translateX(-50%) translateY(-50%) !important;
+  }
+  
+  /* Fix dropdown positioning */
+  [data-radix-dropdown-menu-content] {
+    max-width: calc(100vw - 2rem) !important;
+    margin: 0.5rem !important;
+  }
+  
+  /* Prevent horizontal scrolling */
+  body {
+    overflow-x: hidden;
+  }
+  
+  /* Ensure popover content is properly sized */
+  [data-radix-popover-content] {
+    max-width: calc(100vw - 2rem) !important;
+    margin: 0.5rem !important;
+  }
+}
+
+/* Global modal and dropdown improvements */
+[data-radix-dialog-overlay] {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+[data-radix-dropdown-menu-content],
+[data-radix-popover-content] {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: hsl(var(--popover) / 0.95) !important;
+  border: 1px solid hsl(var(--border) / 0.8);
+}
+
+/* Ensure high z-index for all overlay components */
+[data-radix-dialog-overlay],
+[data-radix-dialog-content] {
+  z-index: 9999 !important;
+}
+
+[data-radix-dropdown-menu-content],
+[data-radix-popover-content] {
+  z-index: 9998 !important;
+}

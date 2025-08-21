@@ -5,6 +5,7 @@ import App from './App'
 import './index.css'
 import './styles/animations.css'
 import './styles/onboarding-toasts.css'
+import './styles/mobile-fixes.css'
 import './i18n'
 
 // Ensure React is globally available

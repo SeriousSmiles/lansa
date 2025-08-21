@@ -69,6 +69,11 @@ export function MobileActionSheet({ isOpen, onClose, title, children }: MobileAc
       <div 
         ref={sheetRef}
         className="absolute bottom-0 left-0 right-0 bg-card rounded-t-3xl shadow-2xl max-h-[90vh] overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, hsl(var(--card)), hsl(var(--card)/0.98))',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+        }}
       >
         {/* Handle bar */}
         <div className="flex justify-center py-3">
