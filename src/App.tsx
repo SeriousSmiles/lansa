@@ -33,12 +33,12 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <MobileNavigationProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <AddToHomeScreenPrompt />
-            <BrowserRouter>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <AddToHomeScreenPrompt />
+          <BrowserRouter>
+            <MobileNavigationProvider>
               <Routes>
                 <Route path="/auth" element={<PageTransition><Index /></PageTransition>} />
                 {/* Change the default route to redirect to /auth instead of /dashboard */}
@@ -58,9 +58,9 @@ const App: React.FC = () => {
                 <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
               </Routes>
               <MobileBottomNavigation />
-            </BrowserRouter>
-          </TooltipProvider>
-        </MobileNavigationProvider>
+            </MobileNavigationProvider>
+          </BrowserRouter>
+        </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
