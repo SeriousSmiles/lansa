@@ -30,7 +30,7 @@ export const useOnboardingCompletion = () => {
         // Add onboarding_completed flag
         const updatedAnswers = {
           ...userAnswers,
-          onboarding_completed: true
+          career_path_onboarding_completed: true
         };
         
         // Save the updated answers

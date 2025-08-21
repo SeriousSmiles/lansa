@@ -153,10 +153,22 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
     if (!user) return;
     
     try {
+      // Update both tables to ensure proper completion tracking
       await supabase
         .from('user_profiles')
         .update({ onboarding_completed: true })
         .eq('user_id', user.id);
+      
+      // Also update user_answers to mark onboarding as complete
+      await supabase
+        .from('user_answers')
+        .upsert({
+          user_id: user.id,
+          career_path_onboarding_completed: true,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
       
       toast.success('Onboarding completed! Ready to build your profile.');
       navigate('/profile');

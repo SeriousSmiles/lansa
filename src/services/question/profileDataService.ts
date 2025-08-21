@@ -36,8 +36,15 @@ export function getProfileGoal(desiredOutcome?: string): string {
 export function hasCompletedOnboarding(answers: UserAnswers | null): boolean {
   if (!answers) return false;
   
-  // Check the unified career path onboarding completion flag
-  return !!(answers.career_path_onboarding_completed);
+  // Check multiple possible completion indicators
+  // Either career path onboarding OR AI onboarding should count as complete
+  return !!(
+    answers.career_path_onboarding_completed || 
+    answers.ai_onboarding_card ||
+    answers.onboarding_inputs ||
+    (answers.identity && answers.desired_outcome) ||
+    (answers.career_path && answers.user_type)
+  );
 }
 
 // Function to get a personalized insight based on user's answers
