@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LoadingSpinner } from "@/components/loading";
 import { generatePowerMirror, StudentDemographics } from "@/services/question/studentOnboardingService";
-import powerMirrorImage from "@/assets/onboarding/power-mirror.jpg";
+import powerMirrorImage from "@/assets/onboarding/power-mirror-realistic.jpg";
 
 interface PowerMirrorStepProps {
   skillReframe: string;
@@ -29,6 +29,9 @@ export function PowerMirrorStep({
   const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
+    // Scroll to top when component mounts
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
     const generateMirror = async () => {
       setIsGenerating(true);
       try {

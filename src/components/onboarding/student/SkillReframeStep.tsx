@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/loading";
 import { analyzeSkillReframe } from "@/services/question/studentOnboardingService";
-import skillTransformImage from "@/assets/onboarding/skill-transform.jpg";
+import skillTransformImage from "@/assets/onboarding/skill-transform-realistic.jpg";
 
 interface SkillReframeStepProps {
   onComplete: (originalSkill: string, analysis: any) => void;
@@ -40,6 +40,11 @@ export function SkillReframeStep({
   ];
 
   const canProceed = skill.trim().length > 10;
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const handleSubmit = async () => {
     if (!canProceed || isSubmitting || isAnalyzing) return;

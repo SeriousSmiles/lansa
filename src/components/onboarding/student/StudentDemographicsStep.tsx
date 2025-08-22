@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { StudentDemographics } from "@/services/question/studentOnboardingService";
-import demographicsImage from "@/assets/onboarding/demographics.jpg";
+import demographicsImage from "@/assets/onboarding/demographics-realistic.jpg";
 interface StudentDemographicsStepProps {
   onComplete: (demographics: StudentDemographics) => void;
   stepNumber: number;
@@ -49,6 +49,11 @@ export function StudentDemographicsStep({
     label: "I'm not sure yet"
   }];
   const canProceed = academicStatus && fieldOfStudy.trim() && careerGoal;
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
   const handleSubmit = () => {
     if (!canProceed || isSubmitting) return;
     onComplete({

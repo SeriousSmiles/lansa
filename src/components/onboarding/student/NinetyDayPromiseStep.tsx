@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/loading";
 import { analyzeNinetyDayGoal } from "@/services/question/studentOnboardingService";
-import goalImage from "@/assets/onboarding/90day-goal.jpg";
+import goalImage from "@/assets/onboarding/90day-goal-realistic.jpg";
 
 interface NinetyDayPromiseStepProps {
   onComplete: (goalStatement: string, analysis: any) => void;
@@ -32,6 +32,11 @@ export function NinetyDayPromiseStep({
   ];
 
   const canProceed = goal.trim().length > 15;
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const handleSubmit = async () => {
     if (!canProceed || isSubmitting || isAnalyzing) return;
