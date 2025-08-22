@@ -390,7 +390,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
         />
 
         <Card className="shadow-lg border-border max-w-2xl mx-auto">
-          <CardContent className="p-8">
+          <CardContent className="p-4">
             <div className="space-y-6">
               <ActionCard
                 title="What's your strongest skill?"
@@ -507,7 +507,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
         />
 
         <Card className="shadow-lg border-border max-w-2xl mx-auto">
-          <CardContent className="p-8">
+          <CardContent className="p-4">
             <div className="space-y-6">
               <ActionCard
                 title="What will you achieve in 90 days?"
@@ -622,7 +622,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
         />
 
         <Card className="shadow-lg border-border max-w-2xl mx-auto">
-          <CardContent className="p-8">
+          <CardContent className="p-4">
             {mirrorData ? (
               <div className="space-y-6">
                 <ActionCard

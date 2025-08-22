@@ -83,7 +83,7 @@ export function StudentDemographicsStep({
         </div>
 
         <Card className="shadow-lg border-border">
-          <CardContent className="p-4 md:p-8">
+          <CardContent className="p-4 md:p-4">
             <div className="space-y-6 md:space-y-8">
 
             {/* Academic Status */}

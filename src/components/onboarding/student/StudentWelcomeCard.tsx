@@ -28,7 +28,7 @@ export function StudentWelcomeCard({ onStart }: StudentWelcomeCardProps) {
         </div>
       </div>
 
-      <Card className="p-8 bg-card border-border shadow-lg">
+      <Card className="p-4 bg-card border-border shadow-lg">
         <div className="text-center space-y-6">
           <div className="space-y-4">
             <div className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">

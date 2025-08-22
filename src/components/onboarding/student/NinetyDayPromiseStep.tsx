@@ -82,7 +82,7 @@ export function NinetyDayPromiseStep({
       </div>
 
       <Card className="shadow-lg border-border">
-        <CardContent className="md:p-8">
+        <CardContent className="md:p-4">
           <div className="space-y-6">
 
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-6 rounded-xl border border-green-200 dark:border-green-800 space-y-4">
