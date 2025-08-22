@@ -279,7 +279,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
         />
 
         <Card className="shadow-lg border-border max-w-2xl mx-auto">
-          <CardContent className="p-8">
+          <CardContent className="p-4">
             <div className="space-y-8">
               <ActionCard
                 title="Academic Status"
