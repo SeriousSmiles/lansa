@@ -54,7 +54,7 @@ export function ActionCard({
       className
     )}>
       <div className="p-6">
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
+        <div className="flex flex-col md:flex-row items-start gap-4">
           <div className={cn(
             "p-2 rounded-lg",
             config.iconClass
@@ -63,13 +63,8 @@ export function ActionCard({
           </div>
           
           <div className="flex-1 space-y-3">
-            <div className="flex items-center justify-between">
+            <div>
               <h3 className="font-semibold text-foreground">{title}</h3>
-              {status !== 'pending' && (
-                <Badge variant="secondary" className={config.badgeClass}>
-                  {status === 'completed' ? 'Done' : 'Active'}
-                </Badge>
-              )}
             </div>
             
             <p className="text-sm text-muted-foreground">{description}</p>
