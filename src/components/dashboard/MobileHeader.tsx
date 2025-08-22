@@ -5,13 +5,17 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Menu } from "lucide-react";
 import { getContrastTextColor } from "@/utils/colorUtils";
+import { MobileUserProfile } from "@/components/mobile/MobileUserProfile";
 
 interface MobileHeaderProps {
   themeColor?: string;
   items: Array<{ title: string; url: string; }>;
+  userName: string;
+  email: string;
+  onLogout: () => Promise<void>;
 }
 
-export function MobileHeader({ themeColor, items }: MobileHeaderProps) {
+export function MobileHeader({ themeColor, items, userName, email, onLogout }: MobileHeaderProps) {
   // Determine if the theme is dark based on luminance
   const isDarkTheme = themeColor ? getContrastTextColor(themeColor) === "#FFFFFF" : false;
   
@@ -31,6 +35,12 @@ export function MobileHeader({ themeColor, items }: MobileHeaderProps) {
         />
       </Link>
       <div className="flex items-center gap-2">
+        <MobileUserProfile 
+          userName={userName}
+          email={email}
+          handleLogout={onLogout}
+          themeColor={themeColor}
+        />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm">
@@ -50,16 +60,6 @@ export function MobileHeader({ themeColor, items }: MobileHeaderProps) {
                 </Link>
               </DropdownMenuItem>
             ))}
-            <DropdownMenuItem asChild>
-              <Link to="/profile" className="w-full">
-                Resume Builder
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/profile" className="w-full">
-                Settings
-              </Link>
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

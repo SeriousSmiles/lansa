@@ -63,7 +63,13 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
     <div className="flex min-h-screen w-full bg-[rgba(253,248,242,1)] flex-col">
       <AnnouncementBanner />
       {isMobile ? (
-        <MobileHeader themeColor={themeColor} items={menuItems} />
+        <MobileHeader 
+          themeColor={themeColor} 
+          items={menuItems} 
+          userName={userName}
+          email={email}
+          onLogout={handleLogout}
+        />
       ) : (
         <TopNavbar 
           items={menuItems}
