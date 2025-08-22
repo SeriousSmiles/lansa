@@ -54,7 +54,7 @@ export function ActionCard({
       className
     )}>
       <div className="p-6">
-        <div className="flex items-start gap-4">
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
           <div className={cn(
             "p-2 rounded-lg",
             config.iconClass
