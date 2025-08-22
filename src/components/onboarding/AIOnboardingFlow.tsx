@@ -363,7 +363,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
               <Button 
                 onClick={handleDemographicsSave}
                 disabled={!demographicsData.academic_status || !demographicsData.major || !demographicsData.career_goal_type}
-                className="w-full py-4 text-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+                className="w-full py-4 text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
                 size="lg"
               >
                 Continue to Power Moments ✨
@@ -469,7 +469,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                 <Button 
                   onClick={() => setCurrentStep('goal')}
                   disabled={!skillAnalysis || skillAnalysis.overall_strength < 0.5}
-                  className="flex-1 py-4 text-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+                  className="flex-1 py-4 text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
                   size="lg"
                 >
                   Continue to 90-Day Goal ✨
@@ -584,7 +584,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                     setCurrentStep('summary');
                   }}
                   disabled={!goalAnalysis || goalAnalysis.overall_strength < 0.5}
-                  className="flex-1 py-4 text-lg bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+                  className="flex-1 py-4 text-sm bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
                   size="lg"
                 >
                   See Manager's View 👁️
@@ -708,7 +708,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                   <Button 
                     onClick={handleComplete} 
                     size="lg" 
-                    className="px-12 py-4 text-lg bg-gradient-to-r from-primary via-secondary to-primary hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                    className="px-12 py-4 text-sm bg-gradient-to-r from-primary via-secondary to-primary hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
                   >
                     Build Your Resume Now ✨
                   </Button>

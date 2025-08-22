@@ -127,7 +127,7 @@ export function UserTypeSelection({ onSelect }: UserTypeSelectionProps) {
               
               {(expandedCard === 'job_seeker' || !isMobile) && (
                 <Button 
-                  className={`w-full py-4 md:py-6 text-base md:text-lg font-semibold transition-all duration-300 ${
+                  className={`w-full py-4 md:py-6 text-base md:text-sm font-semibold transition-all duration-300 ${
                     selectedType === 'job_seeker' 
                       ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
                       : 'bg-primary/10 hover:bg-primary/20 text-primary border border-primary'
@@ -221,7 +221,7 @@ export function UserTypeSelection({ onSelect }: UserTypeSelectionProps) {
               
               {(expandedCard === 'employer' || !isMobile) && (
                 <Button 
-                  className={`w-full py-4 md:py-6 text-base md:text-lg font-semibold transition-all duration-300 ${
+                  className={`w-full py-4 md:py-6 text-base md:text-sm font-semibold transition-all duration-300 ${
                     selectedType === 'employer' 
                       ? 'bg-secondary hover:bg-secondary/90 text-secondary-foreground' 
                       : 'bg-secondary/10 hover:bg-secondary/20 text-secondary border border-secondary'
