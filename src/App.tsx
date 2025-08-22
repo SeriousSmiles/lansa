@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AddToHomeScreenPrompt } from "@/components/mobile/AddToHomeScreenPrompt";
-import { MobileBottomNavigation } from "@/components/mobile/MobileBottomNavigation";
+
 import { MobileNavigationProvider } from "@/contexts/MobileNavigationContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -57,7 +57,7 @@ const App: React.FC = () => {
                 <Route path="/profile/share/:userId" element={<PageTransition><SharedProfile /></PageTransition>} />
                 <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
               </Routes>
-              <MobileBottomNavigation />
+              
             </MobileNavigationProvider>
           </BrowserRouter>
         </TooltipProvider>
