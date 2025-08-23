@@ -21,29 +21,30 @@ export function StepContainer({
   isCompleted = false
 }: StepContainerProps) {
   return (
-    <div className="h-full flex flex-col">
-      {/* Step Header */}
-      <div className="px-6 py-4 border-b bg-muted/20">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xl font-semibold">{title}</h3>
-            <p className="text-muted-foreground">{description}</p>
+    <div className="space-y-6">
+      {/* Header with Visual Hierarchy */}
+      <div className="space-y-3">
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-foreground tracking-tight">{title}</h1>
+            {description && (
+              <p className="text-lg text-muted-foreground max-w-2xl leading-relaxed">{description}</p>
+            )}
           </div>
           {isCompleted && (
-            <Badge variant="secondary" className="bg-green-100 text-green-700">
-              <CheckCircle className="h-3 w-3 mr-1" />
+            <Badge variant="secondary" className="bg-green-100 text-green-700 px-3 py-1">
+              <CheckCircle className="h-4 w-4 mr-2" />
               Completed
             </Badge>
           )}
         </div>
+        <div className="h-px bg-gradient-to-r from-border via-border/50 to-transparent"></div>
       </div>
 
-      {/* Step Content */}
-      <ScrollArea className="flex-1">
-        <div className="p-6">
-          {children}
-        </div>
-      </ScrollArea>
+      {/* Content */}
+      <div className="space-y-6">
+        {children}
+      </div>
     </div>
   );
 }

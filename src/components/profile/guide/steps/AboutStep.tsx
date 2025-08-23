@@ -20,8 +20,13 @@ interface AboutStepProps {
 
 interface AboutTemplate {
   template: string;
-  guidance: string;
-  personalizeSteps: string[];
+  guidance: {
+    opening: string;
+    achievements: string;
+    goals: string;
+    closing: string;
+  };
+  questions: string[];
 }
 
 export function AboutStep({ profile, userId, onNext, onPrevious, isFirst, isLast }: AboutStepProps) {
@@ -42,12 +47,30 @@ export function AboutStep({ profile, userId, onNext, onPrevious, isFirst, isLast
     
     setIsGenerating(true);
     try {
+      // Get user data for context
+      const { data: userData, error: userError } = await supabase
+        .from('user_answers')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
       const { data, error } = await supabase.functions.invoke('generate-about-template', {
-        body: { userId }
+        body: { 
+          currentAbout: profile.aboutText,
+          userAnswers: userData || {},
+          profile: {
+            userTitle: profile.userTitle,
+            professionalGoal: profile.professionalGoal,
+            biggestChallenge: profile.biggestChallenge,
+            experiences: profile.experiences,
+            educationItems: profile.educationItems,
+            userSkills: profile.userSkills
+          }
+        }
       });
 
       if (error) throw error;
-      setTemplate(data.template);
+      setTemplate(data);
     } catch (error) {
       console.error('Failed to generate template:', error);
       toast({
@@ -179,21 +202,29 @@ export function AboutStep({ profile, userId, onNext, onPrevious, isFirst, isLast
                   </div>
                 </div>
 
-                {/* Guidance */}
+                {/* Writing Guidance */}
                 {template.guidance && (
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4 className="font-medium text-blue-900 mb-2">Writing Guidance:</h4>
-                    <p className="text-sm text-blue-800">{template.guidance}</p>
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
+                    <h4 className="font-medium text-blue-900 mb-3">Writing Guidance:</h4>
+                    <div className="grid gap-2 text-sm text-blue-800">
+                      <div><strong>Opening:</strong> {template.guidance.opening}</div>
+                      <div><strong>Achievements:</strong> {template.guidance.achievements}</div>
+                      <div><strong>Goals:</strong> {template.guidance.goals}</div>
+                      <div><strong>Closing:</strong> {template.guidance.closing}</div>
+                    </div>
                   </div>
                 )}
 
-                {/* Personalization Steps */}
-                {template.personalizeSteps && template.personalizeSteps.length > 0 && (
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                    <h4 className="font-medium text-amber-900 mb-2">Personalization Steps:</h4>
-                    <ul className="text-sm text-amber-800 space-y-1">
-                      {template.personalizeSteps.map((step, index) => (
-                        <li key={index}>• {step}</li>
+                {/* Personalization Questions */}
+                {template.questions && template.questions.length > 0 && (
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <h4 className="font-medium text-amber-900 mb-3">Questions to help you personalize:</h4>
+                    <ul className="text-sm text-amber-800 space-y-2">
+                      {template.questions.map((question, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <span className="text-amber-600 mt-1">•</span>
+                          <span>{question}</span>
+                        </li>
                       ))}
                     </ul>
                   </div>

@@ -85,39 +85,44 @@ export function ProfileStepModal({ open, onOpenChange, profile, userId }: Profil
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl h-[95vh] flex flex-col p-0 gap-0">
+      <DialogContent className="max-w-[1440px] w-[95vw] h-[90vh] flex flex-col p-0 gap-0 mx-auto">
         <VisuallyHidden>
           <DialogTitle>Profile Setup Assistant</DialogTitle>
           <DialogDescription>Complete your profile step by step with AI assistance</DialogDescription>
         </VisuallyHidden>
-        {/* Compact Header */}
-        <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-primary/5 to-secondary/5">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-              <Brain className="h-4 w-4 text-white" />
+        {/* Elegant Header with Visual Hierarchy */}
+        <div className="flex items-center justify-between p-6 border-b border-border/20 bg-gradient-to-r from-blue-50/80 to-purple-50/80 backdrop-blur-sm">
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 via-purple-600 to-blue-700 flex items-center justify-center shadow-lg">
+              <Brain className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-bold">AI Profile Assistant</h2>
-              <p className="text-xs text-muted-foreground">Complete your profile step by step</p>
+              <h2 className="text-xl font-bold text-foreground">AI Profile Assistant</h2>
+              <p className="text-sm text-muted-foreground">Complete your profile with intelligent guidance</p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => onOpenChange(false)}
+            className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          >
             <X className="h-4 w-4" />
           </Button>
         </div>
 
-        {/* Compact Progress */}
-        <div className="px-4 py-2 border-b bg-muted/10">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-medium">Progress</span>
-            <span className="text-xs text-muted-foreground">{Math.round(progress)}%</span>
+        {/* Enhanced Progress with Visual Hierarchy */}
+        <div className="px-6 py-4 border-b border-border/10 bg-gradient-to-r from-background to-muted/20">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-semibold text-foreground">Progress</span>
+            <span className="text-sm font-medium text-primary">{Math.round(progress)}% Complete</span>
           </div>
-          <Progress value={progress} className="h-1.5" />
+          <Progress value={progress} className="h-2 bg-muted/50" />
         </div>
 
-        {/* Compact Step Navigation */}
-        <div className="px-4 py-2 border-b bg-muted/5">
-          <div className="flex items-center gap-1 overflow-x-auto">
+        {/* Enhanced Step Navigation with Visual Cues */}
+        <div className="px-6 py-4 border-b border-border/10 bg-muted/5">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
             {STEPS.map((step, index) => {
               const isCompleted = completedSteps.has(step.id);
               const isCurrent = index === currentStep;
@@ -129,61 +134,71 @@ export function ProfileStepModal({ open, onOpenChange, profile, userId }: Profil
                   size="sm"
                   onClick={() => goToStep(index)}
                   className={cn(
-                    "h-8 px-2 text-xs min-w-fit",
-                    isCurrent && "bg-primary text-primary-foreground",
-                    isCompleted && !isCurrent && "text-green-600 bg-green-50"
+                    "h-9 px-3 text-xs font-medium transition-all duration-200 min-w-fit",
+                    isCurrent && "bg-primary text-primary-foreground shadow-md scale-105",
+                    isCompleted && !isCurrent && "text-green-700 bg-green-100 hover:bg-green-200 border-green-300",
+                    !isCompleted && !isCurrent && "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   )}
                 >
                   {isCompleted ? (
-                    <CheckCircle className="h-3 w-3" />
+                    <CheckCircle className="h-3.5 w-3.5" />
                   ) : (
-                    <Circle className="h-3 w-3" />
+                    <Circle className="h-3.5 w-3.5" />
                   )}
-                  <span className="hidden md:inline ml-1">{step.title}</span>
-                  <span className="md:hidden ml-1">{index + 1}</span>
+                  <span className="hidden lg:inline ml-2">{step.title}</span>
+                  <span className="lg:hidden ml-1">{index + 1}</span>
                 </Button>
               );
             })}
           </div>
         </div>
 
-        {/* Step Content */}
-        <div className="flex-1 overflow-hidden">
-          <StepComponent
-            profile={profile}
-            userId={userId}
-            onNext={goToNext}
-            onPrevious={goToPrevious}
-            isFirst={currentStep === 0}
-            isLast={currentStep === STEPS.length - 1}
-          />
+        {/* Step Content with Focus Area */}
+        <div className="flex-1 overflow-hidden bg-gradient-to-b from-background via-background to-muted/10">
+          <div className="h-full overflow-y-auto">
+            <div className="p-6">
+              <StepComponent
+                profile={profile}
+                userId={userId}
+                onNext={goToNext}
+                onPrevious={goToPrevious}
+                isFirst={currentStep === 0}
+                isLast={currentStep === STEPS.length - 1}
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Compact Footer Navigation */}
-        <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/10">
+        {/* Enhanced Footer Navigation */}
+        <div className="flex items-center justify-between px-6 py-4 border-t border-border/10 bg-gradient-to-r from-muted/20 to-background">
           <Button
             variant="outline"
             size="sm"
             onClick={goToPrevious}
             disabled={currentStep === 0}
-            className="h-8"
+            className="h-9 px-4 disabled:opacity-50"
           >
-            <ChevronLeft className="h-3 w-3 mr-1" />
-            <span className="hidden sm:inline">Previous</span>
+            <ChevronLeft className="h-4 w-4 mr-2" />
+            Previous
           </Button>
           
-          <div className="text-xs text-muted-foreground">
-            {currentStep + 1} / {STEPS.length}
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground">
+              Step {currentStep + 1} of {STEPS.length}
+            </span>
+            <div className="text-xs font-medium text-foreground bg-muted px-2 py-1 rounded">
+              {currentStepData.title}
+            </div>
           </div>
           
           <Button
             size="sm"
             onClick={goToNext}
             disabled={currentStep === STEPS.length - 1}
-            className="h-8"
+            className="h-9 px-4 disabled:opacity-50"
           >
-            <span className="hidden sm:inline">Next</span>
-            <ChevronRight className="h-3 w-3 ml-1" />
+            Next
+            <ChevronRight className="h-4 w-4 ml-2" />
           </Button>
         </div>
       </DialogContent>
