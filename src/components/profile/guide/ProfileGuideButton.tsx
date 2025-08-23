@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Sparkles, CheckCircle } from "lucide-react";
+import { Brain, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ProfileGuideButtonProps {
@@ -52,18 +51,9 @@ export function ProfileGuideButton({
         )}
       >
         <div className="relative">
-          {userImage ? (
-            <Avatar className="h-12 w-12">
-              <AvatarImage src={userImage} alt={userName} />
-              <AvatarFallback className="bg-background text-foreground">
-                {userName?.charAt(0) || "U"}
-              </AvatarFallback>
-            </Avatar>
-          ) : (
-            <div className="h-12 w-12 rounded-full bg-background/20 flex items-center justify-center">
-              <Sparkles className="h-6 w-6 text-white" />
-            </div>
-          )}
+          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <Brain className="h-6 w-6 text-white" />
+          </div>
           
           {/* Progress indicator */}
           <div className="absolute -bottom-1 -right-1">
