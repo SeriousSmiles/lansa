@@ -23,31 +23,40 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const prompt = `You are an expert career coach helping students understand how their 90-day goals appear to employers.
+    const prompt = `You are Sarah, an experienced hiring manager who specializes in evaluating entry-level talent. Your mindset: "I can tell a lot about someone's potential by how they think about their first 90 days."
 
-TASK: Analyze this student's 90-day goal and provide professional insight.
+CRITICAL REQUIREMENT: You must analyze ONLY what this student actually wrote. Quote their exact words and interpret what those specific words reveal. Do NOT add context they didn't provide or make assumptions.
 
-STUDENT INPUT: "${goalStatement}"
+STUDENT'S EXACT 90-DAY GOAL: "${goalStatement}"
+
+YOUR HIRING MANAGER ANALYSIS:
+"When I read this specific goal, here's what it tells me about this candidate's thinking and readiness..."
+
+ANALYSIS FRAMEWORK:
+1. Quote their exact words in your interpretation
+2. Explain what their specific language choices reveal about their mindset
+3. Identify the type of initiative this represents based on what they wrote
+4. Assess clarity based on how specific they were
+5. Translate what this means from a hiring manager's perspective
+
+CRITICAL: Reference their EXACT goal statement in your response. If it's vague, explain what the vagueness tells you. If it's specific, highlight what the specificity reveals.
 
 Respond with JSON:
 {
-  "interpretation": "How this goal appears to hiring managers (positive, encouraging)",
-  "initiative_type": "One of: creative, operational, marketing, support, leadership, analytical",
+  "interpretation": "When I read '[quote their exact words]', here's what I see as a hiring manager: [specific interpretation]",
+  "initiative_type": "One of: creative, operational, marketing, support, leadership, analytical, learning-focused",
   "clarity_level": "One of: very-clear, clear, somewhat-clear, needs-refinement",
-  "strengths": "What this goal shows about the student's mindset",
-  "employer_perspective": "What employers would think when they see this goal"
+  "strengths": "Based on what they wrote specifically, this shows: [concrete analysis]",
+  "employer_perspective": "As a hiring manager reading '[quote their goal]', I think: [realistic perspective]"
 }
 
-GUIDELINES:
-- Be encouraging and constructive
-- Focus on what the goal reveals about initiative and thinking
-- If goal is vague, acknowledge effort while suggesting more specificity
-- Emphasize growth mindset and business thinking
+ANALYSIS PRINCIPLES:
+- Vague goals → "Shows they're thinking ahead but need help with specificity"
+- Outcome-focused goals → "Demonstrates business thinking and results orientation"
+- Learning-focused goals → "Shows growth mindset but may need guidance on impact"
+- Specific action goals → "Reveals someone who thinks concretely about contribution"
 
-EXAMPLES:
-"Help reduce customer complaints" → Shows problem awareness and customer focus
-"Launch a TikTok campaign" → Shows creative thinking and willingness to take ownership
-"Learn the company processes" → Shows thoroughness but could be more outcome-focused`;
+Remember: Every insight must be traceable to their actual words. Quote them directly and explain what those specific words reveal about their thinking.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -81,12 +90,14 @@ EXAMPLES:
       analysis = JSON.parse(content);
     } catch (parseError) {
       console.error('Failed to parse AI response:', content);
+      console.error('Parse error details:', parseError);
+      // Create fallback that references their actual goal
       analysis = {
-        interpretation: "You're thinking about specific outcomes and taking initiative - that's exactly what employers want to see!",
+        interpretation: `When I read your goal of "${goalStatement}", I can see you're thinking ahead about making a contribution - that forward-planning mindset is valuable to employers.`,
         initiative_type: "operational",
-        clarity_level: "clear",
-        strengths: "Shows forward-thinking and desire to contribute meaningfully",
-        employer_perspective: "This person thinks about results and wants to make an impact from day one."
+        clarity_level: goalStatement.length > 50 ? "clear" : "somewhat-clear",
+        strengths: `Your specific goal shows you're not just thinking about what you'll learn, but about what you can contribute.`,
+        employer_perspective: `Reading "${goalStatement}" tells me this person is thinking beyond themselves to organizational impact.`
       };
     }
 
@@ -96,14 +107,25 @@ EXAMPLES:
 
   } catch (error) {
     console.error('Error in analyze-90day-goal:', error);
+    // Try to extract goal from request body for contextual fallback
+    let contextualGoal = "your 90-day planning";
+    try {
+      const body = await req.clone().json();
+      if (body?.goalStatement) {
+        contextualGoal = `"${body.goalStatement}"`;
+      }
+    } catch (e) {
+      // Use generic fallback
+    }
+    
     return new Response(JSON.stringify({ 
       error: error.message,
       analysis: {
-        interpretation: "You're showing initiative and forward-thinking - keep building on that!",
-        initiative_type: "operational",
+        interpretation: `Even though we're having technical issues, the fact that you're thinking about ${contextualGoal} shows forward-planning that employers value.`,
+        initiative_type: "operational", 
         clarity_level: "clear",
-        strengths: "Shows desire to contribute and create value",
-        employer_perspective: "This person is ready to contribute from day one."
+        strengths: "Demonstrates forward-thinking and goal-oriented mindset",
+        employer_perspective: "This person takes initiative and thinks about contribution, not just personal learning."
       }
     }), {
       status: 200,

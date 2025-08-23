@@ -19,31 +19,43 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const prompt = `You are a hiring manager giving feedback to a student about how their responses appear to employers.
+    const prompt = `You are Marcus, a seasoned hiring manager with 15+ years of experience. Your mindset: "I can quickly spot potential in candidates by how they think about work and value creation."
 
-STUDENT PROFILE:
-- Academic Status: ${demographics?.academic_status || 'Student'}
-- Field of Study: ${demographics?.field_of_study || 'Not specified'}
-- Career Goal: ${demographics?.career_goal_type || 'Not specified'}
-- Value Skill: "${skillReframe || 'Not provided'}"
-- 90-Day Goal: "${goalStatement || 'Not provided'}"
+CRITICAL INSTRUCTION: You must ONLY reference what this specific student actually wrote. Do NOT use generic statements. If they didn't provide something, say "not provided" - do not hallucinate content.
 
-TASK: Create an encouraging "power mirror" - show them how employers would view their responses.
+STUDENT'S ACTUAL RESPONSES:
+- Academic Status: ${demographics?.academic_status || 'Not provided'}
+- Field of Study: ${demographics?.field_of_study || 'Not provided'}
+- Career Goal: ${demographics?.career_goal_type || 'Not provided'}
+- Their Value Skill Statement: "${skillReframe || 'Not provided'}"
+- Their 90-Day Goal: "${goalStatement || 'Not provided'}"
+
+YOUR HIRING MANAGER PERSPECTIVE:
+"When I review these responses, I'm looking for signs of business thinking, initiative, and self-awareness. Let me tell you what I see when I read what this student actually wrote..."
+
+RESPONSE REQUIREMENTS:
+1. Reference their EXACT words and responses
+2. Interpret what their specific answers reveal about their mindset
+3. Focus on what hiring managers would actually notice in these responses
+4. Be authentic - point out both strengths and areas for growth
+5. Ground every insight in what they actually provided
+
+CRITICAL: Base your analysis ONLY on their actual responses. If something is "Not provided", acknowledge that gap honestly.
 
 Respond with JSON:
 {
-  "mirror_message": "2-3 sentences about what their answers signal to hiring managers",
-  "key_strengths": ["strength1", "strength2", "strength3"],
-  "employer_perspective": "What this combination tells employers about their potential",
-  "next_level_hint": "One actionable suggestion to make their profile even stronger"
+  "mirror_message": "What I see when I read what YOU specifically wrote: [reference their actual words/responses]",
+  "key_strengths": ["strength1 based on their actual response", "strength2 from what they wrote", "strength3 from their specific input"],
+  "employer_perspective": "Here's what your specific answers tell me about your readiness: [reference their actual responses]",
+  "next_level_hint": "Based on what you shared, here's one way to strengthen your profile: [specific to their situation]"
 }
 
-TONE: Encouraging but honest. Focus on what they're doing RIGHT.
+EXAMPLES of grounded responses:
+- "Your 90-day goal of 'help reduce customer complaints' shows you're thinking about business impact, not just task completion."
+- "When you said '[exact quote]', that tells me you understand [specific insight based on their words]."
+- "The fact that you chose to highlight '[their skill]' suggests you understand [interpretation based on their choice]."
 
-EXAMPLES OF GOOD MIRROR MESSAGES:
-"You're showing initiative, problem awareness, and outcome-focused thinking. That combination is rare in entry-level candidates."
-"Your answers show you understand that skills need to create value, not just exist. Plus you're thinking 90 days ahead - that's strategic thinking."
-"You're demonstrating self-awareness and business thinking. Employers see someone ready to contribute, not just learn."`;
+Remember: Every insight must be traceable to something they actually wrote. No generic hiring advice.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -77,11 +89,15 @@ EXAMPLES OF GOOD MIRROR MESSAGES:
       mirror = JSON.parse(content);
     } catch (parseError) {
       console.error('Failed to parse AI response:', content);
+      console.error('Parse error details:', parseError);
+      // Create a fallback that references their actual input
+      const actualSkill = skillReframe || 'your skill input';
+      const actualGoal = goalStatement || 'your 90-day goal';
       mirror = {
-        mirror_message: "You're showing initiative, problem awareness, and forward-thinking. That's exactly what employers want to see in new hires!",
-        key_strengths: ["Initiative", "Business thinking", "Growth mindset"],
-        employer_perspective: "This person is ready to contribute value from day one and thinks beyond just completing tasks.",
-        next_level_hint: "Add specific metrics or examples to make your value statements even more compelling."
+        mirror_message: `Based on what you shared - your focus on "${actualSkill}" and your goal of "${actualGoal}" - you're demonstrating business thinking and initiative.`,
+        key_strengths: ["References actual value creation", "Shows forward planning", "Demonstrates business awareness"],
+        employer_perspective: `Your specific responses show you understand that work is about creating impact. The combination of your skill focus and 90-day planning tells me you think strategically.`,
+        next_level_hint: "Add more specific details about the outcomes you want to achieve to make your vision even clearer."
       };
     }
 
@@ -91,13 +107,17 @@ EXAMPLES OF GOOD MIRROR MESSAGES:
 
   } catch (error) {
     console.error('Error in generate-power-mirror:', error);
+    // Create error fallback that still references their input when possible
+    const skillRef = (req.body && JSON.parse(req.body)?.skillReframe) || 'your value-focused thinking';
+    const goalRef = (req.body && JSON.parse(req.body)?.goalStatement) || 'your forward-planning mindset';
+    
     return new Response(JSON.stringify({ 
       error: error.message,
       mirror: {
-        mirror_message: "You're thinking like someone who wants to create value - that's the foundation of career success!",
-        key_strengths: ["Value-focused thinking", "Initiative", "Growth mindset"],
-        employer_perspective: "This person understands that work is about creating impact, not just completing tasks.",
-        next_level_hint: "Keep building on this foundation - you're on the right track!"
+        mirror_message: `Even with this technical hiccup, I can see from your focus on "${skillRef}" that you're thinking about creating value - that's exactly what employers want to see!`,
+        key_strengths: ["Value-focused approach", "Shows business thinking", "Demonstrates initiative"],
+        employer_perspective: "The fact that you're working on articulating your value and setting goals shows maturity and business awareness.",
+        next_level_hint: "Once we're back online, we'll dive deeper into making your unique value even more compelling!"
       }
     }), {
       status: 200,

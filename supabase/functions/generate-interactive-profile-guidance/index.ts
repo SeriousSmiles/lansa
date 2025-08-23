@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const openAIApiKey = Deno.env.get('ONBOARDING_AI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -51,7 +51,7 @@ interface GuidanceResponse {
 async function aggregateUserContext(supabase: any, userId: string): Promise<UserContext> {
   console.log('Aggregating user context for:', userId);
   
-  // Fetch all user data in parallel
+  // Fetch all user data in parallel with proper error handling
   const [
     userAnswersResult,
     profileResult,
@@ -59,12 +59,19 @@ async function aggregateUserContext(supabase: any, userId: string): Promise<User
     goalResult,
     powerSkillsResult
   ] = await Promise.all([
-    supabase.from('user_answers').select('*').eq('user_id', userId).single(),
-    supabase.from('user_profiles').select('*').eq('user_id', userId).single(),
+    supabase.from('user_answers').select('*').eq('user_id', userId).maybeSingle(),
+    supabase.from('user_profiles').select('*').eq('user_id', userId).maybeSingle(),
     supabase.from('user_power_skills').select('*').eq('user_id', userId),
-    supabase.from('user_90day_goal').select('*').eq('user_id', userId).single(),
-    supabase.from('user_growth_stats').select('*').eq('user_id', userId).single()
+    supabase.from('user_90day_goal').select('*').eq('user_id', userId).maybeSingle(),
+    supabase.from('user_growth_stats').select('*').eq('user_id', userId).maybeSingle()
   ]);
+
+  // Log any data fetch errors
+  if (userAnswersResult.error) console.error('User answers fetch error:', userAnswersResult.error);
+  if (profileResult.error) console.error('Profile fetch error:', profileResult.error);
+  if (skillsResult.error) console.error('Skills fetch error:', skillsResult.error);
+  if (goalResult.error) console.error('Goal fetch error:', goalResult.error);
+  if (powerSkillsResult.error) console.error('Power skills fetch error:', powerSkillsResult.error);
 
   return {
     userAnswers: userAnswersResult.data || {},
@@ -85,59 +92,65 @@ async function aggregateUserContext(supabase: any, userId: string): Promise<User
 function buildContextualPrompt(context: UserContext, conversationHistory: ConversationMessage[], requestType: string): string {
   const { userAnswers, profileData, skillsData, goalData, powerSkills, existingProfile } = context;
   
-  return `You are an expert career coach and profile optimization specialist. Your role is to help users create compelling, personalized professional profiles through interactive conversation.
+  return `You are Clara, an expert career coach specializing in personalized profile optimization. Your mindset: "Every person has unique value - my job is to help them articulate it authentically and compellingly."
 
-USER CONTEXT:
-- Identity: ${userAnswers.identity || 'Not specified'}
-- Career Goal: ${userAnswers.desired_outcome || 'Not specified'}
-- Career Path: ${userAnswers.career_path || 'Not specified'}
-- Academic Status: ${userAnswers.academic_status || 'Not specified'}
-- Field of Study: ${userAnswers.field_of_study || 'Not specified'}
-- User Type: ${userAnswers.user_type || 'Not specified'}
-- 90-day Goal: ${goalData.goal_statement || 'Not set'}
-- Biggest Challenge: ${profileData.biggest_challenge || 'Not specified'}
+COACHING PHILOSOPHY:
+- Listen deeply to understand their unique story and aspirations
+- Build confidence while maintaining authenticity 
+- Ask clarifying questions to uncover hidden strengths
+- Provide specific, actionable advice tailored to their exact situation
+- Connect their past experiences to their future goals
+- Help them see patterns and themes they might miss
 
-CURRENT PROFILE STATE:
-- Title: ${existingProfile.title || 'Not set'}
-- About: ${existingProfile.about || 'Not set'}
-- Skills Count: ${existingProfile.skills?.length || 0}
-- Experience Count: ${existingProfile.experiences?.length || 0}
-- Education Count: ${existingProfile.education?.length || 0}
+USER PROFILE & CONTEXT:
+Identity: ${userAnswers.identity || 'Not specified'}
+Career Aspiration: ${userAnswers.desired_outcome || 'Not specified'}
+Career Path: ${userAnswers.career_path || 'Not specified'}
+Academic Status: ${userAnswers.academic_status || 'Not specified'}
+Field of Study: ${userAnswers.field_of_study || 'Not specified'}
+User Type: ${userAnswers.user_type || 'Not specified'}
+90-Day Vision: ${goalData.goal_statement || 'Not set'}
+Current Challenge: ${profileData.biggest_challenge || 'Not specified'}
 
-POWER SKILLS ANALYSIS:
-${skillsData.map((skill: any) => `- ${skill.original_skill} → ${skill.reframed_skill} (${skill.business_value_type})`).join('\n') || 'No power skills analyzed yet'}
+CURRENT PROFILE COMPLETENESS:
+- Professional Title: ${existingProfile.title || 'Missing - needs creation'}
+- About Section: ${existingProfile.about || 'Missing - needs creation'}
+- Skills Listed: ${existingProfile.skills?.length || 0}
+- Work Experience: ${existingProfile.experiences?.length || 0} entries
+- Education: ${existingProfile.education?.length || 0} entries
 
-CONVERSATION CONTEXT:
-${conversationHistory.map(msg => `${msg.role.toUpperCase()}: ${msg.content}`).join('\n')}
+POWER SKILLS INSIGHTS:
+${skillsData.map((skill: any) => `• ${skill.original_skill} → ${skill.reframed_skill} (${skill.business_value_type})`).join('\n') || 'No skills analysis available yet'}
 
-INSTRUCTIONS:
-1. Be conversational, encouraging, and personalized
-2. Ask clarifying questions to understand their specific situation
-3. Provide concrete, actionable suggestions based on their unique context
-4. Explain WHY your suggestions work for their specific goals
-5. Offer alternatives when requested
-6. Build on their existing content rather than replacing it
-7. Use their power skills analysis to inform experience descriptions
-8. Reference their 90-day goal to shape career narrative
-9. Consider their academic/career stage for appropriate language
+CONVERSATION FLOW:
+${conversationHistory.map(msg => `${msg.role === 'user' ? 'STUDENT' : 'COACH'}: ${msg.content}`).join('\n\n')}
 
-RESPONSE FORMAT:
-Always respond in JSON with this structure:
+COACHING APPROACH FOR THIS INTERACTION:
+1. Acknowledge what they've shared and validate their efforts
+2. Ask specific follow-up questions to understand their unique situation better
+3. Provide concrete suggestions that build on their existing content
+4. Explain the "why" behind each suggestion in terms of their goals
+5. Offer them choice and alternatives to maintain ownership
+6. Keep the conversation flowing naturally - don't overwhelm them
+7. Reference their actual experiences and goals in your suggestions
+8. Help them see connections between their skills, experiences, and aspirations
+
+CRITICAL: Always respond in JSON format:
 {
-  "message": "Conversational response to the user",
+  "message": "Your conversational, encouraging response as their coach",
   "suggestions": {
-    "title": "suggested headline if relevant",
-    "about": "suggested about section if relevant", 
-    "skills": ["skill1", "skill2"] if relevant,
-    "experiences": [{"title": "Job Title", "description": "Description", "startYear": 2020, "endYear": 2023}] if relevant,
-    "education": [{"title": "Degree", "description": "Description", "startYear": 2018, "endYear": 2022}] if relevant
+    "title": "specific headline suggestion based on their data",
+    "about": "personalized about section that reflects their story", 
+    "skills": ["skill1", "skill2"] - only if addressing skills,
+    "experiences": [{"title": "Role", "description": "Achievement-focused description", "startYear": 2020, "endYear": 2023}] - only if addressing experience,
+    "education": [{"title": "Degree/Program", "description": "Value-focused description", "startYear": 2018, "endYear": 2022}] - only if addressing education
   },
-  "reasoning": "Brief explanation of why these suggestions fit their profile",
-  "nextSteps": ["Next action 1", "Next action 2"],
+  "reasoning": "Explain how these suggestions specifically fit their goals and background",
+  "nextSteps": ["Specific next action", "Follow-up suggestion"],
   "isComplete": false
 }
 
-Focus on being helpful, specific, and building their confidence while creating professional content that truly reflects their unique value proposition.`;
+Remember: You're helping them tell their authentic story in a way that resonates with their target audience. Build confidence, ask questions, and guide them step by step.`;
 }
 
 serve(async (req) => {
@@ -150,6 +163,12 @@ serve(async (req) => {
     const { userId, conversationHistory, userMessage, requestType, section, currentContent }: GuidanceRequest = await req.json();
 
     console.log('Processing guidance request:', { userId, requestType, section });
+
+    // Validate API key
+    if (!openAIApiKey) {
+      console.error('OpenAI API key not configured');
+      throw new Error('OpenAI API key not configured');
+    }
 
     // Aggregate comprehensive user context
     const userContext = await aggregateUserContext(supabase, userId);
@@ -182,8 +201,10 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      console.error('OpenAI API error:', await response.text());
-      throw new Error(`OpenAI API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('OpenAI API error:', errorText);
+      console.error('Request details:', { userId, requestType, section });
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
@@ -196,17 +217,23 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('Error in generate-interactive-profile-guidance:', error);
+    console.error('Error details:', { 
+      message: error.message, 
+      stack: error.stack,
+      apiKey: openAIApiKey ? 'Present' : 'Missing'
+    });
+    
     return new Response(JSON.stringify({ 
       error: error.message,
       guidance: {
-        message: "I'm having trouble connecting right now. Let me help you with some general profile tips while I get back online.",
+        message: "I'm having a technical hiccup, but I'm still here to help! While I reconnect, let's focus on what makes you unique. What's one accomplishment from your studies or work that you're proud of?",
         suggestions: {},
-        reasoning: "Fallback response due to technical issue",
-        nextSteps: ["Try again in a moment"],
+        reasoning: "Temporary technical issue - let's continue our conversation to gather context",
+        nextSteps: ["Share a specific achievement or project you've worked on", "Tell me about a challenge you've overcome"],
         isComplete: false
       }
     }), {
-      status: 500,
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
