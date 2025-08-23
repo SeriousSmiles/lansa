@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ChevronLeft, ChevronRight, X, CheckCircle, Circle, Brain } from "lucide-react";
@@ -85,6 +86,10 @@ export function ProfileStepModal({ open, onOpenChange, profile, userId }: Profil
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl h-[95vh] flex flex-col p-0 gap-0">
+        <VisuallyHidden>
+          <DialogTitle>Profile Setup Assistant</DialogTitle>
+          <DialogDescription>Complete your profile step by step with AI assistance</DialogDescription>
+        </VisuallyHidden>
         {/* Compact Header */}
         <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-primary/5 to-secondary/5">
           <div className="flex items-center gap-3">

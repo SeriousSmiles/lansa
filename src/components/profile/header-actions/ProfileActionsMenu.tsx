@@ -134,7 +134,11 @@ export function ProfileActionsMenu({
             <IconMenu2 className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56 bg-background border border-border z-50">
+        <DropdownMenuContent 
+          align="end" 
+          className="w-56 bg-background border border-border z-50"
+          onCloseAutoFocus={(e) => e.preventDefault()}
+        >
           <DropdownMenuItem onClick={() => setIsColorPickerOpen(true)}>
             <IconPalette className="h-4 w-4 mr-2" />
             Change Theme
