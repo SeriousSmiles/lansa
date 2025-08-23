@@ -8,7 +8,9 @@ import { ProfileFooter } from "./layout/ProfileFooter";
 import { useElementAnimation } from "@/utils/animationHelpers";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { InteractiveProfileGuide } from "./dialogs/InteractiveProfileGuide";
+import { ProfileGuideButton } from "./guide/ProfileGuideButton";
+import { ProfileStepModal } from "./guide/ProfileStepModal";
+import { useProfileProgress } from "@/hooks/useProfileProgress";
 import { PostOnboardingChoice } from "../onboarding/PostOnboardingChoice";
 
 export function ProfilePage() {
@@ -17,8 +19,9 @@ export function ProfilePage() {
   const location = useLocation();
   const profile = useProfileData(user?.id);
   const mainContentRef = useElementAnimation();
-  const [guidedOpen, setGuidedOpen] = useState(false);
+  const [stepGuideOpen, setStepGuideOpen] = useState(false);
   const [choiceModalOpen, setChoiceModalOpen] = useState(false);
+  const profileProgress = useProfileProgress(profile);
 
   // Handle starter data from ProfileStarter page
   useEffect(() => {
@@ -71,7 +74,7 @@ export function ProfilePage() {
       localStorage.setItem(`profileChoiceMade_${user.id}`, 'true');
     }
     setChoiceModalOpen(false);
-    setGuidedOpen(true);
+    setStepGuideOpen(true);
   };
 
   const handleChooseManual = () => {
@@ -109,7 +112,7 @@ export function ProfilePage() {
         onCoverColorChange={profile.updateCoverColor}
         onHighlightColorChange={profile.updateHighlightColor}
         mainContentRef={mainContentRef}
-        onOpenGuidedSetup={() => setGuidedOpen(true)}
+        onOpenGuidedSetup={() => setStepGuideOpen(true)}
         userProfile={profile}
       >
         <ProfileContent 
@@ -126,19 +129,19 @@ export function ProfilePage() {
         onChooseManual={handleChooseManual}
       />
 
-      <InteractiveProfileGuide
-        open={guidedOpen}
-        onOpenChange={setGuidedOpen}
+      <ProfileGuideButton
+        userImage={profile.profileImage}
+        userName={profile.userName}
+        completionPercentage={profileProgress.completionPercentage}
+        isOpen={stepGuideOpen}
+        onClick={() => setStepGuideOpen(true)}
+      />
+
+      <ProfileStepModal
+        open={stepGuideOpen}
+        onOpenChange={setStepGuideOpen}
+        profile={profile}
         userId={user?.id || ''}
-        userAnswers={profile.userAnswers as any}
-        existingSkills={profile.userSkills}
-        initialTitle={profile.userTitle}
-        initialAbout={profile.aboutText}
-        updateUserTitle={profile.updateUserTitle}
-        updateAboutText={profile.updateAboutText}
-        addSkill={profile.addSkill}
-        addExperience={profile.addExperience}
-        addEducation={profile.addEducation}
       />
       
       <ProfileFooter coverColor={profile.coverColor} />
