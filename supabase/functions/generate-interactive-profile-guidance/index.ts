@@ -62,7 +62,7 @@ async function aggregateUserContext(supabase: any, userId: string): Promise<User
     supabase.from('user_answers').select('*').eq('user_id', userId).maybeSingle(),
     supabase.from('user_profiles').select('*').eq('user_id', userId).maybeSingle(),
     supabase.from('user_power_skills').select('*').eq('user_id', userId),
-    supabase.from('user_90day_goal').select('*').eq('user_id', userId).maybeSingle(),
+    supabase.from('user_90day_goal').select('*').eq('user_id', userId).limit(1).maybeSingle(),
     supabase.from('user_growth_stats').select('*').eq('user_id', userId).maybeSingle()
   ]);
 
@@ -190,12 +190,13 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-2025-08-07',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
           ...messages
         ],
-        max_completion_tokens: 1500,
+        max_tokens: 1500,
+        temperature: 0.7,
         response_format: { type: "json_object" }
       }),
     });

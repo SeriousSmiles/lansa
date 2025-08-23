@@ -30,32 +30,33 @@ STUDENT'S ACTUAL RESPONSES:
 - Their Value Skill Statement: "${skillReframe || 'Not provided'}"
 - Their 90-Day Goal: "${goalStatement || 'Not provided'}"
 
-YOUR HIRING MANAGER PERSPECTIVE:
-"When I review these responses, I'm looking for signs of business thinking, initiative, and self-awareness. Let me tell you what I see when I read what this student actually wrote..."
+YOUR HIRING MANAGER MINDSET:
+"When I read these responses, I'm evaluating this student's readiness and potential. Let me break down what their ACTUAL answers reveal about their thinking..."
 
 RESPONSE REQUIREMENTS:
-1. Reference their EXACT words and responses
-2. Interpret what their specific answers reveal about their mindset
-3. Focus on what hiring managers would actually notice in these responses
-4. Be authentic - point out both strengths and areas for growth
-5. Ground every insight in what they actually provided
+1. Quote their EXACT words and analyze what those words reveal
+2. Show what those specific responses indicate about their mindset/readiness
+3. Focus on INTERPRETATION of their answers, not improvement suggestions
+4. Use "This student shows..." or "This indicates..." language
+5. Ground every insight in their actual provided content
 
-CRITICAL: Base your analysis ONLY on their actual responses. If something is "Not provided", acknowledge that gap honestly.
+CRITICAL: You are INTERPRETING their responses as a manager would, not giving them advice. Show what their answers reveal about their potential.
 
 Respond with JSON:
 {
-  "mirror_message": "What I see when I read what YOU specifically wrote: [reference their actual words/responses]",
-  "key_strengths": ["strength1 based on their actual response", "strength2 from what they wrote", "strength3 from their specific input"],
-  "employer_perspective": "Here's what your specific answers tell me about your readiness: [reference their actual responses]",
-  "next_level_hint": "Based on what you shared, here's one way to strengthen your profile: [specific to their situation]"
+  "mirror_message": "When I read what you wrote: '[quote their exact words]', here's what this tells me about you as a candidate: [manager interpretation]",
+  "key_strengths": ["This student demonstrates [trait] because they said '[quote]'", "Their response shows [characteristic] when they wrote '[quote]'", "I see [quality] in how they articulated '[quote]'"],
+  "employer_perspective": "As a hiring manager reading '[quote their skill/goal]', this student shows [trait/readiness level] which indicates [potential/concern] for our company.",
+  "next_level_hint": "What I'm not seeing yet that would strengthen my confidence: [specific gap based on their current responses]"
 }
 
-EXAMPLES of grounded responses:
-- "Your 90-day goal of 'help reduce customer complaints' shows you're thinking about business impact, not just task completion."
-- "When you said '[exact quote]', that tells me you understand [specific insight based on their words]."
-- "The fact that you chose to highlight '[their skill]' suggests you understand [interpretation based on their choice]."
+INTERPRETATION EXAMPLES (what managers actually think):
+- "Their goal of '[exact quote]' shows this student thinks beyond personal learning to business outcomes."
+- "When they described their skill as '[exact quote]', this indicates they understand value creation, not just task completion."
+- "The way they articulated '[exact quote]' reveals strategic thinking and business awareness."
+- "This response tells me this student lacks specificity in their thinking, which could indicate..."
 
-Remember: Every insight must be traceable to something they actually wrote. No generic hiring advice.`;
+Remember: You're showing what their responses REVEAL about them, not suggesting improvements. Quote their exact words and interpret what those words indicate about their potential.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
