@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Plus, Briefcase, Calendar } from "lucide-react";
 import type { ProfileDataReturn } from "@/hooks/profile/profileTypes";
+import { SimpleExperienceDialog } from "./SimpleExperienceDialog";
 import { StepContainer } from "./StepContainer";
-import { ExperienceForm } from "@/components/profile/experience/ExperienceForm";
 
 interface ExperienceStepProps {
   profile: ProfileDataReturn;
@@ -96,12 +96,16 @@ export function ExperienceStep({ profile, onNext, onPrevious, isFirst, isLast }:
           </CardContent>
         </Card>
 
-        {/* Experience Form Modal */}
+        {/* Experience Form Dialog */}
         {showForm && (
-          <ExperienceForm
+          <SimpleExperienceDialog
             open={showForm}
             onOpenChange={setShowForm}
-            onSave={() => setShowForm(false)}
+            onSave={async (experience) => {
+              if (profile.addExperience) {
+                await profile.addExperience(experience);
+              }
+            }}
           />
         )}
 

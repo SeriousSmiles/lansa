@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Plus, GraduationCap, Calendar } from "lucide-react";
 import type { ProfileDataReturn } from "@/hooks/profile/profileTypes";
+import { SimpleEducationDialog } from "./SimpleEducationDialog";
 import { StepContainer } from "./StepContainer";
-import { EducationForm } from "@/components/profile/education/EducationForm";
 
 interface EducationStepProps {
   profile: ProfileDataReturn;
@@ -96,12 +96,16 @@ export function EducationStep({ profile, onNext, onPrevious, isFirst, isLast }: 
           </CardContent>
         </Card>
 
-        {/* Education Form Modal */}
+        {/* Education Form Dialog */}
         {showForm && (
-          <EducationForm
+          <SimpleEducationDialog
             open={showForm}
             onOpenChange={setShowForm}
-            onSave={() => setShowForm(false)}
+            onSave={async (education) => {
+              if (profile.addEducation) {
+                await profile.addEducation(education);
+              }
+            }}
           />
         )}
 
