@@ -953,6 +953,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_stories: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean
+          metadata: Json | null
+          story_type: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          metadata?: Json | null
+          story_type: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          metadata?: Json | null
+          story_type?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       catalogue_students: {

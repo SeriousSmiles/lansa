@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { ChevronRight, ChevronLeft, BookOpen, Heart, Target, Zap } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { ChevronRight, ChevronLeft, BookOpen, Heart, Target, Zap, Sparkles, Copy, Save } from 'lucide-react';
+import { useStoryBuilder, type StoryResponses, type StoryGenerationOptions } from '@/hooks/useStoryBuilder';
+import { useToast } from '@/hooks/use-toast';
 
 interface StoryStep {
   id: string;
@@ -52,8 +56,12 @@ const storySteps: StoryStep[] = [
 export function StoryBuilderFlow() {
   const [currentStep, setCurrentStep] = useState(0);
   const [responses, setResponses] = useState<Record<string, string>>({});
-  const [isGenerating, setIsGenerating] = useState(false);
   const [generatedStory, setGeneratedStory] = useState<string>('');
+  const [formatType, setFormatType] = useState<'origin' | 'elevator_pitch' | 'bio' | 'interview'>('origin');
+  const [tone, setTone] = useState<'professional' | 'conversational' | 'creative'>('professional');
+  
+  const { generateStory, isGenerating, stories, fetchStories } = useStoryBuilder();
+  const { toast } = useToast();
 
   const handleResponseChange = (stepId: string, value: string) => {
     setResponses(prev => ({ ...prev, [stepId]: value }));
@@ -71,19 +79,45 @@ export function StoryBuilderFlow() {
     }
   };
 
-  const generateStory = async () => {
-    setIsGenerating(true);
-    // TODO: Implement AI story generation
-    setTimeout(() => {
-      setGeneratedStory(`Based on your responses, here's your authentic origin story:
+  useEffect(() => {
+    fetchStories();
+  }, [fetchStories]);
 
-Your journey began ${responses.origin || '[when you first discovered your passion]'}, sparked by ${responses.motivation || '[what truly drives you]'}. 
+  const handleGenerateStory = async () => {
+    try {
+      const storyResponses: StoryResponses = {
+        origin: responses.origin,
+        motivation: responses.motivation,
+        pivotal: responses.pivotal,
+        vision: responses.vision
+      };
 
-The pivotal moment came ${responses.pivotal || '[when you realized you wanted more]'}, which shaped your determination to ${responses.vision || '[achieve your vision]'}.
+      const options: StoryGenerationOptions = {
+        formatType,
+        tone
+      };
 
-This story reflects your authentic professional identity and the unique path that brought you to where you are today.`);
-      setIsGenerating(false);
-    }, 2000);
+      const result = await generateStory(storyResponses, options);
+      setGeneratedStory(result.story);
+    } catch (error) {
+      console.error('Failed to generate story:', error);
+    }
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(generatedStory);
+      toast({
+        title: "Copied to Clipboard",
+        description: "Your story has been copied to clipboard.",
+      });
+    } catch (error) {
+      toast({
+        title: "Copy Failed", 
+        description: "Unable to copy to clipboard.",
+        variant: "destructive",
+      });
+    }
   };
 
   const currentStepData = storySteps[currentStep];
@@ -96,17 +130,48 @@ This story reflects your authentic professional identity and the unique path tha
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" />
-              Your Authentic Origin Story
+              <Sparkles className="h-5 w-5 text-primary" />
+              Your AI-Crafted Story
+              <Badge variant="secondary" className="ml-2">
+                by Maya
+              </Badge>
             </CardTitle>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>Format: {formatType.replace('_', ' ').toUpperCase()}</span>
+              <span>•</span>
+              <span>Tone: {tone.charAt(0).toUpperCase() + tone.slice(1)}</span>
+            </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="bg-muted/30 p-6 rounded-lg">
-              <p className="whitespace-pre-line text-foreground leading-relaxed">
+            <div className="bg-gradient-to-br from-background to-muted/30 p-6 rounded-lg border">
+              <p className="whitespace-pre-line text-foreground leading-relaxed text-base">
                 {generatedStory}
               </p>
             </div>
-            <div className="flex gap-3">
+            
+            {/* Story Format Options */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-medium text-muted-foreground">Generate in different formats:</h4>
+              <div className="flex gap-2 flex-wrap">
+                {['origin', 'elevator_pitch', 'bio', 'interview'].map((format) => (
+                  <Button
+                    key={format}
+                    variant={formatType === format ? "primary" : "outline"}
+                    size="sm"
+                    onClick={() => {
+                      setFormatType(format as any);
+                      // Auto-regenerate in new format
+                      handleGenerateStory();
+                    }}
+                    disabled={isGenerating}
+                  >
+                    {format.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3 flex-wrap">
               <Button 
                 onClick={() => {
                   setGeneratedStory('');
@@ -115,11 +180,25 @@ This story reflects your authentic professional identity and the unique path tha
                 }}
                 variant="outline"
               >
+                <ChevronLeft className="h-4 w-4 mr-2" />
                 Start Over
               </Button>
-              <Button onClick={() => navigator.clipboard.writeText(generatedStory)}>
+              <Button onClick={copyToClipboard}>
+                <Copy className="h-4 w-4 mr-2" />
                 Copy Story
               </Button>
+              <Button variant="outline">
+                <Save className="h-4 w-4 mr-2" />
+                Save to Profile
+              </Button>
+            </div>
+
+            {/* Coach Note */}
+            <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg">
+              <p className="text-sm text-primary/80">
+                <strong>Maya's Note:</strong> This story has been crafted to highlight your authentic journey and professional growth. 
+                Feel free to adjust the tone or format to match different contexts and audiences.
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -129,14 +208,54 @@ This story reflects your authentic professional identity and the unique path tha
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      {/* Progress Header */}
+      {/* Header with AI Coach Branding */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-semibold">Story Builder</h2>
-          <span className="text-sm text-muted-foreground">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-semibold flex items-center gap-2">
+              <Sparkles className="h-6 w-6 text-primary" />
+              AI Story Builder
+            </h2>
+            <p className="text-muted-foreground mt-1">
+              Craft your authentic professional story with Maya, your personal branding coach
+            </p>
+          </div>
+          <Badge variant="outline" className="text-primary border-primary/20">
             Step {currentStep + 1} of {storySteps.length}
-          </span>
+          </Badge>
         </div>
+        
+        {/* Story Format & Tone Selection */}
+        <div className="flex gap-4 mb-6">
+          <div className="flex-1">
+            <label className="text-sm font-medium mb-2 block">Story Format</label>
+            <Select value={formatType} onValueChange={(value: any) => setFormatType(value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="origin">Origin Story (Full narrative)</SelectItem>
+                <SelectItem value="elevator_pitch">Elevator Pitch (30 seconds)</SelectItem>
+                <SelectItem value="bio">Professional Bio (LinkedIn/Resume)</SelectItem>
+                <SelectItem value="interview">Interview Story (Tell me about yourself)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex-1">
+            <label className="text-sm font-medium mb-2 block">Tone</label>
+            <Select value={tone} onValueChange={(value: any) => setTone(value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="professional">Professional</SelectItem>
+                <SelectItem value="conversational">Conversational</SelectItem>
+                <SelectItem value="creative">Creative</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
         <Progress value={progress} className="h-2" />
       </div>
 
@@ -191,12 +310,21 @@ This story reflects your authentic professional identity and the unique path tha
 
         {currentStep === storySteps.length - 1 ? (
           <Button 
-            onClick={generateStory}
+            onClick={handleGenerateStory}
             disabled={!isComplete || isGenerating}
             className="flex items-center gap-2"
           >
-            {isGenerating ? 'Generating...' : 'Generate Story'}
-            <BookOpen className="h-4 w-4" />
+            {isGenerating ? (
+              <>
+                <Sparkles className="h-4 w-4 animate-spin" />
+                Maya is crafting your story...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4" />
+                Generate AI Story
+              </>
+            )}
           </Button>
         ) : (
           <Button 
