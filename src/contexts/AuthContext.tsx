@@ -16,6 +16,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any; data: any }>;
   signOut: () => Promise<{ error: any }>;
+  resetPassword: (email: string) => Promise<{ error: any }>;
+  updatePassword: (password: string) => Promise<{ error: any }>;
   updateDisplayName: (name: string) => void;
 }
 
@@ -171,6 +173,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const resetPassword = React.useCallback(async (email: string) => {
+    try {
+      const redirectUrl = `${window.location.origin}/auth?mode=reset`;
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl
+      });
+      return { error };
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      return { error };
+    }
+  }, []);
+
+  const updatePassword = React.useCallback(async (password: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password
+      });
+      return { error };
+    } catch (error) {
+      console.error("Error updating password:", error);
+      return { error };
+    }
+  }, []);
+
   const value = React.useMemo(() => ({
     user,
     session,
@@ -178,8 +206,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signUp,
     signOut,
+    resetPassword,
+    updatePassword,
     updateDisplayName,
-  }), [user, session, loading, signIn, signUp, signOut, updateDisplayName]);
+  }), [user, session, loading, signIn, signUp, signOut, resetPassword, updatePassword, updateDisplayName]);
 
   return (
     <AuthContext.Provider value={value}>

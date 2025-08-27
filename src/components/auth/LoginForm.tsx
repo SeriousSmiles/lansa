@@ -14,7 +14,11 @@ interface LoginFormData {
   password: string;
 }
 
-export function LoginForm() {
+interface LoginFormProps {
+  onForgotPassword: () => void;
+}
+
+export function LoginForm({ onForgotPassword }: LoginFormProps) {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>();
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -71,24 +75,35 @@ export function LoginForm() {
         </Alert>
       )}
       
-      <div className="w-full text-[#2E2E2E] font-normal mt-6">
+      <div className="w-full text-foreground font-normal mt-6">
         <label className="block mb-2">Email*</label>
         <Input
           type="email"
           {...register("email", { required: true })}
           error={!!errors.email}
           disabled={isLoading}
+          placeholder="Enter email address"
         />
       </div>
 
-      <div className="w-full text-[#2E2E2E] font-normal mt-6">
-        <label className="block mb-2">Password*</label>
+      <div className="w-full text-foreground font-normal mt-6">
+        <div className="flex justify-between items-center mb-2">
+          <label>Password*</label>
+          <button
+            type="button"
+            onClick={onForgotPassword}
+            className="text-primary text-sm hover:underline focus:outline-none"
+          >
+            Forgot password?
+          </button>
+        </div>
         <Input
           type="password"
           autoComplete="current-password"
           {...register("password", { required: true })}
           error={!!errors.password}
           disabled={isLoading}
+          placeholder="Enter password"
         />
       </div>
 
