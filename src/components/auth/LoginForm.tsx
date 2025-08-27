@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
@@ -97,8 +98,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
             Forgot password?
           </button>
         </div>
-        <Input
-          type="password"
+        <PasswordInput
           autoComplete="current-password"
           {...register("password", { required: true })}
           error={!!errors.password}

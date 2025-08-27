@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePasswordValidation } from "@/hooks/usePasswordValidation";
@@ -62,8 +63,7 @@ export function ResetPasswordForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="flex w-[480px] max-w-full flex-col items-center text-base justify-center mt-8 mx-auto">
       <div className="w-full text-foreground font-normal">
         <label className="block mb-2">New Password*</label>
-        <Input
-          type="password"
+        <PasswordInput
           {...register("password", { required: true })}
           error={!!errors.password || (password.length > 0 && !validation.isValid)}
           disabled={isLoading}
@@ -78,8 +78,7 @@ export function ResetPasswordForm() {
 
       <div className="w-full text-foreground font-normal mt-6">
         <label className="block mb-2">Confirm New Password*</label>
-        <Input
-          type="password"
+        <PasswordInput
           {...register("confirmPassword", { required: true })}
           error={!!errors.confirmPassword || (confirmPassword.length > 0 && !passwordsMatch)}
           disabled={isLoading}

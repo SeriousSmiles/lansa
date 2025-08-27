@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePasswordValidation } from "@/hooks/usePasswordValidation";
@@ -139,8 +140,7 @@ export function SignUpForm() {
 
       <div className="w-full text-foreground font-normal mt-6">
         <label className="block mb-2">Password*</label>
-        <Input 
-          type="password" 
+        <PasswordInput 
           autoComplete="new-password" 
           {...register("password", { required: true })} 
           error={!!errors.password || (password.length > 0 && !validation.isValid)} 
@@ -156,8 +156,7 @@ export function SignUpForm() {
 
       <div className="w-full text-foreground font-normal mt-6">
         <label className="block mb-2">Confirm Password*</label>
-        <Input
-          type="password"
+        <PasswordInput
           autoComplete="new-password"
           {...register("confirmPassword", { required: true })}
           error={!!errors.confirmPassword || (confirmPassword.length > 0 && !passwordsMatch)}
