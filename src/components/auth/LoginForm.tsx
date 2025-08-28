@@ -26,6 +26,10 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Check if user just signed up
+  const urlParams = new URLSearchParams(location.search);
+  const fromSignup = urlParams.get('from') === 'signup';
 
   const onSubmit = async (data: LoginFormData) => {
     if (isLoading) return;
@@ -70,6 +74,14 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex w-[480px] max-w-full flex-col items-center text-base justify-center mt-8 mx-auto">
+      {fromSignup && (
+        <Alert className="w-full mb-4 border-primary/20 bg-primary/5">
+          <AlertDescription className="text-primary">
+            Account created successfully! Please check your email (including junk/spam folder) to confirm your account before logging in.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       {loginError && (
         <Alert variant="destructive" className="w-full mb-4">
           <AlertDescription>{loginError}</AlertDescription>

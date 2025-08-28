@@ -86,16 +86,8 @@ export function SignUpForm() {
 
       // Add a small delay before redirecting to ensure toast is seen
       setTimeout(() => {
-        // Switch to login page by toggling isLogin in parent component
-        // Fix: Properly type the button element as HTMLButtonElement
-        const toggleButton = document.querySelector('button[data-testid="toggle-auth-mode"]') as HTMLButtonElement | null;
-        if (toggleButton) {
-          // Use the button if it exists
-          toggleButton.click();
-        } else {
-          // Fallback to direct navigation
-          navigate("/auth");
-        }
+        // Navigate with signup parameter to show junk mail message
+        navigate("/?mode=login&from=signup");
         setIsLoading(false);
       }, 1000);
     } catch (error: any) {
