@@ -96,6 +96,31 @@ export function SignUpForm() {
       setIsLoading(false);
     }
   };
+
+  const handleGoogleSignUp = async () => {
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+      
+      if (error) {
+        toast.error(error.message || "An error occurred during Google signup");
+        setIsLoading(false);
+      }
+      // Note: If successful, the user will be redirected by Google, so no need to handle success here
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "An error occurred during Google signup");
+      setIsLoading(false);
+    }
+  };
   return <form onSubmit={handleSubmit(onSubmit)} className="flex w-[480px] max-w-full flex-col items-center text-base justify-center mt-8 mx-auto">
       <div className="w-full grid grid-cols-2 gap-4">
         <div className="text-foreground font-normal">
@@ -178,14 +203,14 @@ export function SignUpForm() {
             variant="google"
             disabled={isLoading}
             className="mt-4 w-full"
-            onClick={() => console.log("Google signup is not implemented in this MVP")}
+            onClick={handleGoogleSignUp}
           >
             <img
               src="https://cdn.builder.io/api/v1/image/assets/TEMP/abebc497af7ae0216b313acd82c8ed74ee2d8b24?placeholderIfAbsent=true"
               alt="Google"
               className="w-6 h-6 mr-3"
             />
-            Sign up with Google (Coming Soon)
+            Sign up with Google
           </Button>
         </div>
       </div>
