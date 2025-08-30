@@ -53,9 +53,15 @@ serve(async (req) => {
       });
     }
 
-    // Use latest model for accurate assessment
-    const model = 'gpt-4.1-2025-04-14';
-    const result = await callOpenAI(raw_skill_input, major, model);
+    // AI call with retry logic
+    let model = 'gpt-4o-mini';
+    let result = await callOpenAI(raw_skill_input, major, model);
+    
+    // Escalate to GPT-4 if weak
+    if (result.overall_strength < 0.6) {
+      model = 'gpt-4o';
+      result = await callOpenAI(raw_skill_input, major, model);
+    }
 
     // Save to database
     const { data: savedRow, error } = await supabase
@@ -105,55 +111,23 @@ serve(async (req) => {
 });
 
 async function callOpenAI(skillInput: string, major: string, model: string) {
-  // Validate input quality first
-  const inputWords = skillInput.trim().split(/\s+/);
-  const isLowQuality = 
-    inputWords.length < 3 || 
-    inputWords.some(word => word.length < 2) ||
-    /^(.)\1+$/.test(skillInput.trim()) || // repeated characters
-    skillInput.trim().length < 10 ||
-    !/[a-zA-Z]/.test(skillInput); // no actual letters
+  const systemPrompt = `You are Skill Reframer, a hiring-savvy assistant for Dutch Caribbean students.
 
-  if (isLowQuality) {
-    return {
-      value_statements: [skillInput, "Please provide a more detailed description"],
-      value_tags: ["needs_improvement"],
-      clarity_score: 0.1,
-      specificity_score: 0.1,
-      employer_relevance_score: 0.1,
-      overall_strength: 0.1,
-      feedback: "This input is too brief or unclear to assess properly. Please describe a specific skill or ability you have.",
-      follow_up_question: "Can you describe a specific problem you could solve or outcome you could deliver for a company?"
-    };
-  }
-
-  const systemPrompt = `You are an expert Career Assessment AI specializing in evaluating student skills for professional readiness.
-
-CRITICAL SCORING GUIDELINES:
-- Only award high scores (0.7+) for specific, measurable, business-relevant statements
-- Generic or vague responses should score below 0.5
-- Input like "think" or short phrases should score 0.1-0.3 maximum
-- Look for actual skills, tools, processes, or outcomes mentioned
-
-SCORING CRITERIA:
-- Clarity (0.0-1.0): Is it clear what the person can do?
-- Specificity (0.0-1.0): Are there measurable outcomes or concrete examples?
-- Employer Relevance (0.0-1.0): Would this solve real business problems?
+Convert vague school skills into 2 specific business-value statements managers care about.
+Be direct. If the input is weak, explain why it matters and ask one focused clarifying question.
 
 Student's major: ${major}
+Output only valid JSON matching this exact schema:
 
-Analyze the input and provide constructive feedback. For weak inputs, be direct about what's missing.
-
-Output ONLY valid JSON:
 {
-  "value_statements": ["statement1", "statement2"],
-  "value_tags": ["time_saving","accuracy","customer_experience","revenue","cost_control","problem_solving"],
+  "value_statements": ["string","string"],
+  "value_tags": ["time_saving","accuracy","customer_experience","revenue","cost_control"],
   "clarity_score": 0.0,
   "specificity_score": 0.0,
   "employer_relevance_score": 0.0,
   "overall_strength": 0.0,
   "feedback": "string",
-  "follow_up_question": "string"
+  "follow_up_question": "string|null"
 }
 
 Overall strength = (0.4*clarity + 0.3*specificity + 0.3*employer_relevance)`;
@@ -168,9 +142,11 @@ Overall strength = (0.4*clarity + 0.3*specificity + 0.3*employer_relevance)`;
       model: model,
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Please analyze this skill input: "${skillInput}"` }
+        { role: 'user', content: skillInput }
       ],
-      max_completion_tokens: 500,
+      temperature: model.includes('gpt-4o') ? 0.3 : undefined,
+      max_tokens: model.includes('gpt-4o') ? 500 : undefined,
+      max_completion_tokens: model.includes('gpt-5') ? 500 : undefined,
     }),
   });
 
@@ -179,18 +155,17 @@ Overall strength = (0.4*clarity + 0.3*specificity + 0.3*employer_relevance)`;
   
   try {
     return JSON.parse(content);
-  } catch (parseError) {
-    console.error('Failed to parse AI response:', parseError);
-    // Strict fallback for parsing errors
+  } catch {
+    // Fallback response
     return {
-      value_statements: [skillInput, "Please provide more detail about your specific abilities"],
-      value_tags: ["needs_improvement"],
-      clarity_score: 0.2,
-      specificity_score: 0.2,
-      employer_relevance_score: 0.2,
-      overall_strength: 0.2,
-      feedback: "I need more information to assess this properly. Please describe specific skills or outcomes.",
-      follow_up_question: "What specific tools, processes, or outcomes can you deliver for a company?"
+      value_statements: [skillInput, `${skillInput} to deliver measurable results`],
+      value_tags: ["accuracy"],
+      clarity_score: 0.4,
+      specificity_score: 0.3,
+      employer_relevance_score: 0.3,
+      overall_strength: 0.33,
+      feedback: "Let's make this more specific and measurable.",
+      follow_up_question: "What specific outcome do you deliver with this skill?"
     };
   }
 }
