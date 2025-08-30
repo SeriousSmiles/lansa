@@ -72,6 +72,32 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    setLoginError(null);
+    
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+      
+      if (error) {
+        setLoginError(error.message || "An error occurred during Google login");
+        setIsLoading(false);
+      }
+      // Note: If successful, the user will be redirected by Google, so no need to handle success here
+    } catch (error: any) {
+      console.error(error);
+      setLoginError(error.message || "An error occurred during Google login");
+      setIsLoading(false);
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex w-[480px] max-w-full flex-col items-center text-base justify-center mt-8 mx-auto">
       {fromSignup && (
@@ -134,14 +160,14 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
             variant="google"
             disabled={isLoading}
             className="mt-4 w-full"
-            onClick={() => console.log("Google login is not implemented in this MVP")}
+            onClick={handleGoogleLogin}
           >
             <img
               src="https://cdn.builder.io/api/v1/image/assets/TEMP/abebc497af7ae0216b313acd82c8ed74ee2d8b24?placeholderIfAbsent=true"
               alt="Google"
               className="w-6 h-6 mr-3"
             />
-            Log In with Google (Coming Soon)
+            Log In with Google
           </Button>
         </div>
       </div>
