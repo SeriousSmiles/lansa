@@ -40,7 +40,10 @@ export default function ProtectedRoute() {
     // Wait for auth context to finish loading and OAuth processing
     if (authLoading || isProcessingOAuth) {
       console.log("ProtectedRoute: Waiting for auth processing to complete");
-      return;
+      // Clean up timeout and return early
+      return () => {
+        clearTimeout(timeoutId);
+      };
     }
 
     // Add a small delay to ensure auth state is properly loaded
@@ -104,7 +107,7 @@ export default function ProtectedRoute() {
       clearTimeout(timer);
       clearTimeout(timeoutId);
     };
-  }, [user, updateDisplayName, location.pathname]);
+  }, [user, updateDisplayName, authLoading, location.pathname]);
 
   // If we're still on the first load, show a loading indicator, but auto-advance after failsafe
   if (!initialCheck && loading) {

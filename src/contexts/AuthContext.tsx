@@ -74,8 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log("AuthContext: Auth state changed", { 
       hasSession: !!session, 
       hasUser: !!session?.user,
-      userEmail: session?.user?.email,
-      currentUrl: window.location.href 
+      userEmail: session?.user?.email?.split('@')[0] + '@***'
     });
     
     setSession(session);
@@ -88,8 +87,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       console.log("AuthContext: User set", { 
-        userId: session.user.id, 
-        email: session.user.email 
+        userId: session.user.id.slice(0, 8) + '***', 
+        email: session.user.email?.split('@')[0] + '@***'
       });
       
       // Fetch user profile data asynchronously after state update
@@ -127,30 +126,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Check for OAuth callback in URL hash and set session
     const handleOAuthCallback = async () => {
-      const currentUrl = window.location.href;
-      console.log("AuthContext: Checking URL for OAuth tokens", { currentUrl });
+      const hasOAuthTokens = window.location.href.includes('#access_token=') || window.location.href.includes('&access_token=');
       
-      if (currentUrl.includes('#access_token=') || currentUrl.includes('&access_token=')) {
-        console.log("AuthContext: OAuth tokens detected in URL, setting session");
+      if (hasOAuthTokens) {
+        console.log("AuthContext: OAuth tokens detected, processing session");
+        setLoading(true); // Ensure loading state during OAuth processing
+        
         try {
           const { data, error } = await supabase.auth.getSession();
           if (error) {
             console.error("AuthContext: Error getting session after OAuth:", error);
+            setLoading(false);
           } else if (data.session) {
-            console.log("AuthContext: OAuth session successfully retrieved", { 
+            console.log("AuthContext: OAuth session retrieved", { 
               hasUser: !!data.session.user,
-              userEmail: data.session.user?.email 
+              userEmail: data.session.user?.email?.split('@')[0] + '@***'
             });
             handleAuthStateChange(data.session);
             
-            // Clean the URL hash to remove tokens
-            window.history.replaceState({}, document.title, window.location.pathname);
-            return;
+            // Clean the URL hash immediately to remove sensitive tokens
+            window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+            return true; // Return true to indicate OAuth was processed
           }
         } catch (error) {
           console.error("AuthContext: OAuth callback error:", error);
+          setLoading(false);
         }
       }
+      return false; // Return false if no OAuth processing
     };
 
     // Set up auth state listener FIRST (critical for preventing double login issue)
@@ -160,9 +163,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     // Handle OAuth callback first, then check for existing session
-    handleOAuthCallback().then(() => {
-      // THEN check for existing session if not OAuth callback
-      if (!window.location.href.includes('#access_token=')) {
+    handleOAuthCallback().then((wasOAuthProcessed) => {
+      // Only check for existing session if we didn't process OAuth tokens
+      if (!wasOAuthProcessed) {
         supabase.auth.getSession().then(({ data: { session } }) => {
           handleAuthStateChange(session);
         });
