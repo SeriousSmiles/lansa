@@ -13,6 +13,7 @@ interface AuthContextType {
   user: UserType;
   session: Session | null;
   loading: boolean;
+  isProcessingOAuth: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any; data: any }>;
   signOut: () => Promise<{ error: any }>;
@@ -27,6 +28,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<UserType>(null);
   const [session, setSession] = React.useState<Session | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [isProcessingOAuth, setIsProcessingOAuth] = React.useState(false);
+  const processingRef = React.useRef(false);
 
   const updateDisplayName = React.useCallback((name: string) => {
     if (user) {
@@ -69,13 +72,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Handle auth state changes
+  // Handle auth state changes with debouncing to prevent loops
   const handleAuthStateChange = React.useCallback((session: Session | null) => {
-    console.log("AuthContext: Auth state changed", { 
-      hasSession: !!session, 
-      hasUser: !!session?.user,
-      userEmail: session?.user?.email?.split('@')[0] + '@***'
-    });
+    // Prevent multiple simultaneous calls
+    if (processingRef.current) {
+      return;
+    }
+    processingRef.current = true;
     
     setSession(session);
     
@@ -84,11 +87,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         id: session.user.id,
         email: session.user.email,
         displayName: session.user.email?.split('@')[0] || 'Lansa User'
-      });
-      
-      console.log("AuthContext: User set", { 
-        userId: session.user.id.slice(0, 8) + '***', 
-        email: session.user.email?.split('@')[0] + '@***'
       });
       
       // Fetch user profile data asynchronously after state update
@@ -101,10 +99,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }, 0);
     } else {
       setUser(null);
-      console.log("AuthContext: User cleared");
     }
     
     setLoading(false);
+    setIsProcessingOAuth(false);
+    
+    // Reset processing flag after a short delay
+    setTimeout(() => {
+      processingRef.current = false;
+    }, 100);
   }, [fetchUserProfile]);
 
   React.useEffect(() => {
@@ -129,36 +132,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const hasOAuthTokens = window.location.href.includes('#access_token=') || window.location.href.includes('&access_token=');
       
       if (hasOAuthTokens) {
-        console.log("AuthContext: OAuth tokens detected, processing session");
-        setLoading(true); // Ensure loading state during OAuth processing
+        setIsProcessingOAuth(true);
+        setLoading(true);
         
         try {
+          // Clean the URL hash immediately to remove sensitive tokens
+          const cleanUrl = window.location.pathname + window.location.search;
+          window.history.replaceState({}, document.title, cleanUrl);
+          
           const { data, error } = await supabase.auth.getSession();
           if (error) {
-            console.error("AuthContext: Error getting session after OAuth:", error);
+            console.error("AuthContext: OAuth error:", error);
             setLoading(false);
+            setIsProcessingOAuth(false);
           } else if (data.session) {
-            console.log("AuthContext: OAuth session retrieved", { 
-              hasUser: !!data.session.user,
-              userEmail: data.session.user?.email?.split('@')[0] + '@***'
-            });
             handleAuthStateChange(data.session);
-            
-            // Clean the URL hash immediately to remove sensitive tokens
-            window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-            return true; // Return true to indicate OAuth was processed
+            return true;
           }
         } catch (error) {
           console.error("AuthContext: OAuth callback error:", error);
           setLoading(false);
+          setIsProcessingOAuth(false);
         }
       }
-      return false; // Return false if no OAuth processing
+      return false;
     };
 
-    // Set up auth state listener FIRST (critical for preventing double login issue)
+    // Set up auth state listener with protection against loops
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("AuthContext: Auth event triggered", { event, hasSession: !!session });
+      // Skip auth events during OAuth processing to prevent loops
+      if (isProcessingOAuth || processingRef.current) {
+        return;
+      }
       handleAuthStateChange(session);
     });
 
@@ -253,13 +258,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     session,
     loading,
+    isProcessingOAuth,
     signIn,
     signUp,
     signOut,
     resetPassword,
     updatePassword,
     updateDisplayName,
-  }), [user, session, loading, signIn, signUp, signOut, resetPassword, updatePassword, updateDisplayName]);
+  }), [user, session, loading, isProcessingOAuth, signIn, signUp, signOut, resetPassword, updatePassword, updateDisplayName]);
 
   return (
     <AuthContext.Provider value={value}>

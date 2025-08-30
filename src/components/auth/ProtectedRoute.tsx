@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function ProtectedRoute() {
-  const { user, updateDisplayName, loading: authLoading } = useAuth();
+  const { user, updateDisplayName, loading: authLoading, isProcessingOAuth } = useAuth();
   const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [initialCheck, setInitialCheck] = useState(false);
@@ -27,20 +27,8 @@ export default function ProtectedRoute() {
       }
     }, 6000);
 
-    // Check if we're still processing OAuth tokens
-    const isProcessingOAuth = window.location.href.includes('#access_token=');
-    
-    console.log("ProtectedRoute: Starting check", {
-      hasUser: !!user,
-      authLoading,
-      isProcessingOAuth,
-      currentPath: location.pathname
-    });
-
     // Wait for auth context to finish loading and OAuth processing
     if (authLoading || isProcessingOAuth) {
-      console.log("ProtectedRoute: Waiting for auth processing to complete");
-      // Clean up timeout and return early
       return () => {
         clearTimeout(timeoutId);
       };
@@ -49,7 +37,6 @@ export default function ProtectedRoute() {
     // Add a small delay to ensure auth state is properly loaded
     const timer = setTimeout(() => {
       if (!user) {
-        console.log("ProtectedRoute: No user after auth processing, allowing redirect");
         setLoading(false);
         setInitialCheck(true);
         return;
@@ -75,10 +62,7 @@ export default function ProtectedRoute() {
 
           // Check onboarding and profile status
           const userAnswers = await getUserAnswers(user.id);
-          console.log("ProtectedRoute: User answers:", userAnswers);
-          
           const completed = hasCompletedOnboarding(userAnswers);
-          console.log("ProtectedRoute: Onboarding completed:", completed);
           
           setOnboardingCompleted(completed);
           setUserAnswers(userAnswers); // Store for debugging
@@ -107,7 +91,7 @@ export default function ProtectedRoute() {
       clearTimeout(timer);
       clearTimeout(timeoutId);
     };
-  }, [user, updateDisplayName, authLoading, location.pathname]);
+  }, [user, updateDisplayName, authLoading, isProcessingOAuth, location.pathname]);
 
   // If we're still on the first load, show a loading indicator, but auto-advance after failsafe
   if (!initialCheck && loading) {
@@ -121,30 +105,19 @@ export default function ProtectedRoute() {
 
   // If there's no user, redirect to auth page
   if (!user) {
-    console.log("ProtectedRoute: No user found, redirecting to auth", { 
-      currentPath: location.pathname,
-      initialCheck,
-      loading 
-    });
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   // Special handling for card page - allow access regardless of onboarding status
   if (location.pathname === "/card") {
-    console.log("On card page, allowing access regardless of onboarding status");
     return <Outlet />;
   }
 
   // Check if the user is accessing the dashboard page
   if (location.pathname === "/dashboard") {
     if (!onboardingCompleted) {
-      console.log("Dashboard access denied - onboarding not completed");
-      console.log("User answers:", userAnswers);
-      
       // Check if they should really be prevented from accessing dashboard
-      // Maybe they have valid data but the completion flag isn't set correctly
       if (userAnswers && (userAnswers.identity || userAnswers.career_path || userAnswers.user_type)) {
-        console.log("User has onboarding data, allowing dashboard access and updating completion flag");
         // Allow access but show a soft message
         toast.info("Welcome back! Setting up your dashboard...");
       } else {
