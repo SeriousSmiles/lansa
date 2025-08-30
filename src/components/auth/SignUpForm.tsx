@@ -82,14 +82,8 @@ export function SignUpForm() {
           // Don't block the sign-up flow if profile save fails
         }
       }
-      toast.success("Account created successfully! Please log in.");
-
-      // Add a small delay before redirecting to ensure toast is seen
-      setTimeout(() => {
-        // Navigate with signup parameter to show junk mail message
-        navigate("/?mode=login&from=signup");
-        setIsLoading(false);
-      }, 1000);
+      toast.success("Account created successfully! Please check your email to confirm your account. Once confirmed, you'll be automatically signed in.");
+      setIsLoading(false);
     } catch (error: any) {
       console.error(error);
       toast.error(error.message || "An error occurred during sign up");
