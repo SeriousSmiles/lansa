@@ -125,14 +125,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     cleanupStorage();
 
+    // Check for OAuth callback in URL hash and set session
+    const handleOAuthCallback = async () => {
+      const currentUrl = window.location.href;
+      console.log("AuthContext: Checking URL for OAuth tokens", { currentUrl });
+      
+      if (currentUrl.includes('#access_token=') || currentUrl.includes('&access_token=')) {
+        console.log("AuthContext: OAuth tokens detected in URL, setting session");
+        try {
+          const { data, error } = await supabase.auth.getSession();
+          if (error) {
+            console.error("AuthContext: Error getting session after OAuth:", error);
+          } else if (data.session) {
+            console.log("AuthContext: OAuth session successfully retrieved", { 
+              hasUser: !!data.session.user,
+              userEmail: data.session.user?.email 
+            });
+            handleAuthStateChange(data.session);
+            
+            // Clean the URL hash to remove tokens
+            window.history.replaceState({}, document.title, window.location.pathname);
+            return;
+          }
+        } catch (error) {
+          console.error("AuthContext: OAuth callback error:", error);
+        }
+      }
+    };
+
     // Set up auth state listener FIRST (critical for preventing double login issue)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("AuthContext: Auth event triggered", { event, hasSession: !!session });
       handleAuthStateChange(session);
     });
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      handleAuthStateChange(session);
+    // Handle OAuth callback first, then check for existing session
+    handleOAuthCallback().then(() => {
+      // THEN check for existing session if not OAuth callback
+      if (!window.location.href.includes('#access_token=')) {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          handleAuthStateChange(session);
+        });
+      }
     });
 
     return () => subscription.unsubscribe();
