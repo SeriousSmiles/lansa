@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function ProtectedRoute() {
-  const { user, updateDisplayName } = useAuth();
+  const { user, updateDisplayName, loading: authLoading } = useAuth();
   const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [initialCheck, setInitialCheck] = useState(false);
@@ -27,9 +27,26 @@ export default function ProtectedRoute() {
       }
     }, 6000);
 
+    // Check if we're still processing OAuth tokens
+    const isProcessingOAuth = window.location.href.includes('#access_token=');
+    
+    console.log("ProtectedRoute: Starting check", {
+      hasUser: !!user,
+      authLoading,
+      isProcessingOAuth,
+      currentPath: location.pathname
+    });
+
+    // Wait for auth context to finish loading and OAuth processing
+    if (authLoading || isProcessingOAuth) {
+      console.log("ProtectedRoute: Waiting for auth processing to complete");
+      return;
+    }
+
     // Add a small delay to ensure auth state is properly loaded
     const timer = setTimeout(() => {
       if (!user) {
+        console.log("ProtectedRoute: No user after auth processing, allowing redirect");
         setLoading(false);
         setInitialCheck(true);
         return;
