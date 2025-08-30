@@ -71,6 +71,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Handle auth state changes
   const handleAuthStateChange = React.useCallback((session: Session | null) => {
+    console.log("AuthContext: Auth state changed", { 
+      hasSession: !!session, 
+      hasUser: !!session?.user,
+      userEmail: session?.user?.email,
+      currentUrl: window.location.href 
+    });
+    
     setSession(session);
     
     if (session?.user) {
@@ -78,6 +85,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         id: session.user.id,
         email: session.user.email,
         displayName: session.user.email?.split('@')[0] || 'Lansa User'
+      });
+      
+      console.log("AuthContext: User set", { 
+        userId: session.user.id, 
+        email: session.user.email 
       });
       
       // Fetch user profile data asynchronously after state update
@@ -90,6 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }, 0);
     } else {
       setUser(null);
+      console.log("AuthContext: User cleared");
     }
     
     setLoading(false);

@@ -101,6 +101,11 @@ export default function ProtectedRoute() {
 
   // If there's no user, redirect to auth page
   if (!user) {
+    console.log("ProtectedRoute: No user found, redirecting to auth", { 
+      currentPath: location.pathname,
+      initialCheck,
+      loading 
+    });
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
