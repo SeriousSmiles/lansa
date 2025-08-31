@@ -73,12 +73,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Handle auth state changes with debouncing to prevent loops
-  const handleAuthStateChange = React.useCallback((session: Session | null) => {
+  const handleAuthStateChange = React.useCallback(async (session: Session | null) => {
     // Prevent multiple simultaneous calls
     if (processingRef.current) {
       return;
     }
     processingRef.current = true;
+    
+    // Validate session by checking if user exists
+    if (session?.user) {
+      try {
+        const { data: user, error } = await supabase.auth.getUser();
+        
+        if (error && error.message.includes('User from sub claim in JWT does not exist')) {
+          console.log('Invalid JWT token detected, clearing session');
+          await supabase.auth.signOut();
+          setUser(null);
+          setSession(null);
+          setLoading(false);
+          setIsProcessingOAuth(false);
+          processingRef.current = false;
+          return;
+        }
+      } catch (error) {
+        console.error('Error validating user session:', error);
+        await supabase.auth.signOut();
+        setUser(null);
+        setSession(null);
+        setLoading(false);
+        setIsProcessingOAuth(false);
+        processingRef.current = false;
+        return;
+      }
+    }
     
     setSession(session);
     
