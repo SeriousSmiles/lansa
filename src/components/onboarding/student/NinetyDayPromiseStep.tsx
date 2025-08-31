@@ -5,7 +5,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/loading";
 import { analyzeNinetyDayGoal } from "@/services/question/studentOnboardingService";
-import goalImage from "@/assets/onboarding/90day-goal-realistic.jpg";
+import { OnboardingLayout } from "../layout/OnboardingLayout";
+import { OnboardingCard } from "../layout/OnboardingCard";
+import lansaGoalImage from "@/assets/onboarding/lansa-90day-goal.jpg";
 
 interface NinetyDayPromiseStepProps {
   onComplete: (goalStatement: string, analysis: any) => void;
@@ -61,34 +63,19 @@ export function NinetyDayPromiseStep({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      {/* Header with Image */}
-      <div className="relative mb-8">
-        <div className="flex flex-col md:flex-row items-center gap-8">
-          <div className="md:w-1/2">
-            <img 
-              src={goalImage} 
-              alt="90-day goals and achievement"
-              className="w-full h-64 object-cover rounded-xl shadow-lg"
-            />
-          </div>
-          <div className="md:w-1/2 text-center md:text-left">
-            <div className="text-sm text-primary font-medium mb-2">
-              Step {stepNumber} of {totalSteps} • Power Moment #2
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Your 90-Day Promise
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Show employers you think about outcomes, not just tasks.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <Card className="shadow-lg border-border">
-        <CardContent className="md:p-4">
-          <div className="space-y-6">
+    <OnboardingLayout 
+      currentStep={stepNumber} 
+      totalSteps={totalSteps}
+      title="Getting Started"
+    >
+      <OnboardingCard
+        image={lansaGoalImage}
+        imageAlt="90-day goals and achievement"
+        title="Your 90-Day Promise"
+        subtitle="Show employers you think about outcomes, not just tasks."
+        stepBadge={`Step ${stepNumber} of ${totalSteps} • Power Moment #2`}
+      >
+        <div className="space-y-6">
 
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-6 rounded-xl border border-green-200 dark:border-green-800 space-y-4">
               <div className="flex flex-col md:flex-row md:items-start space-y-3 md:space-y-0 md:space-x-3">
@@ -156,34 +143,33 @@ export function NinetyDayPromiseStep({
               </div>
             </div>
 
-            <div className="pt-8">
-              <Button 
-                onClick={handleSubmit}
-                disabled={!canProceed || isSubmitting || isAnalyzing}
-                className="w-full py-4 text-base md:text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
-                size="lg"
-              >
-                {isAnalyzing ? (
-                  <div className="flex items-center space-x-2">
-                    <LoadingSpinner />
-                    <span>Analyzing your goal...</span>
-                  </div>
-                ) : isSubmitting ? (
-                  "Saving..."
-                ) : (
-                  "Create My Promise"
-                )}
-              </Button>
-            </div>
-
-            <div className="text-center pt-4">
-              <p className="text-sm text-muted-foreground">
-                🚀 This shows initiative — employers love forward-thinking candidates.
-              </p>
-            </div>
+          <div className="pt-8">
+            <Button 
+              onClick={handleSubmit}
+              disabled={!canProceed || isSubmitting || isAnalyzing}
+              className="w-full py-3 lg:py-4 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+              size="lg"
+            >
+              {isAnalyzing ? (
+                <div className="flex items-center space-x-2">
+                  <LoadingSpinner />
+                  <span>Analyzing your goal...</span>
+                </div>
+              ) : isSubmitting ? (
+                "Saving..."
+              ) : (
+                "Create My Promise"
+              )}
+            </Button>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+
+          <div className="text-center pt-4">
+            <p className="text-sm text-muted-foreground">
+              🚀 This shows initiative — employers love forward-thinking candidates.
+            </p>
+          </div>
+        </div>
+      </OnboardingCard>
+    </OnboardingLayout>
   );
 }

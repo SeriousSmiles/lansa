@@ -4,7 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LoadingSpinner } from "@/components/loading";
 import { generatePowerMirror, StudentDemographics } from "@/services/question/studentOnboardingService";
-import powerMirrorImage from "@/assets/onboarding/power-mirror-realistic.jpg";
+import { OnboardingLayout } from "../layout/OnboardingLayout";
+import { OnboardingCard } from "../layout/OnboardingCard";
+import lansaPowerMirrorImage from "@/assets/onboarding/lansa-power-mirror.jpg";
 
 interface PowerMirrorStepProps {
   skillReframe: string;
@@ -61,124 +63,114 @@ export function PowerMirrorStep({
 
   if (isGenerating) {
     return (
-      <Card className="w-full max-w-2xl mx-auto md:p-4 bg-card border-border">
-        <div className="text-center space-y-6">
-          <div className="space-y-2">
-            <div className="text-sm text-muted-foreground">
-              Step {stepNumber} of {totalSteps} • Power Mirror
+      <OnboardingLayout 
+        currentStep={stepNumber} 
+        totalSteps={totalSteps}
+        title="Getting Started"
+      >
+        <Card className="w-full max-w-2xl mx-auto bg-card border-border">
+          <div className="p-6 lg:p-8 text-center space-y-6">
+            <div className="space-y-2">
+              <div className="text-sm text-muted-foreground">
+                Step {stepNumber} of {totalSteps} • Power Mirror
+              </div>
+              <h2 className="text-2xl font-bold text-foreground">
+                Analyzing Your Responses
+              </h2>
             </div>
-            <h2 className="text-2xl font-bold text-foreground">
-              Show You How Employers Think
-            </h2>
+            
+            <div className="flex flex-col items-center space-y-4">
+              <LoadingSpinner />
+              <p className="text-muted-foreground">
+                Analyzing how your responses appear to hiring managers...
+              </p>
+            </div>
           </div>
-          
-          <div className="flex flex-col items-center space-y-4">
-            <LoadingSpinner />
-            <p className="text-muted-foreground">
-              Analyzing how your responses appear to hiring managers...
-            </p>
-          </div>
-        </div>
-      </Card>
+        </Card>
+      </OnboardingLayout>
     );
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      {/* Header with Image */}
-      <div className="relative mb-8">
-        <div className="flex flex-col md:flex-row items-center gap-8">
-          <div className="md:w-1/2">
-            <img 
-              src={powerMirrorImage} 
-              alt="Professional transformation mirror"
-              className="w-full h-64 object-cover rounded-xl shadow-lg"
-            />
-          </div>
-          <div className="md:w-1/2 text-center md:text-left">
-            <div className="text-sm text-primary font-medium mb-2">
-              Step {stepNumber} of {totalSteps} • Power Mirror
+    <OnboardingLayout 
+      currentStep={stepNumber} 
+      totalSteps={totalSteps}
+      title="Getting Started"
+    >
+      <OnboardingCard
+        image={lansaPowerMirrorImage}
+        imageAlt="Professional transformation mirror"
+        title="How Employers See You"
+        subtitle="Based on what you wrote, here's how a hiring manager might interpret your answers."
+        stepBadge={`Step ${stepNumber} of {totalSteps} • Power Mirror`}
+      >
+        <div className="space-y-6">
+
+          {mirror && (
+            <div className="space-y-6">
+              {/* Main Mirror Message */}
+              <div className="bg-primary/5 border border-primary/20 p-6 rounded-lg">
+                <p className="text-base md:text-lg text-foreground font-medium leading-relaxed">
+                  "{mirror.mirror_message}"
+                </p>
+              </div>
+
+              {/* Key Strengths */}
+              <div className="space-y-3">
+                <h3 className="text-base font-semibold text-foreground">
+                  Your Key Strengths:
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {mirror.key_strengths?.map((strength: string, index: number) => (
+                    <Badge key={index} variant="secondary" className="px-3 py-1">
+                      {strength}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Employer Perspective */}
+              <div className="space-y-3">
+                <h3 className="text-base font-semibold text-foreground">
+                  What Employers See:
+                </h3>
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  <p className="text-sm text-foreground italic">
+                    "{mirror.employer_perspective}"
+                  </p>
+                </div>
+              </div>
+
+              {/* Next Level Hint */}
+              {mirror.next_level_hint && (
+                <div className="bg-accent/10 border border-accent/20 p-4 rounded-lg">
+                  <h4 className="text-sm font-medium text-foreground mb-2">💡 Pro Tip:</h4>
+                  <p className="text-sm text-muted-foreground">
+                    {mirror.next_level_hint}
+                  </p>
+                </div>
+              )}
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              How Employers See You
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Based on what you wrote, here's how a hiring manager might interpret your answers.
+          )}
+
+          <div className="pt-8">
+            <Button 
+              onClick={handleContinue}
+              disabled={!mirror || isSubmitting}
+              className="w-full py-3 lg:py-4 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+              size="lg"
+            >
+              {isSubmitting ? "Completing Setup..." : "Build Your Profile Now 🚀"}
+            </Button>
+          </div>
+
+          <div className="text-center pt-4">
+            <p className="text-sm text-muted-foreground">
+              🎉 You're ready to show the world your value!
             </p>
           </div>
         </div>
-      </div>
-
-      <Card className="shadow-lg border-border">
-        <CardContent className="md:p-4">
-          <div className="space-y-6">
-
-        {mirror && (
-          <div className="space-y-6">
-            {/* Main Mirror Message */}
-            <div className="bg-primary/5 border border-primary/20 p-6 rounded-lg">
-              <p className="text-base md:text-lg text-foreground font-medium leading-relaxed">
-                "{mirror.mirror_message}"
-              </p>
-            </div>
-
-            {/* Key Strengths */}
-            <div className="space-y-3">
-              <h3 className="text-base font-semibold text-foreground">
-                Your Key Strengths:
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {mirror.key_strengths?.map((strength: string, index: number) => (
-                  <Badge key={index} variant="secondary" className="px-3 py-1">
-                    {strength}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            {/* Employer Perspective */}
-            <div className="space-y-3">
-              <h3 className="text-base font-semibold text-foreground">
-                What Employers See:
-              </h3>
-              <div className="bg-muted/30 p-4 rounded-lg">
-                <p className="text-sm text-foreground italic">
-                  "{mirror.employer_perspective}"
-                </p>
-              </div>
-            </div>
-
-            {/* Next Level Hint */}
-            {mirror.next_level_hint && (
-              <div className="bg-accent/10 border border-accent/20 p-4 rounded-lg">
-                <h4 className="text-sm font-medium text-foreground mb-2">💡 Pro Tip:</h4>
-                <p className="text-sm text-muted-foreground">
-                  {mirror.next_level_hint}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-            <div className="pt-8">
-              <Button 
-                onClick={handleContinue}
-                disabled={!mirror || isSubmitting}
-                className="w-full py-4 text-base md:text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
-                size="lg"
-              >
-                {isSubmitting ? "Completing Setup..." : "Build Your Profile Now 🚀"}
-              </Button>
-            </div>
-
-            <div className="text-center pt-4">
-              <p className="text-sm text-muted-foreground">
-                🎉 You're ready to show the world your value!
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+      </OnboardingCard>
+    </OnboardingLayout>
   );
 }

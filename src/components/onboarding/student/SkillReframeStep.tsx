@@ -5,7 +5,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/loading";
 import { analyzeSkillReframe } from "@/services/question/studentOnboardingService";
-import skillTransformImage from "@/assets/onboarding/skill-transform-realistic.jpg";
+import { OnboardingLayout } from "../layout/OnboardingLayout";
+import { OnboardingCard } from "../layout/OnboardingCard";
+import lansaSkillTransformImage from "@/assets/onboarding/lansa-skill-transform.jpg";
 
 interface SkillReframeStepProps {
   onComplete: (originalSkill: string, analysis: any) => void;
@@ -68,34 +70,19 @@ export function SkillReframeStep({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      {/* Header with Image */}
-      <div className="relative mb-8">
-        <div className="flex flex-col md:flex-row items-center gap-8">
-          <div className="md:w-1/2">
-            <img 
-              src={skillTransformImage} 
-              alt="Transform skills into value"
-              className="w-full h-64 object-cover rounded-xl shadow-lg"
-            />
-          </div>
-          <div className="md:w-1/2 text-center md:text-left">
-            <div className="text-sm text-primary font-medium mb-2">
-              Step {stepNumber} of {totalSteps} • Power Moment #1
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Show Your Value
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Transform what you know into value statements that employers notice.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <Card className="shadow-lg border-border">
-        <CardContent className="md:p-4">
-          <div className="space-y-6">
+    <OnboardingLayout 
+      currentStep={stepNumber} 
+      totalSteps={totalSteps}
+      title="Getting Started"
+    >
+      <OnboardingCard
+        image={lansaSkillTransformImage}
+        imageAlt="Transform skills into value"
+        title="Show Your Value"
+        subtitle="Transform what you know into value statements that employers notice."
+        stepBadge={`Step ${stepNumber} of ${totalSteps} • Power Moment #1`}
+      >
+        <div className="space-y-6">
 
             <div className="bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-950/20 dark:to-yellow-950/20 p-6 rounded-xl border border-orange-200 dark:border-orange-800 space-y-4">
               <div className="flex flex-col md:flex-row md:items-start space-y-3 md:space-y-0 md:space-x-3">
@@ -170,34 +157,33 @@ export function SkillReframeStep({
               </div>
             </div>
 
-            <div className="pt-8">
-              <Button 
-                onClick={handleSubmit}
-                disabled={!canProceed || isSubmitting || isAnalyzing}
-                className="w-full py-4 text-base md:text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
-                size="lg"
-              >
-                {isAnalyzing ? (
-                  <div className="flex items-center space-x-2">
-                    <LoadingSpinner />
-                    <span>Analyzing your skill...</span>
-                  </div>
-                ) : isSubmitting ? (
-                  "Saving..."
-                ) : (
-                  "Transform My Skill ✨"
-                )}
-              </Button>
-            </div>
-
-            <div className="text-center pt-4">
-              <p className="text-sm text-muted-foreground">
-                🚀 This one's important — take your time and be specific.
-              </p>
-            </div>
+          <div className="pt-8">
+            <Button 
+              onClick={handleSubmit}
+              disabled={!canProceed || isSubmitting || isAnalyzing}
+              className="w-full py-3 lg:py-4 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+              size="lg"
+            >
+              {isAnalyzing ? (
+                <div className="flex items-center space-x-2">
+                  <LoadingSpinner />
+                  <span>Analyzing your skill...</span>
+                </div>
+              ) : isSubmitting ? (
+                "Saving..."
+              ) : (
+                "Transform My Skill ✨"
+              )}
+            </Button>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+
+          <div className="text-center pt-4">
+            <p className="text-sm text-muted-foreground">
+              🚀 This one's important — take your time and be specific.
+            </p>
+          </div>
+        </div>
+      </OnboardingCard>
+    </OnboardingLayout>
   );
 }

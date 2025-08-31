@@ -6,7 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { StudentDemographics } from "@/services/question/studentOnboardingService";
-import demographicsImage from "@/assets/onboarding/demographics-realistic.jpg";
+import { OnboardingLayout } from "../layout/OnboardingLayout";
+import { OnboardingCard } from "../layout/OnboardingCard";
+import lansaDemographicsImage from "@/assets/onboarding/lansa-demographics.jpg";
 interface StudentDemographicsStepProps {
   onComplete: (demographics: StudentDemographics) => void;
   stepNumber: number;
@@ -62,34 +64,20 @@ export function StudentDemographicsStep({
       career_goal_type: careerGoal
     });
   };
-  return <div className="min-h-screen bg-background md:px-4 md:py-8">
-      {/* Centered Logo */}
-      
-
-      <div className="w-full md:lansa-container-narrow">{/* Use Lansa container */}
-        {/* Header with Image */}
-        <div className="relative mb-8">
-          <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
-            <div className="w-full md:w-1/2">
-              <img src={demographicsImage} alt="Students in academic setting" className="w-full h-48 md:h-64 object-cover rounded-xl shadow-lg" />
-            </div>
-            <div className="w-full md:w-1/2 text-center md:text-left">
-              <div className="text-sm text-primary font-medium mb-2">
-                Step {stepNumber} of {totalSteps} • Getting to Know You
-              </div>
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-4">
-                Tell us about yourself
-              </h2>
-              <p className="text-base md:text-lg text-muted-foreground">
-                This helps us give you personalized guidance tailored to your unique situation.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <Card className="shadow-lg border-border">
-          <CardContent className="p-4 md:p-4">
-            <div className="space-y-6 md:space-y-8">
+  return (
+    <OnboardingLayout 
+      currentStep={stepNumber} 
+      totalSteps={totalSteps}
+      title="Getting Started"
+    >
+      <OnboardingCard
+        image={lansaDemographicsImage}
+        imageAlt="Students in academic setting"
+        title="Tell us about yourself"
+        subtitle="This helps us give you personalized guidance tailored to your unique situation."
+        stepBadge={`Step ${stepNumber} of ${totalSteps} • Getting to Know You`}
+      >
+            <div className="space-y-6 lg:space-y-8">
 
             {/* Academic Status */}
             <div className="space-y-4">
@@ -123,20 +111,24 @@ export function StudentDemographicsStep({
               </RadioGroup>
             </div>
 
-            <div className="pt-8">
-              <Button onClick={handleSubmit} disabled={!canProceed || isSubmitting} className="w-full py-4 text-base md:text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200" size="lg">
-                {isSubmitting ? "Saving..." : "Submit & Continue"}
-              </Button>
-            </div>
+          <div className="pt-8">
+            <Button 
+              onClick={handleSubmit} 
+              disabled={!canProceed || isSubmitting} 
+              className="w-full py-3 lg:py-4 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200" 
+              size="lg"
+            >
+              {isSubmitting ? "Saving..." : "Continue"}
+            </Button>
+          </div>
 
-            <div className="text-center pt-4">
-              <p className="text-sm text-muted-foreground">
-                ✨ You're doing great — this helps us personalize your experience.
-              </p>
-            </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>;
+          <div className="text-center pt-4">
+            <p className="text-sm text-muted-foreground">
+              ✨ You're doing great — this helps us personalize your experience.
+            </p>
+          </div>
+        </div>
+      </OnboardingCard>
+    </OnboardingLayout>
+  );
 }
