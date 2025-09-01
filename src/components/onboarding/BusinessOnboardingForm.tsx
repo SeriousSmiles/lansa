@@ -81,7 +81,7 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
       // Save business onboarding data
       const { error: businessError } = await supabase
         .from('business_onboarding_data')
-        .insert({
+        .upsert({
           user_id: user.id,
           company_name: formData.companyName,
           business_size: formData.businessSize,
@@ -92,19 +92,53 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
 
       if (businessError) throw businessError;
 
+      // Create business profile
+      const { error: profileError } = await supabase
+        .from('business_profiles')
+        .upsert({
+          user_id: user.id,
+          company_name: formData.companyName,
+          company_size: formData.businessSize,
+          description: `Role: ${formData.roleFunction}. Services: ${formData.businessServices}`,
+          updated_at: new Date().toISOString()
+        });
+
+      if (profileError) throw profileError;
+
+      // Add business role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .upsert({
+          user_id: user.id,
+          role: 'business'
+        });
+
+      if (roleError) throw roleError;
+
       // Update user_answers with user_type
       const { error: userError } = await supabase
         .from('user_answers')
         .upsert({
           user_id: user.id,
           user_type: 'employer',
-          onboarding_completed: true
+          career_path_onboarding_completed: true
         });
 
       if (userError) throw userError;
 
+      // Update user profile to mark onboarding as completed
+      const { error: userProfileError } = await supabase
+        .from('user_profiles')
+        .upsert({
+          user_id: user.id,
+          onboarding_completed: true,
+          updated_at: new Date().toISOString()
+        });
+
+      if (userProfileError) throw userProfileError;
+
       toast.success("Business profile created successfully!");
-      navigate('/dashboard');
+      onComplete();
     } catch (error) {
       console.error('Error saving business data:', error);
       toast.error("Failed to save business information. Please try again.");
