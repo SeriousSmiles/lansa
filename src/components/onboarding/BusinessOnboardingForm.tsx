@@ -92,7 +92,7 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
 
       if (businessError) throw businessError;
 
-      // Create business profile
+      // Create business profile (handle existing profiles)
       const { error: profileError } = await supabase
         .from('business_profiles')
         .upsert({
@@ -101,19 +101,27 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
           company_size: formData.businessSize,
           description: `Role: ${formData.roleFunction}. Services: ${formData.businessServices}`,
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
         });
 
       if (profileError) throw profileError;
 
-      // Add business role
+      // Add business role (handle existing roles)
       const { error: roleError } = await supabase
         .from('user_roles')
         .upsert({
           user_id: user.id,
           role: 'business'
+        }, {
+          onConflict: 'user_id,role',
+          ignoreDuplicates: true
         });
 
-      if (roleError) throw roleError;
+      // Don't let role errors block completion if role already exists
+      if (roleError && roleError.code !== '23505') {
+        throw roleError;
+      }
 
       // Update user_answers with user_type
       const { error: userError } = await supabase
@@ -122,6 +130,8 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
           user_id: user.id,
           user_type: 'employer',
           career_path_onboarding_completed: true
+        }, {
+          onConflict: 'user_id'
         });
 
       if (userError) throw userError;
@@ -133,6 +143,8 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
           user_id: user.id,
           onboarding_completed: true,
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
         });
 
       if (userProfileError) throw userProfileError;
