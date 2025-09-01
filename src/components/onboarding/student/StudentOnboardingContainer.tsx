@@ -219,11 +219,5 @@ export function StudentOnboardingContainer() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-background py-8 px-4">
-      <div className="w-full max-w-4xl mx-auto">
-        {renderCurrentStep()}
-      </div>
-    </div>
-  );
+  return renderCurrentStep();
 }
