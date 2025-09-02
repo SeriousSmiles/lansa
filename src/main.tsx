@@ -13,6 +13,9 @@ if (!window.React) {
   window.React = React;
 }
 
+// Check if Clerk is enabled via environment variable
+const isClerkEnabled = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />
