@@ -9,10 +9,10 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-if (!CLERK_PUBLISHABLE_KEY) {
-  throw new Error("Missing Publishable Key");
+if (!PUBLISHABLE_KEY) {
+  throw new Error("Missing Clerk Publishable Key");
 }
 
 interface ClerkAuthContextType {
@@ -232,7 +232,7 @@ function ClerkAuthProviderInner({ children }: { children: React.ReactNode }) {
 // Main provider that wraps with ClerkProvider
 export function ClerkAuthProvider({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
       <ClerkAuthProviderInner>
         {children}
       </ClerkAuthProviderInner>

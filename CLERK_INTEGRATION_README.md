@@ -24,14 +24,14 @@ Follow these steps to complete the Clerk integration:
 ## Setup Instructions
 
 ### 1. Get Clerk Publishable Key
-1. Sign up for Clerk at https://go.clerk.com/lovable
+1. Sign up for Clerk at https://clerk.com/docs/quickstarts/react
 2. Create a new application with organization support enabled
-3. Copy your Publishable Key from the Clerk Dashboard
+3. Copy your Publishable Key from the Clerk Dashboard (API Keys page)
 
 ### 2. Configure Environment Variables
-Add your Clerk Publishable Key to your `.env` file:
+Add your Clerk Publishable Key to your `.env.local` or `.env` file:
 ```
-VITE_CLERK_PUBLISHABLE_KEY="pk_test_your_key_here"
+VITE_CLERK_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
 ```
 
 ### 3. Configure Clerk Dashboard
