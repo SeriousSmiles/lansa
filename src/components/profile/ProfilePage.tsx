@@ -1,5 +1,5 @@
 
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useProfileData } from "@/hooks/useProfileData";
 import { ProfileLayout } from "./layout/ProfileLayout";
@@ -14,7 +14,7 @@ import { useProfileProgress } from "@/hooks/useProfileProgress";
 import { PostOnboardingChoice } from "../onboarding/PostOnboardingChoice";
 
 export function ProfilePage() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const profile = useProfileData(user?.id);

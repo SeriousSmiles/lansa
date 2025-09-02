@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Building2, Users, FileText, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 interface BusinessData {
@@ -28,7 +28,7 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
     totalApplications: 0,
     candidatesViewed: 0
   });
-  const { user } = useUser();
+  const { user } = useAuth();
 
   useEffect(() => {
     async function loadStats() {

@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { getUserAnswers, saveUserAnswers } from "@/services/question";
 
 /**
@@ -12,7 +12,7 @@ export const useOnboardingCompletion = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [onboardingMarked, setOnboardingMarked] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useUser();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   /**

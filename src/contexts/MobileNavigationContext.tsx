@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from './AuthContext';
 import { useLocation } from 'react-router-dom';
 
 interface MobileNavigationContextType {
@@ -27,11 +27,11 @@ interface MobileNavigationProviderProps {
 }
 
 export const MobileNavigationProvider: React.FC<MobileNavigationProviderProps> = ({ children }) => {
-  const { user, isLoaded } = useUser();
+  const { user, loading } = useAuth();
   const location = useLocation();
   const [fabAction, setFabAction] = useState<() => void>(() => () => {});
   
-  const shouldShowNavigation = isLoaded && 
+  const shouldShowNavigation = !loading && 
     user && 
     !AUTH_ROUTES.includes(location.pathname) &&
     !ONBOARDING_ROUTES.includes(location.pathname) &&

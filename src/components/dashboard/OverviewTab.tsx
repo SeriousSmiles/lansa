@@ -4,7 +4,7 @@ import { ProfileCard } from "./overview/ProfileCard";
 import { RecommendedActions } from "./overview/RecommendedActions";
 import { GrowthCardSection } from "./overview/GrowthCardSection";
 import { DiscoveryPreviewCard } from "./overview/DiscoveryPreviewCard";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface OverviewTabProps {
   userName: string;
@@ -16,7 +16,7 @@ interface OverviewTabProps {
 }
 
 export function OverviewTab({ userName, role, goal, insight, highlightActions, isLoading }: OverviewTabProps) {
-  const { user } = useUser();
+  const { user } = useAuth();
 
   return (
     <div className="space-y-6">

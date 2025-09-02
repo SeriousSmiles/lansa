@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { AIInsight, getUserInsights, markInsightAsRead, generateInsights, saveInsightsToDatabase, checkAndRemoveCompletedInsights } from "@/services/aiInsights";
 import { trackUserAction } from "@/services/actionTracking";
 import { toast } from "sonner";
@@ -11,7 +11,7 @@ import { EmptyInsightsState } from "./insights/EmptyInsightsState";
 import { LoadingInsightsState } from "./insights/LoadingInsightsState";
 
 export function AICoachTab() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [insights, setInsights] = useState<AIInsight[]>([]);
   const [isLoading, setIsLoading] = useState(true);

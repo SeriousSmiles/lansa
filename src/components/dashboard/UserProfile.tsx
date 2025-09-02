@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 interface UserProfileProps {
@@ -20,7 +20,7 @@ interface UserProfileProps {
 }
 
 export function UserProfile({ userName, email, handleLogout, themeColor }: UserProfileProps) {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [profileImage, setProfileImage] = useState<string>("");
 
   useEffect(() => {

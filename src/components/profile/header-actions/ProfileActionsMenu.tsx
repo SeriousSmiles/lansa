@@ -8,7 +8,7 @@ import { HighlightColorPicker } from "../dialogs/HighlightColorPicker";
 import { ShareProfileDialog } from "../dialogs/ShareProfileDialog";
 import { ProfilePreviewModal } from "../dialogs/ProfilePreviewModal";
 import { useProfileActions } from "@/hooks/useProfileActions";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useUserType } from "@/hooks/useUserType";
 import { useProfileData } from "@/hooks/useProfileData";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,7 +41,7 @@ export function ProfileActionsMenu({
   onOpenGuidedSetup,
   userProfile
 }: ProfileActionsMenuProps) {
-  const { user } = useUser();
+  const { user } = useAuth();
   const { userType } = useUserType();
   const profileData = useProfileData(userId);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);

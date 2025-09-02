@@ -3,11 +3,11 @@ import { CardContent, CardDescription, CardHeader, CardTitle } from "@/component
 import { AnimatedCard } from "@/components/dashboard/AnimatedCard";
 import { SwipeCard } from "@/components/discovery/SwipeCard";
 import { DiscoveryProfile } from "@/services/discoveryService";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useProfileData } from "@/hooks/useProfileData";
 
 export function DiscoveryPreviewCard() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const { 
     userName, 
     userTitle, 

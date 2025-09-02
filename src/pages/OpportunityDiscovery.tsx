@@ -8,11 +8,11 @@ import { Users, Briefcase, Heart, TrendingUp, X, Zap } from "lucide-react";
 import { discoveryService, DiscoveryProfile, DiscoveryFilters } from "@/services/discoveryService";
 import { swipeService, SwipeDirection, SwipeContext } from "@/services/swipeService";
 import { matchService } from "@/services/matchService";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export default function OpportunityDiscovery() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'networking' | 'jobs'>('networking');
   const [profiles, setProfiles] = useState<DiscoveryProfile[]>([]);
   const [isLoading, setIsLoading] = useState(false);

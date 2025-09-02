@@ -1,35 +1,34 @@
 
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useAuth, useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { getUserAnswers, hasCompletedOnboarding } from "@/services/question";
 import { getProfileStatus } from "@/services/profileStatus";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function ProtectedRoute() {
-  const { isLoaded, isSignedIn, getToken } = useAuth();
-  const { user } = useUser();
+  const { user, updateDisplayName, loading: authLoading, isProcessingOAuth } = useAuth();
   const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [initialCheck, setInitialCheck] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [profileReady, setProfileReady] = useState(false);
-  const [userAnswers, setUserAnswers] = useState<any>(null);
+  const [userAnswers, setUserAnswers] = useState<any>(null); // Add for debugging
   const [hasShownProfileNotification, setHasShownProfileNotification] = useState(false);
 
   useEffect(() => {
     let didCancel = false;
     const timeoutId = setTimeout(() => {
-      // Failsafe: if something hangs > 6s, allow navigation
+      // Failsafe: if something hangs > 6s, allow navigation and let routes handle finer checks
       if (!didCancel) {
         setLoading(false);
         setInitialCheck(true);
       }
     }, 6000);
 
-    // Wait for Clerk to load
-    if (!isLoaded) {
+    // Wait for auth context to finish loading and OAuth processing
+    if (authLoading || isProcessingOAuth) {
       return () => {
         clearTimeout(timeoutId);
       };
@@ -37,7 +36,7 @@ export default function ProtectedRoute() {
 
     // Add a small delay to ensure auth state is properly loaded
     const timer = setTimeout(() => {
-      if (!isSignedIn || !user) {
+      if (!user) {
         setLoading(false);
         setInitialCheck(true);
         return;
@@ -48,21 +47,25 @@ export default function ProtectedRoute() {
     async function checkUserProfile() {
       if (user?.id) {
         try {
-          // Set up Supabase session with Clerk token
-          const token = await getToken({ template: 'supabase' });
-          if (token) {
-            await supabase.auth.setSession({
-              access_token: token,
-              refresh_token: ''
-            });
+          // Fetch user profile to ensure display name is set
+          if (!user.displayName || user.displayName === user.email?.split('@')[0]) {
+            const { data: profileData } = await supabase
+              .from('user_profiles')
+              .select('name')
+              .eq('user_id', user.id)
+              .maybeSingle();
+
+            if (profileData?.name && typeof updateDisplayName === 'function') {
+              updateDisplayName(profileData.name);
+            }
           }
 
-          // Check onboarding and profile status using Clerk user ID
+          // Check onboarding and profile status
           const userAnswers = await getUserAnswers(user.id);
           const completed = hasCompletedOnboarding(userAnswers);
           
           setOnboardingCompleted(completed);
-          setUserAnswers(userAnswers);
+          setUserAnswers(userAnswers); // Store for debugging
 
           // Check if profile is ready for dashboard access
           const profileStatus = await getProfileStatus(user.id);
@@ -88,10 +91,10 @@ export default function ProtectedRoute() {
       clearTimeout(timer);
       clearTimeout(timeoutId);
     };
-  }, [user, isLoaded, isSignedIn, getToken, location.pathname]);
+  }, [user, updateDisplayName, authLoading, isProcessingOAuth, location.pathname]);
 
-  // If Clerk is still loading, show loading indicator
-  if (!isLoaded || (!initialCheck && loading)) {
+  // If we're still on the first load, show a loading indicator, but auto-advance after failsafe
+  if (!initialCheck && loading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-[rgba(253,248,242,1)]">
         <div className="w-16 h-16 border-4 border-[#FF6B4A] border-solid rounded-full border-t-transparent animate-spin mb-4"></div>
@@ -101,7 +104,7 @@ export default function ProtectedRoute() {
   }
 
   // If there's no user, redirect to auth page
-  if (!isSignedIn || !user) {
+  if (!user) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
@@ -127,6 +130,7 @@ export default function ProtectedRoute() {
     // If onboarding complete but profile check failed to resolve, still allow access
     if (profileReady === false && !hasShownProfileNotification) {
       // Soft gate: nudge to profile but do not block access indefinitely
+      // Only show this notification once per session
       const sessionKey = `profile_notification_shown_${user.id}`;
       if (!sessionStorage.getItem(sessionKey)) {
         toast.info("Complete your profile to unlock more features.");

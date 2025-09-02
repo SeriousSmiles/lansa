@@ -1,6 +1,6 @@
 
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { getUserAnswers } from "@/services/question";
 import { useEffect, useState } from "react";
@@ -8,10 +8,10 @@ import { Video, Clock, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function ContentLibrary() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [userAnswers, setUserAnswers] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const userName = user?.fullName || user?.firstName || user?.primaryEmailAddress?.emailAddress?.split('@')[0] || "Lansa User";
+  const userName = user?.email ? user.email.split('@')[0] : "Lansa User";
   
   useEffect(() => {
     async function loadContent() {
@@ -63,7 +63,7 @@ export default function ContentLibrary() {
   
   if (isLoading) {
     return (
-      <DashboardLayout userName={userName} email={user?.primaryEmailAddress?.emailAddress || ""}>
+      <DashboardLayout userName={userName} email={user?.email || ""}>
         <div className="p-6 flex justify-center items-center h-[calc(100vh-100px)]">
           <p className="text-xl">Loading content...</p>
         </div>
@@ -72,7 +72,7 @@ export default function ContentLibrary() {
   }
   
   return (
-    <DashboardLayout userName={userName} email={user?.primaryEmailAddress?.emailAddress || ""}>
+    <DashboardLayout userName={userName} email={user?.email || ""}>
       <div className="p-6">
         <h1 className="text-3xl font-bold mb-2">Content Library</h1>
         <p className="text-gray-500 mb-6">Recommended content based on your interests</p>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { QuestionCard } from "./QuestionCard";
 import TextQuestionCard from "./TextQuestionCard";
@@ -12,7 +12,7 @@ interface EnhancedOnboardingFormProps {
 }
 
 const EnhancedOnboardingForm: React.FC<EnhancedOnboardingFormProps> = ({ initialAnswers, onSaveAnswers }) => {
-  const { user } = useUser();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 

@@ -1,15 +1,15 @@
 
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export default function Resources() {
-  const { user } = useUser();
-  const userName = user?.fullName || user?.firstName || user?.primaryEmailAddress?.emailAddress?.split('@')[0] || "Lansa User";
+  const { user } = useAuth();
+  const userName = user?.email ? user.email.split('@')[0] : "Lansa User";
   
   return (
-    <DashboardLayout userName={userName} email={user?.primaryEmailAddress?.emailAddress || ""}>
+    <DashboardLayout userName={userName} email={user?.email || ""}>
       <div className="p-6">
         <h1 className="text-3xl font-bold mb-6">Resources</h1>
         

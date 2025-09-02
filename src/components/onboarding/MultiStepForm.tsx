@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserAnswers } from "@/services/question/types";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useOnboardingFlow } from "@/hooks/useOnboardingFlow";
 import {
   DemographicsStep,
@@ -26,7 +26,7 @@ export function MultiStepForm({
   outcomeQuestions
 }: MultiStepFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user } = useUser();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const {

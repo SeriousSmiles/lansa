@@ -2,7 +2,7 @@
 import { RecommendedActions } from "./RecommendedActions";
 import { GrowthCardSection } from "./GrowthCardSection";
 import { StudentAnalyticsCard } from "./StudentAnalyticsCard";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface OverviewTabProps {
   userName: string;
@@ -14,7 +14,7 @@ interface OverviewTabProps {
 }
 
 export function OverviewTab({ userName, role, goal, insight, highlightActions, isLoading }: OverviewTabProps) {
-  const { user } = useUser();
+  const { user } = useAuth();
 
   return (
     <div className="space-y-6">

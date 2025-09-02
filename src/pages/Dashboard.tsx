@@ -7,7 +7,7 @@ import {
   getBasicInsightFromAnswers,
   getPersonalizedInsight
 } from "@/services/question";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { toast } from "sonner";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
@@ -25,7 +25,7 @@ export default function Dashboard() {
   const [aiInsight, setAiInsight] = useState<string | undefined>();
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
-  const { user } = useUser();
+  const { user } = useAuth();
   const { track } = useActionTracking();
   const { userType, isLoading: isLoadingUserType } = useUserType();
   const mountedRef = useRef(true);
@@ -137,10 +137,10 @@ export default function Dashboard() {
   const insight = aiInsight || getBasicInsightFromAnswers(userAnswers || null);
   
   // Use the display name from the user object
-  const userName = user?.fullName || user?.firstName || "Lansa User";
+  const userName = user?.displayName || "Lansa User";
   
   return (
-    <DashboardLayout userName={userName} email={user?.primaryEmailAddress?.emailAddress || ""}>
+    <DashboardLayout userName={userName} email={user?.email || ""}>
       <div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
         <div className="w-full">
           <div className="flex items-center justify-between mb-4 animate-fade-in">

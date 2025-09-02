@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { 
   getUserAnswers, 
@@ -21,7 +21,7 @@ export default function Onboarding() {
   const [careerPath, setCareerPath] = useState<CareerPath | null>(null);
   const [showTypeSelection, setShowTypeSelection] = useState(true);
   const [showCareerSegmentation, setShowCareerSegmentation] = useState(false);
-  const { user } = useUser();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {

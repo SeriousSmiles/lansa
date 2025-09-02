@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Users, FileText, Eye, Clock, Target } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 interface AnalyticsData {
@@ -23,7 +23,7 @@ export function EmployerAnalyticsTab() {
     conversionRate: "0%"
   });
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useUser();
+  const { user } = useAuth();
 
   useEffect(() => {
     async function loadAnalytics() {

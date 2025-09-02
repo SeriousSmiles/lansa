@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
-import { useClerk } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { gsap } from "gsap";
 import { TopNavbar } from "./TopNavbar";
 import { MobileHeader } from "./MobileHeader";
@@ -15,7 +15,7 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children, userName, email, themeColor }: DashboardLayoutProps) {
-  const { signOut } = useClerk();
+  const { signOut } = useAuth();
   const mainContentRef = useRef<HTMLDivElement>(null);
   const [isContentVisible, setIsContentVisible] = useState(false);
   const isMobile = useIsMobile();

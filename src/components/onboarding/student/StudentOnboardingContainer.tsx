@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { 
   saveStudentDemographics, 
@@ -25,7 +25,7 @@ export function StudentOnboardingContainer() {
   const [skillData, setSkillData] = useState<{ original: string; analysis: any } | null>(null);
   const [goalData, setGoalData] = useState<{ statement: string; analysis: any } | null>(null);
   
-  const { user } = useUser();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 

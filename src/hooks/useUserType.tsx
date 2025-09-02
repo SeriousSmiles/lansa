@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 export type UserType = 'job_seeker' | 'employer' | null;
@@ -7,7 +7,7 @@ export type UserType = 'job_seeker' | 'employer' | null;
 export function useUserType() {
   const [userType, setUserType] = useState<UserType>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useUser();
+  const { user } = useAuth();
 
   useEffect(() => {
     async function fetchUserType() {

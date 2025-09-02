@@ -6,11 +6,11 @@ import { IconUsers, IconHeart, IconTrendingUp } from "@tabler/icons-react";
 import { discoveryService, DiscoveryProfile } from "@/services/discoveryService";
 import { swipeService, SwipeDirection } from "@/services/swipeService";
 import { matchService } from "@/services/matchService";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export function CandidateBrowseTab() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [profiles, setProfiles] = useState<DiscoveryProfile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [matchCount, setMatchCount] = useState(0);

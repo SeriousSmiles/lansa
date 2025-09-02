@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 interface JobListing {
@@ -44,7 +44,7 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
     newSkill: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user } = useUser();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (editingJob) {
