@@ -10,6 +10,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import Index from "./pages/Index";
+import AuthCallback from "./pages/AuthCallback";
 import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
 import OpportunityDiscovery from "./pages/OpportunityDiscovery";
@@ -41,6 +42,7 @@ const App: React.FC = () => {
             <MobileNavigationProvider>
               <Routes>
                 <Route path="/auth" element={<PageTransition><Index /></PageTransition>} />
+                <Route path="/auth/callback" element={<PageTransition><AuthCallback /></PageTransition>} />
                 {/* Change the default route to redirect to /auth instead of /dashboard */}
                 <Route path="/" element={<Navigate to="/auth" replace />} />
                 <Route element={<ProtectedRoute />}>

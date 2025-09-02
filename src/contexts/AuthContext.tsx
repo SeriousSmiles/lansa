@@ -163,7 +163,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(true);
         
         try {
-          // Clean the URL hash immediately to remove sensitive tokens
+          // For OAuth callbacks, let the AuthCallback page handle the routing logic
+          // Just clean the URL and process the session
           const cleanUrl = window.location.pathname + window.location.search;
           window.history.replaceState({}, document.title, cleanUrl);
           
