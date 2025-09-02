@@ -74,8 +74,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Handle auth state changes with debouncing to prevent loops
   const handleAuthStateChange = React.useCallback(async (session: Session | null) => {
-    // Prevent multiple simultaneous calls
-    if (processingRef.current) {
+    // Prevent multiple simultaneous calls during OAuth processing
+    if (processingRef.current || isProcessingOAuth) {
       return;
     }
     processingRef.current = true;
@@ -190,8 +190,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       // Skip auth events during OAuth processing to prevent loops
       if (isProcessingOAuth || processingRef.current) {
+        console.log("Skipping auth state change during OAuth processing:", event);
         return;
       }
+      
+      // Add additional protection for OAuth callbacks
+      const isOAuthEvent = event === 'SIGNED_IN' && session?.user?.app_metadata?.provider === 'google';
+      if (isOAuthEvent && window.location.pathname === '/auth/callback') {
+        console.log("Skipping auth state change for OAuth callback - handled by AuthCallback component");
+        return;
+      }
+      
       handleAuthStateChange(session);
     });
 

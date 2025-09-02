@@ -38,12 +38,31 @@ export function hasCompletedOnboarding(answers: UserAnswers | null): boolean {
   
   // Check multiple possible completion indicators
   // Either career path onboarding OR AI onboarding should count as complete
+  const hasCareerPathOnboarding = answers.career_path_onboarding_completed;
+  const hasAIOnboarding = answers.ai_onboarding_card;
+  const hasOnboardingInputs = answers.onboarding_inputs;
+  const hasBasicInfo = answers.identity && answers.desired_outcome;
+  const hasCareerPathInfo = answers.career_path && answers.user_type;
+  
+  // For OAuth users who have basic info but need full onboarding
+  const isOAuthWithBasics = answers.user_type === 'job_seeker' && 
+                           answers.identity && 
+                           answers.desired_outcome && 
+                           !hasCareerPathOnboarding;
+  
+  // OAuth users with just basic defaults should still go through onboarding
+  if (isOAuthWithBasics && 
+      answers.identity === 'Job-seeker' && 
+      answers.desired_outcome === 'Land my ideal role') {
+    return false;
+  }
+  
   return !!(
-    answers.career_path_onboarding_completed || 
-    answers.ai_onboarding_card ||
-    answers.onboarding_inputs ||
-    (answers.identity && answers.desired_outcome) ||
-    (answers.career_path && answers.user_type)
+    hasCareerPathOnboarding || 
+    hasAIOnboarding ||
+    hasOnboardingInputs ||
+    hasBasicInfo ||
+    hasCareerPathInfo
   );
 }
 

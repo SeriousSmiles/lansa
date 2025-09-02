@@ -12,8 +12,23 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Get the current session after OAuth redirect
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        // Add a small delay to ensure OAuth session is fully established
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Retry session retrieval up to 3 times with increasing delays
+        let session = null;
+        let sessionError = null;
+        
+        for (let i = 0; i < 3; i++) {
+          const result = await supabase.auth.getSession();
+          session = result.data.session;
+          sessionError = result.error;
+          
+          if (session?.user || sessionError) break;
+          
+          // Wait before retry (100ms, 300ms, 500ms)
+          await new Promise(resolve => setTimeout(resolve, 100 + (i * 200)));
+        }
         
         if (sessionError) {
           console.error("Session error:", sessionError);
@@ -23,7 +38,7 @@ export default function AuthCallback() {
         }
 
         if (!session?.user) {
-          console.log("No session found, redirecting to auth");
+          console.log("No session found after retries, redirecting to auth");
           navigate('/auth', { replace: true });
           return;
         }
@@ -41,16 +56,17 @@ export default function AuthCallback() {
             .maybeSingle()
         ]);
 
-        // Create profile if it doesn't exist (new Google OAuth user)
-        if (!userProfile) {
+        // For new OAuth users, create both profile and answers atomically
+        if (!userProfile || !userAnswers) {
+          console.log("Creating new OAuth user records");
+          
           const displayName = user.user_metadata?.full_name || 
                              `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`.trim() ||
                              user.email?.split('@')[0] || 
                              'Lansa User';
 
-          console.log("Creating new profile for OAuth user:", displayName);
-          
-          const { error: profileError } = await supabase
+          // Use a transaction-like approach: create both records and verify success
+          const profilePromise = !userProfile ? supabase
             .from('user_profiles')
             .insert({
               user_id: user.id,
@@ -58,42 +74,49 @@ export default function AuthCallback() {
               email: user.email,
               first_name: user.user_metadata?.first_name,
               last_name: user.user_metadata?.last_name
-            });
+            }) : Promise.resolve({ error: null });
 
-          if (profileError) {
-            console.error("Error creating user profile:", profileError);
-            // Don't block the flow if profile creation fails
-          }
-        }
-
-        // Create user_answers record if it doesn't exist
-        if (!userAnswers) {
-          console.log("Creating user_answers record for new OAuth user");
-          
-          const { error: answersError } = await supabase
+          const answersPromise = !userAnswers ? supabase
             .from('user_answers')
             .insert({
               user_id: user.id,
-              user_type: 'job_seeker', // Default for OAuth users
-              career_path_onboarding_completed: false
-            });
+              user_type: 'job_seeker',
+              career_path_onboarding_completed: false,
+              // Set default values that mark OAuth users as partially onboarded
+              identity: 'Job-seeker', // Default identity for OAuth users
+              desired_outcome: 'Land my ideal role' // Default outcome
+            }) : Promise.resolve({ error: null });
 
-          if (answersError) {
-            console.error("Error creating user answers:", answersError);
-            // Don't block the flow if answers creation fails
+          const [profileResult, answersResult] = await Promise.all([
+            profilePromise,
+            answersPromise
+          ]);
+
+          if (profileResult.error) {
+            console.error("Error creating user profile:", profileResult.error);
+            toast.error("Failed to create user profile. Please try again.");
+            navigate('/auth', { replace: true });
+            return;
+          }
+
+          if (answersResult.error) {
+            console.error("Error creating user answers:", answersResult.error);
+            toast.error("Failed to create user data. Please try again.");
+            navigate('/auth', { replace: true });
+            return;
+          }
+
+          // Refetch user answers if we just created them
+          if (!userAnswers) {
+            const refetchedAnswers = await getUserAnswers(user.id);
+            console.log("Refetched user answers:", refetchedAnswers);
           }
         }
 
-        // Determine where to route the user
-        const onboardingCompleted = hasCompletedOnboarding(userAnswers);
-        
-        if (onboardingCompleted) {
-          console.log("User has completed onboarding, redirecting to dashboard");
-          navigate('/dashboard', { replace: true });
-        } else {
-          console.log("User needs onboarding, redirecting to onboarding");
-          navigate('/onboarding', { replace: true });
-        }
+        // For OAuth users, we'll always redirect to onboarding to complete their profile
+        // This avoids the redirect loop and ensures proper onboarding completion
+        console.log("OAuth user redirected to onboarding for profile completion");
+        navigate('/onboarding', { replace: true });
 
       } catch (error) {
         console.error("Error processing OAuth callback:", error);
