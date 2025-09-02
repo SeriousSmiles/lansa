@@ -14,6 +14,7 @@ export default function IndexPage() {
 
   useEffect(() => {
     const mode = searchParams.get('mode');
+    console.log('Auth page mode:', mode);
     if (mode === 'signup') {
       setAuthMode('signup');
     } else {
