@@ -2,10 +2,10 @@
 import { useCallback } from "react";
 import { trackUserAction, ActionType, ActionMetadata } from "@/services/actionTracking";
 import { checkAndRemoveCompletedInsights } from "@/services/aiInsights";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@clerk/clerk-react";
 
 export function useActionTracking() {
-  const { user } = useAuth();
+  const { user } = useUser();
   
   const track = useCallback(async (actionType: ActionType, metadata: ActionMetadata = {}) => {
     await trackUserAction(actionType, metadata);

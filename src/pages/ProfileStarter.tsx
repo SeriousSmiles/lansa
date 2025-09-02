@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@clerk/clerk-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,7 @@ export default function ProfileStarter() {
   const [isLoading, setIsLoading] = useState(true);
   const [userAnswers, setUserAnswers] = useState<any>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const { user } = useAuth();
+  const { user } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -196,7 +196,7 @@ export default function ProfileStarter() {
                 {/* Profile Image Placeholder */}
                 <div className="flex-shrink-0">
                   <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#FF6B4A] to-[#FF8F6B] flex items-center justify-center text-white text-3xl font-bold">
-                    {user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}
+                    {user?.fullName?.charAt(0) || user?.firstName?.charAt(0) || user?.primaryEmailAddress?.emailAddress?.charAt(0) || "U"}
                   </div>
                 </div>
 
@@ -204,7 +204,7 @@ export default function ProfileStarter() {
                 <div className="flex-1">
                   <div className="mb-4">
                     <h2 className="text-2xl md:text-3xl font-bold text-[#2E2E2E] mb-2">
-                      {user?.displayName || "Your Name"}
+                      {user?.fullName || user?.firstName || "Your Name"}
                     </h2>
                     <p className="text-lg text-[#FF6B4A] font-medium mb-4">
                       {headline}

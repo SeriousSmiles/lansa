@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@clerk/clerk-react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { EmployerDashboardTabs } from "@/components/dashboard/EmployerDashboardTabs";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,7 +15,7 @@ interface BusinessData {
 export default function EmployerDashboard() {
   const [businessData, setBusinessData] = useState<BusinessData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
+  const { user } = useUser();
   const { track } = useActionTracking();
 
   useEffect(() => {
@@ -54,10 +54,10 @@ export default function EmployerDashboard() {
     );
   }
 
-  const userName = user?.displayName || businessData?.company_name || "Employer";
+  const userName = user?.fullName || user?.firstName || businessData?.company_name || "Employer";
 
   return (
-    <DashboardLayout userName={userName} email={user?.email || ""}>
+    <DashboardLayout userName={userName} email={user?.primaryEmailAddress?.emailAddress || ""}>
       <div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
         <div className="w-full">
           <div className="flex items-center justify-between mb-4 animate-fade-in">

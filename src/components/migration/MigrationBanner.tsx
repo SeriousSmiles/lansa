@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useUser } from '@clerk/clerk-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import { Info, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function MigrationBanner() {
-  const { user } = useAuth();
+  const { user } = useUser();
   const [migrationStatus, setMigrationStatus] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

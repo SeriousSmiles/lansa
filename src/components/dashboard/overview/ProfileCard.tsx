@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { AnimatedCard } from "@/components/dashboard/AnimatedCard";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@clerk/clerk-react";
 import { useProfileData } from "@/hooks/useProfileData";
 import { User, MapPin, Briefcase, GraduationCap, Building2 } from "lucide-react";
 import { PDFDownloadButton } from "@/components/pdf/PDFDownloadButton";
@@ -16,7 +16,7 @@ interface ProfileCardProps {
 }
 
 export function ProfileCard({ role, goal }: ProfileCardProps) {
-  const { user } = useAuth();
+  const { user } = useUser();
   const navigate = useNavigate();
   const profileData = useProfileData(user?.id);
   const { 

@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@clerk/clerk-react";
 import { getUserAnswers, hasCompletedOnboarding } from "@/services/question";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -13,7 +13,7 @@ export default function DashboardReady() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useUser();
   
   // Verify user authentication and onboarding completion on page load
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function DashboardReady() {
   }, [user, navigate]);
   
   // Use the display name from the user object
-  const userName = user?.displayName || "Lansa User";
+  const userName = user?.fullName || user?.firstName || "Lansa User";
   
   return (
     <>
@@ -57,7 +57,7 @@ export default function DashboardReady() {
           <div className="text-2xl text-[#2E2E2E] animate-pulse">Loading your dashboard...</div>
         </div>
       ) : (
-        <DashboardLayout userName={userName} email={user?.email || ""}>
+        <DashboardLayout userName={userName} email={user?.primaryEmailAddress?.emailAddress || ""}>
           <div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
             <div className="max-w-7xl mx-auto">
               <h1 className="text-2xl md:text-3xl font-bold mb-4 animate-fade-in">Welcome to Your Dashboard</h1>

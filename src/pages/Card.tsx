@@ -2,7 +2,7 @@ import {
   useState, useEffect 
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@clerk/clerk-react";
 import { getUserAnswers, saveUserAnswers } from "@/services/question";
 import { LoadingTransitionModal } from "@/components/loading/LoadingTransitionModal";
 import { CompletionCard } from "@/components/card/CompletionCard";
@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 export default function CardPage() {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useUser();
   const [isLoading, setIsLoading] = useState(true);
   const [identity, setIdentity] = useState<string | undefined>(state?.identity);
   const [desiredOutcome, setDesiredOutcome] = useState<string | undefined>(state?.desiredOutcome);

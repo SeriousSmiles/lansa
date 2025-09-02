@@ -26,7 +26,7 @@ import EmployerDashboard from "./pages/EmployerDashboard";
 import Resources from "./pages/Resources";
 import ContentLibrary from "./pages/ContentLibrary";
 import Card from "./pages/Card";
-import { ClerkAuthProvider } from "./contexts/ClerkAuthContext";
+
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 console.log("App.tsx loading, React available:", !!React);
