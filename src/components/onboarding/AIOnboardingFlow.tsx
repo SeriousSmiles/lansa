@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@clerk/clerk-react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
   const [goalAnalysis, setGoalAnalysis] = useState<any>(null);
   const [mirrorData, setMirrorData] = useState<any>(null);
   
-  const { user } = useAuth();
+  const { user } = useUser();
   const navigate = useNavigate();
   
   const debouncedSkillInput = useDebounce(skillInput, 800);

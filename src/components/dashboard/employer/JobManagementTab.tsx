@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit2, Eye, MoreHorizontal } from "lucide-react";
 import { JobPostingDialog } from "./JobPostingDialog";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@clerk/clerk-react";
 import { toast } from "sonner";
 
 interface JobListing {
@@ -24,7 +24,7 @@ export function JobManagementTab() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<JobListing | null>(null);
-  const { user } = useAuth();
+  const { user } = useUser();
 
   const loadJobListings = async () => {
     if (!user?.id) return;

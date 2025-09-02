@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserAnswers } from "@/services/question/types";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@clerk/clerk-react";
 import { useSimplifiedOnboarding } from "@/hooks/useSimplifiedOnboarding";
 import { QuestionCard } from "./QuestionCard";
 import { essentialQuestions } from "@/services/question/questionData";
@@ -16,7 +16,7 @@ export function SimplifiedOnboardingForm({
   onSaveAnswers
 }: SimplifiedOnboardingFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user } = useAuth();
+  const { user } = useUser();
   const navigate = useNavigate();
 
   const {

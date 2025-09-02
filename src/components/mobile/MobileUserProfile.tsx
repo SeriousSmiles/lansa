@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@clerk/clerk-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface MobileUserProfileProps {
@@ -19,7 +19,7 @@ interface MobileUserProfileProps {
 }
 
 export function MobileUserProfile({ userName, email, handleLogout, themeColor }: MobileUserProfileProps) {
-  const { user } = useAuth();
+  const { user } = useUser();
   const [profileImage, setProfileImage] = useState<string>("");
 
   useEffect(() => {
