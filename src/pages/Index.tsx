@@ -33,10 +33,10 @@ export default function IndexPage() {
       <AuthLayout imageSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/21db5620684d4cbbfb27b61d5dfc0736c8a7cd9c?placeholderIfAbsent=true">
         <div className="w-full text-foreground font-normal text-center max-md:max-w-full mb-8">
           <h1 className="text-5xl leading-[1.2] tracking-[-0.48px] max-md:max-w-full max-md:text-[40px]">
-            {authMode === 'login' ? t('auth.titleWelcomeBack') : t('auth.titleSignup')}
+            {authMode === 'login' ? 'Start Your Journey' : t('auth.titleSignup')}
           </h1>
           <p className="text-lg mt-6 max-md:max-w-full">
-            {authMode === 'login' ? t('auth.subtitleLogin') : t('auth.subtitleSignup')}
+            {authMode === 'login' ? 'Transform your career with AI-powered insights' : t('auth.subtitleSignup')}
           </p>
         </div>
 
