@@ -6,6 +6,7 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
 import { useTranslation } from "react-i18next";
+import { SEOHead } from "@/components/SEOHead";
 
 type AuthMode = 'login' | 'signup' | 'forgot-password' | 'reset-password';
 
@@ -22,7 +23,14 @@ export default function IndexPage() {
   }, [searchParams]);
 
   return (
-    <AuthLayout imageSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/21db5620684d4cbbfb27b61d5dfc0736c8a7cd9c?placeholderIfAbsent=true">
+    <>
+      <SEOHead
+        title="Lansa - AI-Powered Professional Profile Builder | Transform Your Career"
+        description="Join thousands building better careers with Lansa's AI-powered professional profile builder. Get personalized career insights, create compelling profiles, and connect with opportunities that match your goals."
+        keywords="professional profile builder, AI career coach, career development, resume builder, job search platform, professional networking, career insights, profile optimization"
+        canonical="https://lansa.online/"
+      />
+      <AuthLayout imageSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/21db5620684d4cbbfb27b61d5dfc0736c8a7cd9c?placeholderIfAbsent=true">
       <div className="w-full text-foreground font-normal text-center max-md:max-w-full">
         <h1 className="text-5xl leading-[1.2] tracking-[-0.48px] max-md:max-w-full max-md:text-[40px]">
           {authMode === 'login' && t('auth.titleWelcomeBack')}
@@ -56,5 +64,6 @@ export default function IndexPage() {
         )}
       </div>
     </AuthLayout>
+    </>
   );
 }
