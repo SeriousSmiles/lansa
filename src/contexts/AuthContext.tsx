@@ -154,34 +154,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     cleanupStorage();
 
-    // Check for OAuth callback in URL hash and set session
+    // Simplified OAuth handling - let Supabase handle the callback naturally
     const handleOAuthCallback = async () => {
       const hasOAuthTokens = window.location.href.includes('#access_token=') || window.location.href.includes('&access_token=');
       
       if (hasOAuthTokens) {
-        setIsProcessingOAuth(true);
-        setLoading(true);
-        
-        try {
-          // For OAuth callbacks, let the AuthCallback page handle the routing logic
-          // Just clean the URL and process the session
-          const cleanUrl = window.location.pathname + window.location.search;
-          window.history.replaceState({}, document.title, cleanUrl);
-          
-          const { data, error } = await supabase.auth.getSession();
-          if (error) {
-            console.error("AuthContext: OAuth error:", error);
-            setLoading(false);
-            setIsProcessingOAuth(false);
-          } else if (data.session) {
-            handleAuthStateChange(data.session);
-            return true;
-          }
-        } catch (error) {
-          console.error("AuthContext: OAuth callback error:", error);
-          setLoading(false);
-          setIsProcessingOAuth(false);
-        }
+        // Clean the URL
+        const cleanUrl = window.location.pathname + window.location.search;
+        window.history.replaceState({}, document.title, cleanUrl);
+        return true;
       }
       return false;
     };
@@ -194,12 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       
-      // Add additional protection for OAuth callbacks
-      const isOAuthEvent = event === 'SIGNED_IN' && session?.user?.app_metadata?.provider === 'google';
-      if (isOAuthEvent && window.location.pathname === '/auth/callback') {
-        console.log("Skipping auth state change for OAuth callback - handled by AuthCallback component");
-        return;
-      }
+      // Simplified OAuth handling - no special callback protection needed
       
       handleAuthStateChange(session);
     });
