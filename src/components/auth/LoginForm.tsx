@@ -82,7 +82,8 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          // Use a unified redirect that lets ProtectedRoute determine the right destination
+          redirectTo: `${window.location.origin}/auth?oauth_success=true`
         }
       });
       
