@@ -10,6 +10,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import Index from "./pages/Index";
+import AuthCallback from "./pages/AuthCallback";
 import About from "./pages/About";
 import Help from "./pages/Help";
 import Privacy from "./pages/Privacy";
@@ -45,6 +46,7 @@ const App: React.FC = () => {
             <MobileNavigationProvider>
               <Routes>
                 <Route path="/auth" element={<PageTransition><Index /></PageTransition>} />
+                <Route path="/auth/callback" element={<PageTransition><AuthCallback /></PageTransition>} />
                 {/* Public SEO pages */}
                 <Route path="/about" element={<PageTransition><About /></PageTransition>} />
                 <Route path="/help" element={<PageTransition><Help /></PageTransition>} />

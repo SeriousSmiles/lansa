@@ -17,17 +17,9 @@ export default function IndexPage() {
 
   useEffect(() => {
     const mode = searchParams.get('mode');
-    const oauthSuccess = searchParams.get('oauth_success');
     
     if (mode === 'reset') {
       setAuthMode('reset-password');
-    }
-    
-    // Handle OAuth success redirect
-    if (oauthSuccess === 'true') {
-      // Clean the URL and redirect to dashboard to let ProtectedRoute handle routing
-      window.history.replaceState({}, document.title, '/auth');
-      window.location.href = '/dashboard';
     }
   }, [searchParams]);
 

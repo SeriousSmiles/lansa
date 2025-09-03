@@ -1,5 +1,6 @@
 
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   getUserAnswers, 
   getProfileRole, 
@@ -7,6 +8,8 @@ import {
   getBasicInsightFromAnswers,
   getPersonalizedInsight
 } from "@/services/question";
+import { hasCompletedOnboarding } from "@/services/question";
+import { getProfileStatus } from "@/services/profileStatus";
 import { useAuth } from "@/contexts/AuthContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { toast } from "sonner";
@@ -17,15 +20,18 @@ import { Link } from "react-router-dom";
 import { ProfileCard } from "@/components/dashboard/overview/ProfileCard";
 import { useUserType } from "@/hooks/useUserType";
 import EmployerDashboard from "./EmployerDashboard";
+import { SEOHead } from "@/components/SEOHead";
 
 export default function Dashboard() {
   const [userAnswers, setUserAnswers] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCheckingProfile, setIsCheckingProfile] = useState(true);
   const [highlightActions, setHighlightActions] = useState(false);
   const [aiInsight, setAiInsight] = useState<string | undefined>();
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
-  const { user } = useAuth();
+  const { session, user } = useAuth();
+  const navigate = useNavigate();
   const { track } = useActionTracking();
   const { userType, isLoading: isLoadingUserType } = useUserType();
   const mountedRef = useRef(true);
@@ -36,6 +42,55 @@ export default function Dashboard() {
       mountedRef.current = false;
     };
   }, []);
+
+  // Check onboarding and profile status when component mounts
+  useEffect(() => {
+    if (!session?.user || !user) return;
+
+    let mounted = true;
+
+    const checkUserProfile = async () => {
+      try {
+        // Get user answers to check onboarding completion
+        const userAnswers = await getUserAnswers(user.id);
+        const onboardingStatus = hasCompletedOnboarding(userAnswers);
+        
+        if (!mounted) return;
+        
+        if (!onboardingStatus) {
+          navigate('/onboarding', { replace: true });
+          return;
+        }
+
+        // Check if profile is ready and show soft notification
+        const profileStatus = await getProfileStatus(user.id);
+        
+        if (!mounted) return;
+        
+        if (!profileStatus.isProfileReady) {
+          // Only show toast once per session
+          const toastShown = sessionStorage.getItem('profile-incomplete-toast');
+          if (!toastShown) {
+            toast.info('Complete your profile to unlock all features');
+            sessionStorage.setItem('profile-incomplete-toast', 'true');
+          }
+        }
+        
+        setIsCheckingProfile(false);
+      } catch (error) {
+        console.error('Error checking user profile:', error);
+        if (mounted) {
+          setIsCheckingProfile(false);
+        }
+      }
+    };
+
+    checkUserProfile();
+
+    return () => {
+      mounted = false;
+    };
+  }, [session, user, navigate]);
   
   useEffect(() => {
     async function loadDashboard() {
@@ -122,7 +177,7 @@ export default function Dashboard() {
     loadDashboard();
   }, [user?.id, hasInitialized, track]);
   
-  if (isLoading || isLoadingUserType) {
+  if (isLoading || isLoadingUserType || isCheckingProfile) {
     return <DashboardLoadingState />;
   }
 
@@ -140,31 +195,38 @@ export default function Dashboard() {
   const userName = user?.displayName || "Lansa User";
   
   return (
-    <DashboardLayout userName={userName} email={user?.email || ""}>
-      <div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
-        <div className="w-full">
-          <div className="flex items-center justify-between mb-4 animate-fade-in">
-            <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-            <aside className="order-last lg:order-first lg:sticky lg:top-4">
-              <ProfileCard role={role} goal={goal} />
-            </aside>
-            <section>
-              <DashboardTabs
-                userName={userName}
-                role={role}
-                goal={goal}
-                insight={insight}
-                highlightActions={highlightActions}
-                isLoading={isLoadingInsight}
-              />
-            </section>
+    <>
+      <SEOHead
+        title="Dashboard | Lansa - AI-Powered Career Builder"
+        description="Access your personalized career dashboard with AI insights, profile management, and growth tracking tools."
+        canonical="https://lansa.online/dashboard"
+      />
+      <DashboardLayout userName={userName} email={user?.email || ""}>
+        <div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
+          <div className="w-full">
+            <div className="flex items-center justify-between mb-4 animate-fade-in">
+              <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+              <aside className="order-last lg:order-first lg:sticky lg:top-4">
+                <ProfileCard role={role} goal={goal} />
+              </aside>
+              <section>
+                <DashboardTabs
+                  userName={userName}
+                  role={role}
+                  goal={goal}
+                  insight={insight}
+                  highlightActions={highlightActions}
+                  isLoading={isLoadingInsight}
+                />
+              </section>
+            </div>
           </div>
         </div>
-      </div>
-    </DashboardLayout>
+      </DashboardLayout>
+    </>
   );
 }
 

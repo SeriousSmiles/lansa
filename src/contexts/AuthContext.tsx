@@ -13,7 +13,6 @@ interface AuthContextType {
   user: UserType;
   session: Session | null;
   loading: boolean;
-  isProcessingOAuth: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any; data: any }>;
   signOut: () => Promise<{ error: any }>;
@@ -28,8 +27,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<UserType>(null);
   const [session, setSession] = React.useState<Session | null>(null);
   const [loading, setLoading] = React.useState(true);
-  const [isProcessingOAuth, setIsProcessingOAuth] = React.useState(false);
-  const processingRef = React.useRef(false);
 
   const updateDisplayName = React.useCallback((name: string) => {
     if (user) {
@@ -72,41 +69,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Handle auth state changes with debouncing to prevent loops
-  const handleAuthStateChange = React.useCallback(async (session: Session | null) => {
-    // Prevent multiple simultaneous calls during OAuth processing
-    if (processingRef.current || isProcessingOAuth) {
-      return;
-    }
-    processingRef.current = true;
-    
-    // Validate session by checking if user exists
-    if (session?.user) {
-      try {
-        const { data: user, error } = await supabase.auth.getUser();
-        
-        if (error && error.message.includes('User from sub claim in JWT does not exist')) {
-          console.log('Invalid JWT token detected, clearing session');
-          await supabase.auth.signOut();
-          setUser(null);
-          setSession(null);
-          setLoading(false);
-          setIsProcessingOAuth(false);
-          processingRef.current = false;
-          return;
-        }
-      } catch (error) {
-        console.error('Error validating user session:', error);
-        await supabase.auth.signOut();
-        setUser(null);
-        setSession(null);
-        setLoading(false);
-        setIsProcessingOAuth(false);
-        processingRef.current = false;
-        return;
-      }
-    }
-    
+  // Simplified auth state handler - keep it synchronous and minimal
+  const handleAuthStateChange = React.useCallback((session: Session | null) => {
     setSession(session);
     
     if (session?.user) {
@@ -129,65 +93,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     
     setLoading(false);
-    setIsProcessingOAuth(false);
-    
-    // Reset processing flag after a short delay
-    setTimeout(() => {
-      processingRef.current = false;
-    }, 100);
   }, [fetchUserProfile]);
 
   React.useEffect(() => {
-    // Clean up any stale auth state before initializing
-    const cleanupStorage = () => {
-      try {
-        // Clear any potentially corrupted session data
-        const currentSession = localStorage.getItem('sb-hrmklkcdxkeyttboosgr-auth-token');
-        if (currentSession && !JSON.parse(currentSession)?.access_token) {
-          localStorage.removeItem('sb-hrmklkcdxkeyttboosgr-auth-token');
-        }
-      } catch (e) {
-        // Ignore JSON parse errors
-        localStorage.removeItem('sb-hrmklkcdxkeyttboosgr-auth-token');
-      }
-    };
-    
-    cleanupStorage();
-
-    // Simplified OAuth handling - let Supabase handle the callback naturally
-    const handleOAuthCallback = async () => {
-      const hasOAuthTokens = window.location.href.includes('#access_token=') || window.location.href.includes('&access_token=');
-      
-      if (hasOAuthTokens) {
-        // Clean the URL
-        const cleanUrl = window.location.pathname + window.location.search;
-        window.history.replaceState({}, document.title, cleanUrl);
-        return true;
-      }
-      return false;
-    };
-
-    // Set up auth state listener with protection against loops
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // Skip auth events during OAuth processing to prevent loops
-      if (isProcessingOAuth || processingRef.current) {
-        console.log("Skipping auth state change during OAuth processing:", event);
-        return;
-      }
-      
-      // Simplified OAuth handling - no special callback protection needed
-      
       handleAuthStateChange(session);
     });
 
-    // Handle OAuth callback first, then check for existing session
-    handleOAuthCallback().then((wasOAuthProcessed) => {
-      // Only check for existing session if we didn't process OAuth tokens
-      if (!wasOAuthProcessed) {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          handleAuthStateChange(session);
-        });
-      }
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleAuthStateChange(session);
     });
 
     return () => subscription.unsubscribe();
@@ -195,17 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = React.useCallback(async (email: string, password: string) => {
     try {
-      // Clear existing session data before signing in to prevent conflicts
-      localStorage.removeItem('sb-hrmklkcdxkeyttboosgr-auth-token');
-      
       const result = await supabase.auth.signInWithPassword({ email, password });
-      
-      // If login is successful but we're still waiting for the auth state to update
-      // ensure we don't show an error
-      if (!result.error && result.data?.session) {
-        return { error: null };
-      }
-      
       return result;
     } catch (error) {
       console.error("Error signing in:", error);
@@ -271,14 +177,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     session,
     loading,
-    isProcessingOAuth,
     signIn,
     signUp,
     signOut,
     resetPassword,
     updatePassword,
     updateDisplayName,
-  }), [user, session, loading, isProcessingOAuth, signIn, signUp, signOut, resetPassword, updatePassword, updateDisplayName]);
+  }), [user, session, loading, signIn, signUp, signOut, resetPassword, updatePassword, updateDisplayName]);
 
   return (
     <AuthContext.Provider value={value}>
