@@ -13,6 +13,7 @@ import { useUserType } from "@/hooks/useUserType";
 import { useProfileData } from "@/hooks/useProfileData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { safeHandler } from "@/config/demo";
 
 interface ProfileActionsMenuProps {
   userId?: string;
@@ -100,7 +101,9 @@ export function ProfileActionsMenu({
       setIsProfilePublic(!isProfilePublic);
       toast.success(isProfilePublic ? "Profile is now private" : "Profile is now public and available for matching");
     } catch (error) {
-      console.error('Error updating profile visibility:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error updating profile visibility:', error);
+      }
       toast.error("Failed to update profile visibility");
     } finally {
       setIsUpdatingPublicStatus(false);
@@ -121,7 +124,7 @@ export function ProfileActionsMenu({
       </Button>
 
       {/* Burger Menu */}
-      <DropdownMenu>
+      <DropdownMenu modal>
         <DropdownMenuTrigger asChild>
           <Button 
             variant={isDarkTheme ? "contrast" : "outline"} 
@@ -138,13 +141,14 @@ export function ProfileActionsMenu({
           align="end" 
           className="w-56 bg-background border border-border z-50"
           onCloseAutoFocus={(e) => e.preventDefault()}
+          loop
         >
-          <DropdownMenuItem onClick={() => setIsColorPickerOpen(true)}>
+          <DropdownMenuItem onSelect={safeHandler(() => setIsColorPickerOpen(true), "Change Theme")}>
             <IconPalette className="h-4 w-4 mr-2" />
             Change Theme
           </DropdownMenuItem>
           
-          <DropdownMenuItem onClick={() => setIsHighlightPickerOpen(true)}>
+          <DropdownMenuItem onSelect={safeHandler(() => setIsHighlightPickerOpen(true), "Change Highlights")}>
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
               width="16" 
@@ -165,13 +169,13 @@ export function ProfileActionsMenu({
           </DropdownMenuItem>
 
           {userType === 'job_seeker' && (
-            <DropdownMenuItem onClick={() => setIsPreviewOpen(true)}>
+            <DropdownMenuItem onSelect={safeHandler(() => setIsPreviewOpen(true), "Preview Card")}>
               <IconEye className="h-4 w-4 mr-2" />
               Preview Card
             </DropdownMenuItem>
           )}
 
-          <DropdownMenuItem onClick={() => onOpenGuidedSetup?.()}>
+          <DropdownMenuItem onSelect={safeHandler(() => onOpenGuidedSetup?.(), "Fill with Guide")}>
             <IconSettings className="h-4 w-4 mr-2" />
             Fill with Guide
           </DropdownMenuItem>
@@ -179,7 +183,7 @@ export function ProfileActionsMenu({
           <DropdownMenuSeparator />
 
           <DropdownMenuItem 
-            onClick={handleMakeProfilePublic}
+            onSelect={safeHandler(handleMakeProfilePublic, "Make Profile Public")}
             disabled={!isLansaCertified || isUpdatingPublicStatus}
             className={`flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0 ${!isLansaCertified ? "opacity-50 cursor-not-allowed" : ""}`}
           >

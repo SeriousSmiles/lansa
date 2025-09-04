@@ -66,7 +66,9 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
       }
       
     } catch (error: any) {
-      console.error(error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error(error);
+      }
       setLoginError(error.message || "An error occurred during login");
       setIsLoading(false);
     }
@@ -92,7 +94,9 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
       }
       // Note: If successful, the user will be redirected by Google, so no need to handle success here
     } catch (error: any) {
-      console.error(error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error(error);
+      }
       setLoginError(error.message || "An error occurred during Google login");
       setIsLoading(false);
     }

@@ -7,6 +7,11 @@ import './styles/animations.css'
 import './styles/onboarding-toasts.css'
 import './styles/mobile-fixes.css'
 import './i18n'
+import { scrubTokensFromUrl } from './config/demo'
+import './utils/legacyScriptGuards'
+
+// Scrub tokens from URL immediately on app start
+scrubTokensFromUrl();
 
 // Ensure React is globally available
 if (!window.React) {

@@ -64,7 +64,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       return null;
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      // Reduce console noise for demo
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching user profile:', error);
+      }
       return null;
     }
   }, []);
@@ -114,7 +117,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const result = await supabase.auth.signInWithPassword({ email, password });
       return result;
     } catch (error) {
-      console.error("Error signing in:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error signing in:", error);
+      }
       toast.error("Failed to sign in. Please check your internet connection.");
       return { error };
     }
@@ -132,7 +137,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       });
     } catch (error) {
-      console.error("Error signing up:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error signing up:", error);
+      }
       toast.error("Failed to sign up. Please check your internet connection.");
       return { error, data: null };
     }
@@ -142,7 +149,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       return await supabase.auth.signOut();
     } catch (error) {
-      console.error("Error signing out:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error signing out:", error);
+      }
       return { error };
     }
   }, []);
@@ -156,7 +165,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       return { error };
     } catch (error) {
-      console.error("Error resetting password:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error resetting password:", error);
+      }
       return { error };
     }
   }, []);
@@ -168,7 +179,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       return { error };
     } catch (error) {
-      console.error("Error updating password:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error updating password:", error);
+      }
       return { error };
     }
   }, []);

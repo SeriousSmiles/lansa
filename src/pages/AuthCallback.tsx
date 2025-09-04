@@ -2,10 +2,16 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { SEOHead } from "@/components/SEOHead";
+import { scrubTokensFromUrl } from "@/config/demo";
 
 export default function AuthCallback() {
   const { session, loading } = useAuth();
   const navigate = useNavigate();
+
+  // Scrub tokens from URL on auth callback
+  useEffect(() => {
+    scrubTokensFromUrl();
+  }, []);
 
   useEffect(() => {
     if (!loading) {

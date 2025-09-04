@@ -76,19 +76,26 @@ export function SignUpForm() {
               name: fullName
             });
           }
-          console.log("Saved user profile information with name:", fullName);
+          // Quiet logging for demo
+          if (process.env.NODE_ENV === 'development') {
+            console.log("Saved user profile information with name:", fullName);
+          }
         } catch (profileError) {
-          console.error("Error saving profile:", profileError);
+          if (process.env.NODE_ENV === 'development') {
+            console.error("Error saving profile:", profileError);
+          }
           // Don't block the sign-up flow if profile save fails
         }
       }
       toast.success("Account created successfully! Please check your email to confirm your account. Once confirmed, you'll be automatically signed in.");
       setIsLoading(false);
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.message || "An error occurred during sign up");
-      setIsLoading(false);
-    }
+        } catch (error: any) {
+          if (process.env.NODE_ENV === 'development') {
+            console.error(error);
+          }
+          toast.error(error.message || "An error occurred during sign up");
+          setIsLoading(false);
+        }
   };
 
   const handleGoogleSignUp = async () => {
@@ -110,7 +117,9 @@ export function SignUpForm() {
       }
       // Note: If successful, the user will be redirected by Google, so no need to handle success here
     } catch (error: any) {
-      console.error(error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error(error);
+      }
       toast.error(error.message || "An error occurred during Google signup");
       setIsLoading(false);
     }
