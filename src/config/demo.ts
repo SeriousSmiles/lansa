@@ -25,14 +25,48 @@ export const DEMO_CONFIG = {
   }
 } as const;
 
-// Token scrubbing utility
-export const scrubTokensFromUrl = () => {
-  if (typeof window !== 'undefined' && window.location.hash) {
-    const hasSecrets = /(access_token|refresh_token|provider_token)/.test(window.location.hash);
-    if (hasSecrets) {
-      // Remove tokens from URL without reload
-      window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+// Token scrubbing utility with delay for OAuth processing
+export const scrubTokensFromUrl = (immediate = false) => {
+  const performScrubbing = () => {
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const hasSecrets = /(access_token|refresh_token|provider_token)/.test(window.location.hash);
+      if (hasSecrets) {
+        // Remove tokens from URL without reload
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+      }
     }
+  };
+
+  if (immediate) {
+    performScrubbing();
+  } else {
+    // Delay scrubbing to allow OAuth processing
+    setTimeout(performScrubbing, 1000);
+  }
+};
+
+// Browser environment detection
+export const detectBrowserEnvironment = () => {
+  if (typeof window === 'undefined') return { isPrivate: false, isIncognito: false };
+  
+  try {
+    // Test for private browsing mode
+    const testStorage = () => {
+      try {
+        localStorage.setItem('test', 'test');
+        localStorage.removeItem('test');
+        return false;
+      } catch (e) {
+        return true;
+      }
+    };
+
+    return {
+      isPrivate: testStorage(),
+      isIncognito: 'webkitRequestFileSystem' in window && !window.webkitRequestFileSystem
+    };
+  } catch (e) {
+    return { isPrivate: false, isIncognito: false };
   }
 };
 

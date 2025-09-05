@@ -147,14 +147,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = React.useCallback(async () => {
     try {
-      return await supabase.auth.signOut();
+      // Clear sensitive localStorage items
+      const keysToRemove = ['supabase.auth.token', 'highlightRecommendedActions'];
+      keysToRemove.forEach(key => {
+        try {
+          localStorage.removeItem(key);
+        } catch (e) {
+          // Ignore localStorage errors
+        }
+      });
+
+      // Clear any Google OAuth session data
+      if (session?.user?.app_metadata?.provider === 'google') {
+        // Additional cleanup for Google OAuth
+        try {
+          sessionStorage.clear();
+        } catch (e) {
+          // Ignore sessionStorage errors
+        }
+      }
+
+      const result = await supabase.auth.signOut();
+      
+      // Force clear user state immediately
+      setUser(null);
+      setSession(null);
+      
+      return result;
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error("Error signing out:", error);
       }
       return { error };
     }
-  }, []);
+  }, [session]);
 
   const resetPassword = React.useCallback(async (email: string) => {
     try {
