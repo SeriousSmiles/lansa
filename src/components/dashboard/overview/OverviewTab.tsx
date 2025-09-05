@@ -2,6 +2,7 @@
 import { RecommendedActions } from "./RecommendedActions";
 import { GrowthCardSection } from "./GrowthCardSection";
 import { StudentAnalyticsCard } from "./StudentAnalyticsCard";
+import { HireRateProgress } from "../HireRateProgress";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface OverviewTabProps {
@@ -18,8 +19,15 @@ export function OverviewTab({ userName, role, goal, insight, highlightActions, i
 
   return (
     <div className="space-y-6">
-      {/* Student Analytics Dashboard */}
-      <StudentAnalyticsCard />
+      {/* Analytics and Progress Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          <StudentAnalyticsCard />
+        </div>
+        <div>
+          <HireRateProgress />
+        </div>
+      </div>
       
       {/* Existing Overview Content */}
       <div>
