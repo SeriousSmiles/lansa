@@ -125,6 +125,20 @@ export default function Privacy() {
               <p className="text-muted-foreground mb-4">
                 We use cookies and similar technologies to enhance your experience on our platform. You can control cookies through your browser settings, though disabling cookies may affect some functionality.
               </p>
+              
+              <h3 className="text-xl font-semibold mb-3">Analytics and User Experience</h3>
+              <p className="text-muted-foreground mb-4">
+                We use Hotjar to understand how users interact with our platform. Hotjar may collect information such as:
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground mb-4 space-y-2">
+                <li>Mouse movements, clicks, and scrolling behavior</li>
+                <li>Pages visited and time spent on each page</li>
+                <li>Device and browser information</li>
+                <li>Form interactions (no sensitive data is captured)</li>
+              </ul>
+              <p className="text-muted-foreground mb-4">
+                This data helps us improve our user experience and identify areas for enhancement. You can opt out of Hotjar tracking by visiting their <a href="https://www.hotjar.com/legal/compliance/opt-out" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">opt-out page</a>.
+              </p>
             </section>
 
             <section className="mb-12">

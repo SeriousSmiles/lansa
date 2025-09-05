@@ -4,6 +4,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AddToHomeScreenPrompt } from "@/components/mobile/AddToHomeScreenPrompt";
+import { HotjarScript } from "@/components/analytics/HotjarScript";
+import { CookieConsent } from "@/components/analytics/CookieConsent";
 
 import { MobileNavigationProvider } from "@/contexts/MobileNavigationContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -42,6 +44,8 @@ const App: React.FC = () => {
           <Toaster />
           <Sonner />
           <AddToHomeScreenPrompt />
+          <HotjarScript />
+          <CookieConsent />
           <BrowserRouter>
             <MobileNavigationProvider>
               <Routes>

@@ -12,7 +12,17 @@ export const DEMO_CONFIG = {
   GEOLOCATION_API: 'https://ipapi.co/json', // HTTPS alternative to ip-api.com
   
   // Legacy script safety
-  SAFE_LEGACY_SCRIPTS: true
+  SAFE_LEGACY_SCRIPTS: true,
+  
+  // Analytics configuration
+  ANALYTICS: {
+    // Hotjar configuration
+    HOTJAR: {
+      SITE_ID: '6512560',
+      ENABLED: !import.meta.env.DEV && import.meta.env.PROD, // Only in production
+      RESPECT_DNT: true, // Respect Do Not Track headers
+    }
+  }
 } as const;
 
 // Token scrubbing utility
