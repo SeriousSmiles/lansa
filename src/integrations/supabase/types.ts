@@ -158,6 +158,7 @@ export type Database = {
           id: string
           industry: string | null
           location: string | null
+          organization_id: string | null
           updated_at: string
           user_id: string
           website: string | null
@@ -170,6 +171,7 @@ export type Database = {
           id?: string
           industry?: string | null
           location?: string | null
+          organization_id?: string | null
           updated_at?: string
           user_id: string
           website?: string | null
@@ -182,11 +184,20 @@ export type Database = {
           id?: string
           industry?: string | null
           location?: string | null
+          organization_id?: string | null
           updated_at?: string
           user_id?: string
           website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "business_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       catalogue_entries: {
         Row: {
@@ -355,6 +366,7 @@ export type Database = {
           is_active: boolean
           location: string | null
           mode: Database["public"]["Enums"]["match_context"]
+          organization_id: string | null
           title: string
           top_skills: string[] | null
           updated_at: string
@@ -367,6 +379,7 @@ export type Database = {
           is_active?: boolean
           location?: string | null
           mode: Database["public"]["Enums"]["match_context"]
+          organization_id?: string | null
           title: string
           top_skills?: string[] | null
           updated_at?: string
@@ -379,6 +392,7 @@ export type Database = {
           is_active?: boolean
           location?: string | null
           mode?: Database["public"]["Enums"]["match_context"]
+          organization_id?: string | null
           title?: string
           top_skills?: string[] | null
           updated_at?: string
@@ -389,6 +403,13 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_listings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -436,6 +457,113 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      organization_memberships: {
+        Row: {
+          clerk_user_id: string | null
+          created_at: string
+          id: string
+          invited_at: string | null
+          invited_by: string | null
+          is_active: boolean
+          joined_at: string
+          metadata: Json | null
+          organization_id: string
+          permissions: Json | null
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          clerk_user_id?: string | null
+          created_at?: string
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          is_active?: boolean
+          joined_at?: string
+          metadata?: Json | null
+          organization_id: string
+          permissions?: Json | null
+          role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          clerk_user_id?: string | null
+          created_at?: string
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          is_active?: boolean
+          joined_at?: string
+          metadata?: Json | null
+          organization_id?: string
+          permissions?: Json | null
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_memberships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          clerk_org_id: string
+          created_at: string
+          description: string | null
+          id: string
+          industry: string | null
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          plan_type: string | null
+          settings: Json | null
+          size_range: string | null
+          slug: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          clerk_org_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          industry?: string | null
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          plan_type?: string | null
+          settings?: Json | null
+          size_range?: string | null
+          slug: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          clerk_org_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          industry?: string | null
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          plan_type?: string | null
+          settings?: Json | null
+          size_range?: string | null
+          slug?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
       }
       security_audit_log: {
         Row: {
@@ -767,6 +895,42 @@ export type Database = {
           },
         ]
       }
+      user_migration_mapping: {
+        Row: {
+          clerk_user_id: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          invited_at: string | null
+          metadata: Json | null
+          migration_status: string
+          supabase_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          clerk_user_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          invited_at?: string | null
+          metadata?: Json | null
+          migration_status?: string
+          supabase_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          clerk_user_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          invited_at?: string | null
+          metadata?: Json | null
+          migration_status?: string
+          supabase_user_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_power_skills: {
         Row: {
           ai_category: string | null
@@ -828,6 +992,7 @@ export type Database = {
           age_group: string | null
           biggest_challenge: string | null
           career_goal_type: string | null
+          clerk_user_id: string | null
           cover_color: string | null
           created_at: string | null
           desired_outcome: string | null
@@ -838,16 +1003,20 @@ export type Database = {
           first_name: string | null
           gender: string | null
           highlight_color: string | null
+          hire_rate_score: number | null
           identity: string | null
           is_public: boolean
           languages: Json | null
           last_name: string | null
           major: string | null
+          migration_status: string | null
           name: string | null
           onboarding_completed: boolean | null
+          organization_id: string | null
           phone_number: string | null
           professional_goal: string | null
           profile_image: string | null
+          score_breakdown: Json | null
           skills: string[] | null
           title: string | null
           updated_at: string | null
@@ -859,6 +1028,7 @@ export type Database = {
           age_group?: string | null
           biggest_challenge?: string | null
           career_goal_type?: string | null
+          clerk_user_id?: string | null
           cover_color?: string | null
           created_at?: string | null
           desired_outcome?: string | null
@@ -869,16 +1039,20 @@ export type Database = {
           first_name?: string | null
           gender?: string | null
           highlight_color?: string | null
+          hire_rate_score?: number | null
           identity?: string | null
           is_public?: boolean
           languages?: Json | null
           last_name?: string | null
           major?: string | null
+          migration_status?: string | null
           name?: string | null
           onboarding_completed?: boolean | null
+          organization_id?: string | null
           phone_number?: string | null
           professional_goal?: string | null
           profile_image?: string | null
+          score_breakdown?: Json | null
           skills?: string[] | null
           title?: string | null
           updated_at?: string | null
@@ -890,6 +1064,7 @@ export type Database = {
           age_group?: string | null
           biggest_challenge?: string | null
           career_goal_type?: string | null
+          clerk_user_id?: string | null
           cover_color?: string | null
           created_at?: string | null
           desired_outcome?: string | null
@@ -900,22 +1075,34 @@ export type Database = {
           first_name?: string | null
           gender?: string | null
           highlight_color?: string | null
+          hire_rate_score?: number | null
           identity?: string | null
           is_public?: boolean
           languages?: Json | null
           last_name?: string | null
           major?: string | null
+          migration_status?: string | null
           name?: string | null
           onboarding_completed?: boolean | null
+          organization_id?: string | null
           phone_number?: string | null
           professional_goal?: string | null
           profile_image?: string | null
+          score_breakdown?: Json | null
           skills?: string[] | null
           title?: string | null
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_profiles_public: {
         Row: {
@@ -969,22 +1156,36 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_organization_role: boolean | null
+          organization_id: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          is_organization_role?: boolean | null
+          organization_id?: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          is_organization_role?: boolean | null
+          organization_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_stories: {
         Row: {
@@ -1045,11 +1246,19 @@ export type Database = {
       }
     }
     Functions: {
+      has_org_role: {
+        Args: { _org_id: string; _role: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_org_member: {
+        Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
       is_thread_participant: {
@@ -1058,7 +1267,14 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "business" | "student"
+      app_role:
+        | "admin"
+        | "business"
+        | "student"
+        | "org_owner"
+        | "org_admin"
+        | "org_manager"
+        | "org_member"
       career_path_type:
         | "student"
         | "visionary"
@@ -1194,7 +1410,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "business", "student"],
+      app_role: [
+        "admin",
+        "business",
+        "student",
+        "org_owner",
+        "org_admin",
+        "org_manager",
+        "org_member",
+      ],
       career_path_type: [
         "student",
         "visionary",
