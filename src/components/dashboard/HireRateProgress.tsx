@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, TrendingUp } from "lucide-react";
+import { ArrowRight, TrendingUp, Brain } from "lucide-react";
 import { useHireRateScore } from "@/hooks/useHireRateScore";
 import { useProfileData } from "@/hooks/useProfileData";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,7 +12,7 @@ export function HireRateProgress() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const profile = useProfileData(user?.id);
-  const { score, level, nextAction, coachingMessage } = useHireRateScore(profile);
+  const { score, level, nextAction, coachingMessage, aiRecommendation, isAnalyzing } = useHireRateScore(profile);
 
   const getLevelColor = (level: string) => {
     switch (level) {
@@ -35,20 +35,39 @@ export function HireRateProgress() {
   };
 
   const handleActionClick = () => {
-    // Navigate to profile page for most actions
-    navigate('/profile');
+    // Smart navigation based on AI recommendations
+    if (aiRecommendation?.specificSection) {
+      const section = aiRecommendation.specificSection;
+      switch (section) {
+        case 'title':
+        case 'about':
+        case 'skills':
+        case 'experience':
+        case 'education':
+          navigate(`/profile#${section}`);
+          break;
+        default:
+          navigate('/profile');
+      }
+    } else {
+      navigate('/profile');
+    }
   };
 
   return (
     <Card className="p-3 border border-border/50 bg-card/50 backdrop-blur-sm">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <TrendingUp className="h-3 w-3 text-primary" />
-          <span className="text-xs font-medium text-foreground">Hire Rate</span>
+          {isAnalyzing ? (
+            <Brain className="h-3 w-3 text-primary animate-pulse" />
+          ) : (
+            <TrendingUp className="h-3 w-3 text-primary" />
+          )}
+          <span className="text-sm font-medium text-foreground">Hire Rate</span>
         </div>
         <Badge 
           variant="secondary" 
-          className={`text-[8px] px-1.5 py-0.5 font-medium ${getLevelColor(level)}`}
+          className={`text-[10px] px-1.5 py-0.5 font-medium ${getLevelColor(level)}`}
         >
           {level}
         </Badge>
@@ -56,8 +75,8 @@ export function HireRateProgress() {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-muted-foreground">Progress</span>
-          <span className="text-xs font-semibold text-foreground">{score}%</span>
+          <span className="text-xs text-muted-foreground">Progress</span>
+          <span className="text-sm font-semibold text-foreground">{score}%</span>
         </div>
         
         <div className="relative">
@@ -73,17 +92,24 @@ export function HireRateProgress() {
       </div>
 
       <div className="mt-3 space-y-2">
-        <p className="text-[9px] text-muted-foreground leading-relaxed">
-          {coachingMessage}
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          {isAnalyzing ? "Analyzing your profile for personalized recommendations..." : coachingMessage}
         </p>
+        
+        {aiRecommendation?.reasoning && (
+          <p className="text-[10px] text-muted-foreground/80 italic">
+            {aiRecommendation.reasoning}
+          </p>
+        )}
         
         <Button
           variant="ghost"
           size="sm"
           onClick={handleActionClick}
-          className="w-full h-6 text-[9px] font-medium text-primary hover:text-primary-foreground hover:bg-primary/90 transition-colors p-1"
+          disabled={isAnalyzing}
+          className="w-full h-6 text-xs font-medium text-primary hover:text-primary-foreground hover:bg-primary/90 transition-colors p-1 disabled:opacity-50"
         >
-          <span className="truncate">{nextAction}</span>
+          <span className="truncate">{isAnalyzing ? "Analyzing..." : nextAction}</span>
           <ArrowRight className="h-2.5 w-2.5 ml-1 flex-shrink-0" />
         </Button>
       </div>
