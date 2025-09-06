@@ -133,17 +133,17 @@ export function DesktopProfileActions({
           onCloseAutoFocus={(e) => e.preventDefault()}
           loop
         >
-          <DropdownMenuItem onSelect={safeHandler(() => setIsPreviewOpen(true), "Preview Card")}>
+          <DropdownMenuItem onSelect={() => setIsPreviewOpen(true)}>
             <IconEye className="h-4 w-4 mr-2" />
             Preview Profile
           </DropdownMenuItem>
 
-          <DropdownMenuItem onSelect={safeHandler(() => setIsDesignerOpen(true), "Open Designer")}>
+          <DropdownMenuItem onSelect={() => setIsDesignerOpen(true)}>
             <IconPalette className="h-4 w-4 mr-2" />
             Open Designer
           </DropdownMenuItem>
 
-          <DropdownMenuItem onSelect={safeHandler(() => onOpenGuidedSetup?.(), "Fill with Guide")}>
+          <DropdownMenuItem onSelect={() => onOpenGuidedSetup?.()}>
             <IconSettings className="h-4 w-4 mr-2" />
             Fill with Guide
           </DropdownMenuItem>
