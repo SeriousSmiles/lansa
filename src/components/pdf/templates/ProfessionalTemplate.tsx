@@ -7,10 +7,13 @@ interface ProfessionalTemplateProps {
 }
 
 export function ProfessionalTemplate({ data }: ProfessionalTemplateProps) {
-  const { personalInfo, experience, education, skills, colors } = data;
+  const { personalInfo, experience, education, skills, colors, languages } = data;
 
-  // Language skills with proficiency levels (mock data for demo)
-  const languageSkills = [
+  // Use actual user languages or fallback to demo data
+  const languageSkills = languages && languages.length > 0 ? languages.map(lang => ({
+    name: lang.name,
+    level: (lang.level / 5) * 100 // Convert 1-5 scale to percentage
+  })) : [
     { name: 'English', level: 90 },
     { name: 'Spanish', level: 75 },
     { name: 'French', level: 60 },

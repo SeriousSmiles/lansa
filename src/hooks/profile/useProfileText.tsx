@@ -1,7 +1,8 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { UserProfile } from "../useProfileData";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface UseProfileTextProps {
   userId: string | undefined;
@@ -15,6 +16,14 @@ export function useProfileText({ userId, updateProfileData }: UseProfileTextProp
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [aboutText, setAboutText] = useState<string>("");
   const { toast } = useToast();
+  const { session } = useAuth();
+
+  // Auto-populate email from auth session if not already set
+  useEffect(() => {
+    if (session?.user?.email && !userEmail) {
+      setUserEmail(session.user.email);
+    }
+  }, [session?.user?.email, userEmail]);
 
   // Function to update user name
   const updateUserName = async (name: string) => {

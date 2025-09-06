@@ -61,6 +61,11 @@ export const populateFromExistingProfile = (
       id: uuidv4()
     })));
   }
+  
+  // Handle languages
+  if (profileData.languages && Array.isArray(profileData.languages) && profileData.languages.length > 0) {
+    profileLanguages.setUserLanguages(convertJsonToLanguageItems(profileData.languages));
+  }
 };
 
 // Populate profile with generated data when no profile exists

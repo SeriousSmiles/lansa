@@ -1,4 +1,4 @@
-import { ExperienceItem, EducationItem } from "@/hooks/profile/profileTypes";
+import { ExperienceItem, EducationItem, LanguageItem } from "@/hooks/profile/profileTypes";
 
 export interface PDFResumeData {
   personalInfo: {
@@ -13,6 +13,7 @@ export interface PDFResumeData {
   experience: ExperienceItem[];
   education: EducationItem[];
   skills: string[];
+  languages?: LanguageItem[];
   colors: {
     primary: string; // highlightColor
     secondary: string; // coverColor
