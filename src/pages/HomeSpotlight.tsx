@@ -23,63 +23,51 @@ export default function HomeSpotlight() {
     root.style.setProperty("--r1", "80px");   // Smaller inner radius for tighter focus
     root.style.setProperty("--r2", "200px"); // Smaller outer radius for thicker fog
 
-    // Masonry layout function with dynamic heights
-    const layoutMasonry = () => {
+    // Grid layout function with overflow and even distribution
+    const layoutGrid = () => {
       if (!gridRef.current) return;
       
       const container = gridRef.current;
-      const cards = container.querySelectorAll('[data-masonry-item]');
+      const cards = container.querySelectorAll('[data-grid-item]');
       const cardWidth = 300;
-      const cardGap = 20; // 20px gap between cards
-      const containerPadding = 20; // 20px padding on sides
+      const cardGap = 20;
       
-      // Calculate number of columns based on container width
-      const containerWidth = container.offsetWidth - (containerPadding * 2);
-      const cols = Math.floor((containerWidth + cardGap) / (cardWidth + cardGap));
-      const actualCols = Math.max(1, cols);
+      // Calculate optimal grid dimensions
+      const cardCount = cards.length;
+      const cols = Math.ceil(Math.sqrt(cardCount * 1.5)); // Slightly wider than square
+      const rows = Math.ceil(cardCount / cols);
       
-      // Initialize column heights
-      const columnHeights = new Array(actualCols).fill(0);
+      // Set container size to accommodate all cards with overflow
+      const containerWidth = cols * (cardWidth + cardGap) - cardGap;
+      const containerHeight = rows * 400; // Approximate row height
       
-      // Set container to relative positioning
       container.style.position = 'relative';
-      container.style.minHeight = '100vh';
+      container.style.width = `${containerWidth}px`;
+      container.style.height = `${containerHeight}px`;
+      container.style.left = '50%';
+      container.style.top = '50%';
+      container.style.transform = 'translate(-50%, -50%)';
       
       cards.forEach((card: any, index) => {
-        // Reset positioning to get natural height
-        card.style.position = 'static';
-        card.style.width = `${cardWidth}px`;
-        card.style.height = 'auto';
+        const col = index % cols;
+        const row = Math.floor(index / cols);
         
-        // Get the natural height of the card
-        const cardHeight = card.offsetHeight;
+        const x = col * (cardWidth + cardGap);
+        const y = row * (350 + cardGap); // Row spacing
         
-        // Find the shortest column
-        const shortestCol = columnHeights.indexOf(Math.min(...columnHeights));
-        
-        // Calculate position
-        const x = shortestCol * (cardWidth + cardGap) + containerPadding;
-        const y = columnHeights[shortestCol];
-        
-        // Position the card absolutely
         card.style.position = 'absolute';
         card.style.left = `${x}px`;
         card.style.top = `${y}px`;
-        
-        // Update column height
-        columnHeights[shortestCol] += cardHeight + cardGap;
+        card.style.width = `${cardWidth}px`;
+        card.style.height = 'auto';
       });
-      
-      // Set container height to tallest column
-      const maxHeight = Math.max(...columnHeights);
-      container.style.height = `${maxHeight + containerPadding}px`;
     };
 
     // Initial layout
-    setTimeout(layoutMasonry, 100);
+    setTimeout(layoutGrid, 100);
     
     // Relayout on resize
-    window.addEventListener('resize', layoutMasonry);
+    window.addEventListener('resize', layoutGrid);
 
     const onMove = (e: PointerEvent) => {
       // Update spotlight position
@@ -90,16 +78,16 @@ export default function HomeSpotlight() {
         ease: "power3.out"
       });
 
-      // Add parallax effect to cards (opposite direction movement) - increased intensity
+      // Enhanced parallax effect for grid exploration
       if (gridRef.current) {
         const { innerWidth, innerHeight } = window;
-        const xPercent = (e.clientX / innerWidth - 0.5) * -60; // Increased from -20 to -60
-        const yPercent = (e.clientY / innerHeight - 0.5) * -60; // Increased from -20 to -60
+        const xPercent = (e.clientX / innerWidth - 0.5) * -300; // Dramatically increased from -60 to -300
+        const yPercent = (e.clientY / innerHeight - 0.5) * -300; // Dramatically increased from -60 to -300
         
         gsap.to(gridRef.current, {
           x: xPercent,
           y: yPercent,
-          duration: 0.6, // Slightly faster response
+          duration: 0.8, // Slightly slower for smoother exploration
           ease: "power2.out"
         });
       }
@@ -126,12 +114,16 @@ export default function HomeSpotlight() {
     return () => {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("touchend", onTouchEnd);
-      window.removeEventListener('resize', layoutMasonry);
+      window.removeEventListener('resize', layoutGrid);
     };
   }, []);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#0B0E1A] text-white">
+    <main className="relative min-h-screen overflow-hidden bg-[#0B0E1A] text-white"
+          style={{
+            width: '200vw',
+            height: '200vh'
+          }}>
       <Logo />
 
       {/* Welcome block */}
@@ -162,12 +154,12 @@ export default function HomeSpotlight() {
       >
         <div 
           ref={gridRef}
-          className="w-full h-full overflow-hidden"
+          className="absolute inset-0"
         >
           {TESTIMONIALS.concat(TESTIMONIALS).map((t, i) => (
             <article
               key={`${t.id}-${i}`}
-              data-masonry-item
+              data-grid-item
               className="rounded-[10px] bg-white/4 backdrop-blur-[3px] border border-white/8 p-6 select-none
                          flex flex-col shadow-2xl shadow-black/20"
             >
