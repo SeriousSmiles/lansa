@@ -73,7 +73,7 @@ export default function HomeSpotlight() {
       if (screenWidth < 1024) {
         // Mobile/Tablet: Single column scrollable layout
         const cardWidth = Math.min(360, screenWidth - 32); // Full width minus padding
-        const cardGap = 16;
+        const cardGap = screenWidth < 768 ? 24 : 32; // Increased spacing for mobile
         
         container.style.position = 'relative';
         container.style.width = '100%';
