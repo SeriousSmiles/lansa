@@ -11,10 +11,9 @@ import { MobileNavigationProvider } from "@/contexts/MobileNavigationContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PageTransition } from "@/components/transitions/PageTransition";
-import Home from "./pages/Home";
+import HomeSpotlight from "./pages/HomeSpotlight";
 import Index from "./pages/Index";
 import AuthCallback from "./pages/AuthCallback";
-import About from "./pages/About";
 import Help from "./pages/Help";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
@@ -50,11 +49,10 @@ const App: React.FC = () => {
           <BrowserRouter>
             <MobileNavigationProvider>
               <Routes>
-                <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+                <Route path="/" element={<HomeSpotlight />} />
                 <Route path="/auth" element={<PageTransition><Index /></PageTransition>} />
                 <Route path="/auth/callback" element={<PageTransition><AuthCallback /></PageTransition>} />
                 {/* Public SEO pages */}
-                <Route path="/about" element={<PageTransition><About /></PageTransition>} />
                 <Route path="/help" element={<PageTransition><Help /></PageTransition>} />
                 <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
                 <Route path="/terms" element={<PageTransition><Terms /></PageTransition>} />
@@ -70,7 +68,7 @@ const App: React.FC = () => {
                 </Route>
                 {/* Public shared profile route - no authentication required */}
                 <Route path="/profile/share/:userId" element={<PageTransition><SharedProfile /></PageTransition>} />
-                <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+                <Route path="*" element={<HomeSpotlight />} />
               </Routes>
               
             </MobileNavigationProvider>
