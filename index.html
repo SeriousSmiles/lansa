@@ -46,7 +46,19 @@
     <!-- Analytics performance hints -->
     <link rel="dns-prefetch" href="https://static.hotjar.com">
     <link rel="preconnect" href="https://static.hotjar.com" crossorigin>
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
     <link rel="modulepreload" href="/src/main.tsx">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7J1R2G8560"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-7J1R2G8560');
+    </script>
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
