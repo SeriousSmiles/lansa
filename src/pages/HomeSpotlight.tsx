@@ -23,6 +23,58 @@ export default function HomeSpotlight() {
     root.style.setProperty("--r1", "80px");   // Smaller inner radius for tighter focus
     root.style.setProperty("--r2", "200px"); // Smaller outer radius for thicker fog
 
+    // Masonry layout function
+    const layoutMasonry = () => {
+      if (!gridRef.current) return;
+      
+      const container = gridRef.current;
+      const cards = container.querySelectorAll('[data-masonry-item]');
+      const cardWidth = 400;
+      const cardGap = 24; // 24px gap between cards
+      const containerPadding = 24; // 24px padding on sides
+      
+      // Calculate number of columns based on container width
+      const containerWidth = container.offsetWidth - (containerPadding * 2);
+      const cols = Math.floor((containerWidth + cardGap) / (cardWidth + cardGap));
+      const actualCols = Math.max(1, cols);
+      
+      // Initialize column heights
+      const columnHeights = new Array(actualCols).fill(0);
+      
+      // Set container to relative positioning
+      container.style.position = 'relative';
+      container.style.minHeight = '100vh';
+      
+      cards.forEach((card: any, index) => {
+        // Find the shortest column
+        const shortestCol = columnHeights.indexOf(Math.min(...columnHeights));
+        
+        // Calculate position
+        const x = shortestCol * (cardWidth + cardGap) + containerPadding;
+        const y = columnHeights[shortestCol];
+        
+        // Position the card
+        card.style.position = 'absolute';
+        card.style.left = `${x}px`;
+        card.style.top = `${y}px`;
+        card.style.width = `${cardWidth}px`;
+        card.style.height = '500px';
+        
+        // Update column height
+        columnHeights[shortestCol] += 500 + cardGap;
+      });
+      
+      // Set container height to tallest column
+      const maxHeight = Math.max(...columnHeights);
+      container.style.height = `${maxHeight + containerPadding}px`;
+    };
+
+    // Initial layout
+    setTimeout(layoutMasonry, 100);
+    
+    // Relayout on resize
+    window.addEventListener('resize', layoutMasonry);
+
     const onMove = (e: PointerEvent) => {
       // Update spotlight position
       gsap.to(root, {
@@ -68,6 +120,7 @@ export default function HomeSpotlight() {
     return () => {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener('resize', layoutMasonry);
     };
   }, []);
 
@@ -103,25 +156,18 @@ export default function HomeSpotlight() {
       >
         <div 
           ref={gridRef}
-          className="grid h-full w-full content-start gap-6 px-6 py-8
-                          grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5
-                          auto-rows-max"
+          className="w-full h-full overflow-hidden"
         >
-          {TESTIMONIALS.concat(TESTIMONIALS, TESTIMONIALS).map((t, i) => {
-            // Create varying heights for visual interest but prevent overlap
-            const heights = ['h-[400px]', 'h-[450px]', 'h-[500px]', 'h-[420px]'];
-            const cardHeight = heights[i % heights.length];
-            
-            return (
+          {TESTIMONIALS.concat(TESTIMONIALS, TESTIMONIALS).map((t, i) => (
             <article
               key={`${t.id}-${i}`}
-              className={`rounded-[10px] bg-white/4 backdrop-blur-[3px] border border-white/8 p-6 select-none
-                         w-full ${cardHeight} flex flex-col justify-between
-                         shadow-2xl shadow-black/20`}
+              data-masonry-item
+              className="rounded-[10px] bg-white/4 backdrop-blur-[3px] border border-white/8 p-6 select-none
+                         flex flex-col justify-between shadow-2xl shadow-black/20"
             >
-              {/* Quote text at top - properly centered */}
-              <div className="flex-1 flex items-start justify-center pt-4">
-                <blockquote className="text-base leading-relaxed text-white/90 font-medium text-center max-w-full">
+              {/* Quote text at top - left aligned */}
+              <div className="flex-1 flex items-start pt-4">
+                <blockquote className="text-base leading-relaxed text-white/90 font-medium text-left w-full">
                   "{t.quote}"
                 </blockquote>
               </div>
@@ -141,8 +187,7 @@ export default function HomeSpotlight() {
                 </div>
               </div>
             </article>
-            );
-          })}
+          ))}
         </div>
       </section>
 
