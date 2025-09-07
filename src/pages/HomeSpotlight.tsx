@@ -72,8 +72,8 @@ export default function HomeSpotlight() {
       
       if (screenWidth < 1024) {
         // Mobile/Tablet: Single column scrollable layout
-        const cardWidth = Math.min(360, screenWidth - 32); // Full width minus padding
-        const cardGap = screenWidth < 768 ? 24 : 32; // Increased spacing for mobile
+        const cardWidth = Math.min(360, screenWidth - 32);
+        const cardGap = screenWidth < 768 ? 10 : 16; // 10px gap for mobile, 16px for tablet
         
         container.style.position = 'relative';
         container.style.width = '100%';
@@ -82,8 +82,8 @@ export default function HomeSpotlight() {
         container.style.top = '0';
         container.style.transform = 'none';
         container.style.padding = '16px';
-        container.style.paddingTop = '400px'; // Space for fixed welcome content
-        container.style.paddingBottom = '100px';
+        container.style.paddingTop = '320px'; // Reduced padding for better scroll
+        container.style.paddingBottom = '80px';
         
         cards.forEach((card: any, index) => {
           card.style.position = 'relative';
@@ -215,7 +215,9 @@ export default function HomeSpotlight() {
   return (
     <main className="relative min-h-screen bg-[#191F71] text-white" style={{ 
       overflowX: 'hidden',
-      overflowY: window.innerWidth < 1024 ? 'auto' : 'hidden' 
+      overflowY: window.innerWidth < 1024 ? 'auto' : 'hidden',
+      WebkitOverflowScrolling: 'touch', // Smooth scroll momentum on iOS
+      scrollBehavior: 'smooth'
     }}>
       <Logo />
 
@@ -224,7 +226,7 @@ export default function HomeSpotlight() {
         className="fixed inset-0 z-30 flex justify-center px-4 sm:px-6 pointer-events-none"
         style={{ 
           alignItems: window.innerWidth < 1024 ? 'flex-start' : (isMobile ? 'center' : 'flex-end'),
-          paddingTop: window.innerWidth < 1024 ? '120px' : '0',
+          paddingTop: window.innerWidth < 1024 ? '100px' : '0', // Reduced from 120px
           paddingBottom: window.innerWidth < 1024 ? '0' : (isMobile ? '0' : '60px')
         }}
         aria-label="Welcome"
