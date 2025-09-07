@@ -84,32 +84,33 @@ export default function HomeSpotlight() {
         aria-label="What users say"
         className="pointer-events-none absolute inset-0 z-10"
       >
-        <div className="grid h-full w-full content-center gap-6 px-6
-                        [grid-template-columns:repeat(1,minmax(0,1fr))]
-                        lg:[grid-template-columns:repeat(2,minmax(0,1fr))]
-                        xl:[grid-template-columns:repeat(3,minmax(0,1fr))]">
+        <div className="grid h-full w-full content-center gap-4 px-4
+                        [grid-template-columns:repeat(2,minmax(0,1fr))]
+                        md:[grid-template-columns:repeat(3,minmax(0,1fr))]
+                        lg:[grid-template-columns:repeat(4,minmax(0,1fr))]
+                        xl:[grid-template-columns:repeat(5,minmax(0,1fr))]">
           {TESTIMONIALS.concat(TESTIMONIALS, TESTIMONIALS).map((t, i) => (
             <article
               key={`${t.id}-${i}`}
-              className="rounded-3xl bg-white/4 backdrop-blur-[3px] border border-white/8 p-8 select-none
-                         min-w-[400px] min-h-[720px] flex flex-col justify-between
+              className="rounded-3xl bg-white/4 backdrop-blur-[3px] border border-white/8 p-6 select-none
+                         min-w-[280px] min-h-[380px] flex flex-col justify-between
                          shadow-2xl shadow-black/20"
             >
-              <div className="flex items-center gap-4 mb-8">
+              <div className="flex items-center gap-3 mb-6">
                 <img
                   src={t.avatar}
                   alt={t.name}
                   loading="lazy"
-                  className="h-20 w-20 rounded-full object-cover ring-2 ring-white/10"
+                  className="h-14 w-14 rounded-full object-cover ring-2 ring-white/10"
                   draggable={false}
                 />
                 <div className="min-w-0">
-                  <h3 className="text-2xl font-bold truncate text-white">{t.name}</h3>
-                  <p className="text-lg text-white/70 truncate">{t.title}</p>
+                  <h3 className="text-lg font-bold truncate text-white">{t.name}</h3>
+                  <p className="text-sm text-white/70 truncate">{t.title}</p>
                 </div>
               </div>
               <div className="flex-1 flex items-center">
-                <blockquote className="text-xl leading-relaxed text-white/90 font-medium">
+                <blockquote className="text-base leading-relaxed text-white/90 font-medium">
                   "{t.quote}"
                 </blockquote>
               </div>
