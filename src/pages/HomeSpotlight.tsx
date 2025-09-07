@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { Link } from "react-router-dom";
 import { TESTIMONIALS } from "../data/testimonials";
 import Logo from "../components/Logo";
+import { useIsMobile } from "../hooks/use-mobile";
 
 /**
  * Single-section homepage with:
@@ -13,6 +14,7 @@ import Logo from "../components/Logo";
  */
 export default function HomeSpotlight() {
   const [activeTab, setActiveTab] = useState<'opportunities' | 'team'>('opportunities');
+  const isMobile = useIsMobile();
   
   // Tab content configuration
   const TAB_CONTENT = {
@@ -43,7 +45,7 @@ export default function HomeSpotlight() {
     root.style.setProperty("--r1", "80px");   // Smaller inner radius for tighter focus
     root.style.setProperty("--r2", "200px"); // Smaller outer radius for thicker fog
 
-    // Grid layout function with overflow and even distribution
+    // Responsive grid layout function with mobile optimizations
     const layoutGrid = () => {
       if (!gridRef.current) return;
       
@@ -56,17 +58,51 @@ export default function HomeSpotlight() {
         return;
       }
       
-      const cardWidth = 300;
-      const cardGap = 20;
+      // Responsive card sizing based on device type and orientation
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      const isLandscape = screenWidth > screenHeight;
       
-      // Calculate optimal grid dimensions
+      let cardWidth: number;
+      let cardGap: number;
+      let cols: number;
+      
+      if (screenWidth < 480) {
+        // Smartphone
+        if (isLandscape) {
+          // Smartphone landscape: 2 columns, smaller cards
+          cardWidth = 240;
+          cardGap = 16;
+          cols = 2;
+        } else {
+          // Smartphone portrait: 1 column, compact cards
+          cardWidth = 280;
+          cardGap = 16;
+          cols = 1;
+        }
+      } else if (screenWidth < 768) {
+        // Large smartphone/small tablet
+        cardWidth = isLandscape ? 260 : 300;
+        cardGap = 18;
+        cols = isLandscape ? 3 : 2;
+      } else if (screenWidth < 1024) {
+        // Tablet
+        cardWidth = 280;
+        cardGap = 20;
+        cols = isLandscape ? 4 : 3;
+      } else {
+        // Desktop
+        cardWidth = 300;
+        cardGap = 20;
+        cols = Math.ceil(Math.sqrt(cards.length * 1.5));
+      }
+      
       const cardCount = cards.length;
-      const cols = Math.ceil(Math.sqrt(cardCount * 1.5)); // Slightly wider than square
       const rows = Math.ceil(cardCount / cols);
       
       // Set container size to accommodate all cards with overflow
       const containerWidth = cols * (cardWidth + cardGap) - cardGap;
-      const containerHeight = rows * 400; // Approximate row height
+      const containerHeight = rows * (isLandscape ? 320 : 380); // Shorter rows on landscape
       
       container.style.position = 'relative';
       container.style.width = `${containerWidth}px`;
@@ -80,7 +116,7 @@ export default function HomeSpotlight() {
         const row = Math.floor(index / cols);
         
         const x = col * (cardWidth + cardGap);
-        const y = row * (350 + cardGap); // Row spacing
+        const y = row * (isLandscape ? 300 : 350) + (cardGap * row);
         
         card.style.position = 'absolute';
         card.style.left = `${x}px`;
@@ -114,42 +150,96 @@ export default function HomeSpotlight() {
         ease: "power3.out"
       });
 
-      // Enhanced parallax effect for grid exploration
+      // Mobile-optimized parallax effect
       if (gridRef.current) {
         const { innerWidth, innerHeight } = window;
-        const xPercent = (e.clientX / innerWidth - 0.5) * -300; // Dramatically increased from -60 to -300
-        const yPercent = (e.clientY / innerHeight - 0.5) * -300; // Dramatically increased from -60 to -300
+        // Reduce parallax intensity on mobile for better performance
+        const parallaxIntensity = isMobile ? -60 : -300;
+        const xPercent = (e.clientX / innerWidth - 0.5) * parallaxIntensity;
+        const yPercent = (e.clientY / innerHeight - 0.5) * parallaxIntensity;
         
         gsap.to(gridRef.current, {
           x: xPercent,
           y: yPercent,
-          duration: 0.8, // Slightly slower for smoother exploration
+          duration: isMobile ? 0.4 : 0.8, // Faster on mobile
           ease: "power2.out"
         });
       }
     };
 
-    // Desktop pointer tracking
-    window.addEventListener("pointermove", onMove);
+    // Desktop pointer tracking (disable on mobile for performance)
+    if (!isMobile) {
+      window.addEventListener("pointermove", onMove);
+    }
 
-    // Mobile: center the spotlight over the welcome block with enhanced focus
+    // Mobile and accessibility optimizations
     const preferReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (preferReduced) {
+    if (preferReduced || isMobile) {
       gsap.set(root, { "--x": "50vw", "--y": "38vh", "--r1": "100px", "--r2": "220px" });
     }
 
-    // Mobile touch behavior: re-center with tighter focus and reset parallax
-    const onTouchEnd = () => {
-      gsap.to(root, { "--x": "50vw", "--y": "40vh", "--r1": "90px", "--r2": "210px", duration: 0.3, ease: "power2.out" });
-      if (gridRef.current) {
-        gsap.to(gridRef.current, { x: 0, y: 0, duration: 0.5, ease: "power2.out" });
+    // Mobile touch interactions with haptic feedback simulation
+    const onTouchStart = (e: TouchEvent) => {
+      if (isMobile && gridRef.current) {
+        // Simple haptic feedback via vibration API if available
+        if ('vibrate' in navigator) {
+          navigator.vibrate(10);
+        }
+        
+        // Update spotlight to touch position
+        const touch = e.touches[0];
+        gsap.to(root, {
+          "--x": `${touch.clientX}px`,
+          "--y": `${touch.clientY}px`,
+          duration: 0.1,
+          ease: "power2.out"
+        });
       }
     };
-    window.addEventListener("touchend", onTouchEnd, { passive: true });
+
+    const onTouchEnd = () => {
+      if (isMobile) {
+        gsap.to(root, { 
+          "--x": "50vw", 
+          "--y": "40vh", 
+          "--r1": "90px", 
+          "--r2": "210px", 
+          duration: 0.3, 
+          ease: "power2.out" 
+        });
+        if (gridRef.current) {
+          gsap.to(gridRef.current, { x: 0, y: 0, duration: 0.5, ease: "power2.out" });
+        }
+      }
+    };
+
+    // Add touch event listeners for mobile
+    if (isMobile) {
+      window.addEventListener("touchstart", onTouchStart, { passive: true });
+      window.addEventListener("touchend", onTouchEnd, { passive: true });
+    }
+
+    // Handle orientation changes
+    const onOrientationChange = () => {
+      if (isMobile) {
+        setTimeout(() => {
+          layoutGrid();
+          // Reset spotlight position after orientation change
+          gsap.set(root, { "--x": "50vw", "--y": "40vh" });
+        }, 100);
+      }
+    };
+    window.addEventListener("orientationchange", onOrientationChange);
 
     return () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("touchend", onTouchEnd);
+      if (!isMobile) {
+        window.removeEventListener("pointermove", onMove);
+      }
+      if (isMobile) {
+        window.removeEventListener("touchstart", onTouchStart);
+        window.removeEventListener("touchend", onTouchEnd);
+      }
+      window.removeEventListener("orientationchange", onOrientationChange);
       window.removeEventListener('resize', layoutGrid);
     };
   }, []);
@@ -158,49 +248,89 @@ export default function HomeSpotlight() {
     <main className="relative min-h-screen overflow-hidden bg-[#0B0E1A] text-white">
       <Logo />
 
-      {/* Welcome block - fixed positioned */}
+      {/* Welcome block - responsive positioning */}
       <section
-        className="fixed inset-0 z-30 flex justify-center px-6 pointer-events-none"
-        style={{ alignItems: 'flex-end', paddingBottom: '60px' }}
+        className="fixed inset-0 z-30 flex justify-center px-4 sm:px-6 pointer-events-none"
+        style={{ 
+          alignItems: isMobile ? 'center' : 'flex-end', 
+          paddingBottom: isMobile ? '0' : '60px' 
+        }}
         aria-label="Welcome"
       >
-        <div className="max-w-md text-center pointer-events-auto">
-          {/* Glass blur container */}
-          <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-6 shadow-2xl">
-            {/* Tab switcher */}
-            <div className="flex rounded-xl bg-white/10 p-1 mb-6">
+        <div className={`${
+          isMobile 
+            ? 'w-full max-w-sm mx-auto' 
+            : 'max-w-md'
+        } text-center pointer-events-auto`}>
+          {/* Glass blur container with mobile optimizations */}
+          <div className={`backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-2xl ${
+            isMobile ? 'p-4' : 'p-6'
+          }`}>
+            {/* Tab switcher - enhanced touch targets for mobile */}
+            <div className={`flex rounded-xl bg-white/10 p-1 ${isMobile ? 'mb-4' : 'mb-6'}`}>
               <button
-                onClick={() => setActiveTab('opportunities')}
-                className={`flex-1 text-sm font-medium py-2 px-3 rounded-lg transition-all duration-200 ${
+                onClick={() => {
+                  setActiveTab('opportunities');
+                  // Haptic feedback for mobile
+                  if (isMobile && 'vibrate' in navigator) {
+                    navigator.vibrate(5);
+                  }
+                }}
+                className={`flex-1 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 ${
+                  isMobile ? 'py-3 px-2' : 'py-2 px-3'
+                } ${
                   activeTab === 'opportunities'
                     ? 'bg-white text-[#0B0E1A] shadow-sm'
-                    : 'text-white/70 hover:text-white hover:bg-white/5'
+                    : 'text-white/70 hover:text-white hover:bg-white/5 active:bg-white/10'
                 }`}
+                style={{ minHeight: isMobile ? '44px' : 'auto' }} // Touch target size
               >
                 {TAB_CONTENT.opportunities.label}
               </button>
               <button
-                onClick={() => setActiveTab('team')}
-                className={`flex-1 text-sm font-medium py-2 px-3 rounded-lg transition-all duration-200 ${
+                onClick={() => {
+                  setActiveTab('team');
+                  // Haptic feedback for mobile
+                  if (isMobile && 'vibrate' in navigator) {
+                    navigator.vibrate(5);
+                  }
+                }}
+                className={`flex-1 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 ${
+                  isMobile ? 'py-3 px-2' : 'py-2 px-3'
+                } ${
                   activeTab === 'team'
                     ? 'bg-white text-[#0B0E1A] shadow-sm'
-                    : 'text-white/70 hover:text-white hover:bg-white/5'
+                    : 'text-white/70 hover:text-white hover:bg-white/5 active:bg-white/10'
                 }`}
+                style={{ minHeight: isMobile ? '44px' : 'auto' }} // Touch target size
               >
                 {TAB_CONTENT.team.label}
               </button>
             </div>
             
-            {/* Content */}
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight">
+            {/* Content - responsive typography */}
+            <h1 className={`font-semibold tracking-tight ${
+              isMobile 
+                ? 'text-xl leading-tight' 
+                : 'text-2xl sm:text-3xl md:text-4xl'
+            }`}>
               {currentContent.headline}
             </h1>
-            <p className="mt-3 text-sm sm:text-base text-white/80">
+            <p className={`text-white/80 ${
+              isMobile 
+                ? 'mt-2 text-sm leading-relaxed' 
+                : 'mt-3 text-sm sm:text-base'
+            }`}>
               {currentContent.subtext}
             </p>
             <Link
               to="/auth"
-              className="mt-6 inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-medium bg-white text-[#0B0E1A] hover:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+              className={`inline-flex items-center justify-center rounded-xl font-medium bg-white text-[#0B0E1A] hover:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 active:scale-95 transition-all duration-150 ${
+                isMobile 
+                  ? 'mt-4 px-8 py-4 text-base w-full' 
+                  : 'mt-6 px-6 py-3 text-sm'
+              }`}
+              style={{ minHeight: isMobile ? '48px' : 'auto' }} // Touch target size
             >
               {currentContent.buttonText}
             </Link>
@@ -227,15 +357,19 @@ export default function HomeSpotlight() {
             <article
               key={`${t.id}-${i}`}
               data-grid-item
-              className="rounded-[10px] bg-[#151926] backdrop-blur-[3px] border border-white/8 p-6 select-none
-                         flex flex-col shadow-2xl shadow-black/20"
+              className={`rounded-[10px] bg-[#151926] backdrop-blur-[3px] border border-white/8 select-none
+                         flex flex-col shadow-2xl shadow-black/20 ${
+                           isMobile ? 'p-4' : 'p-6'
+                         }`}
             >
               {/* Star rating at top */}
-              <div className="flex items-center gap-1 mb-4">
+              <div className={`flex items-center gap-1 ${isMobile ? 'mb-3' : 'mb-4'}`}>
                 {[...Array(5)].map((_, starIndex) => (
                   <svg
                     key={starIndex}
-                    className={`w-4 h-4 ${starIndex < t.stars ? 'text-yellow-400' : 'text-white/20'}`}
+                    className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'} ${
+                      starIndex < t.stars ? 'text-yellow-400' : 'text-white/20'
+                    }`}
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -244,23 +378,31 @@ export default function HomeSpotlight() {
                 ))}
               </div>
               
-              {/* Quote text - left aligned */}
-              <div className="flex-1 mb-6">
-                <blockquote className="text-sm leading-relaxed text-white/90 font-medium text-left">
+              {/* Quote text - responsive sizing */}
+              <div className={`flex-1 ${isMobile ? 'mb-4' : 'mb-6'}`}>
+                <blockquote className={`leading-relaxed text-white/90 font-medium text-left ${
+                  isMobile ? 'text-xs' : 'text-sm'
+                }`}>
                   "{t.quote}"
                 </blockquote>
               </div>
               
-              {/* User info at bottom */}
-              <div className="flex items-center gap-3">
+              {/* User info at bottom - compact on mobile */}
+              <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-3'}`}>
                 <img 
                   src={t.avatar} 
                   alt={t.name}
-                  className="w-10 h-10 rounded-full object-cover border border-white/20"
+                  className={`rounded-full object-cover border border-white/20 ${
+                    isMobile ? 'w-8 h-8' : 'w-10 h-10'
+                  }`}
                 />
                 <div>
-                  <div className="text-white font-semibold text-sm">{t.name}</div>
-                  <div className="text-white/70 text-xs">{t.title}</div>
+                  <div className={`text-white font-semibold ${
+                    isMobile ? 'text-xs' : 'text-sm'
+                  }`}>{t.name}</div>
+                  <div className={`text-white/70 ${
+                    isMobile ? 'text-xs' : 'text-xs'
+                  }`}>{t.title}</div>
                 </div>
               </div>
             </article>
