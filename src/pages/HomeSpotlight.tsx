@@ -18,17 +18,17 @@ export default function HomeSpotlight() {
     const root = document.documentElement;
     rootRef.current = root as unknown as HTMLElement;
 
-    // Initialize CSS variables
+    // Initialize CSS variables for a more dramatic spotlight effect
     root.style.setProperty("--x", "50vw");
     root.style.setProperty("--y", "50vh");
-    root.style.setProperty("--r1", "140px");
-    root.style.setProperty("--r2", "340px");
+    root.style.setProperty("--r1", "80px");   // Smaller inner radius for tighter focus
+    root.style.setProperty("--r2", "200px"); // Smaller outer radius for thicker fog
 
     const onMove = (e: PointerEvent) => {
-      gsap.set(root, {
+      gsap.to(root, {
         "--x": `${e.clientX}px`,
         "--y": `${e.clientY}px`,
-        duration: 0.18,
+        duration: 0.15,
         ease: "power3.out"
       });
     };
@@ -36,15 +36,15 @@ export default function HomeSpotlight() {
     // Desktop pointer tracking
     window.addEventListener("pointermove", onMove);
 
-    // Mobile: center the spotlight over the welcome block for clarity
+    // Mobile: center the spotlight over the welcome block with enhanced focus
     const preferReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (preferReduced) {
-      gsap.set(root, { "--x": "50vw", "--y": "38vh", "--r1": "160px", "--r2": "360px" });
+      gsap.set(root, { "--x": "50vw", "--y": "38vh", "--r1": "100px", "--r2": "220px" });
     }
 
-    // Basic touch behavior: re-center near the CTA after initial tap
+    // Mobile touch behavior: re-center with tighter focus
     const onTouchEnd = () => {
-      gsap.to(root, { "--x": "50vw", "--y": "40vh", duration: 0.3, ease: "power2.out" });
+      gsap.to(root, { "--x": "50vw", "--y": "40vh", "--r1": "90px", "--r2": "210px", duration: 0.3, ease: "power2.out" });
     };
     window.addEventListener("touchend", onTouchEnd, { passive: true });
 
@@ -84,44 +84,47 @@ export default function HomeSpotlight() {
         aria-label="What users say"
         className="pointer-events-none absolute inset-0 z-10"
       >
-        <div className="grid h-full w-full content-center gap-3 px-3
-                        [grid-template-columns:repeat(2,minmax(0,1fr))]
-                        sm:[grid-template-columns:repeat(3,minmax(0,1fr))]
-                        md:[grid-template-columns:repeat(4,minmax(0,1fr))]
-                        lg:[grid-template-columns:repeat(6,minmax(0,1fr))]">
-          {TESTIMONIALS.concat(TESTIMONIALS).map((t, i) => (
+        <div className="grid h-full w-full content-center gap-6 px-6
+                        [grid-template-columns:repeat(1,minmax(0,1fr))]
+                        lg:[grid-template-columns:repeat(2,minmax(0,1fr))]
+                        xl:[grid-template-columns:repeat(3,minmax(0,1fr))]">
+          {TESTIMONIALS.concat(TESTIMONIALS, TESTIMONIALS).map((t, i) => (
             <article
               key={`${t.id}-${i}`}
-              className="rounded-2xl bg-white/3 backdrop-blur-[2px] border border-white/5 p-3 md:p-4 select-none"
+              className="rounded-3xl bg-white/4 backdrop-blur-[3px] border border-white/8 p-8 select-none
+                         min-w-[400px] min-h-[720px] flex flex-col justify-between
+                         shadow-2xl shadow-black/20"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4 mb-8">
                 <img
                   src={t.avatar}
                   alt={t.name}
                   loading="lazy"
-                  className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover"
+                  className="h-20 w-20 rounded-full object-cover ring-2 ring-white/10"
                   draggable={false}
                 />
                 <div className="min-w-0">
-                  <h3 className="text-sm md:text-base font-semibold truncate">{t.name}</h3>
-                  <p className="text-xs md:text-sm text-white/70 truncate">{t.title}</p>
+                  <h3 className="text-2xl font-bold truncate text-white">{t.name}</h3>
+                  <p className="text-lg text-white/70 truncate">{t.title}</p>
                 </div>
               </div>
-              <blockquote className="mt-3 md:mt-4 text-xs md:text-sm text-white/80 leading-snug">
-                "{t.quote}"
-              </blockquote>
+              <div className="flex-1 flex items-center">
+                <blockquote className="text-xl leading-relaxed text-white/90 font-medium">
+                  "{t.quote}"
+                </blockquote>
+              </div>
             </article>
           ))}
         </div>
       </section>
 
-      {/* Spotlight overlay */}
+      {/* Enhanced spotlight overlay with thicker fog */}
       <div
         className="pointer-events-none fixed inset-0 z-20"
         aria-hidden="true"
         style={{
           background:
-            "radial-gradient( circle at var(--x) var(--y), rgba(11,14,26,0) 0, rgba(11,14,26,0) var(--r1), rgba(11,14,26,0.70) var(--r2), rgba(11,14,26,0.85) 100% )",
+            "radial-gradient( circle at var(--x) var(--y), rgba(11,14,26,0) 0, rgba(11,14,26,0.1) var(--r1), rgba(11,14,26,0.95) var(--r2), rgba(11,14,26,0.98) 100% )",
         }}
       />
     </main>
