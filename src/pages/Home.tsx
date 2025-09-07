@@ -642,27 +642,50 @@ export default function Home() {
         </section>
 
         {/* Meet Lansa Section */}
-        <section className="py-32 px-6 bg-blue-600 text-white">
-          <div className="max-w-7xl mx-auto text-center">
-            <h2 className="font-urbanist font-bold text-5xl mb-8">
-              Meet Lansa
-            </h2>
-            <p className="font-public-sans text-xl mb-12 max-w-3xl mx-auto leading-relaxed">
-              We're not just another career platform. We're your dedicated partner in navigating the unique opportunities 
-              and challenges of the Dutch Caribbean professional landscape.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-              <div>
-                <div className="text-4xl font-urbanist font-bold mb-2">1000+</div>
-                <p className="font-public-sans text-blue-100">Caribbean Professionals</p>
+        <section className="px-[5%] py-16 md:py-24 lg:py-28">
+          <div className="container">
+            <div className="grid grid-cols-1 items-start gap-x-16 gap-y-12 md:grid-cols-[0.5fr_1fr]">
+              <div className="flex h-full flex-col justify-between">
+                <div>
+                  <p className="mb-3 font-semibold font-public-sans md:mb-4">Empower</p>
+                  <h2 className="mb-5 text-5xl font-bold font-urbanist md:mb-6 md:text-7xl lg:text-8xl">
+                    Meet Lansa: Your Career Transformation Partner
+                  </h2>
+                </div>
+                <div className="ml-[7.5%]">
+                  <p className="font-public-sans md:text-md">
+                    Lansa was born in Curaçao, crafted by locals who understand the
+                    unique challenges of our community. Our founder, John Nathan
+                    Stephens, envisioned a platform that empowers Caribbean job seekers
+                    and freelancers to showcase their true value.
+                  </p>
+                  <div className="mt-6 flex flex-wrap gap-4 md:mt-8">
+                    <Button className="bg-blue-600 hover:bg-blue-700 font-public-sans" asChild>
+                      <Link to="/about">Discover</Link>
+                    </Button>
+                    <Button variant="ghost" className="gap-2 bg-transparent p-0 font-public-sans">
+                      <Link to="/auth" className="flex items-center gap-2">
+                        Join<svg stroke="currentColor" fill="none" strokeWidth="0" viewBox="0 0 15 15" height="1em" width="1em">
+                          <path fillRule="evenodd" clipRule="evenodd" d="M6.1584 3.13508C6.35985 2.94621 6.67627 2.95642 6.86514 3.15788L10.6151 7.15788C10.7954 7.3502 10.7954 7.64949 10.6151 7.84182L6.86514 11.8418C6.67627 12.0433 6.35985 12.0535 6.1584 11.8646C5.95694 11.6757 5.94673 11.3593 6.1356 11.1579L9.565 7.49985L6.1356 3.84182C5.94673 3.64036 5.95694 3.32394 6.1584 3.13508Z" fill="currentColor"></path>
+                        </svg>
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <div>
-                <div className="text-4xl font-urbanist font-bold mb-2">3</div>
-                <p className="font-public-sans text-blue-100">Islands Covered</p>
-              </div>
-              <div>
-                <div className="text-4xl font-urbanist font-bold mb-2">95%</div>
-                <p className="font-public-sans text-blue-100">Success Rate</p>
+              <div className="flex flex-col justify-center">
+                <div className="grid grid-cols-[1fr_0.75fr] gap-6 sm:gap-8">
+                  <img
+                    src="/lovable-uploads/155ecc34-3f01-4d49-b1ad-10c1a50803e2.png"
+                    className="aspect-[2/3] w-full rounded-2xl object-cover"
+                    alt="Caribbean professional success story"
+                  />
+                  <img
+                    src="/lovable-uploads/91347dc5-2857-4d8f-9a0e-f7f93f5a739b.png"
+                    className="aspect-square w-full rounded-2xl object-cover"
+                    alt="Lansa platform in action"
+                  />
+                </div>
               </div>
             </div>
           </div>
