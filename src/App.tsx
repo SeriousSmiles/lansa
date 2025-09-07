@@ -11,6 +11,7 @@ import { MobileNavigationProvider } from "@/contexts/MobileNavigationContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PageTransition } from "@/components/transitions/PageTransition";
+import Home from "./pages/Home";
 import Index from "./pages/Index";
 import AuthCallback from "./pages/AuthCallback";
 import About from "./pages/About";
@@ -49,6 +50,7 @@ const App: React.FC = () => {
           <BrowserRouter>
             <MobileNavigationProvider>
               <Routes>
+                <Route path="/" element={<PageTransition><Home /></PageTransition>} />
                 <Route path="/auth" element={<PageTransition><Index /></PageTransition>} />
                 <Route path="/auth/callback" element={<PageTransition><AuthCallback /></PageTransition>} />
                 {/* Public SEO pages */}
@@ -56,8 +58,6 @@ const App: React.FC = () => {
                 <Route path="/help" element={<PageTransition><Help /></PageTransition>} />
                 <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
                 <Route path="/terms" element={<PageTransition><Terms /></PageTransition>} />
-                {/* Change the default route to redirect to /auth instead of /dashboard */}
-                <Route path="/" element={<Navigate to="/auth" replace />} />
                 <Route element={<ProtectedRoute />}>
                   <Route path="/onboarding" element={<PageTransition><Onboarding /></PageTransition>} />
                   <Route path="/profile-starter" element={<PageTransition><ProfileStarter /></PageTransition>} />
