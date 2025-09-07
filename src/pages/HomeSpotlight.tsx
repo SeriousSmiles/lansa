@@ -127,7 +127,7 @@ export default function HomeSpotlight() {
         className="fixed inset-0 z-30 flex items-center justify-center px-6 pointer-events-none"
         aria-label="Welcome"
       >
-        <div className="max-w-3xl text-center pointer-events-auto">
+        <div className="max-w-3xl text-center pointer-events-auto mb-[60px]">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight">
             Get seen for your real value.
           </h1>
