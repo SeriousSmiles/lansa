@@ -39,94 +39,101 @@ export default function HomeSpotlight() {
   useEffect(() => {
     const root = document.documentElement;
 
-    // Initialize CSS variables for a more dramatic spotlight effect
-    root.style.setProperty("--x", "50vw");
-    root.style.setProperty("--y", "50vh");
-    root.style.setProperty("--r1", "80px");   // Smaller inner radius for tighter focus
-    root.style.setProperty("--r2", "200px"); // Smaller outer radius for thicker fog
+    // Mobile/Tablet detection (anything under 1024px width)
+    const isMobileOrTablet = window.innerWidth < 1024;
 
-    // Responsive grid layout function with mobile optimizations
+    if (isMobileOrTablet) {
+      // Static spotlight for mobile/tablet - positioned below welcome content
+      root.style.setProperty("--x", "50vw");
+      root.style.setProperty("--y", "65vh"); // Position below welcome content
+      root.style.setProperty("--r1", window.innerWidth < 768 ? "120px" : "160px");
+      root.style.setProperty("--r2", window.innerWidth < 768 ? "250px" : "320px");
+    } else {
+      // Desktop: Initialize dynamic spotlight
+      root.style.setProperty("--x", "50vw");
+      root.style.setProperty("--y", "50vh");
+      root.style.setProperty("--r1", "80px");
+      root.style.setProperty("--r2", "200px");
+    }
+
+    // Layout function for mobile/tablet vs desktop
     const layoutGrid = () => {
       if (!gridRef.current) return;
       
       const container = gridRef.current;
       const cards = container.querySelectorAll('[data-grid-item]');
       
-      // Wait for container to have proper dimensions
       if (container.offsetWidth === 0 || container.offsetHeight === 0) {
         requestAnimationFrame(layoutGrid);
         return;
       }
       
-      // Responsive card sizing based on device type and orientation
       const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
-      const isLandscape = screenWidth > screenHeight;
       
-      let cardWidth: number;
-      let cardGap: number;
-      let cols: number;
-      
-      if (screenWidth < 480) {
-        // Smartphone
-        if (isLandscape) {
-          // Smartphone landscape: 2 columns, smaller cards
-          cardWidth = 240;
-          cardGap = 16;
-          cols = 2;
-        } else {
-          // Smartphone portrait: 1 column, compact cards
-          cardWidth = 280;
-          cardGap = 16;
-          cols = 1;
-        }
-      } else if (screenWidth < 768) {
-        // Large smartphone/small tablet
-        cardWidth = isLandscape ? 260 : 300;
-        cardGap = 18;
-        cols = isLandscape ? 3 : 2;
-      } else if (screenWidth < 1024) {
-        // Tablet
-        cardWidth = 280;
-        cardGap = 20;
-        cols = isLandscape ? 4 : 3;
+      if (screenWidth < 1024) {
+        // Mobile/Tablet: Single column scrollable layout
+        const cardWidth = Math.min(360, screenWidth - 32); // Full width minus padding
+        const cardGap = 16;
+        
+        container.style.position = 'relative';
+        container.style.width = '100%';
+        container.style.height = 'auto';
+        container.style.left = '0';
+        container.style.top = '0';
+        container.style.transform = 'none';
+        container.style.padding = '16px';
+        container.style.paddingTop = '400px'; // Space for fixed welcome content
+        container.style.paddingBottom = '100px';
+        
+        cards.forEach((card: any, index) => {
+          card.style.position = 'relative';
+          card.style.left = 'auto';
+          card.style.top = 'auto';
+          card.style.width = '100%';
+          card.style.maxWidth = `${cardWidth}px`;
+          card.style.marginLeft = 'auto';
+          card.style.marginRight = 'auto';
+          card.style.marginBottom = `${cardGap}px`;
+          card.style.height = 'auto';
+        });
       } else {
-        // Desktop
-        cardWidth = 300;
-        cardGap = 20;
-        cols = Math.ceil(Math.sqrt(cards.length * 1.5));
+        // Desktop: Grid layout with dynamic positioning
+        const cardWidth = 300;
+        const cardGap = 20;
+        const cols = Math.ceil(Math.sqrt(cards.length * 1.5));
+        const cardCount = cards.length;
+        const rows = Math.ceil(cardCount / cols);
+        
+        const containerWidth = cols * (cardWidth + cardGap) - cardGap;
+        const containerHeight = rows * 380;
+        
+        container.style.position = 'relative';
+        container.style.width = `${containerWidth}px`;
+        container.style.height = `${containerHeight}px`;
+        container.style.left = '50%';
+        container.style.top = '50%';
+        container.style.transform = 'translate(-50%, -50%)';
+        container.style.padding = '0';
+        container.style.paddingTop = '0';
+        
+        cards.forEach((card: any, index) => {
+          const col = index % cols;
+          const row = Math.floor(index / cols);
+          
+          const x = col * (cardWidth + cardGap);
+          const y = row * 350 + (cardGap * row);
+          
+          card.style.position = 'absolute';
+          card.style.left = `${x}px`;
+          card.style.top = `${y}px`;
+          card.style.width = `${cardWidth}px`;
+          card.style.height = 'auto';
+          card.style.margin = '0';
+        });
       }
-      
-      const cardCount = cards.length;
-      const rows = Math.ceil(cardCount / cols);
-      
-      // Set container size to accommodate all cards with overflow
-      const containerWidth = cols * (cardWidth + cardGap) - cardGap;
-      const containerHeight = rows * (isLandscape ? 320 : 380); // Shorter rows on landscape
-      
-      container.style.position = 'relative';
-      container.style.width = `${containerWidth}px`;
-      container.style.height = `${containerHeight}px`;
-      container.style.left = '50%';
-      container.style.top = '50%';
-      container.style.transform = 'translate(-50%, -50%)';
-      
-      cards.forEach((card: any, index) => {
-        const col = index % cols;
-        const row = Math.floor(index / cols);
-        
-        const x = col * (cardWidth + cardGap);
-        const y = row * (isLandscape ? 300 : 350) + (cardGap * row);
-        
-        card.style.position = 'absolute';
-        card.style.left = `${x}px`;
-        card.style.top = `${y}px`;
-        card.style.width = `${cardWidth}px`;
-        card.style.height = 'auto';
-      });
     };
 
-    // Initial layout with proper timing
+    // Initial layout
     const initLayout = () => {
       if (gridRef.current) {
         layoutGrid();
@@ -135,125 +142,90 @@ export default function HomeSpotlight() {
       }
     };
     
-    // Run layout after DOM is ready
     requestAnimationFrame(initLayout);
-    
-    // Relayout on resize
     window.addEventListener('resize', layoutGrid);
 
+    // Desktop-only pointer tracking with parallax
     const onMove = (e: PointerEvent) => {
-      // Update spotlight position
-      gsap.to(root, {
-        "--x": `${e.clientX}px`,
-        "--y": `${e.clientY}px`,
-        duration: 0.15,
-        ease: "power3.out"
-      });
-
-      // Mobile-optimized parallax effect
-      if (gridRef.current) {
-        const { innerWidth, innerHeight } = window;
-        // Reduce parallax intensity on mobile for better performance
-        const parallaxIntensity = isMobile ? -60 : -300;
-        const xPercent = (e.clientX / innerWidth - 0.5) * parallaxIntensity;
-        const yPercent = (e.clientY / innerHeight - 0.5) * parallaxIntensity;
-        
-        gsap.to(gridRef.current, {
-          x: xPercent,
-          y: yPercent,
-          duration: isMobile ? 0.4 : 0.8, // Faster on mobile
-          ease: "power2.out"
+      if (window.innerWidth >= 1024) {
+        // Update spotlight position
+        gsap.to(root, {
+          "--x": `${e.clientX}px`,
+          "--y": `${e.clientY}px`,
+          duration: 0.15,
+          ease: "power3.out"
         });
+
+        // Parallax effect for desktop
+        if (gridRef.current) {
+          const { innerWidth, innerHeight } = window;
+          const xPercent = (e.clientX / innerWidth - 0.5) * -300;
+          const yPercent = (e.clientY / innerHeight - 0.5) * -300;
+          
+          gsap.to(gridRef.current, {
+            x: xPercent,
+            y: yPercent,
+            duration: 0.8,
+            ease: "power2.out"
+          });
+        }
       }
     };
 
-    // Desktop pointer tracking (disable on mobile for performance)
-    if (!isMobile) {
+    // Only add pointer tracking for desktop
+    if (window.innerWidth >= 1024) {
       window.addEventListener("pointermove", onMove);
     }
 
-    // Mobile and accessibility optimizations
-    const preferReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (preferReduced || isMobile) {
-      gsap.set(root, { "--x": "50vw", "--y": "38vh", "--r1": "100px", "--r2": "220px" });
-    }
-
-    // Mobile touch interactions with haptic feedback simulation
-    const onTouchStart = (e: TouchEvent) => {
-      if (isMobile && gridRef.current) {
-        // Simple haptic feedback via vibration API if available
-        if ('vibrate' in navigator) {
-          navigator.vibrate(10);
-        }
+    // Handle resize to switch between mobile/desktop layouts
+    const onResize = () => {
+      const isMobileOrTabletNow = window.innerWidth < 1024;
+      
+      if (isMobileOrTabletNow) {
+        // Switch to static mobile layout
+        root.style.setProperty("--x", "50vw");
+        root.style.setProperty("--y", "65vh");
+        root.style.setProperty("--r1", window.innerWidth < 768 ? "120px" : "160px");
+        root.style.setProperty("--r2", window.innerWidth < 768 ? "250px" : "320px");
         
-        // Update spotlight to touch position
-        const touch = e.touches[0];
-        gsap.to(root, {
-          "--x": `${touch.clientX}px`,
-          "--y": `${touch.clientY}px`,
-          duration: 0.1,
-          ease: "power2.out"
-        });
-      }
-    };
-
-    const onTouchEnd = () => {
-      if (isMobile) {
-        gsap.to(root, { 
-          "--x": "50vw", 
-          "--y": "40vh", 
-          "--r1": "90px", 
-          "--r2": "210px", 
-          duration: 0.3, 
-          ease: "power2.out" 
-        });
+        // Reset any parallax transforms
         if (gridRef.current) {
-          gsap.to(gridRef.current, { x: 0, y: 0, duration: 0.5, ease: "power2.out" });
+          gsap.set(gridRef.current, { x: 0, y: 0 });
         }
+      } else {
+        // Switch to dynamic desktop layout
+        root.style.setProperty("--r1", "80px");
+        root.style.setProperty("--r2", "200px");
       }
+      
+      layoutGrid();
     };
-
-    // Add touch event listeners for mobile
-    if (isMobile) {
-      window.addEventListener("touchstart", onTouchStart, { passive: true });
-      window.addEventListener("touchend", onTouchEnd, { passive: true });
-    }
-
-    // Handle orientation changes
-    const onOrientationChange = () => {
-      if (isMobile) {
-        setTimeout(() => {
-          layoutGrid();
-          // Reset spotlight position after orientation change
-          gsap.set(root, { "--x": "50vw", "--y": "40vh" });
-        }, 100);
-      }
-    };
-    window.addEventListener("orientationchange", onOrientationChange);
+    
+    window.addEventListener('resize', onResize);
 
     return () => {
-      if (!isMobile) {
+      if (window.innerWidth >= 1024) {
         window.removeEventListener("pointermove", onMove);
       }
-      if (isMobile) {
-        window.removeEventListener("touchstart", onTouchStart);
-        window.removeEventListener("touchend", onTouchEnd);
-      }
-      window.removeEventListener("orientationchange", onOrientationChange);
       window.removeEventListener('resize', layoutGrid);
+      window.removeEventListener('resize', onResize);
     };
   }, []);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#191F71] text-white">
+    <main className="relative min-h-screen bg-[#191F71] text-white" style={{ 
+      overflowX: 'hidden',
+      overflowY: window.innerWidth < 1024 ? 'auto' : 'hidden' 
+    }}>
       <Logo />
 
       {/* Welcome block - responsive positioning */}
       <section
         className="fixed inset-0 z-30 flex justify-center px-4 sm:px-6 pointer-events-none"
         style={{ 
-          alignItems: isMobile ? 'center' : 'flex-end', 
-          paddingBottom: isMobile ? '0' : '60px' 
+          alignItems: window.innerWidth < 1024 ? 'flex-start' : (isMobile ? 'center' : 'flex-end'),
+          paddingTop: window.innerWidth < 1024 ? '120px' : '0',
+          paddingBottom: window.innerWidth < 1024 ? '0' : (isMobile ? '0' : '60px')
         }}
         aria-label="Welcome"
       >
@@ -341,7 +313,7 @@ export default function HomeSpotlight() {
       {/* Testimonials grid (behind the welcome block) */}
       <section
         aria-label="What users say"
-        className="pointer-events-none absolute inset-0 z-10"
+        className={window.innerWidth < 1024 ? "relative z-10" : "pointer-events-none absolute inset-0 z-10"}
       >
         <div 
           ref={gridRef}
