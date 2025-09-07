@@ -6,19 +6,19 @@ interface ClassicTemplateProps {
 }
 
 export function ClassicTemplate({ data }: ClassicTemplateProps) {
-  const { personalInfo, experience, education, skills, colors } = data;
+  const { personalInfo, experience, education, skills, languages, colors } = data;
 
   return (
     <div 
       id="pdf-resume-template" 
-      className="w-[210mm] h-[297mm] mx-auto bg-white shadow-lg overflow-hidden"
+      className="w-[210mm] h-[297mm] mx-auto bg-white shadow-lg overflow-hidden flex flex-col"
       style={{
-        fontFamily: 'Times, serif',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
         fontSize: '12px',
         lineHeight: '1.6',
       }}
     >
-      <div className="p-12">
+      <div className="flex-1 p-8">
         {/* Header */}
         <div className="text-center mb-8 pb-6 border-b-2 border-gray-300">
           <h1 className="text-4xl font-bold text-gray-900 mb-2 tracking-wide">
@@ -140,14 +140,46 @@ export function ClassicTemplate({ data }: ClassicTemplateProps) {
               </div>
             )}
 
+            {/* Languages */}
+            {languages && languages.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-base font-bold text-gray-900 mb-3 uppercase tracking-wider border-b border-gray-300 pb-2">
+                  Languages
+                </h3>
+                <div className="space-y-2">
+                  {languages.map((lang, index) => {
+                    const percentage = (lang.level / 5) * 100;
+                    return (
+                      <div key={index} className="flex justify-between items-center">
+                        <span className="text-sm text-gray-700">{lang.name}</span>
+                        <span className="text-xs text-gray-600 font-medium">{percentage}%</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Professional Goal */}
             {personalInfo.professionalGoal && (
-              <div>
+              <div className="mb-6">
                 <h3 className="text-base font-bold text-gray-900 mb-3 uppercase tracking-wider border-b border-gray-300 pb-2">
                   Career Objective
                 </h3>
                 <p className="text-sm text-gray-700 leading-relaxed text-justify">
                   {personalInfo.professionalGoal}
+                </p>
+              </div>
+            )}
+
+            {/* Biggest Challenge */}
+            {personalInfo.biggestChallenge && (
+              <div>
+                <h3 className="text-base font-bold text-gray-900 mb-3 uppercase tracking-wider border-b border-gray-300 pb-2">
+                  Key Challenge
+                </h3>
+                <p className="text-sm text-gray-700 leading-relaxed text-justify">
+                  {personalInfo.biggestChallenge}
                 </p>
               </div>
             )}

@@ -1,5 +1,5 @@
 import { PDFResumeData } from "@/types/pdf";
-import { ProfileDataReturn } from "@/hooks/useProfileData";
+import { ProfileDataReturn } from "@/hooks/profile/profileTypes";
 
 export function mapProfileToPDFData(profileData: ProfileDataReturn): PDFResumeData {
   return {
@@ -10,6 +10,7 @@ export function mapProfileToPDFData(profileData: ProfileDataReturn): PDFResumeDa
       phone: profileData.phoneNumber || "",
       summary: profileData.aboutText || "",
       professionalGoal: profileData.professionalGoal || "",
+      biggestChallenge: profileData.biggestChallenge || "",
       profileImage: profileData.profileImage || undefined,
     },
     experience: profileData.experiences || [],

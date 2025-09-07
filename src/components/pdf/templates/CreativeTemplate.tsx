@@ -6,12 +6,12 @@ interface CreativeTemplateProps {
 }
 
 export function CreativeTemplate({ data }: CreativeTemplateProps) {
-  const { personalInfo, experience, education, skills, colors } = data;
+  const { personalInfo, experience, education, skills, languages, colors } = data;
 
   return (
     <div 
       id="pdf-resume-template" 
-      className="w-[210mm] h-[297mm] mx-auto bg-white shadow-lg overflow-hidden relative"
+      className="w-[210mm] h-[297mm] mx-auto bg-white shadow-lg overflow-hidden relative flex flex-col"
       style={{
         fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
         fontSize: '11px',
@@ -43,7 +43,7 @@ export function CreativeTemplate({ data }: CreativeTemplateProps) {
       </div>
 
       {/* Main Content */}
-      <div className="pt-12 px-8">
+      <div className="flex-1 pt-12 px-8">
         {/* Name and Title */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">{personalInfo.name}</h1>
@@ -118,9 +118,47 @@ export function CreativeTemplate({ data }: CreativeTemplateProps) {
               </div>
             )}
 
+            {/* Languages */}
+            {languages && languages.length > 0 && (
+              <div className="mb-6">
+                <h3 
+                  className="text-lg font-bold mb-3 text-center"
+                  style={{ color: colors.primary }}
+                >
+                  Languages
+                </h3>
+                <div 
+                  className="w-12 h-1 mx-auto mb-3"
+                  style={{ backgroundColor: colors.secondary }}
+                ></div>
+                <div className="space-y-2">
+                  {languages.map((lang, index) => {
+                    const percentage = (lang.level / 5) * 100;
+                    return (
+                      <div key={index} className="text-center">
+                        <div className="flex justify-between items-center mb-1 px-2">
+                          <span className="text-xs font-medium text-gray-800">{lang.name}</span>
+                          <span className="text-xs text-gray-600">{percentage}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-1">
+                          <div 
+                            className="h-1 rounded-full"
+                            style={{ 
+                              backgroundColor: colors.primary,
+                              width: `${percentage}%`
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Professional Goal */}
             {personalInfo.professionalGoal && (
-              <div>
+              <div className="mb-6">
                 <h3 
                   className="text-lg font-bold mb-3 text-center"
                   style={{ color: colors.primary }}
@@ -133,6 +171,25 @@ export function CreativeTemplate({ data }: CreativeTemplateProps) {
                 ></div>
                 <p className="text-xs text-gray-700 leading-relaxed text-justify">
                   {personalInfo.professionalGoal}
+                </p>
+              </div>
+            )}
+
+            {/* Biggest Challenge */}
+            {personalInfo.biggestChallenge && (
+              <div>
+                <h3 
+                  className="text-lg font-bold mb-3 text-center"
+                  style={{ color: colors.primary }}
+                >
+                  Challenge
+                </h3>
+                <div 
+                  className="w-12 h-1 mx-auto mb-3"
+                  style={{ backgroundColor: colors.secondary }}
+                ></div>
+                <p className="text-xs text-gray-700 leading-relaxed text-justify">
+                  {personalInfo.biggestChallenge}
                 </p>
               </div>
             )}

@@ -6,7 +6,7 @@ interface ModernTemplateProps {
 }
 
 export function ModernTemplate({ data }: ModernTemplateProps) {
-  const { personalInfo, experience, education, skills, colors } = data;
+  const { personalInfo, experience, education, skills, languages, colors } = data;
 
   return (
     <div 
@@ -99,9 +99,43 @@ export function ModernTemplate({ data }: ModernTemplateProps) {
             </div>
           )}
 
+          {/* Languages */}
+          {languages && languages.length > 0 && (
+            <div className="mb-6">
+              <h3 
+                className="text-sm font-bold mb-3 uppercase tracking-wider pb-2 border-b-2"
+                style={{ color: colors.primary, borderColor: colors.primary }}
+              >
+                Languages
+              </h3>
+              <div className="space-y-3">
+                {languages.map((lang, index) => {
+                  const percentage = (lang.level / 5) * 100;
+                  return (
+                    <div key={index}>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-medium text-gray-800">{lang.name}</span>
+                        <span className="text-xs text-gray-600">{percentage}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="h-2 rounded-full transition-all duration-300"
+                          style={{ 
+                            backgroundColor: colors.primary,
+                            width: `${percentage}%`
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Professional Goal */}
           {personalInfo.professionalGoal && (
-            <div>
+            <div className="mb-6">
               <h3 
                 className="text-sm font-bold mb-3 uppercase tracking-wider pb-2 border-b-2"
                 style={{ color: colors.primary, borderColor: colors.primary }}
@@ -110,6 +144,21 @@ export function ModernTemplate({ data }: ModernTemplateProps) {
               </h3>
               <p className="text-xs text-gray-700 leading-relaxed">
                 {personalInfo.professionalGoal}
+              </p>
+            </div>
+          )}
+
+          {/* Biggest Challenge */}
+          {personalInfo.biggestChallenge && (
+            <div>
+              <h3 
+                className="text-sm font-bold mb-3 uppercase tracking-wider pb-2 border-b-2"
+                style={{ color: colors.primary, borderColor: colors.primary }}
+              >
+                Challenge
+              </h3>
+              <p className="text-xs text-gray-700 leading-relaxed">
+                {personalInfo.biggestChallenge}
               </p>
             </div>
           )}

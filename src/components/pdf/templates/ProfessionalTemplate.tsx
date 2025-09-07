@@ -109,10 +109,20 @@ export function ProfessionalTemplate({ data }: ProfessionalTemplateProps) {
 
           {/* Professional Goal */}
           {personalInfo.professionalGoal && (
-            <div className="mt-auto">
+            <div className="mb-6">
               <h3 className="text-lg font-bold mb-3 uppercase tracking-wide">Goal</h3>
               <p className="text-sm opacity-90 leading-relaxed">
                 {personalInfo.professionalGoal}
+              </p>
+            </div>
+          )}
+
+          {/* Biggest Challenge */}
+          {personalInfo.biggestChallenge && (
+            <div className="mt-auto">
+              <h3 className="text-lg font-bold mb-3 uppercase tracking-wide">Challenge</h3>
+              <p className="text-sm opacity-90 leading-relaxed">
+                {personalInfo.biggestChallenge}
               </p>
             </div>
           )}

@@ -8,6 +8,7 @@ export interface PDFResumeData {
     phone: string;
     summary: string; // aboutText
     professionalGoal: string;
+    biggestChallenge?: string;
     profileImage?: string;
   };
   experience: ExperienceItem[];
