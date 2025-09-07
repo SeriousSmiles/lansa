@@ -193,46 +193,232 @@ export default function Home() {
         </section>
 
         {/* Work Where You Fit Best Section */}
-        <section ref={workSectionRef} className="py-32 px-6">
-          <div className="max-w-7xl mx-auto">
-            <h2 className="font-urbanist font-bold text-5xl text-center mb-20">
-              Work Where You Fit Best
-            </h2>
-            
-            <div className="grid grid-cols-12 gap-12 items-center min-h-screen">
-              {/* Left Content */}
-              <div className="col-span-12 lg:col-span-4">
-                <div className="space-y-8">
-                  <div className="opacity-100">
-                    <h3 className="font-urbanist font-bold text-2xl mb-4">Remote-First Companies</h3>
-                    <p className="font-public-sans text-gray-600 leading-relaxed">
+        <section ref={workSectionRef} className="relative px-[5%] py-16 md:py-24 lg:py-28">
+          <div className="container">
+            <div className="mx-auto max-w-lg text-center">
+              <h2 className="mb-5 text-5xl font-bold font-urbanist md:mb-6 md:text-7xl lg:text-8xl">
+                Work Where You Fit Best
+              </h2>
+              <p className="font-public-sans md:text-md">
+                Accelerate your job search with personalized support.
+              </p>
+            </div>
+            <div className="mt-12 grid grid-cols-1 items-start gap-12 md:mt-0 md:grid-cols-3 md:gap-x-8 md:gap-y-16 lg:gap-x-12">
+              {/* Left Column - Mobile Content */}
+              <div className="relative flex w-full flex-col gap-12 md:hidden md:pt-[60vh]">
+                <div className="md:h-svh">
+                  <div className="flex flex-col items-start justify-center md:justify-start" style={{opacity: 0}}>
+                    <div className="mb-8 md:hidden">
+                      <img
+                        src="/lovable-uploads/155ecc34-3f01-4d49-b1ad-10c1a50803e2.png"
+                        alt="Remote work opportunities"
+                        className="rounded-2xl"
+                      />
+                    </div>
+                    <p className="mb-3 font-semibold font-public-sans md:mb-4">Remote-First</p>
+                    <h2 className="mb-5 text-2xl font-bold font-urbanist md:mb-6 md:text-3xl md:leading-[1.3] lg:text-4xl">
+                      Work From Anywhere in the Caribbean
+                    </h2>
+                    <p className="font-public-sans md:text-md">
                       Connect with progressive Caribbean companies that embrace remote work culture and value talent over location.
                     </p>
+                    <div className="mt-6 flex items-center gap-x-4 md:mt-8">
+                      <Button className="bg-blue-600 hover:bg-blue-700 font-public-sans" asChild>
+                        <Link to="/auth">Try</Link>
+                      </Button>
+                      <Button variant="ghost" className="gap-2 bg-transparent p-0 font-public-sans">
+                        Explore<svg stroke="currentColor" fill="none" strokeWidth="0" viewBox="0 0 15 15" height="1em" width="1em">
+                          <path fillRule="evenodd" clipRule="evenodd" d="M6.1584 3.13508C6.35985 2.94621 6.67627 2.95642 6.86514 3.15788L10.6151 7.15788C10.7954 7.3502 10.7954 7.64949 10.6151 7.84182L6.86514 11.8418C6.67627 12.0433 6.35985 12.0535 6.1584 11.8646C5.95694 11.6757 5.94673 11.3593 6.1356 11.1579L9.565 7.49985L6.1356 3.84182C5.94673 3.64036 5.95694 3.32394 6.1584 3.13508Z" fill="currentColor"></path>
+                        </svg>
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              {/* Center Sticky Image */}
-              <div className="col-span-12 lg:col-span-4">
-                <div className="sticky top-32">
-                  <div className="w-full h-96 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl overflow-hidden">
-                    <img 
-                      src="/lovable-uploads/62496478-1e20-484c-bb96-6f47496037df.png" 
-                      alt="Remote work opportunities"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              {/* Right Content */}
-              <div className="col-span-12 lg:col-span-4">
-                <div className="space-y-8">
-                  <div className="opacity-100">
-                    <h3 className="font-urbanist font-bold text-2xl mb-4">Local Impact Roles</h3>
-                    <p className="font-public-sans text-gray-600 leading-relaxed">
-                      Make a difference in your community with roles in education, healthcare, tourism, and sustainable development.
+                <div className="md:h-svh">
+                  <div className="flex flex-col items-start justify-center md:justify-start" style={{opacity: 0}}>
+                    <div className="mb-8 md:hidden">
+                      <img
+                        src="/lovable-uploads/1c3395f0-854c-4830-b97a-46a12aec1d25.png"
+                        alt="Tourism industry opportunities"
+                        className="rounded-2xl"
+                      />
+                    </div>
+                    <p className="mb-3 font-semibold font-public-sans md:mb-4">Tourism & Hospitality</p>
+                    <h2 className="mb-5 text-2xl font-bold font-urbanist md:mb-6 md:text-3xl md:leading-[1.3] lg:text-4xl">
+                      Lead Caribbean Tourism Innovation
+                    </h2>
+                    <p className="font-public-sans md:text-md">
+                      Shape the future of Caribbean tourism with leadership roles in sustainable travel and hospitality excellence.
                     </p>
+                    <div className="mt-6 flex items-center gap-x-4 md:mt-8">
+                      <Button className="bg-blue-600 hover:bg-blue-700 font-public-sans" asChild>
+                        <Link to="/auth">Try</Link>
+                      </Button>
+                      <Button variant="ghost" className="gap-2 bg-transparent p-0 font-public-sans">
+                        Explore<svg stroke="currentColor" fill="none" strokeWidth="0" viewBox="0 0 15 15" height="1em" width="1em">
+                          <path fillRule="evenodd" clipRule="evenodd" d="M6.1584 3.13508C6.35985 2.94621 6.67627 2.95642 6.86514 3.15788L10.6151 7.15788C10.7954 7.3502 10.7954 7.64949 10.6151 7.84182L6.86514 11.8418C6.67627 12.0433 6.35985 12.0535 6.1584 11.8646C5.95694 11.6757 5.94673 11.3593 6.1356 11.1579L9.565 7.49985L6.1356 3.84182C5.94673 3.64036 5.95694 3.32394 6.1584 3.13508Z" fill="currentColor"></path>
+                        </svg>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <div className="md:h-svh">
+                  <div className="flex flex-col items-start justify-center md:justify-start" style={{opacity: 0}}>
+                    <div className="mb-8 md:hidden">
+                      <img
+                        src="/lovable-uploads/2bc2aac1-3d99-47c5-a884-0800b05c0f76.png"
+                        alt="Finance and banking careers"
+                        className="rounded-2xl"
+                      />
+                    </div>
+                    <p className="mb-3 font-semibold font-public-sans md:mb-4">Finance & Banking</p>
+                    <h2 className="mb-5 text-2xl font-bold font-urbanist md:mb-6 md:text-3xl md:leading-[1.3] lg:text-4xl">
+                      Drive Caribbean Financial Growth
+                    </h2>
+                    <p className="font-public-sans md:text-md">
+                      Build your career in the growing Caribbean financial sector with opportunities in banking, fintech, and investment.
+                    </p>
+                    <div className="mt-6 flex items-center gap-x-4 md:mt-8">
+                      <Button className="bg-blue-600 hover:bg-blue-700 font-public-sans" asChild>
+                        <Link to="/auth">Try</Link>
+                      </Button>
+                      <Button variant="ghost" className="gap-2 bg-transparent p-0 font-public-sans">
+                        Explore<svg stroke="currentColor" fill="none" strokeWidth="0" viewBox="0 0 15 15" height="1em" width="1em">
+                          <path fillRule="evenodd" clipRule="evenodd" d="M6.1584 3.13508C6.35985 2.94621 6.67627 2.95642 6.86514 3.15788L10.6151 7.15788C10.7954 7.3502 10.7954 7.64949 10.6151 7.84182L6.86514 11.8418C6.67627 12.0433 6.35985 12.0535 6.1584 11.8646C5.95694 11.6757 5.94673 11.3593 6.1356 11.1579L9.565 7.49985L6.1356 3.84182C5.94673 3.64036 5.95694 3.32394 6.1584 3.13508Z" fill="currentColor"></path>
+                        </svg>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <div className="md:h-svh">
+                  <div className="flex flex-col items-start justify-center md:justify-start" style={{opacity: 0}}>
+                    <div className="mb-8 md:hidden">
+                      <img
+                        src="/lovable-uploads/62496478-1e20-484c-bb96-6f47496037df.png"
+                        alt="Technology and innovation"
+                        className="rounded-2xl"
+                      />
+                    </div>
+                    <p className="mb-3 font-semibold font-public-sans md:mb-4">Technology</p>
+                    <h2 className="mb-5 text-2xl font-bold font-urbanist md:mb-6 md:text-3xl md:leading-[1.3] lg:text-4xl">
+                      Pioneer Caribbean Tech Innovation
+                    </h2>
+                    <p className="font-public-sans md:text-md">
+                      Join the digital transformation of the Caribbean with cutting-edge tech roles and startup opportunities.
+                    </p>
+                    <div className="mt-6 flex items-center gap-x-4 md:mt-8">
+                      <Button className="bg-blue-600 hover:bg-blue-700 font-public-sans" asChild>
+                        <Link to="/auth">Try</Link>
+                      </Button>
+                      <Button variant="ghost" className="gap-2 bg-transparent p-0 font-public-sans">
+                        Explore<svg stroke="currentColor" fill="none" strokeWidth="0" viewBox="0 0 15 15" height="1em" width="1em">
+                          <path fillRule="evenodd" clipRule="evenodd" d="M6.1584 3.13508C6.35985 2.94621 6.67627 2.95642 6.86514 3.15788L10.6151 7.15788C10.7954 7.3502 10.7954 7.64949 10.6151 7.84182L6.86514 11.8418C6.67627 12.0433 6.35985 12.0535 6.1584 11.8646C5.95694 11.6757 5.94673 11.3593 6.1356 11.1579L9.565 7.49985L6.1356 3.84182C5.94673 3.64036 5.95694 3.32394 6.1584 3.13508Z" fill="currentColor"></path>
+                        </svg>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Left Column - Desktop */}
+              <div className="relative hidden w-full flex-col gap-12 md:flex md:pt-[60vh]">
+                <div className="md:h-svh">
+                  <div className="flex flex-col items-start justify-center md:justify-start" style={{opacity: 0}}>
+                    <p className="mb-3 font-semibold font-public-sans md:mb-4">Remote-First</p>
+                    <h2 className="mb-5 text-2xl font-bold font-urbanist md:mb-6 md:text-3xl md:leading-[1.3] lg:text-4xl">
+                      Work From Anywhere in the Caribbean
+                    </h2>
+                    <p className="font-public-sans md:text-md">
+                      Connect with progressive Caribbean companies that embrace remote work culture and value talent over location.
+                    </p>
+                    <div className="mt-6 flex items-center gap-x-4 md:mt-8">
+                      <Button className="bg-blue-600 hover:bg-blue-700 font-public-sans" asChild>
+                        <Link to="/auth">Explore Roles</Link>
+                      </Button>
+                      <Button variant="ghost" className="gap-2 bg-transparent p-0 font-public-sans">
+                        Learn More<svg stroke="currentColor" fill="none" strokeWidth="0" viewBox="0 0 15 15" height="1em" width="1em">
+                          <path fillRule="evenodd" clipRule="evenodd" d="M6.1584 3.13508C6.35985 2.94621 6.67627 2.95642 6.86514 3.15788L10.6151 7.15788C10.7954 7.3502 10.7954 7.64949 10.6151 7.84182L6.86514 11.8418C6.67627 12.0433 6.35985 12.0535 6.1584 11.8646C5.95694 11.6757 5.94673 11.3593 6.1356 11.1579L9.565 7.49985L6.1356 3.84182C5.94673 3.64036 5.95694 3.32394 6.1584 3.13508Z" fill="currentColor"></path>
+                        </svg>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <div className="md:h-svh">
+                  <div className="flex flex-col items-start justify-center md:justify-start" style={{opacity: 0}}>
+                    <p className="mb-3 font-semibold font-public-sans md:mb-4">Tourism & Hospitality</p>
+                    <h2 className="mb-5 text-2xl font-bold font-urbanist md:mb-6 md:text-3xl md:leading-[1.3] lg:text-4xl">
+                      Lead Caribbean Tourism Innovation
+                    </h2>
+                    <p className="font-public-sans md:text-md">
+                      Shape the future of Caribbean tourism with leadership roles in sustainable travel and hospitality excellence.
+                    </p>
+                    <div className="mt-6 flex items-center gap-x-4 md:mt-8">
+                      <Button className="bg-blue-600 hover:bg-blue-700 font-public-sans" asChild>
+                        <Link to="/auth">View Opportunities</Link>
+                      </Button>
+                      <Button variant="ghost" className="gap-2 bg-transparent p-0 font-public-sans">
+                        Learn More<svg stroke="currentColor" fill="none" strokeWidth="0" viewBox="0 0 15 15" height="1em" width="1em">
+                          <path fillRule="evenodd" clipRule="evenodd" d="M6.1584 3.13508C6.35985 2.94621 6.67627 2.95642 6.86514 3.15788L10.6151 7.15788C10.7954 7.3502 10.7954 7.64949 10.6151 7.84182L6.86514 11.8418C6.67627 12.0433 6.35985 12.0535 6.1584 11.8646C5.95694 11.6757 5.94673 11.3593 6.1356 11.1579L9.565 7.49985L6.1356 3.84182C5.94673 3.64036 5.95694 3.32394 6.1584 3.13508Z" fill="currentColor"></path>
+                        </svg>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Center Sticky Image */}
+              <div className="sticky top-0 hidden h-screen w-full items-center justify-center md:flex">
+                <div className="aspect-[2/3]">
+                  <img
+                    src="/lovable-uploads/155ecc34-3f01-4d49-b1ad-10c1a50803e2.png"
+                    alt="Caribbean professionals at work"
+                    className="size-full rounded-2xl object-cover"
+                  />
+                </div>
+              </div>
+
+              {/* Right Column - Desktop */}
+              <div className="relative hidden w-full flex-col gap-12 md:flex md:pt-[110vh]">
+                <div className="md:h-svh">
+                  <div className="flex flex-col items-start justify-center md:justify-start" style={{opacity: 0}}>
+                    <p className="mb-3 font-semibold font-public-sans md:mb-4">Finance & Banking</p>
+                    <h2 className="mb-5 text-2xl font-bold font-urbanist md:mb-6 md:text-3xl md:leading-[1.3] lg:text-4xl">
+                      Drive Caribbean Financial Growth
+                    </h2>
+                    <p className="font-public-sans md:text-md">
+                      Build your career in the growing Caribbean financial sector with opportunities in banking, fintech, and investment.
+                    </p>
+                    <div className="mt-6 flex items-center gap-x-4 md:mt-8">
+                      <Button className="bg-blue-600 hover:bg-blue-700 font-public-sans" asChild>
+                        <Link to="/auth">Explore Finance</Link>
+                      </Button>
+                      <Button variant="ghost" className="gap-2 bg-transparent p-0 font-public-sans">
+                        Learn More<svg stroke="currentColor" fill="none" strokeWidth="0" viewBox="0 0 15 15" height="1em" width="1em">
+                          <path fillRule="evenodd" clipRule="evenodd" d="M6.1584 3.13508C6.35985 2.94621 6.67627 2.95642 6.86514 3.15788L10.6151 7.15788C10.7954 7.3502 10.7954 7.64949 10.6151 7.84182L6.86514 11.8418C6.67627 12.0433 6.35985 12.0535 6.1584 11.8646C5.95694 11.6757 5.94673 11.3593 6.1356 11.1579L9.565 7.49985L6.1356 3.84182C5.94673 3.64036 5.95694 3.32394 6.1584 3.13508Z" fill="currentColor"></path>
+                        </svg>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <div className="md:h-svh">
+                  <div className="flex flex-col items-start justify-center md:justify-start" style={{opacity: 0}}>
+                    <p className="mb-3 font-semibold font-public-sans md:mb-4">Technology</p>
+                    <h2 className="mb-5 text-2xl font-bold font-urbanist md:mb-6 md:text-3xl md:leading-[1.3] lg:text-4xl">
+                      Pioneer Caribbean Tech Innovation
+                    </h2>
+                    <p className="font-public-sans md:text-md">
+                      Join the digital transformation of the Caribbean with cutting-edge tech roles and startup opportunities.
+                    </p>
+                    <div className="mt-6 flex items-center gap-x-4 md:mt-8">
+                      <Button className="bg-blue-600 hover:bg-blue-700 font-public-sans" asChild>
+                        <Link to="/auth">Join Tech Scene</Link>
+                      </Button>
+                      <Button variant="ghost" className="gap-2 bg-transparent p-0 font-public-sans">
+                        Learn More<svg stroke="currentColor" fill="none" strokeWidth="0" viewBox="0 0 15 15" height="1em" width="1em">
+                          <path fillRule="evenodd" clipRule="evenodd" d="M6.1584 3.13508C6.35985 2.94621 6.67627 2.95642 6.86514 3.15788L10.6151 7.15788C10.7954 7.3502 10.7954 7.64949 10.6151 7.84182L6.86514 11.8418C6.67627 12.0433 6.35985 12.0535 6.1584 11.8646C5.95694 11.6757 5.94673 11.3593 6.1356 11.1579L9.565 7.49985L6.1356 3.84182C5.94673 3.64036 5.95694 3.32394 6.1584 3.13508Z" fill="currentColor"></path>
+                        </svg>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
