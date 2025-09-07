@@ -36,6 +36,13 @@ export default function HomeSpotlight() {
       
       const container = gridRef.current;
       const cards = container.querySelectorAll('[data-grid-item]');
+      
+      // Wait for container to have proper dimensions
+      if (container.offsetWidth === 0 || container.offsetHeight === 0) {
+        requestAnimationFrame(layoutGrid);
+        return;
+      }
+      
       const cardWidth = 300;
       const cardGap = 20;
       
@@ -70,8 +77,17 @@ export default function HomeSpotlight() {
       });
     };
 
-    // Initial layout
-    setTimeout(layoutGrid, 100);
+    // Initial layout with proper timing
+    const initLayout = () => {
+      if (gridRef.current) {
+        layoutGrid();
+      } else {
+        requestAnimationFrame(initLayout);
+      }
+    };
+    
+    // Run layout after DOM is ready
+    requestAnimationFrame(initLayout);
     
     // Relayout on resize
     window.addEventListener('resize', layoutGrid);
@@ -131,10 +147,11 @@ export default function HomeSpotlight() {
 
       {/* Welcome block - fixed positioned */}
       <section
-        className="fixed inset-0 z-30 flex items-center justify-center px-6 pointer-events-none"
+        className="fixed inset-0 z-30 flex justify-center px-6 pointer-events-none"
+        style={{ alignItems: 'flex-end', paddingBottom: '60px' }}
         aria-label="Welcome"
       >
-        <div className="max-w-3xl text-center pointer-events-auto mb-[60px]">
+        <div className="max-w-3xl text-center pointer-events-auto">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight">
             {WELCOME_CONTENT.headline}
           </h1>
@@ -158,6 +175,12 @@ export default function HomeSpotlight() {
         <div 
           ref={gridRef}
           className="absolute inset-0"
+          style={{ 
+            // Prevent initial clustering by setting default positioning
+            transform: 'translate(-50%, -50%)',
+            left: '50%',
+            top: '50%'
+          }}
         >
           {TESTIMONIALS.concat(TESTIMONIALS).map((t, i) => (
             <article
