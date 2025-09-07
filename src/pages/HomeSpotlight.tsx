@@ -32,16 +32,16 @@ export default function HomeSpotlight() {
         ease: "power3.out"
       });
 
-      // Add parallax effect to cards (opposite direction movement)
+      // Add parallax effect to cards (opposite direction movement) - increased intensity
       if (gridRef.current) {
         const { innerWidth, innerHeight } = window;
-        const xPercent = (e.clientX / innerWidth - 0.5) * -20; // Opposite direction, reduced intensity
-        const yPercent = (e.clientY / innerHeight - 0.5) * -20;
+        const xPercent = (e.clientX / innerWidth - 0.5) * -60; // Increased from -20 to -60
+        const yPercent = (e.clientY / innerHeight - 0.5) * -60; // Increased from -20 to -60
         
         gsap.to(gridRef.current, {
           x: xPercent,
           y: yPercent,
-          duration: 0.8,
+          duration: 0.6, // Slightly faster response
           ease: "power2.out"
         });
       }
@@ -103,25 +103,25 @@ export default function HomeSpotlight() {
       >
         <div 
           ref={gridRef}
-          className="grid h-full w-full content-start gap-4 px-4 py-8
-                          [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]
-                          [grid-auto-rows:minmax(400px,auto)]"
+          className="grid h-full w-full content-start gap-6 px-6 py-8
+                          grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5
+                          auto-rows-max"
         >
           {TESTIMONIALS.concat(TESTIMONIALS, TESTIMONIALS).map((t, i) => {
-            // Create masonry effect with varying heights
-            const heights = ['min-h-[400px]', 'min-h-[500px]', 'min-h-[450px]', 'min-h-[550px]'];
-            const randomHeight = heights[i % heights.length];
+            // Create varying heights for visual interest but prevent overlap
+            const heights = ['h-[400px]', 'h-[450px]', 'h-[500px]', 'h-[420px]'];
+            const cardHeight = heights[i % heights.length];
             
             return (
             <article
               key={`${t.id}-${i}`}
               className={`rounded-[10px] bg-white/4 backdrop-blur-[3px] border border-white/8 p-6 select-none
-                         w-full ${randomHeight} flex flex-col justify-between
+                         w-full ${cardHeight} flex flex-col justify-between
                          shadow-2xl shadow-black/20`}
             >
-              {/* Quote text at top - justified and centered */}
-              <div className="flex-1 flex items-start pt-4">
-                <blockquote className="text-base leading-relaxed text-white/90 font-medium text-center w-full">
+              {/* Quote text at top - properly centered */}
+              <div className="flex-1 flex items-start justify-center pt-4">
+                <blockquote className="text-base leading-relaxed text-white/90 font-medium text-center max-w-full">
                   "{t.quote}"
                 </blockquote>
               </div>
