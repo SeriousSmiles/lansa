@@ -24,6 +24,7 @@ export default {
 		fontFamily: {
 			inter: ['Inter', 'sans-serif'],
 			'public-sans': ['Public Sans', 'sans-serif'],
+			'urbanist': ['Urbanist', 'sans-serif'],
 		},
 			colors: {
 				border: 'hsl(var(--border))',
