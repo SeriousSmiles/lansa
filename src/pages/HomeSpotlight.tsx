@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { Link } from "react-router-dom";
 import { TESTIMONIALS } from "../data/testimonials";
@@ -12,12 +12,25 @@ import Logo from "../components/Logo";
  * - Cursor-follow radial spotlight overlay
  */
 export default function HomeSpotlight() {
-  // Easy to edit copy content
-  const WELCOME_CONTENT = {
-    headline: "Get seen for your real value.",
-    subtext: "Lansa helps students, freelancers, and teams turn experience into clear, hire-ready profiles.",
-    buttonText: "Login to Lansa"
+  const [activeTab, setActiveTab] = useState<'opportunities' | 'team'>('opportunities');
+  
+  // Tab content configuration
+  const TAB_CONTENT = {
+    opportunities: {
+      label: "Seeking opportunities",
+      headline: "Get seen for your real value.",
+      subtext: "Turn your experience into a clear, hire-ready profile that stands out.",
+      buttonText: "Start Building"
+    },
+    team: {
+      label: "Growing your team",
+      headline: "Find talent that fits.",
+      subtext: "Discover candidates with proven skills and clear career stories.",
+      buttonText: "Find Talent"
+    }
   };
+  
+  const currentContent = TAB_CONTENT[activeTab];
 
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -151,19 +164,47 @@ export default function HomeSpotlight() {
         style={{ alignItems: 'flex-end', paddingBottom: '60px' }}
         aria-label="Welcome"
       >
-        <div className="max-w-3xl text-center pointer-events-auto">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight">
-            {WELCOME_CONTENT.headline}
-          </h1>
-          <p className="mt-4 text-base sm:text-lg md:text-xl text-white/80">
-            {WELCOME_CONTENT.subtext}
-          </p>
-          <Link
-            to="/auth"
-            className="mt-8 inline-flex items-center justify-center rounded-xl px-6 py-3 text-base font-medium bg-white text-[#0B0E1A] hover:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-          >
-            {WELCOME_CONTENT.buttonText}
-          </Link>
+        <div className="max-w-md text-center pointer-events-auto">
+          {/* Glass blur container */}
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-6 shadow-2xl">
+            {/* Tab switcher */}
+            <div className="flex rounded-xl bg-white/10 p-1 mb-6">
+              <button
+                onClick={() => setActiveTab('opportunities')}
+                className={`flex-1 text-sm font-medium py-2 px-3 rounded-lg transition-all duration-200 ${
+                  activeTab === 'opportunities'
+                    ? 'bg-white text-[#0B0E1A] shadow-sm'
+                    : 'text-white/70 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                {TAB_CONTENT.opportunities.label}
+              </button>
+              <button
+                onClick={() => setActiveTab('team')}
+                className={`flex-1 text-sm font-medium py-2 px-3 rounded-lg transition-all duration-200 ${
+                  activeTab === 'team'
+                    ? 'bg-white text-[#0B0E1A] shadow-sm'
+                    : 'text-white/70 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                {TAB_CONTENT.team.label}
+              </button>
+            </div>
+            
+            {/* Content */}
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight">
+              {currentContent.headline}
+            </h1>
+            <p className="mt-3 text-sm sm:text-base text-white/80">
+              {currentContent.subtext}
+            </p>
+            <Link
+              to="/auth"
+              className="mt-6 inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-medium bg-white text-[#0B0E1A] hover:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+            >
+              {currentContent.buttonText}
+            </Link>
+          </div>
         </div>
       </section>
 
