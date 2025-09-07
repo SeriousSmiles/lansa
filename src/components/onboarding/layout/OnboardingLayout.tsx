@@ -42,7 +42,7 @@ export function OnboardingLayout({
                 </Button>
               )}
               {title && (
-                <h1 className="text-lg font-semibold text-foreground font-urbanist">
+                <h1 className="text-lg font-semibold text-foreground font-inter">
                   {title}
                 </h1>
               )}

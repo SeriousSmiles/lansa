@@ -43,7 +43,7 @@ export function OnboardingCard({
             </div>
           )}
           
-          <h1 className="text-3xl lg:text-4xl font-bold text-foreground font-urbanist leading-tight">
+          <h1 className="text-3xl lg:text-4xl font-bold text-foreground font-inter leading-tight">
             {title}
           </h1>
           

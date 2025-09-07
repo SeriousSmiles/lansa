@@ -137,7 +137,7 @@ export function MobileProfileLayout({
       {/* Profile info */}
       <div className="pt-16 px-4">
         <MobileCardLayout className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-foreground mb-2 font-urbanist">
+          <h1 className="text-2xl font-bold text-foreground mb-2 font-inter">
             {userName || "Your Name"}
           </h1>
           <p className="text-muted-foreground mb-4">

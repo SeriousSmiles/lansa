@@ -21,10 +21,10 @@ export default {
 			}
 		},
 		extend: {
-			fontFamily: {
-				urbanist: ['Urbanist', 'sans-serif'],
-				'public-sans': ['Public Sans', 'sans-serif'],
-			},
+		fontFamily: {
+			inter: ['Inter', 'sans-serif'],
+			'public-sans': ['Public Sans', 'sans-serif'],
+		},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',

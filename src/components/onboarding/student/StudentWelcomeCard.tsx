@@ -18,7 +18,7 @@ export function StudentWelcomeCard({ onStart }: StudentWelcomeCardProps) {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary/70 flex items-center justify-center">
           <div className="text-center text-white px-6 space-y-4">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-urbanist animate-fade-in">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-inter animate-fade-in">
               Welcome to Lansa
             </h1>
             <p className="text-lg md:text-xl lg:text-2xl opacity-90 animate-fade-in [animation-delay:200ms]">

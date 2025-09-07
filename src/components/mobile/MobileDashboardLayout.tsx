@@ -79,7 +79,7 @@ export function MobileDashboardLayout({
       >
         <div className="flex items-center justify-between p-4">
           <div>
-            <h1 className="text-xl font-bold text-foreground font-urbanist">
+            <h1 className="text-xl font-bold text-foreground font-inter">
               Good morning, {userName}!
             </h1>
             <p className="text-sm text-muted-foreground">

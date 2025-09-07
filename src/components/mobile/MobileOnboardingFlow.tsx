@@ -116,7 +116,7 @@ export function MobileOnboardingFlow({
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-lg border-b border-border/50 mobile-safe-top">
         <div className="p-4">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-lg font-semibold text-foreground font-urbanist">
+            <h1 className="text-lg font-semibold text-foreground font-inter">
               Getting Started
             </h1>
             <span className="text-sm text-muted-foreground">
@@ -156,7 +156,7 @@ export function MobileOnboardingFlow({
             {/* Step content */}
             <MobileCardLayout className="flex-1 flex flex-col">
               <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-foreground mb-3 font-urbanist">
+                <h2 className="text-2xl font-bold text-foreground mb-3 font-inter">
                   {currentStepData.title}
                 </h2>
                 <p className="text-muted-foreground leading-relaxed">

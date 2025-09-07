@@ -43,7 +43,7 @@ export function StepHeader({
               </Badge>
             )}
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4 font-urbanist">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4 font-inter">
             {title}
           </h1>
           <p className="text-lg text-muted-foreground">
