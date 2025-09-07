@@ -245,7 +245,7 @@ export default function HomeSpotlight() {
   }, []);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#0B0E1A] text-white">
+    <main className="relative min-h-screen overflow-hidden bg-[#191F71] text-white">
       <Logo />
 
       {/* Welcome block - responsive positioning */}
@@ -263,11 +263,11 @@ export default function HomeSpotlight() {
             : 'max-w-md'
         } text-center pointer-events-auto`}>
           {/* Glass blur container with mobile optimizations */}
-          <div className={`backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-2xl ${
+          <div className={`backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl shadow-2xl ${
             isMobile ? 'p-4' : 'p-6'
           }`}>
             {/* Tab switcher - enhanced touch targets for mobile */}
-            <div className={`flex rounded-xl bg-white/10 p-1 ${isMobile ? 'mb-4' : 'mb-6'}`}>
+            <div className={`flex rounded-xl bg-white/15 p-1 ${isMobile ? 'mb-4' : 'mb-6'}`}>
               <button
                 onClick={() => {
                   setActiveTab('opportunities');
@@ -280,8 +280,8 @@ export default function HomeSpotlight() {
                   isMobile ? 'py-3 px-2' : 'py-2 px-3'
                 } ${
                   activeTab === 'opportunities'
-                    ? 'bg-white text-[#0B0E1A] shadow-sm'
-                    : 'text-white/70 hover:text-white hover:bg-white/5 active:bg-white/10'
+                    ? 'bg-white text-[#191F71] shadow-sm'
+                    : 'text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15'
                 }`}
                 style={{ minHeight: isMobile ? '44px' : 'auto' }} // Touch target size
               >
@@ -299,8 +299,8 @@ export default function HomeSpotlight() {
                   isMobile ? 'py-3 px-2' : 'py-2 px-3'
                 } ${
                   activeTab === 'team'
-                    ? 'bg-white text-[#0B0E1A] shadow-sm'
-                    : 'text-white/70 hover:text-white hover:bg-white/5 active:bg-white/10'
+                    ? 'bg-white text-[#191F71] shadow-sm'
+                    : 'text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15'
                 }`}
                 style={{ minHeight: isMobile ? '44px' : 'auto' }} // Touch target size
               >
@@ -325,7 +325,7 @@ export default function HomeSpotlight() {
             </p>
             <Link
               to="/auth"
-              className={`inline-flex items-center justify-center rounded-xl font-medium bg-white text-[#0B0E1A] hover:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 active:scale-95 transition-all duration-150 ${
+              className={`inline-flex items-center justify-center rounded-xl font-medium bg-white text-[#191F71] hover:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 active:scale-95 transition-all duration-150 ${
                 isMobile 
                   ? 'mt-4 px-8 py-4 text-base w-full' 
                   : 'mt-6 px-6 py-3 text-sm'
@@ -357,7 +357,7 @@ export default function HomeSpotlight() {
             <article
               key={`${t.id}-${i}`}
               data-grid-item
-              className={`rounded-[10px] bg-[#151926] backdrop-blur-[3px] border border-white/8 select-none
+              className={`rounded-[10px] bg-[#2A3284] backdrop-blur-[3px] border border-white/15 select-none
                          flex flex-col shadow-2xl shadow-black/20 ${
                            isMobile ? 'p-4' : 'p-6'
                          }`}
@@ -416,7 +416,7 @@ export default function HomeSpotlight() {
         aria-hidden="true"
         style={{
           background:
-            "radial-gradient( circle at var(--x) var(--y), rgba(11,14,26,0) 0, rgba(11,14,26,0.3) var(--r1), rgba(11,14,26,1) var(--r2), rgba(11,14,26,1) 100% )",
+            "radial-gradient( circle at var(--x) var(--y), rgba(25,31,113,0) 0, rgba(25,31,113,0.3) var(--r1), rgba(25,31,113,1) var(--r2), rgba(25,31,113,1) 100% )",
         }}
       />
     </main>
