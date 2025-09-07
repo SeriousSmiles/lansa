@@ -103,39 +103,46 @@ export default function HomeSpotlight() {
       >
         <div 
           ref={gridRef}
-          className="grid h-full w-full content-center gap-4 px-4
-                          [grid-template-columns:repeat(2,minmax(0,1fr))]
-                          md:[grid-template-columns:repeat(3,minmax(0,1fr))]
-                          lg:[grid-template-columns:repeat(4,minmax(0,1fr))]
-                          xl:[grid-template-columns:repeat(5,minmax(0,1fr))]"
+          className="grid h-full w-full content-start gap-4 px-4 py-8
+                          [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]
+                          [grid-auto-rows:minmax(400px,auto)]"
         >
-          {TESTIMONIALS.concat(TESTIMONIALS, TESTIMONIALS).map((t, i) => (
+          {TESTIMONIALS.concat(TESTIMONIALS, TESTIMONIALS).map((t, i) => {
+            // Create masonry effect with varying heights
+            const heights = ['min-h-[400px]', 'min-h-[500px]', 'min-h-[450px]', 'min-h-[550px]'];
+            const randomHeight = heights[i % heights.length];
+            
+            return (
             <article
               key={`${t.id}-${i}`}
-              className="rounded-3xl bg-white/4 backdrop-blur-[3px] border border-white/8 p-6 select-none
-                         min-w-[280px] min-h-[380px] flex flex-col justify-between
-                         shadow-2xl shadow-black/20"
+              className={`rounded-[10px] bg-white/4 backdrop-blur-[3px] border border-white/8 p-6 select-none
+                         w-full ${randomHeight} flex flex-col justify-between
+                         shadow-2xl shadow-black/20`}
             >
-              <div className="flex items-center gap-3 mb-6">
+              {/* Quote text at top - justified and centered */}
+              <div className="flex-1 flex items-start pt-4">
+                <blockquote className="text-base leading-relaxed text-white/90 font-medium text-center w-full">
+                  "{t.quote}"
+                </blockquote>
+              </div>
+              
+              {/* User info at bottom with spacing */}
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-white/10">
                 <img
                   src={t.avatar}
                   alt={t.name}
                   loading="lazy"
-                  className="h-14 w-14 rounded-full object-cover ring-2 ring-white/10"
+                  className="h-12 w-12 rounded-full object-cover ring-2 ring-white/10"
                   draggable={false}
                 />
                 <div className="min-w-0">
-                  <h3 className="text-lg font-bold truncate text-white">{t.name}</h3>
+                  <h3 className="text-base font-bold truncate text-white">{t.name}</h3>
                   <p className="text-sm text-white/70 truncate">{t.title}</p>
                 </div>
               </div>
-              <div className="flex-1 flex items-center">
-                <blockquote className="text-base leading-relaxed text-white/90 font-medium">
-                  "{t.quote}"
-                </blockquote>
-              </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       </section>
 
