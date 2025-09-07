@@ -12,6 +12,13 @@ import Logo from "../components/Logo";
  * - Cursor-follow radial spotlight overlay
  */
 export default function HomeSpotlight() {
+  // Easy to edit copy content
+  const WELCOME_CONTENT = {
+    headline: "Get seen for your real value.",
+    subtext: "Lansa helps students, freelancers, and teams turn experience into clear, hire-ready profiles.",
+    buttonText: "Login to Lansa"
+  };
+
   const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -129,16 +136,16 @@ export default function HomeSpotlight() {
       >
         <div className="max-w-3xl text-center pointer-events-auto mb-[60px]">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight">
-            Get seen for your real value.
+            {WELCOME_CONTENT.headline}
           </h1>
           <p className="mt-4 text-base sm:text-lg md:text-xl text-white/80">
-            Lansa helps students, freelancers, and teams turn experience into clear, hire-ready profiles.
+            {WELCOME_CONTENT.subtext}
           </p>
           <Link
             to="/auth"
             className="mt-8 inline-flex items-center justify-center rounded-xl px-6 py-3 text-base font-medium bg-white text-[#0B0E1A] hover:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
           >
-            Login to Lansa
+            {WELCOME_CONTENT.buttonText}
           </Link>
         </div>
       </section>
