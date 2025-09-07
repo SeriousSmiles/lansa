@@ -119,19 +119,15 @@ export default function HomeSpotlight() {
   }, []);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#0B0E1A] text-white"
-          style={{
-            width: '200vw',
-            height: '200vh'
-          }}>
+    <main className="relative min-h-screen overflow-hidden bg-[#0B0E1A] text-white">
       <Logo />
 
-      {/* Welcome block */}
+      {/* Welcome block - fixed positioned */}
       <section
-        className="relative z-30 flex min-h-screen items-center justify-center px-6"
+        className="fixed inset-0 z-30 flex items-center justify-center px-6 pointer-events-none"
         aria-label="Welcome"
       >
-        <div className="max-w-3xl text-center">
+        <div className="max-w-3xl text-center pointer-events-auto">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight">
             Get seen for your real value.
           </h1>
@@ -160,7 +156,7 @@ export default function HomeSpotlight() {
             <article
               key={`${t.id}-${i}`}
               data-grid-item
-              className="rounded-[10px] bg-white/4 backdrop-blur-[3px] border border-white/8 p-6 select-none
+              className="rounded-[10px] bg-[#151926] backdrop-blur-[3px] border border-white/8 p-6 select-none
                          flex flex-col shadow-2xl shadow-black/20"
             >
               {/* Star rating at top */}
