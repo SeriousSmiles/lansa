@@ -67,6 +67,50 @@ export default function Home() {
       });
     }
 
+    // Card swap animations for the path section
+    if (pathSectionRef.current) {
+      const cards = pathSectionRef.current.querySelectorAll('[style*="z-index"]');
+      
+      if (cards.length >= 3) {
+        const [card1, card2, card3] = cards;
+        
+        // Initial setup
+        gsap.set(card1, { zIndex: 3, rotation: 0 });
+        gsap.set(card2, { zIndex: 2, rotation: 3 });
+        gsap.set(card3, { zIndex: 1, rotation: 6 });
+        
+        // Create timeline for card swapping
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: pathSectionRef.current,
+            start: "top center",
+            end: "bottom center",
+            scrub: 1,
+            onUpdate: (self) => {
+              const progress = self.progress;
+              
+              if (progress < 0.33) {
+                // First third - show card 1 on top
+                gsap.set(card1, { zIndex: 3, rotation: 0 });
+                gsap.set(card2, { zIndex: 2, rotation: 3 });
+                gsap.set(card3, { zIndex: 1, rotation: 6 });
+              } else if (progress < 0.66) {
+                // Second third - swap to card 2 on top
+                gsap.set(card2, { zIndex: 3, rotation: 0 });
+                gsap.set(card3, { zIndex: 2, rotation: 3 });
+                gsap.set(card1, { zIndex: 1, rotation: 6 });
+              } else {
+                // Final third - swap to card 3 on top
+                gsap.set(card3, { zIndex: 3, rotation: 0 });
+                gsap.set(card1, { zIndex: 2, rotation: 3 });
+                gsap.set(card2, { zIndex: 1, rotation: 6 });
+              }
+            }
+          }
+        });
+      }
+    }
+
     return () => {
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
     };
@@ -427,47 +471,75 @@ export default function Home() {
         </section>
 
         {/* Your Path to Success Section */}
-        <section ref={pathSectionRef} className="py-32 px-6 bg-gray-50">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-12 gap-12">
-              {/* Left Sticky Content */}
-              <div className="col-span-12 lg:col-span-6">
-                <div className="sticky top-32">
-                  <h2 className="font-urbanist font-bold text-5xl mb-8">
+        <section ref={pathSectionRef} className="px-[5%]">
+          <div className="container">
+            <div className="relative h-[300svh] lg:h-[300vh]">
+              <div className="static grid h-full grid-cols-1 content-start items-center gap-x-20 gap-y-16 py-16 md:sticky md:top-0 md:h-svh md:grid-cols-2 md:content-normal md:py-0 lg:h-screen">
+                <div>
+                  <p className="mb-3 font-semibold font-public-sans md:mb-4">Journey</p>
+                  <h2 className="mb-5 text-5xl font-bold font-urbanist md:mb-6 md:text-7xl lg:text-8xl">
                     Your Path to Success Starts Here
                   </h2>
-                  <p className="font-public-sans text-xl text-gray-600 leading-relaxed">
-                    Follow our proven 3-step process to transform your career in the Dutch Caribbean market.
+                  <p className="font-public-sans md:text-md">
+                    Unlock your potential with Lansa. Follow our simple steps to build a
+                    standout profile that gets you noticed in the Caribbean job market.
                   </p>
+                  <div className="mt-6 flex flex-wrap items-center gap-4 md:mt-8">
+                    <Button className="bg-blue-600 hover:bg-blue-700 font-public-sans" asChild>
+                      <Link to="/auth">Start</Link>
+                    </Button>
+                    <Button variant="ghost" className="gap-2 bg-transparent p-0 font-public-sans">
+                      Learn<svg stroke="currentColor" fill="none" strokeWidth="0" viewBox="0 0 15 15" height="1em" width="1em">
+                        <path fillRule="evenodd" clipRule="evenodd" d="M6.1584 3.13508C6.35985 2.94621 6.67627 2.95642 6.86514 3.15788L10.6151 7.15788C10.7954 7.3502 10.7954 7.64949 10.6151 7.84182L6.86514 11.8418C6.67627 12.0433 6.35985 12.0535 6.1584 11.8646C5.95694 11.6757 5.94673 11.3593 6.1356 11.1579L9.565 7.49985L6.1356 3.84182C5.94673 3.64036 5.95694 3.32394 6.1584 3.13508Z" fill="currentColor"></path>
+                      </svg>
+                    </Button>
+                  </div>
                 </div>
-              </div>
-              
-              {/* Right Cards */}
-              <div className="col-span-12 lg:col-span-6">
-                <div className="space-y-16">
-                  {/* Card 1 */}
-                  <div className="bg-white p-8 rounded-2xl shadow-lg transform hover:scale-105 transition-transform duration-300">
-                    <div className="text-blue-600 font-urbanist font-bold text-6xl mb-4">01</div>
-                    <h3 className="font-urbanist font-bold text-2xl mb-4">Build Your Profile</h3>
-                    <p className="font-public-sans text-gray-600 leading-relaxed">
+                <div className="sticky top-[25%] flex min-h-[24.5rem] flex-col items-center justify-center md:relative md:top-0 md:min-h-[auto]">
+                  {/* Card 1 - Top Card */}
+                  <div
+                    className="overflow-hidden rounded-2xl border border-gray-200 bg-white text-gray-900 absolute mx-6 flex flex-col justify-between p-8 md:ml-0 w-80 h-64"
+                    style={{zIndex: 3, transform: "none"}}
+                  >
+                    <div className="mb-6 md:mb-8">
+                      <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <span className="text-white font-bold">1</span>
+                      </div>
+                    </div>
+                    <h3 className="mb-3 text-xl font-bold font-urbanist md:mb-4 md:text-2xl">Build Your Profile</h3>
+                    <p className="font-public-sans">
                       Create a compelling professional profile with AI-powered insights tailored to the Caribbean job market.
                     </p>
                   </div>
                   
-                  {/* Card 2 */}
-                  <div className="bg-white p-8 rounded-2xl shadow-lg transform hover:scale-105 transition-transform duration-300">
-                    <div className="text-blue-600 font-urbanist font-bold text-6xl mb-4">02</div>
-                    <h3 className="font-urbanist font-bold text-2xl mb-4">Get Discovered</h3>
-                    <p className="font-public-sans text-gray-600 leading-relaxed">
+                  {/* Card 2 - Middle Card */}
+                  <div
+                    className="overflow-hidden rounded-2xl border border-gray-200 bg-white text-gray-900 absolute mx-6 flex flex-col justify-between p-8 md:ml-0 w-80 h-64"
+                    style={{zIndex: 2, transform: "rotate(3deg)"}}
+                  >
+                    <div className="mb-6 md:mb-8">
+                      <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+                        <span className="text-white font-bold">2</span>
+                      </div>
+                    </div>
+                    <h3 className="mb-3 text-xl font-bold font-urbanist md:mb-4 md:text-2xl">Get Discovered</h3>
+                    <p className="font-public-sans">
                       Let employers across Curaçao, Aruba, and Sint Maarten find you through our regional network.
                     </p>
                   </div>
                   
-                  {/* Card 3 */}
-                  <div className="bg-white p-8 rounded-2xl shadow-lg transform hover:scale-105 transition-transform duration-300">
-                    <div className="text-blue-600 font-urbanist font-bold text-6xl mb-4">03</div>
-                    <h3 className="font-urbanist font-bold text-2xl mb-4">Land Your Dream Job</h3>
-                    <p className="font-public-sans text-gray-600 leading-relaxed">
+                  {/* Card 3 - Bottom Card */}
+                  <div
+                    className="overflow-hidden rounded-2xl border border-gray-200 bg-white text-gray-900 absolute mx-6 flex flex-col justify-between p-8 md:ml-0 w-80 h-64"
+                    style={{zIndex: 1, transform: "rotate(6deg)"}}
+                  >
+                    <div className="mb-6 md:mb-8">
+                      <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                        <span className="text-white font-bold">3</span>
+                      </div>
+                    </div>
+                    <h3 className="mb-3 text-xl font-bold font-urbanist md:mb-4 md:text-2xl">Land Your Dream Job</h3>
+                    <p className="font-public-sans">
                       Connect with opportunities that match your skills, values, and career goals in the Caribbean.
                     </p>
                   </div>
@@ -475,6 +547,7 @@ export default function Home() {
               </div>
             </div>
           </div>
+          <div className="absolute inset-0 -z-10 mt-[100vh]"></div>
         </section>
 
         {/* Testimonials Section */}
