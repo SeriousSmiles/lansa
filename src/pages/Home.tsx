@@ -173,18 +173,22 @@ export default function Home() {
         </section>
 
         {/* Text Banner Section */}
-        <section className="py-20 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-6">
-            <div ref={textBanner1Ref} className="mb-8">
-              <h2 className="font-urbanist font-bold text-6xl lg:text-8xl text-center">
-                Get Clarity, Confidence, and Recognition
-              </h2>
-            </div>
-            <div ref={textBanner2Ref}>
-              <p className="font-urbanist font-bold text-4xl lg:text-6xl text-center text-blue-600">
-                Now — Not Later
-              </p>
-            </div>
+        <section className="overflow-hidden px-[5%] py-16 md:py-24 lg:py-28">
+          <div className="flex flex-col whitespace-nowrap">
+            <h1
+              ref={textBanner1Ref}
+              className="text-[6rem] leading-[1.2] font-bold font-urbanist"
+              style={{transform: "translateX(-10%)"}}
+            >
+              Now — Not 5 or 10 Years From Now.
+            </h1>
+            <h1
+              ref={textBanner2Ref}
+              className="text-[6rem] leading-[1.2] font-bold font-urbanist self-end"
+              style={{transform: "translateX(10%)"}}
+            >
+              Now — Not 5 or 10 Years From Now.
+            </h1>
           </div>
         </section>
 
