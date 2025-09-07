@@ -112,58 +112,61 @@ export default function Home() {
         </nav>
 
         {/* Hero Section */}
-        <section className="relative pt-24 pb-20 px-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-12 gap-8 items-center">
-              {/* Left Image Block */}
-              <div ref={heroLeftRef} className="col-span-3 hidden lg:block">
-                <div className="w-full h-96 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl overflow-hidden">
-                  <img 
-                    src="/lovable-uploads/155ecc34-3f01-4d49-b1ad-10c1a50803e2.png" 
-                    alt="Professional in Curaçao office"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-              
-              {/* Center Content */}
-              <div className="col-span-12 lg:col-span-6 text-center">
-                <h1 className="font-urbanist font-bold text-5xl lg:text-7xl mb-6 leading-tight">
-                  Your Career,
-                  <br />
-                  <span className="text-blue-600">Amplified</span>
+        <section className="px-[5%] py-16 md:py-24 lg:py-28">
+          <div className="container">
+            <div className="mb-12 text-center md:mb-18 lg:mb-20">
+              <div className="mx-auto w-full max-w-4xl">
+                <h1 className="mb-5 text-6xl font-bold font-urbanist md:mb-6 md:text-8xl lg:text-9xl leading-tight">
+                  A Real Chance To Get Work You Actually Want
                 </h1>
-                <p className="font-public-sans text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-                  Build a standout professional profile that gets you noticed in the Dutch Caribbean. 
-                  AI-powered insights help you showcase your unique value to employers across the region.
+                <p className="font-public-sans text-lg md:text-xl text-gray-600 leading-relaxed">
+                  Build your professional resume, get expert guidance, and proof you are
+                  work-ready before you even finish school.
                 </p>
-                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-3 font-public-sans">
-                  <Link to="/auth">Start Building Your Profile</Link>
-                </Button>
-              </div>
-              
-              {/* Right Image Block */}
-              <div ref={heroRightRef} className="col-span-3 hidden lg:block">
-                <div className="w-full h-96 bg-gradient-to-br from-blue-100 to-green-100 rounded-2xl overflow-hidden">
-                  <img 
-                    src="/lovable-uploads/1c3395f0-854c-4830-b97a-46a12aec1d25.png" 
-                    alt="Career success in Aruba"
-                    className="w-full h-full object-cover"
-                  />
+                <div className="mt-6 flex items-center justify-center gap-4 md:mt-8">
+                  <Button 
+                    size="lg" 
+                    className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-3 font-public-sans"
+                    asChild
+                  >
+                    <Link to="/auth">Try Lansa Now</Link>
+                  </Button>
                 </div>
               </div>
             </div>
-            
-            {/* Center Hero Image */}
-            <div ref={heroCenterRef} className="mt-16 relative">
-              <div className="max-w-4xl mx-auto">
-                <div className="w-full h-96 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-2xl overflow-hidden shadow-2xl">
-                  <img 
-                    src="/lovable-uploads/2bc2aac1-3d99-47c5-a884-0800b05c0f76.png" 
-                    alt="Professional networking in Sint Maarten"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+            <div className="relative flex justify-center gap-6 sm:gap-8 md:gap-0">
+              <div
+                ref={heroLeftRef}
+                className="absolute bottom-0 left-0 z-10 w-2/5"
+                style={{transform: "translateY(-15.444%)"}}
+              >
+                <img
+                  src="/lovable-uploads/155ecc34-3f01-4d49-b1ad-10c1a50803e2.png"
+                  alt="Professional in Curaçao office"
+                  className="aspect-square size-full rounded-2xl object-cover"
+                />
+              </div>
+              <div
+                ref={heroCenterRef}
+                className="mx-[10%] mb-[10%] w-1/2"
+                style={{transform: "translateY(15.333%)"}}
+              >
+                <img
+                  src="/lovable-uploads/2bc2aac1-3d99-47c5-a884-0800b05c0f76.png"
+                  alt="Professional networking in Sint Maarten"
+                  className="aspect-square size-full rounded-2xl object-cover"
+                />
+              </div>
+              <div
+                ref={heroRightRef}
+                className="absolute top-[10%] right-0 w-2/5"
+                style={{transform: "translateY(11.333%)"}}
+              >
+                <img
+                  src="/lovable-uploads/1c3395f0-854c-4830-b97a-46a12aec1d25.png"
+                  alt="Career success in Aruba"
+                  className="aspect-[4/3] size-full rounded-2xl object-cover"
+                />
               </div>
             </div>
           </div>
