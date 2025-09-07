@@ -12,11 +12,10 @@ import Logo from "../components/Logo";
  * - Cursor-follow radial spotlight overlay
  */
 export default function HomeSpotlight() {
-  const rootRef = useRef<HTMLElement | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const root = document.documentElement;
-    rootRef.current = root as unknown as HTMLElement;
 
     // Initialize CSS variables for a more dramatic spotlight effect
     root.style.setProperty("--x", "50vw");
@@ -25,12 +24,27 @@ export default function HomeSpotlight() {
     root.style.setProperty("--r2", "200px"); // Smaller outer radius for thicker fog
 
     const onMove = (e: PointerEvent) => {
+      // Update spotlight position
       gsap.to(root, {
         "--x": `${e.clientX}px`,
         "--y": `${e.clientY}px`,
         duration: 0.15,
         ease: "power3.out"
       });
+
+      // Add parallax effect to cards (opposite direction movement)
+      if (gridRef.current) {
+        const { innerWidth, innerHeight } = window;
+        const xPercent = (e.clientX / innerWidth - 0.5) * -20; // Opposite direction, reduced intensity
+        const yPercent = (e.clientY / innerHeight - 0.5) * -20;
+        
+        gsap.to(gridRef.current, {
+          x: xPercent,
+          y: yPercent,
+          duration: 0.8,
+          ease: "power2.out"
+        });
+      }
     };
 
     // Desktop pointer tracking
@@ -42,9 +56,12 @@ export default function HomeSpotlight() {
       gsap.set(root, { "--x": "50vw", "--y": "38vh", "--r1": "100px", "--r2": "220px" });
     }
 
-    // Mobile touch behavior: re-center with tighter focus
+    // Mobile touch behavior: re-center with tighter focus and reset parallax
     const onTouchEnd = () => {
       gsap.to(root, { "--x": "50vw", "--y": "40vh", "--r1": "90px", "--r2": "210px", duration: 0.3, ease: "power2.out" });
+      if (gridRef.current) {
+        gsap.to(gridRef.current, { x: 0, y: 0, duration: 0.5, ease: "power2.out" });
+      }
     };
     window.addEventListener("touchend", onTouchEnd, { passive: true });
 
@@ -84,11 +101,14 @@ export default function HomeSpotlight() {
         aria-label="What users say"
         className="pointer-events-none absolute inset-0 z-10"
       >
-        <div className="grid h-full w-full content-center gap-4 px-4
-                        [grid-template-columns:repeat(2,minmax(0,1fr))]
-                        md:[grid-template-columns:repeat(3,minmax(0,1fr))]
-                        lg:[grid-template-columns:repeat(4,minmax(0,1fr))]
-                        xl:[grid-template-columns:repeat(5,minmax(0,1fr))]">
+        <div 
+          ref={gridRef}
+          className="grid h-full w-full content-center gap-4 px-4
+                          [grid-template-columns:repeat(2,minmax(0,1fr))]
+                          md:[grid-template-columns:repeat(3,minmax(0,1fr))]
+                          lg:[grid-template-columns:repeat(4,minmax(0,1fr))]
+                          xl:[grid-template-columns:repeat(5,minmax(0,1fr))]"
+        >
           {TESTIMONIALS.concat(TESTIMONIALS, TESTIMONIALS).map((t, i) => (
             <article
               key={`${t.id}-${i}`}
@@ -119,13 +139,13 @@ export default function HomeSpotlight() {
         </div>
       </section>
 
-      {/* Enhanced spotlight overlay with thicker fog */}
+      {/* Complete fog overlay with 0% transparency in center */}
       <div
         className="pointer-events-none fixed inset-0 z-20"
         aria-hidden="true"
         style={{
           background:
-            "radial-gradient( circle at var(--x) var(--y), rgba(11,14,26,0) 0, rgba(11,14,26,0.1) var(--r1), rgba(11,14,26,0.95) var(--r2), rgba(11,14,26,0.98) 100% )",
+            "radial-gradient( circle at var(--x) var(--y), rgba(11,14,26,0) 0, rgba(11,14,26,0.3) var(--r1), rgba(11,14,26,1) var(--r2), rgba(11,14,26,1) 100% )",
         }}
       />
     </main>

@@ -9,7 +9,7 @@ export default function Logo() {
       aria-label="Lansa home"
     >
       <img
-        src="/lovable-uploads/2c107590-3bd8-4711-a705-041a59395cbb.png"
+        src="/lovable-uploads/491b4459-7e7e-436e-b1f0-4c242e7b5413.png"
         alt="Lansa"
         className="h-9 w-auto select-none"
         draggable={false}
