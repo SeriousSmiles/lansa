@@ -1,7 +1,7 @@
 
 import { useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LockKeyhole, Brain } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { gsap } from "gsap";
 import { OverviewTab } from "./overview/OverviewTab";
 import { StoryBuilderTab } from "./StoryBuilderTab";
@@ -45,7 +45,7 @@ export function DashboardTabs({
           <TabsTrigger value="overview" className="btn-animate">Overview</TabsTrigger>
           <TabsTrigger value="storybuilder" className="flex items-center gap-1.5 btn-animate">
             <span>Story Builder</span>
-            <LockKeyhole className="h-3.5 w-3.5" />
+            <Badge variant="default" className="text-xs px-1.5 py-0.5">Beta</Badge>
           </TabsTrigger>
         </TabsList>
         
