@@ -205,6 +205,7 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
   if (showJobCreator) {
     return (
       <MobileJobCreator
+        userId={user?.id || ""}
         onComplete={handleJobCreated}
         onClose={() => setShowJobCreator(false)}
         companyName={businessData?.company_name}
@@ -215,13 +216,8 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
   if (showCandidateBrowser) {
     return (
       <MobileCandidateBrowser
-        profiles={candidates}
-        onSwipe={handleCandidateSwipe}
+        userId={user?.id || ""}
         onBack={() => setShowCandidateBrowser(false)}
-        onLoadMore={loadCandidates}
-        matchCount={stats.newMatches}
-        todayCount={stats.candidatesViewed}
-        isLoading={isLoadingCandidates}
       />
     );
   }

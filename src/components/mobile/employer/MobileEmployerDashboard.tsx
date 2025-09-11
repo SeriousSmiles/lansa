@@ -78,10 +78,17 @@ export function MobileEmployerDashboard({
   }, []);
 
   const handleStatSwipe = (direction: 'left' | 'right') => {
-    if (direction === 'left' && currentStatIndex < statCards.length - 1) {
+    const maxIndex = statCards.length - 1;
+    if (direction === 'left' && currentStatIndex < maxIndex) {
       setCurrentStatIndex(prev => prev + 1);
     } else if (direction === 'right' && currentStatIndex > 0) {
       setCurrentStatIndex(prev => prev - 1);
+    } else if (direction === 'left' && currentStatIndex === maxIndex) {
+      // Wrap to beginning
+      setCurrentStatIndex(0);
+    } else if (direction === 'right' && currentStatIndex === 0) {
+      // Wrap to end
+      setCurrentStatIndex(maxIndex);
     }
   };
 
@@ -134,33 +141,37 @@ export function MobileEmployerDashboard({
                 </div>
               </div>
               
-              <div className="space-y-4">
-                {statCards.map((stat, index) => {
-                  const Icon = stat.icon;
-                  return (
-                    <div
-                      key={index}
-                      className={`transition-all duration-500 ${
-                        index === currentStatIndex ? 'opacity-100 scale-100' : 'opacity-40 scale-95'
-                      }`}
-                      style={{
-                        display: index === currentStatIndex ? 'flex' : 'none'
-                      }}
-                    >
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.color}`}>
-                            <Icon className="h-6 w-6 text-white" />
-                          </div>
-                          <div>
-                            <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                            <p className="text-sm text-muted-foreground">{stat.description}</p>
+              <div className="relative h-24 overflow-hidden">
+                <div 
+                  className="flex transition-transform duration-500 ease-out"
+                  style={{
+                    transform: `translateX(-${currentStatIndex * 100}%)`,
+                    width: `${statCards.length * 100}%`
+                  }}
+                >
+                  {statCards.map((stat, index) => {
+                    const Icon = stat.icon;
+                    return (
+                      <div
+                        key={index}
+                        className="w-full flex-shrink-0 px-2"
+                        style={{ width: `${100 / statCards.length}%` }}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-4">
+                            <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.color}`}>
+                              <Icon className="h-6 w-6 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                              <p className="text-sm text-muted-foreground">{stat.description}</p>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </SwipeableContainer>

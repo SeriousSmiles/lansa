@@ -9,28 +9,28 @@ import { mobileAnimations, mobileUtils } from "@/utils/mobileAnimations";
 import { gsap } from "gsap";
 import type { DiscoveryProfile } from "@/services/discoveryService";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { candidateDiscoveryService, CandidateFilters } from "@/services/candidateDiscoveryService";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { FilterModal } from "./MobileFilterModal";
 
 interface MobileCandidateBrowserProps {
-  profiles: DiscoveryProfile[];
-  onSwipe: (profile: DiscoveryProfile, direction: 'left' | 'right' | 'nudge') => void;
+  userId: string;
   onBack: () => void;
-  onLoadMore: () => void;
-  matchCount: number;
-  todayCount: number;
-  isLoading?: boolean;
+  initialFilters?: CandidateFilters;
 }
 
 export function MobileCandidateBrowser({
-  profiles,
-  onSwipe,
+  userId,
   onBack,
-  onLoadMore,
-  matchCount,
-  todayCount,
-  isLoading = false
+  initialFilters = {}
 }: MobileCandidateBrowserProps) {
+  const [profiles, setProfiles] = useState<DiscoveryProfile[]>([]);
   const [currentProfileIndex, setCurrentProfileIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [filters, setFilters] = useState<CandidateFilters>(initialFilters);
+  const [showFilters, setShowFilters] = useState(false);
+  const [stats, setStats] = useState({ matchCount: 0, todayCount: 0, weekCount: 0 });
   const headerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +40,31 @@ export function MobileCandidateBrowser({
     if (headerRef.current) {
       mobileAnimations.pageSlideIn(headerRef.current);
     }
-  }, []);
+    loadCandidates();
+    loadStats();
+  }, [filters]);
+
+  const loadCandidates = async () => {
+    setIsLoading(true);
+    try {
+      const newProfiles = await candidateDiscoveryService.getFilteredCandidates(userId, filters, 20);
+      setProfiles(newProfiles);
+      setCurrentProfileIndex(0);
+    } catch (error) {
+      console.error('Error loading candidates:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const swipeStats = await candidateDiscoveryService.getSwipeStats(userId);
+      setStats(swipeStats);
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  };
 
   const handleSwipeAction = async (direction: 'left' | 'right' | 'nudge') => {
     if (!currentProfile || isAnimating) return;
@@ -56,20 +80,36 @@ export function MobileCandidateBrowser({
       await mobileAnimations.pageSlideOut(cardRef.current, exitDirection);
     }
 
-    // Call swipe handler
-    onSwipe(currentProfile, direction);
+    // Call swipe service
+    try {
+      const result = await candidateDiscoveryService.swipeCandidate(userId, currentProfile, direction);
+      if (result.isMatch) {
+        // Handle match - could show celebration animation
+        loadStats(); // Refresh stats
+      }
+    } catch (error) {
+      console.error('Error swiping candidate:', error);
+    }
 
     // Move to next profile
     const nextIndex = currentProfileIndex + 1;
     if (nextIndex >= profiles.length - 2) {
-      onLoadMore(); // Load more when approaching end
+      loadCandidates(); // Load more when approaching end
     }
 
     if (nextIndex < profiles.length) {
       setCurrentProfileIndex(nextIndex);
+    } else {
+      // No more profiles, reload
+      loadCandidates();
     }
 
     setIsAnimating(false);
+  };
+
+  const applyFilters = (newFilters: CandidateFilters) => {
+    setFilters(newFilters);
+    setShowFilters(false);
   };
 
   const getProfileInitials = (profile: DiscoveryProfile) => {
@@ -112,19 +152,29 @@ export function MobileCandidateBrowser({
               </p>
             </div>
 
-            <Button variant="ghost" size="sm">
-              <Filter className="h-5 w-5" />
-            </Button>
+            <Dialog open={showFilters} onOpenChange={setShowFilters}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <Filter className="h-5 w-5" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Filter Candidates</DialogTitle>
+                </DialogHeader>
+                <FilterModal filters={filters} onApply={applyFilters} />
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Stats */}
           <div className="flex justify-center gap-6 mt-4">
             <div className="text-center">
-              <p className="text-lg font-bold text-foreground">{matchCount}</p>
+              <p className="text-lg font-bold text-foreground">{stats.matchCount}</p>
               <p className="text-xs text-muted-foreground">Matches</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold text-foreground">{todayCount}</p>
+              <p className="text-lg font-bold text-foreground">{stats.todayCount}</p>
               <p className="text-xs text-muted-foreground">Today</p>
             </div>
           </div>

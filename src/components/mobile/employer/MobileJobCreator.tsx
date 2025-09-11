@@ -10,30 +10,15 @@ import { ArrowLeft, ArrowRight, X, Plus, Eye, Briefcase } from "lucide-react";
 import { mobileAnimations } from "@/utils/mobileAnimations";
 import { MobileCardLayout } from "@/components/mobile/MobileCardLayout";
 import { gsap } from "gsap";
-
-interface JobData {
-  title: string;
-  company: string;
-  location: string;
-  jobType: string;
-  workType: string;
-  salaryMin: string;
-  salaryMax: string;
-  currency: string;
-  description: string;
-  requirements: string[];
-  benefits: string[];
-  skills: string[];
-  experienceLevel: string;
-  isRemote: boolean;
-  isActive: boolean;
-}
+import { jobPostingService, JobFormData } from "@/services/jobPostingService";
+import { toast } from "sonner";
 
 interface MobileJobCreatorProps {
-  onComplete: (jobData: JobData) => void;
+  onComplete: (jobData: JobFormData) => void;
   onClose: () => void;
-  initialData?: Partial<JobData>;
+  initialData?: Partial<JobFormData>;
   companyName?: string;
+  userId: string;
 }
 
 interface JobStep {
@@ -48,12 +33,12 @@ export function MobileJobCreator({
   onComplete, 
   onClose, 
   initialData = {},
-  companyName = ""
+  companyName = "",
+  userId
 }: MobileJobCreatorProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [jobData, setJobData] = useState<JobData>({
+  const [jobData, setJobData] = useState<JobFormData>({
     title: initialData.title || "",
-    company: initialData.company || companyName,
     location: initialData.location || "",
     jobType: initialData.jobType || "",
     workType: initialData.workType || "",
@@ -82,7 +67,7 @@ export function MobileJobCreator({
   const experienceLevels = ["Entry Level", "Mid Level", "Senior Level", "Executive"];
   const currencies = ["USD", "EUR", "GBP", "CAD", "AUD"];
 
-  const updateJobData = (field: keyof JobData, value: any) => {
+  const updateJobData = (field: keyof JobFormData, value: any) => {
     setJobData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -404,12 +389,20 @@ export function MobileJobCreator({
     }
   }, [currentStep]);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const step = steps[currentStep];
     if (!step.validation()) return;
 
     if (currentStep === steps.length - 1) {
-      onComplete(jobData);
+      // Submit the job
+      try {
+        const createdJob = await jobPostingService.createJobListing(userId, jobData);
+        if (createdJob) {
+          onComplete(jobData);
+        }
+      } catch (error) {
+        toast.error("Failed to create job listing");
+      }
     } else {
       setCurrentStep(prev => prev + 1);
     }
@@ -443,7 +436,7 @@ export function MobileJobCreator({
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold text-foreground">{jobData.title}</h2>
-                <p className="text-muted-foreground mt-1">{jobData.company}</p>
+                <p className="text-muted-foreground mt-1">{companyName || 'Your Company'}</p>
                 <div className="flex gap-2 mt-2">
                   <Badge variant="secondary">{jobData.jobType}</Badge>
                   <Badge variant="secondary">{jobData.location}</Badge>
