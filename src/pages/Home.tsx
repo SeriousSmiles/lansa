@@ -126,20 +126,20 @@ export default function Home() {
         canonical="https://lansa.online/"
       />
       
-      <div className="min-h-screen bg-white overflow-x-hidden">
+      <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
         {/* Navigation */}
-        <nav className="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100">
+        <nav className="fixed top-0 w-full z-50 bg-background/90 backdrop-blur-sm border-b border-border">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center space-x-2">
                 <AnimatedLogo size={32} />
-                <span className="font-urbanist font-bold text-xl">Lansa</span>
+                <span className="font-urbanist font-bold text-xl text-foreground">Lansa</span>
               </div>
               
               <div className="hidden md:flex items-center space-x-8">
-                <Link to="/about" className="text-gray-600 hover:text-gray-900 font-public-sans">About</Link>
-                <Link to="/resources" className="text-gray-600 hover:text-gray-900 font-public-sans">Resources</Link>
-                <Link to="/help" className="text-gray-600 hover:text-gray-900 font-public-sans">Support</Link>
+                <Link to="/about" className="text-muted-foreground hover:text-foreground font-public-sans">About</Link>
+                <Link to="/resources" className="text-muted-foreground hover:text-foreground font-public-sans">Resources</Link>
+                <Link to="/help" className="text-muted-foreground hover:text-foreground font-public-sans">Support</Link>
               </div>
               
               <div className="flex items-center space-x-4">
@@ -162,7 +162,7 @@ export default function Home() {
                 <h1 className="mb-5 text-6xl font-bold font-urbanist md:mb-6 md:text-8xl lg:text-9xl leading-tight">
                   A Real Chance To Get Work You Actually Want
                 </h1>
-                <p className="font-public-sans text-lg md:text-xl text-gray-600 leading-relaxed">
+                <p className="font-public-sans text-lg md:text-xl text-muted-foreground leading-relaxed">
                   Build your professional resume, get expert guidance, and proof you are
                   work-ready before you even finish school.
                 </p>
@@ -558,17 +558,17 @@ export default function Home() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {/* Text Testimonial 1 */}
-              <div className="bg-blue-50 p-8 rounded-2xl">
-                <p className="font-public-sans text-gray-700 mb-6 italic">
+              <div className="bg-card border border-border p-8 rounded-2xl">
+                <p className="font-public-sans text-card-foreground mb-6 italic">
                   "Lansa helped me showcase my bilingual skills and cultural knowledge, landing me a management role in Curaçao's tourism sector."
                 </p>
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                  <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold">
                     M
                   </div>
                   <div className="ml-4">
-                    <p className="font-urbanist font-bold">Maria Santos</p>
-                    <p className="font-public-sans text-sm text-gray-600">Tourism Manager, Curaçao</p>
+                    <p className="font-urbanist font-bold text-card-foreground">Maria Santos</p>
+                    <p className="font-public-sans text-sm text-muted-foreground">Tourism Manager, Curaçao</p>
                   </div>
                 </div>
               </div>
@@ -583,57 +583,57 @@ export default function Home() {
               </div>
               
               {/* Text Testimonial 2 */}
-              <div className="bg-green-50 p-8 rounded-2xl">
-                <p className="font-public-sans text-gray-700 mb-6 italic">
+              <div className="bg-card border border-border p-8 rounded-2xl">
+                <p className="font-public-sans text-card-foreground mb-6 italic">
                   "The AI insights helped me reframe my experience in a way that resonated with Sint Maarten employers. Got 3 interviews in one week!"
                 </p>
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                  <div className="w-12 h-12 bg-secondary rounded-full flex items-center justify-center text-secondary-foreground font-bold">
                     J
                   </div>
                   <div className="ml-4">
-                    <p className="font-urbanist font-bold">James Richardson</p>
-                    <p className="font-public-sans text-sm text-gray-600">Finance Director, Sint Maarten</p>
+                    <p className="font-urbanist font-bold text-card-foreground">James Richardson</p>
+                    <p className="font-public-sans text-sm text-muted-foreground">Finance Director, Sint Maarten</p>
                   </div>
                 </div>
               </div>
               
               {/* Text Testimonial 3 */}
-              <div className="bg-purple-50 p-8 rounded-2xl">
-                <p className="font-public-sans text-gray-700 mb-6 italic">
+              <div className="bg-card border border-border p-8 rounded-2xl">
+                <p className="font-public-sans text-card-foreground mb-6 italic">
                   "Finally, a platform that understands the Caribbean job market. Lansa connected me with opportunities I never knew existed."
                 </p>
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                  <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center text-accent-foreground font-bold">
                     A
                   </div>
                   <div className="ml-4">
-                    <p className="font-urbanist font-bold">Ana Martinez</p>
-                    <p className="font-public-sans text-sm text-gray-600">Software Engineer, Aruba</p>
+                    <p className="font-urbanist font-bold text-card-foreground">Ana Martinez</p>
+                    <p className="font-public-sans text-sm text-muted-foreground">Software Engineer, Aruba</p>
                   </div>
                 </div>
               </div>
               
               {/* More testimonials */}
-              <div className="bg-yellow-50 p-8 rounded-2xl">
-                <p className="font-public-sans text-gray-700 mb-6 italic">
+              <div className="bg-card border border-border p-8 rounded-2xl">
+                <p className="font-public-sans text-card-foreground mb-6 italic">
                   "The regional focus made all the difference. Employers could see my local connections and cultural fit immediately."
                 </p>
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-yellow-600 rounded-full flex items-center justify-center text-white font-bold">
+                  <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold">
                     C
                   </div>
                   <div className="ml-4">
-                    <p className="font-urbanist font-bold">Carlos Ruiz</p>
-                    <p className="font-public-sans text-sm text-gray-600">Marketing Director, Curaçao</p>
+                    <p className="font-urbanist font-bold text-card-foreground">Carlos Ruiz</p>
+                    <p className="font-public-sans text-sm text-muted-foreground">Marketing Director, Curaçao</p>
                   </div>
                 </div>
               </div>
               
               {/* Image Testimonial 2 */}
               <div className="rounded-2xl overflow-hidden">
-                <div className="w-full h-full bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
-                  <span className="font-urbanist font-bold text-4xl text-gray-600">Success Stories</span>
+                <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center border border-border">
+                  <span className="font-urbanist font-bold text-4xl text-foreground">Success Stories</span>
                 </div>
               </div>
             </div>
