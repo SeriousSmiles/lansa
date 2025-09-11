@@ -35,7 +35,7 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
     >
       <div className="flex w-full max-w-[1440px] mx-auto flex-wrap items-center justify-between px-4 sm:px-6 md:px-8 lg:px-12 h-14 gap-2 sm:gap-4">
         {/* Logo */}
-        <Link to="/dashboard" className="flex items-center gap-2">
+        <Link to={userType === 'employer' ? "/employer-dashboard" : "/dashboard"} className="flex items-center gap-2">
           <img
             src="https://cdn.builder.io/api/v1/image/assets/TEMP/41285a6d1f6906d8349429ceb652f953bf730d06?placeholderIfAbsent=true"
             alt="Lansa Logo"

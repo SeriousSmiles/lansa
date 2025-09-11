@@ -12,6 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { safeHandler } from "@/config/demo";
+import { useUserType } from "@/hooks/useUserType";
 
 interface UserProfileProps {
   userName: string;
@@ -22,6 +23,7 @@ interface UserProfileProps {
 
 export function UserProfile({ userName, email, handleLogout, themeColor }: UserProfileProps) {
   const { user } = useAuth();
+  const { userType } = useUserType();
   const [profileImage, setProfileImage] = useState<string>("");
 
   useEffect(() => {
@@ -76,9 +78,11 @@ export function UserProfile({ userName, email, handleLogout, themeColor }: UserP
           <p className="text-xs text-muted-foreground">{email}</p>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link to="/profile">Resume Builder</Link>
-        </DropdownMenuItem>
+        {userType !== 'employer' && (
+          <DropdownMenuItem asChild>
+            <Link to="/profile">Resume Builder</Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onSelect={safeHandler(() => {}, "Settings")}>
           Settings
         </DropdownMenuItem>

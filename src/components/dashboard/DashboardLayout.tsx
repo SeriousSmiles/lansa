@@ -7,6 +7,7 @@ import { MobileHeader } from "./MobileHeader";
 import { IconHome, IconBook, IconVideo, IconUser } from "@tabler/icons-react";
 import { AnnouncementBanner } from "@/components/common/AnnouncementBanner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useUserType } from "@/hooks/useUserType";
 interface DashboardLayoutProps {
   children: React.ReactNode;
   userName: string;
@@ -19,28 +20,42 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
   const mainContentRef = useRef<HTMLDivElement>(null);
   const [isContentVisible, setIsContentVisible] = useState(false);
   const isMobile = useIsMobile();
+  const { userType } = useUserType();
 
   const handleLogout = async () => {
     await signOut();
   };
 
-  const menuItems = [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: IconHome,
-    },
-    {
-      title: "Resources",
-      url: "/resources",
-      icon: IconBook,
-    },
-    {
-      title: "Content Library", 
-      url: "/content",
-      icon: IconVideo,
-    }
-  ];
+  const menuItems = userType === 'employer'
+    ? [
+        {
+          title: "Dashboard",
+          url: "/employer-dashboard",
+          icon: IconHome,
+        },
+        {
+          title: "Browse Candidates",
+          url: "/browse-candidates",
+          icon: IconUser,
+        },
+      ]
+    : [
+        {
+          title: "Dashboard",
+          url: "/dashboard",
+          icon: IconHome,
+        },
+        {
+          title: "Resources",
+          url: "/resources",
+          icon: IconBook,
+        },
+        {
+          title: "Content Library", 
+          url: "/content",
+          icon: IconVideo,
+        },
+      ];
   
   // Animation for content loading
   useEffect(() => {

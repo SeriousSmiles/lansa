@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { EmployerDashboardTabs } from "@/components/dashboard/EmployerDashboardTabs";
-import { EmployerTopNavbar } from "@/components/dashboard/employer/EmployerTopNavbar";
 import { supabase } from "@/integrations/supabase/client";
 import { useActionTracking } from "@/hooks/useActionTracking";
 import { Badge } from "@/components/ui/badge";
@@ -59,27 +58,23 @@ export default function EmployerDashboard() {
   const userName = user?.displayName || businessData?.company_name || "Employer";
 
   return (
-    <div className="min-h-screen bg-background">
-      <EmployerTopNavbar />
-      <DashboardLayout userName={userName} email={user?.email || ""}>
-        <div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
-          <div className="w-full">
-            <div className="flex items-center justify-between mb-4 animate-fade-in">
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl md:text-3xl font-bold">Employer Dashboard</h1>
-                  <Badge variant="secondary" className="text-xs">Beta</Badge>
-                </div>
-                {businessData?.company_name && (
-                  <p className="text-muted-foreground mt-1">{businessData.company_name}</p>
-                )}
+    <DashboardLayout userName={userName} email={user?.email || ""}>
+      <div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
+        <div className="w-full">
+          <div className="flex items-center justify-between mb-4 animate-fade-in">
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl md:text-3xl font-bold">Employer Dashboard</h1>
+                <Badge variant="secondary" className="text-xs">Beta</Badge>
               </div>
+              {businessData?.company_name && (
+                <p className="text-muted-foreground mt-1">{businessData.company_name}</p>
+              )}
             </div>
-            
-            <EmployerDashboardTabs businessData={businessData} />
           </div>
+          <EmployerDashboardTabs businessData={businessData} />
         </div>
-      </DashboardLayout>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
