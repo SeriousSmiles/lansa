@@ -13,11 +13,15 @@ interface BusinessData {
   business_services: string;
 }
 
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileEmployerTabs } from "@/components/mobile/employer/MobileEmployerTabs";
+
 export default function EmployerDashboard() {
   const [businessData, setBusinessData] = useState<BusinessData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { track } = useActionTracking();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     async function loadBusinessData() {
@@ -56,6 +60,10 @@ export default function EmployerDashboard() {
   }
 
   const userName = user?.displayName || businessData?.company_name || "Employer";
+
+  if (isMobile) {
+    return <MobileEmployerTabs businessData={businessData} />;
+  }
 
   return (
     <DashboardLayout userName={userName} email={user?.email || ""}>
