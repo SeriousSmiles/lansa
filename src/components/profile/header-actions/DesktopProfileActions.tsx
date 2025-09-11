@@ -114,7 +114,7 @@ export function DesktopProfileActions({
       </Button>
 
       {/* Actions Menu */}
-      <DropdownMenu modal>
+      <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button 
             variant={isDarkTheme ? "contrast" : "outline"} 
@@ -130,20 +130,27 @@ export function DesktopProfileActions({
         <DropdownMenuContent 
           align="end" 
           className="w-56 bg-background border border-border z-50"
-          onCloseAutoFocus={(e) => e.preventDefault()}
-          loop
         >
-          <DropdownMenuItem onSelect={() => setIsPreviewOpen(true)}>
+          <DropdownMenuItem onSelect={(e) => {
+            e.preventDefault();
+            setIsPreviewOpen(true);
+          }}>
             <IconEye className="h-4 w-4 mr-2" />
             Preview Profile
           </DropdownMenuItem>
 
-          <DropdownMenuItem onSelect={() => setIsDesignerOpen(true)}>
+          <DropdownMenuItem onSelect={(e) => {
+            e.preventDefault();
+            setIsDesignerOpen(true);
+          }}>
             <IconPalette className="h-4 w-4 mr-2" />
             Open Designer
           </DropdownMenuItem>
 
-          <DropdownMenuItem onSelect={() => onOpenGuidedSetup?.()}>
+          <DropdownMenuItem onSelect={(e) => {
+            e.preventDefault();
+            onOpenGuidedSetup?.();
+          }}>
             <IconSettings className="h-4 w-4 mr-2" />
             Fill with Guide
           </DropdownMenuItem>
@@ -151,7 +158,10 @@ export function DesktopProfileActions({
           <DropdownMenuSeparator />
 
           <DropdownMenuItem 
-            onSelect={safeHandler(handleMakeProfilePublic, "Make Profile Public")}
+            onSelect={(e) => {
+              e.preventDefault();
+              safeHandler(handleMakeProfilePublic, "Make Profile Public")();
+            }}
             disabled={!isLansaCertified || isUpdatingPublicStatus}
             className={`flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0 ${!isLansaCertified ? "opacity-50 cursor-not-allowed" : ""}`}
           >
