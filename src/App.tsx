@@ -24,6 +24,7 @@ import ProfileStarter from "./pages/ProfileStarter";
 import Profile from "./pages/Profile";
 import SharedProfile from "./pages/SharedProfile";
 import Dashboard from "./pages/Dashboard";
+import BrowseCandidates from "./pages/BrowseCandidates";
 import EmployerDashboard from "./pages/EmployerDashboard";
 import Resources from "./pages/Resources";
 import ContentLibrary from "./pages/ContentLibrary";
@@ -65,6 +66,8 @@ const App: React.FC = () => {
                   <Route path="/resources" element={<PageTransition><Resources /></PageTransition>} />
                   <Route path="/content" element={<PageTransition><ContentLibrary /></PageTransition>} />
                   <Route path="/discovery" element={<PageTransition><OpportunityDiscovery /></PageTransition>} />
+                  <Route path="/employer-dashboard" element={<PageTransition><EmployerDashboard /></PageTransition>} />
+                  <Route path="/browse-candidates" element={<PageTransition><BrowseCandidates /></PageTransition>} />
                 </Route>
                 {/* Public shared profile route - no authentication required */}
                 <Route path="/profile/share/:userId" element={<PageTransition><SharedProfile /></PageTransition>} />

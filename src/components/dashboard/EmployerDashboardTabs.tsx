@@ -1,10 +1,9 @@
 import { useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Users, FileText, BarChart3 } from "lucide-react";
+import { Building2, FileText, BarChart3 } from "lucide-react";
 import { gsap } from "gsap";
 import { EmployerOverviewTab } from "./employer/EmployerOverviewTab";
 import { JobManagementTab } from "./employer/JobManagementTab";
-import { CandidateBrowseTab } from "./employer/CandidateBrowseTab";
 import { EmployerAnalyticsTab } from "./employer/EmployerAnalyticsTab";
 
 interface BusinessData {
@@ -35,20 +34,16 @@ export function EmployerDashboardTabs({ businessData }: EmployerDashboardTabsPro
   return (
     <div ref={tabsRef}>
       <Tabs defaultValue="overview" className="mb-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview" className="flex items-center gap-1.5 btn-animate">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overview" className="flex items-center gap-1.5 transition-colors hover:bg-muted">
             <Building2 className="h-4 w-4" />
             Overview
           </TabsTrigger>
-          <TabsTrigger value="jobs" className="flex items-center gap-1.5 btn-animate">
+          <TabsTrigger value="jobs" className="flex items-center gap-1.5 transition-colors hover:bg-muted">
             <FileText className="h-4 w-4" />
             Job Listings
           </TabsTrigger>
-          <TabsTrigger value="candidates" className="flex items-center gap-1.5 btn-animate">
-            <Users className="h-4 w-4" />
-            Browse Candidates
-          </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex items-center gap-1.5 btn-animate">
+          <TabsTrigger value="analytics" className="flex items-center gap-1.5 transition-colors hover:bg-muted">
             <BarChart3 className="h-4 w-4" />
             Analytics
           </TabsTrigger>
@@ -60,10 +55,6 @@ export function EmployerDashboardTabs({ businessData }: EmployerDashboardTabsPro
         
         <TabsContent value="jobs" className="pt-4 animate-fade-in">
           <JobManagementTab />
-        </TabsContent>
-        
-        <TabsContent value="candidates" className="pt-4 animate-fade-in">
-          <CandidateBrowseTab />
         </TabsContent>
         
         <TabsContent value="analytics" className="pt-4 animate-fade-in">

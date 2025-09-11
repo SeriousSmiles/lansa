@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DragDropImageUpload } from "@/components/upload/DragDropImageUpload";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -24,7 +25,9 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
     businessSize: "",
     roleFunction: "",
     businessServices: "",
-    jobListings: []
+    jobListings: [],
+    companyLogo: null as File | null,
+    companyLogoUrl: ""
   });
 
   const businessSizes = [
@@ -62,7 +65,7 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
   };
 
   const handleNext = () => {
-    if (currentStep < 4) {
+    if (currentStep < 5) {
       setCurrentStep(prev => prev + 1);
     }
   };
@@ -78,6 +81,27 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
     
     setIsSubmitting(true);
     try {
+      let logoUrl = formData.companyLogoUrl;
+      
+      // Upload company logo if selected
+      if (formData.companyLogo) {
+        const fileExt = formData.companyLogo.name.split('.').pop();
+        const fileName = `${user.id}-company-logo-${Date.now()}.${fileExt}`;
+        const filePath = `company-logos/${fileName}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('user-uploads')
+          .upload(filePath, formData.companyLogo);
+          
+        if (uploadError) throw uploadError;
+        
+        const { data } = supabase.storage
+          .from('user-uploads')
+          .getPublicUrl(filePath);
+          
+        logoUrl = data.publicUrl;
+      }
+
       // Save business onboarding data
       const { error: businessError } = await supabase
         .from('business_onboarding_data')
@@ -87,6 +111,7 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
           business_size: formData.businessSize,
           role_function: formData.roleFunction,
           business_services: formData.businessServices,
+          company_logo: logoUrl,
           open_job_listings: formData.jobListings
         });
 
@@ -225,6 +250,38 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
         return (
           <Card className="w-full max-w-md">
             <CardHeader className="text-center">
+              <CardTitle className="text-2xl text-[#2E2E2E]">Company Logo</CardTitle>
+              <p className="text-[#666666]">Upload your company logo (optional)</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="w-full">
+                <Label>Company Logo</Label>
+                <div className="mt-2">
+                  <DragDropImageUpload
+                    onImageSelect={(file) => {
+                      setFormData(prev => ({ ...prev, companyLogo: file }));
+                    }}
+                    onImageRemove={() => {
+                      setFormData(prev => ({ ...prev, companyLogo: null, companyLogoUrl: "" }));
+                    }}
+                    currentImageUrl={formData.companyLogoUrl}
+                    acceptedSize="400x400"
+                    maxFileSizeKB={1024}
+                    aspectRatio="square"
+                  />
+                </div>
+                <p className="text-xs text-[#666666] mt-2">
+                  Square format works best. You can skip this and add it later.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 4:
+        return (
+          <Card className="w-full max-w-md">
+            <CardHeader className="text-center">
               <CardTitle className="text-2xl text-[#2E2E2E]">Business Services</CardTitle>
               <p className="text-[#666666]">What industry are you in?</p>
             </CardHeader>
@@ -246,7 +303,7 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
           </Card>
         );
 
-      case 4:
+      case 5:
         return (
           <Card className="w-full max-w-md">
             <CardHeader className="text-center">
@@ -268,7 +325,7 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
     <div className="flex flex-col items-center justify-center min-h-[600px] w-full">
       <div className="mb-8">
         <div className="flex items-center gap-2">
-          {[1, 2, 3, 4].map((step) => (
+          {[1, 2, 3, 4, 5].map((step) => (
             <div key={step} className="flex items-center">
               <div 
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
@@ -279,7 +336,7 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
               >
                 {step}
               </div>
-              {step < 4 && (
+              {step < 5 && (
                 <div 
                   className={`w-12 h-0.5 ${
                     step < currentStep ? 'bg-[#FF6B4A]' : 'bg-gray-200'
@@ -304,13 +361,14 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
           </Button>
         )}
         
-        {currentStep < 4 ? (
+        {currentStep < 5 ? (
           <Button 
             onClick={handleNext}
             disabled={
               (currentStep === 1 && (!formData.companyName || !formData.businessSize)) ||
               (currentStep === 2 && !formData.roleFunction) ||
-              (currentStep === 3 && !formData.businessServices)
+              // Step 3 (logo) is optional, no validation needed
+              (currentStep === 4 && !formData.businessServices)
             }
             className="bg-[#FF6B4A] hover:bg-[#FF6B4A]/90"
           >
