@@ -84,6 +84,15 @@ export function ProfilePage() {
     setChoiceModalOpen(false);
   };
 
+  const handleChooseCVUpload = () => {
+    if (user?.id) {
+      localStorage.setItem(`profileChoiceMade_${user.id}`, 'true');
+    }
+    setChoiceModalOpen(false);
+    // CV upload completed, profile should already be populated
+    // No additional action needed as CVUploadModal handles profile updates
+  };
+
   // Debug logging
   console.log("Profile debug:", { 
     isLoading: profile.isLoading, 
@@ -122,12 +131,13 @@ export function ProfilePage() {
         />
       </ProfileLayout>
       
-      <PostOnboardingChoice
-        open={choiceModalOpen}
-        onOpenChange={setChoiceModalOpen}
-        onChooseAIGuide={handleChooseAIGuide}
-        onChooseManual={handleChooseManual}
-      />
+        <PostOnboardingChoice
+          open={choiceModalOpen}
+          onOpenChange={setChoiceModalOpen}
+          onChooseAIGuide={handleChooseAIGuide}
+          onChooseManual={handleChooseManual}
+          onChooseCVUpload={handleChooseCVUpload}
+        />
 
       <ProfileGuideButton
         userImage={profile.profileImage}

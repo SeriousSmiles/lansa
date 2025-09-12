@@ -1001,6 +1001,9 @@ export type Database = {
           clerk_user_id: string | null
           cover_color: string | null
           created_at: string | null
+          cv_imported_at: string | null
+          cv_last_used: string | null
+          cv_source_metadata: Json | null
           desired_outcome: string | null
           education: Json | null
           email: string | null
@@ -1037,6 +1040,9 @@ export type Database = {
           clerk_user_id?: string | null
           cover_color?: string | null
           created_at?: string | null
+          cv_imported_at?: string | null
+          cv_last_used?: string | null
+          cv_source_metadata?: Json | null
           desired_outcome?: string | null
           education?: Json | null
           email?: string | null
@@ -1073,6 +1079,9 @@ export type Database = {
           clerk_user_id?: string | null
           cover_color?: string | null
           created_at?: string | null
+          cv_imported_at?: string | null
+          cv_last_used?: string | null
+          cv_source_metadata?: Json | null
           desired_outcome?: string | null
           education?: Json | null
           email?: string | null
