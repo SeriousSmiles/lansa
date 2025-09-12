@@ -6,6 +6,10 @@ import { CVParsingProgress } from "./CVParsingProgress";
 import { CVAnalysisResults } from "./CVAnalysisResults";
 import { FileText, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import * as pdfjs from 'pdfjs-dist';
+
+// Set the worker source for PDF.js
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 interface CVUploadModalProps {
   open: boolean;
@@ -41,6 +45,7 @@ export interface CVAnalysisData {
     skillMatches: string[];
     gapAnalysis: string[];
     improvements: string[];
+    mismatchWarnings?: string[];
     confidence: number;
   };
 }
@@ -51,53 +56,93 @@ export function CVUploadModal({ open, onOpenChange, onComplete }: CVUploadModalP
   const [analysisData, setAnalysisData] = useState<CVAnalysisData | null>(null);
   const { user } = useAuth();
 
-  const handleFileUpload = (file: File) => {
+  const handleFileUpload = async (file: File) => {
     setUploadedFile(file);
     setCurrentStep('parsing');
-    // Simulate parsing process
-    setTimeout(() => {
-    const mockAnalysis: CVAnalysisData = {
-      extractedData: {
-        name: "John Doe",
-        title: "Software Developer",
-        summary: "Experienced software developer with 5+ years in web development, specializing in React and Node.js applications.",
-        skills: ["JavaScript", "React", "Node.js", "Python", "SQL", "Git"],
-        experience: [
-          {
-            title: "Senior Software Developer",
-            company: "Tech Corp",
-            duration: "2022-Present",
-            description: "Led development of web applications using React and Node.js"
-          },
-          {
-            title: "Software Developer", 
-            company: "StartupXYZ",
-            duration: "2020-2022",
-            description: "Developed and maintained multiple web applications"
-          }
-        ],
-        education: [
-          {
-            degree: "Bachelor of Computer Science",
-            institution: "University of Technology", 
-            year: "2020"
-          }
-        ],
-        contact: {
-          email: "john.doe@email.com",
-          phone: "+1234567890"
-        }
-      },
-      suggestions: {
-        skillMatches: ["JavaScript", "React", "Node.js"],
-        gapAnalysis: ["Missing cloud platforms (AWS/Azure)", "No mobile development mentioned"],
-        improvements: ["Add specific project achievements", "Include metrics and KPIs"],
-        confidence: 85
+    
+    try {
+      // Extract text from PDF using PDF.js
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjs.getDocument(arrayBuffer).promise;
+      
+      let extractedText = '';
+      for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) { // Limit to first 10 pages
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map((item: any) => item.str).join(' ');
+        extractedText += pageText + '\n';
       }
-    };
+
+      console.log('Extracted text from PDF:', extractedText.substring(0, 500) + '...');
+
+      // Import the CV data service and parse the CV
+      const { CVDataService } = await import("@/services/cvDataService");
+      
+      if (!user?.id) {
+        throw new Error("User not authenticated");
+      }
+
+      const analysisResult = await CVDataService.uploadAndParseCV(file, user.id, extractedText);
+      
+      // Convert to expected format
+      const analysisData: CVAnalysisData = {
+        extractedData: {
+          name: analysisResult.extractedData.personalInfo?.name,
+          title: analysisResult.extractedData.personalInfo?.title,
+          summary: analysisResult.extractedData.personalInfo?.summary,
+          skills: analysisResult.extractedData.skills || [],
+          experience: analysisResult.extractedData.experience || [],
+          education: analysisResult.extractedData.education || [],
+          contact: {
+            email: analysisResult.extractedData.personalInfo?.email,
+            phone: analysisResult.extractedData.personalInfo?.phone,
+          }
+        },
+        suggestions: analysisResult.suggestions
+      };
+
+      setAnalysisData(analysisData);
+      setCurrentStep('results');
+    } catch (error) {
+      console.error('Error processing CV:', error);
+      // Fall back to mock data on error
+      const mockAnalysis: CVAnalysisData = {
+        extractedData: {
+          name: "John Doe",
+          title: "Software Developer",
+          summary: "Experienced software developer with 5+ years in web development, specializing in React and Node.js applications.",
+          skills: ["JavaScript", "React", "Node.js", "Python", "SQL", "Git"],
+          experience: [
+            {
+              title: "Senior Software Developer",
+              company: "Tech Corp",
+              duration: "2022-Present",
+              description: "Led development of web applications using React and Node.js"
+            }
+          ],
+          education: [
+            {
+              degree: "Bachelor of Computer Science",
+              institution: "University of Technology", 
+              year: "2020"
+            }
+          ],
+          contact: {
+            email: "john.doe@email.com",
+            phone: "+1234567890"
+          }
+        },
+        suggestions: {
+          skillMatches: ["JavaScript", "React", "Node.js"],
+          gapAnalysis: ["Missing cloud platforms (AWS/Azure)", "No mobile development mentioned"],
+          improvements: ["Add specific project achievements", "Include metrics and KPIs"],
+          mismatchWarnings: ["CV shows extensive experience but your profile indicates student status"],
+          confidence: 65
+        }
+      };
       setAnalysisData(mockAnalysis);
       setCurrentStep('results');
-    }, 3000);
+    }
   };
 
   const handleApplyData = async (selectedData: Partial<CVAnalysisData['extractedData']>) => {

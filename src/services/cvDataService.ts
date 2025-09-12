@@ -29,6 +29,7 @@ export interface CVAnalysisResult {
     skillMatches: string[];
     gapAnalysis: string[];
     improvements: string[];
+    mismatchWarnings?: string[];
     confidence: number;
   };
   metadata?: {
@@ -43,7 +44,7 @@ export class CVDataService {
   /**
    * Upload and parse a CV file
    */
-  static async uploadAndParseCV(file: File, userId: string): Promise<CVAnalysisResult> {
+  static async uploadAndParseCV(file: File, userId: string, extractedText?: string): Promise<CVAnalysisResult> {
     try {
       // Convert file to base64
       const fileData = await this.fileToBase64(file);
@@ -51,7 +52,8 @@ export class CVDataService {
       // Call the parse-cv-resume edge function
       const { data, error } = await supabase.functions.invoke('parse-cv-resume', {
         body: {
-          fileData,
+          fileData: extractedText ? undefined : fileData,
+          extractedText,
           fileName: file.name,
           userId
         }

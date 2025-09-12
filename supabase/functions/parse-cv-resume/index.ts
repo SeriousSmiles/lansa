@@ -12,7 +12,8 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 interface CVAnalysisRequest {
-  fileData: string; // base64 encoded PDF
+  fileData?: string; // base64 encoded PDF (legacy)
+  extractedText?: string; // PDF text content
   fileName: string;
   userId: string;
 }
@@ -50,9 +51,9 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const { fileData, fileName, userId }: CVAnalysisRequest = await req.json();
+    const { fileData, extractedText, fileName, userId }: CVAnalysisRequest = await req.json();
     
-    if (!fileData || !userId) {
+    if ((!fileData && !extractedText) || !userId) {
       return new Response(
         JSON.stringify({ error: 'Missing required parameters' }), 
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -64,12 +65,11 @@ serve(async (req) => {
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // For this demo, we'll use a simplified approach with OCR text extraction
-    // In production, you'd want to use a proper PDF parsing library
+    // Use the extracted text if provided, otherwise fall back to demo data
+    const cvText = extractedText || "Demo CV content - no actual text extraction performed";
     
     // Create extraction prompt for OpenAI
-    const extractionPrompt = `
-You are a professional CV/Resume parser. Extract the following information from this CV text and return it as JSON:
+    const extractionPrompt = `You are a professional CV/Resume parser. Extract the following information from this CV text and return it as JSON:
 
 {
   "personalInfo": {
@@ -100,10 +100,9 @@ You are a professional CV/Resume parser. Extract the following information from 
 Focus on extracting factual information. For skills, identify both technical and soft skills. For experience, capture key achievements and responsibilities. For education, include degrees, certifications, and relevant coursework.
 
 CV Content to parse:
-[Since this is a demo, I'll simulate CV text extraction. In production, you'd extract actual text from the PDF using a library like pdf-parse or similar]
+${cvText}
 
-Please return only the JSON structure with the extracted data.
-    `;
+Please return only the JSON structure with the extracted data.`;
 
     // Call OpenAI API for extraction
     const extractionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -133,9 +132,21 @@ Please return only the JSON structure with the extracted data.
     const extractionData = await extractionResponse.json();
     console.log('OpenAI extraction response:', extractionData);
 
-    // For demo purposes, return mock structured data
-    // In production, you'd parse the actual OpenAI response
-    const mockExtractedData: ExtractionPrompt = {
+    // Try to parse the actual OpenAI response
+    let extractedDataFromAI: ExtractionPrompt | null = null;
+    try {
+      if (extractedData.choices && extractedData.choices[0]?.message?.content) {
+        const content = extractedData.choices[0].message.content;
+        // Remove any markdown formatting
+        const cleanContent = content.replace(/```json\n?|\n?```/g, '').trim();
+        extractedDataFromAI = JSON.parse(cleanContent);
+      }
+    } catch (parseError) {
+      console.log('Failed to parse OpenAI response, using fallback data:', parseError);
+    }
+
+    // Use AI data if available, otherwise use demo data
+    const mockExtractedData: ExtractionPrompt = extractedDataFromAI || {
       personalInfo: {
         name: "John Doe",
         title: "Software Developer",
@@ -198,6 +209,25 @@ Please return only the JSON structure with the extracted data.
       )
     );
 
+    // Check for mismatches with user onboarding data
+    const mismatchWarnings = [];
+    
+    // Compare CV data with user answers/goals
+    if (userAnswers) {
+      const userCareerGoal = userAnswers.career_path || userAnswers.desired_outcome;
+      const cvTitle = mockExtractedData.personalInfo?.title?.toLowerCase();
+      
+      if (userCareerGoal && cvTitle && !cvTitle.includes(userCareerGoal.toLowerCase()) && !userCareerGoal.toLowerCase().includes(cvTitle)) {
+        mismatchWarnings.push(`CV shows "${mockExtractedData.personalInfo?.title}" but your career goal is "${userCareerGoal}"`);
+      }
+      
+      // Check academic status vs experience level
+      const academicStatus = userAnswers.onboarding_inputs?.academic_status;
+      if (academicStatus === 'student' && mockExtractedData.experience.length > 2) {
+        mismatchWarnings.push('CV shows extensive work experience but you selected "student" status');
+      }
+    }
+
     const gapAnalysis = [
       "Missing cloud platforms (AWS/Azure certification)",
       "No mobile development experience mentioned", 
@@ -234,6 +264,7 @@ Please return only the JSON structure with the extracted data.
         skillMatches: skillMatches.slice(0, 5),
         gapAnalysis,
         improvements,
+        mismatchWarnings,
         confidence: 85
       },
       metadata: cvMetadata

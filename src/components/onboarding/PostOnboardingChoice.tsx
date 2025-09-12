@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bot, User, Sparkles, Edit, FileText, Upload, Zap } from "lucide-react";
@@ -35,24 +35,25 @@ export function PostOnboardingChoice({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[800px]">
+        <DialogContent className="sm:max-w-[1040px]">
           <DialogHeader className="text-center space-y-3">
             <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
               <Sparkles className="w-8 h-8 text-white" />
             </div>
             <DialogTitle className="text-2xl font-bold">Complete Your Profile</DialogTitle>
-            <p className="text-muted-foreground">
+            <DialogDescription>
               Choose how you'd like to build your professional profile
-            </p>
+            </DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
             {/* CV Upload Option - PRIMARY */}
             <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/50 relative">
               <div className="absolute -top-2 -right-2 bg-primary text-white text-xs px-2 py-1 rounded-full font-medium">
                 ⚡ Fast
               </div>
               <CardHeader className="text-center pb-3">
+                <div className="text-xs text-muted-foreground mb-2 font-medium">2–3 minutes</div>
                 <div className="w-12 h-12 mx-auto rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center mb-3">
                   <FileText className="w-6 h-6 text-white" />
                 </div>
@@ -93,6 +94,7 @@ export function PostOnboardingChoice({
             {/* AI Guide Option */}
             <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/50">
               <CardHeader className="text-center pb-3">
+                <div className="text-xs text-muted-foreground mb-2 font-medium">8–10 minutes</div>
                 <div className="w-12 h-12 mx-auto rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center mb-3">
                   <Bot className="w-6 h-6 text-white" />
                 </div>
@@ -135,6 +137,7 @@ export function PostOnboardingChoice({
             {/* Manual Option */}
             <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-secondary/50">
               <CardHeader className="text-center pb-3">
+                <div className="text-xs text-muted-foreground mb-2 font-medium">15–20 minutes</div>
                 <div className="w-12 h-12 mx-auto rounded-full bg-secondary flex items-center justify-center mb-3">
                   <User className="w-6 h-6 text-secondary-foreground" />
                 </div>

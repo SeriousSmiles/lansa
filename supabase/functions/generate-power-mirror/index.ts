@@ -68,7 +68,7 @@ Be honest about what their responses actually reveal - including limitations and
           { role: 'user', content: 'Generate the power mirror for this student.' }
         ],
         max_tokens: 400,
-        temperature: 0.8
+        temperature: 0.1
       }),
     });
 

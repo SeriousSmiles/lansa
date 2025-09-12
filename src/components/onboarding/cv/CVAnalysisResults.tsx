@@ -96,6 +96,36 @@ export function CVAnalysisResults({ data, onApply, onSkip }: CVAnalysisResultsPr
         </Card>
       </div>
 
+      {/* Mismatch Warnings */}
+      {data.suggestions.mismatchWarnings && data.suggestions.mismatchWarnings.length > 0 && (
+        <Card className="border-l-4 border-l-red-500 bg-red-50/50">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              <CardTitle className="text-base text-red-800">Data Mismatch Detected</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-2 mb-3">
+              {data.suggestions.mismatchWarnings.map((warning, index) => (
+                <p key={index} className="text-sm text-red-700 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                  {warning}
+                </p>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" className="border-red-200 text-red-700 hover:bg-red-50">
+                Review First
+              </Button>
+              <Button size="sm" variant="ghost" className="text-red-600">
+                Update Onboarding
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Key Insights */}
       <div className="space-y-3">
         {/* Skills Match */}
