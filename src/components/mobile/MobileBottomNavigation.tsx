@@ -74,7 +74,7 @@ export function MobileBottomNavigation() {
       {/* Bottom Navigation */}
       <div 
         ref={navRef}
-        className="fixed bottom-0 left-0 right-0 z-[100] bg-card/95 backdrop-blur-lg border-t border-border/50 md:hidden"
+        className="fixed bottom-0 left-0 right-0 z-[100] bg-card/95 backdrop-blur-lg border-t border-border/50"
         style={{
           background: 'linear-gradient(135deg, hsl(var(--card)/0.95), hsl(var(--primary)/0.05))',
           backdropFilter: 'blur(20px)',
@@ -127,7 +127,7 @@ export function MobileBottomNavigation() {
       {showFAB && (
         <button
           ref={fabRef}
-          className="fixed bottom-20 right-6 z-[99] md:hidden bg-gradient-to-r from-primary to-secondary text-primary-foreground h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
+          className="fixed bottom-20 right-6 z-[99] bg-gradient-to-r from-primary to-secondary text-primary-foreground h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
           onClick={() => {
             // Add haptic-style feedback animation
             if (fabRef.current) {
@@ -147,7 +147,7 @@ export function MobileBottomNavigation() {
       )}
 
       {/* Bottom spacing for content */}
-      <div className="h-20 md:hidden" />
+      <div className="h-20" />
     </>
   );
 }
