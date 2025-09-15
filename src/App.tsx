@@ -9,6 +9,7 @@ import { CookieConsent } from "@/components/analytics/CookieConsent";
 
 import { MobileNavigationProvider } from "@/contexts/MobileNavigationContext";
 import { GlobalHelpModal } from "@/components/mobile/GlobalHelpModal";
+import { MobileBottomNavigation } from "@/components/mobile/MobileBottomNavigation";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PageTransition } from "@/components/transitions/PageTransition";
@@ -75,6 +76,7 @@ const App: React.FC = () => {
                 <Route path="*" element={<HomeSpotlight />} />
               </Routes>
               <GlobalHelpModal />
+              <MobileBottomNavigation />
               
             </MobileNavigationProvider>
           </BrowserRouter>
