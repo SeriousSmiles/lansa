@@ -12,8 +12,7 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 interface CVAnalysisRequest {
-  fileData?: string; // base64 encoded PDF (legacy)
-  extractedText?: string; // PDF text content
+  imageDataUrls: string[]; // Array of base64 data URLs from client
   fileName: string;
   userId: string;
 }
@@ -51,60 +50,68 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const { fileData, extractedText, fileName, userId }: CVAnalysisRequest = await req.json();
+    const { imageDataUrls, fileName, userId }: CVAnalysisRequest = await req.json();
     
-    if ((!fileData && !extractedText) || !userId) {
+    if (!imageDataUrls || imageDataUrls.length === 0 || !userId) {
       return new Response(
         JSON.stringify({ error: 'Missing required parameters' }), 
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Processing CV upload for user: ${userId}, file: ${fileName}`);
+    console.log(`Processing CV vision analysis for user: ${userId}, file: ${fileName}, ${imageDataUrls.length} images`);
 
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Use the extracted text if provided, otherwise fall back to demo data
-    const cvText = extractedText || "Demo CV content - no actual text extraction performed";
-    
-    // Create extraction prompt for OpenAI
-    const extractionPrompt = `You are a professional CV/Resume parser. Extract the following information from this CV text and return it as JSON:
+    // Prepare image content for OpenAI Vision
+    const imageContent = imageDataUrls.map(dataUrl => ({
+      type: "image_url" as const,
+      image_url: {
+        url: dataUrl,
+        detail: "high" as const
+      }
+    }));
+
+    const systemPrompt = `You are a professional CV/Resume parser that extracts structured data from images.
+Extract information accurately from the CV/resume images provided. Return ONLY valid JSON matching this exact schema:
 
 {
   "personalInfo": {
-    "name": "Full name",
-    "title": "Professional title/role",
-    "summary": "Professional summary or objective (2-3 sentences)",
-    "email": "Email address if found",
-    "phone": "Phone number if found"
+    "name": "Full name from CV",
+    "title": "Professional title/current role",
+    "summary": "Professional summary if present (2-3 sentences max)",
+    "email": "Email address if visible",
+    "phone": "Phone number if visible"
   },
   "skills": ["skill1", "skill2", "skill3"],
   "experience": [
     {
       "title": "Job title",
       "company": "Company name",
-      "duration": "Start - End dates",
+      "duration": "Start date - End date (or Present)",
       "description": "Key responsibilities and achievements"
     }
   ],
   "education": [
     {
-      "degree": "Degree name",
-      "institution": "Institution name", 
+      "degree": "Degree type and name",
+      "institution": "School/University name",
       "year": "Graduation year"
     }
   ]
 }
 
-Focus on extracting factual information. For skills, identify both technical and soft skills. For experience, capture key achievements and responsibilities. For education, include degrees, certifications, and relevant coursework.
+Focus on:
+- Technical and soft skills mentioned
+- Work experience with specific achievements
+- Education and certifications
+- Contact information if visible
+- Extract exact text, don't invent information`;
 
-CV Content to parse:
-${cvText}
+    const userPrompt = `Please analyze this CV/resume and extract all relevant information. Return only the JSON structure with the extracted data.`;
 
-Please return only the JSON structure with the extracted data.`;
-
-    // Call OpenAI API for extraction
+    // Call OpenAI Vision API
     const extractionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -112,37 +119,46 @@ Please return only the JSON structure with the extracted data.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o', // Use gpt-4o for vision capabilities
         messages: [
           { 
             role: 'system', 
-            content: 'You are a professional CV parser. Always respond with valid JSON only.' 
+            content: systemPrompt
           },
-          { role: 'user', content: extractionPrompt }
+          { 
+            role: 'user', 
+            content: [
+              { type: "text", text: userPrompt },
+              ...imageContent
+            ]
+          }
         ],
-        max_tokens: 2000,
+        max_tokens: 3000,
         temperature: 0.1,
+        response_format: { type: "json_object" }
       }),
     });
 
     if (!extractionResponse.ok) {
-      throw new Error(`OpenAI API error: ${extractionResponse.statusText}`);
+      const errorText = await extractionResponse.text();
+      console.error(`OpenAI API error: ${extractionResponse.status} - ${errorText}`);
+      throw new Error(`OpenAI Vision API error: ${extractionResponse.statusText}`);
     }
 
     const extractionData = await extractionResponse.json();
-    console.log('OpenAI extraction response:', extractionData);
+    console.log('OpenAI Vision extraction response:', JSON.stringify(extractionData, null, 2));
 
-    // Try to parse the actual OpenAI response
+    // Parse the OpenAI response
     let extractedDataFromAI: ExtractionPrompt | null = null;
     try {
-      if (extractedData.choices && extractedData.choices[0]?.message?.content) {
-        const content = extractedData.choices[0].message.content;
-        // Remove any markdown formatting
-        const cleanContent = content.replace(/```json\n?|\n?```/g, '').trim();
-        extractedDataFromAI = JSON.parse(cleanContent);
+      if (extractionData.choices && extractionData.choices[0]?.message?.content) {
+        const content = extractionData.choices[0].message.content;
+        extractedDataFromAI = JSON.parse(content);
+        console.log('Successfully parsed CV data from OpenAI Vision');
       }
     } catch (parseError) {
-      console.log('Failed to parse OpenAI response, using fallback data:', parseError);
+      console.error('Failed to parse OpenAI Vision response:', parseError);
+      console.log('Raw response:', extractionData.choices?.[0]?.message?.content);
     }
 
     // Use AI data if available, otherwise use demo data

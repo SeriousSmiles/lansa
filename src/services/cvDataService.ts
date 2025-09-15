@@ -42,18 +42,14 @@ export interface CVAnalysisResult {
 
 export class CVDataService {
   /**
-   * Upload and parse a CV file
+   * Upload and parse a CV file using OpenAI Vision
    */
-  static async uploadAndParseCV(file: File, userId: string, extractedText?: string): Promise<CVAnalysisResult> {
+  static async uploadAndParseCV(file: File, userId: string, imageDataUrls: string[]): Promise<CVAnalysisResult> {
     try {
-      // Convert file to base64
-      const fileData = await this.fileToBase64(file);
-      
-      // Call the parse-cv-resume edge function
+      // Call the parse-cv-vision edge function
       const { data, error } = await supabase.functions.invoke('parse-cv-resume', {
         body: {
-          fileData: extractedText ? undefined : fileData,
-          extractedText,
+          imageDataUrls,
           fileName: file.name,
           userId
         }

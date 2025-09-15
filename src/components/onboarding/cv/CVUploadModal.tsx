@@ -11,6 +11,50 @@ import * as pdfjs from 'pdfjs-dist';
 // Set the worker source for PDF.js
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
+// Convert file to images (PDF pages or direct image)
+const convertFileToImages = async (file: File): Promise<string[]> => {
+  const images: string[] = [];
+  
+  if (file.type === 'application/pdf') {
+    // Convert PDF pages to images
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjs.getDocument(arrayBuffer).promise;
+    const maxPages = Math.min(pdf.numPages, 10); // Limit to 10 pages
+    
+    for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const viewport = page.getViewport({ scale: 2.0 }); // High resolution
+      
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d')!;
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      
+      await page.render({
+        canvasContext: context,
+        viewport: viewport,
+        canvas: canvas
+      }).promise;
+      
+      const imageDataUrl = canvas.toDataURL('image/png', 0.95);
+      images.push(imageDataUrl);
+    }
+  } else if (file.type.startsWith('image/')) {
+    // Convert image file to data URL
+    const reader = new FileReader();
+    const imageDataUrl = await new Promise<string>((resolve, reject) => {
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    images.push(imageDataUrl);
+  } else {
+    throw new Error('Unsupported file type. Please upload a PDF or image file.');
+  }
+  
+  return images;
+};
+
 interface CVUploadModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -61,28 +105,17 @@ export function CVUploadModal({ open, onOpenChange, onComplete }: CVUploadModalP
     setCurrentStep('parsing');
     
     try {
-      // Extract text from PDF using PDF.js
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjs.getDocument(arrayBuffer).promise;
-      
-      let extractedText = '';
-      for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) { // Limit to first 10 pages
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map((item: any) => item.str).join(' ');
-        extractedText += pageText + '\n';
-      }
-
-      console.log('Extracted text from PDF:', extractedText.substring(0, 500) + '...');
-
-      // Import the CV data service and parse the CV
-      const { CVDataService } = await import("@/services/cvDataService");
-      
       if (!user?.id) {
         throw new Error("User not authenticated");
       }
 
-      const analysisResult = await CVDataService.uploadAndParseCV(file, user.id, extractedText);
+      // Convert file to images (PDF pages or direct image)
+      const imageDataUrls = await convertFileToImages(file);
+      console.log(`Converted ${file.name} to ${imageDataUrls.length} images`);
+
+      // Import the CV data service and parse the CV
+      const { CVDataService } = await import("@/services/cvDataService");
+      const analysisResult = await CVDataService.uploadAndParseCV(file, user.id, imageDataUrls);
       
       // Convert to expected format
       const analysisData: CVAnalysisData = {
