@@ -1,9 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Search, User, Settings, Plus } from "lucide-react";
+import { Home, Search, User, Settings, HelpCircle } from "lucide-react";
 import { gsap } from "gsap";
 import { useMobileNavigation } from "@/contexts/MobileNavigationContext";
-import { MobileQuickActions } from "./MobileQuickActions";
 import { useMobileFAB } from "@/hooks/useMobileFAB";
 
 interface NavItem {
@@ -23,7 +22,7 @@ const navItems: NavItem[] = [
 export function MobileBottomNavigation() {
   const location = useLocation();
   const { shouldShowNavigation, showFAB, fabAction } = useMobileNavigation();
-  const { isQuickActionsOpen, closeQuickActions } = useMobileFAB();
+  useMobileFAB();
   const navRef = useRef<HTMLDivElement>(null);
   const activeIndicatorRef = useRef<HTMLDivElement>(null);
   const fabRef = useRef<HTMLButtonElement>(null);
@@ -140,7 +139,7 @@ export function MobileBottomNavigation() {
             fabAction();
           }}
         >
-        <Plus className="h-6 w-6 group-hover:rotate-90 transition-transform duration-300" />
+        <HelpCircle className="h-6 w-6 group-hover:scale-110 transition-transform duration-300" />
         
           {/* Ripple effect */}
           <div className="absolute inset-0 rounded-full bg-white/20 scale-0 group-active:scale-150 transition-transform duration-300" />
@@ -149,12 +148,6 @@ export function MobileBottomNavigation() {
 
       {/* Bottom spacing for content */}
       <div className="h-20 md:hidden" />
-      
-      {/* Quick Actions Modal */}
-      <MobileQuickActions 
-        isOpen={isQuickActionsOpen}
-        onClose={closeQuickActions}
-      />
     </>
   );
 }

@@ -8,6 +8,7 @@ import { HotjarScript } from "@/components/analytics/HotjarScript";
 import { CookieConsent } from "@/components/analytics/CookieConsent";
 
 import { MobileNavigationProvider } from "@/contexts/MobileNavigationContext";
+import { GlobalHelpModal } from "@/components/mobile/GlobalHelpModal";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PageTransition } from "@/components/transitions/PageTransition";
@@ -73,6 +74,7 @@ const App: React.FC = () => {
                 <Route path="/profile/share/:userId" element={<PageTransition><SharedProfile /></PageTransition>} />
                 <Route path="*" element={<HomeSpotlight />} />
               </Routes>
+              <GlobalHelpModal />
               
             </MobileNavigationProvider>
           </BrowserRouter>
