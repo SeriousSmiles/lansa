@@ -161,47 +161,12 @@ Focus on:
       console.log('Raw response:', extractionData.choices?.[0]?.message?.content);
     }
 
-    // Use AI data if available, otherwise use demo data
-    const mockExtractedData: ExtractionPrompt = extractedDataFromAI || {
-      personalInfo: {
-        name: "John Doe",
-        title: "Software Developer",
-        summary: "Experienced software developer with 5+ years in web development, specializing in React and Node.js applications with a passion for creating efficient, scalable solutions.",
-        email: "john.doe@email.com",
-        phone: "+1234567890"
-      },
-      skills: [
-        "JavaScript", "React", "Node.js", "Python", "SQL", "Git", 
-        "MongoDB", "Express.js", "HTML/CSS", "TypeScript", "AWS", "Docker"
-      ],
-      experience: [
-        {
-          title: "Senior Software Developer",
-          company: "Tech Corp",
-          duration: "2022-Present",
-          description: "Led development of web applications using React and Node.js. Implemented microservices architecture that improved system performance by 40%. Mentored junior developers and conducted code reviews."
-        },
-        {
-          title: "Software Developer",
-          company: "StartupXYZ",
-          duration: "2020-2022",
-          description: "Developed and maintained multiple web applications using modern JavaScript frameworks. Collaborated with cross-functional teams to deliver high-quality software solutions."
-        },
-        {
-          title: "Junior Developer",
-          company: "Dev Agency",
-          duration: "2019-2020",
-          description: "Built responsive websites and web applications. Gained experience in full-stack development and agile methodologies."
-        }
-      ],
-      education: [
-        {
-          degree: "Bachelor of Computer Science",
-          institution: "University of Technology",
-          year: "2019"
-        }
-      ]
-    };
+    // Use AI data or throw error if parsing failed
+    if (!extractedDataFromAI) {
+      throw new Error('Failed to extract data from CV');
+    }
+    
+    const extractedData: ExtractionPrompt = extractedDataFromAI;
 
     // Get user's existing profile data for cross-referencing
     const { data: userProfile } = await supabase
@@ -218,7 +183,7 @@ Focus on:
 
     // Generate suggestions based on extracted data and existing profile
     const existingSkills = userProfile?.skills || [];
-    const skillMatches = mockExtractedData.skills.filter(skill => 
+    const skillMatches = extractedData.skills.filter(skill => 
       existingSkills.some((existing: string) => 
         existing.toLowerCase().includes(skill.toLowerCase()) || 
         skill.toLowerCase().includes(existing.toLowerCase())
@@ -231,15 +196,15 @@ Focus on:
     // Compare CV data with user answers/goals
     if (userAnswers) {
       const userCareerGoal = userAnswers.career_path || userAnswers.desired_outcome;
-      const cvTitle = mockExtractedData.personalInfo?.title?.toLowerCase();
+      const cvTitle = extractedData.personalInfo?.title?.toLowerCase();
       
       if (userCareerGoal && cvTitle && !cvTitle.includes(userCareerGoal.toLowerCase()) && !userCareerGoal.toLowerCase().includes(cvTitle)) {
-        mismatchWarnings.push(`CV shows "${mockExtractedData.personalInfo?.title}" but your career goal is "${userCareerGoal}"`);
+        mismatchWarnings.push(`CV shows "${extractedData.personalInfo?.title}" but your career goal is "${userCareerGoal}"`);
       }
       
       // Check academic status vs experience level
       const academicStatus = userAnswers.onboarding_inputs?.academic_status;
-      if (academicStatus === 'student' && mockExtractedData.experience.length > 2) {
+      if (academicStatus === 'student' && extractedData.experience.length > 2) {
         mismatchWarnings.push('CV shows extensive work experience but you selected "student" status');
       }
     }
@@ -275,7 +240,7 @@ Focus on:
 
     // Return structured analysis results
     const analysisResult = {
-      extractedData: mockExtractedData,
+      extractedData: extractedData,
       suggestions: {
         skillMatches: skillMatches.slice(0, 5),
         gapAnalysis,

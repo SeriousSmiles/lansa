@@ -36,17 +36,47 @@ const convertFileToImages = async (file: File): Promise<string[]> => {
         canvas: canvas
       }).promise;
       
-      const imageDataUrl = canvas.toDataURL('image/png', 0.95);
+      // Compress the image to reduce size
+      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.7); // Use JPEG with 70% quality for compression
       images.push(imageDataUrl);
     }
   } else if (file.type.startsWith('image/')) {
-    // Convert image file to data URL
-    const reader = new FileReader();
+    // Convert image file to data URL with compression
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d')!;
+    const img = new Image();
+    
     const imageDataUrl = await new Promise<string>((resolve, reject) => {
-      reader.onload = () => resolve(reader.result as string);
+      img.onload = () => {
+        // Calculate compression dimensions (max 1024px)
+        const maxSize = 1024;
+        let { width, height } = img;
+        
+        if (width > maxSize || height > maxSize) {
+          if (width > height) {
+            height = (height * maxSize) / width;
+            width = maxSize;
+          } else {
+            width = (width * maxSize) / height;
+            height = maxSize;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        resolve(compressedDataUrl);
+      };
+      img.onerror = reject;
+      
+      const reader = new FileReader();
+      reader.onload = () => img.src = reader.result as string;
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
+    
     images.push(imageDataUrl);
   } else {
     throw new Error('Unsupported file type. Please upload a PDF or image file.');
