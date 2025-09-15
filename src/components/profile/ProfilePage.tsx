@@ -8,6 +8,9 @@ import { ProfileFooter } from "./layout/ProfileFooter";
 import { useElementAnimation } from "@/utils/animationHelpers";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { ProfileGuideButton } from "./guide/ProfileGuideButton";
+import { ProfileStepModal } from "./guide/ProfileStepModal";
+import { useProfileProgress } from "@/hooks/useProfileProgress";
 import { PostOnboardingChoice } from "../onboarding/PostOnboardingChoice";
 
 export function ProfilePage() {
@@ -16,7 +19,9 @@ export function ProfilePage() {
   const location = useLocation();
   const profile = useProfileData(user?.id);
   const mainContentRef = useElementAnimation();
+  const [stepGuideOpen, setStepGuideOpen] = useState(false);
   const [choiceModalOpen, setChoiceModalOpen] = useState(false);
+  const profileProgress = useProfileProgress(profile);
 
   // Handle starter data from ProfileStarter page
   useEffect(() => {
@@ -69,6 +74,7 @@ export function ProfilePage() {
       localStorage.setItem(`profileChoiceMade_${user.id}`, 'true');
     }
     setChoiceModalOpen(false);
+    setStepGuideOpen(true);
   };
 
   const handleChooseManual = () => {
@@ -115,7 +121,7 @@ export function ProfilePage() {
         onCoverColorChange={profile.updateCoverColor}
         onHighlightColorChange={profile.updateHighlightColor}
         mainContentRef={mainContentRef}
-        onOpenGuidedSetup={() => {}}
+        onOpenGuidedSetup={() => setStepGuideOpen(true)}
         userProfile={profile}
       >
         <ProfileContent 
@@ -133,6 +139,20 @@ export function ProfilePage() {
           onChooseCVUpload={handleChooseCVUpload}
         />
 
+      <ProfileGuideButton
+        userImage={profile.profileImage}
+        userName={profile.userName}
+        completionPercentage={profileProgress.completionPercentage}
+        isOpen={stepGuideOpen}
+        onClick={() => setStepGuideOpen(true)}
+      />
+
+      <ProfileStepModal
+        open={stepGuideOpen}
+        onOpenChange={setStepGuideOpen}
+        profile={profile}
+        userId={user?.id || ''}
+      />
       
       <ProfileFooter coverColor={profile.coverColor} />
     </div>

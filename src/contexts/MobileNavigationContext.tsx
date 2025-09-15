@@ -7,8 +7,6 @@ interface MobileNavigationContextType {
   showFAB: boolean;
   fabAction: () => void;
   setFabAction: (action: () => void) => void;
-  isHelpModalOpen: boolean;
-  setIsHelpModalOpen: (open: boolean) => void;
 }
 
 const MobileNavigationContext = createContext<MobileNavigationContextType | undefined>(undefined);
@@ -32,7 +30,6 @@ export const MobileNavigationProvider: React.FC<MobileNavigationProviderProps> =
   const { user, loading } = useAuth();
   const location = useLocation();
   const [fabAction, setFabAction] = useState<() => void>(() => () => {});
-  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   
   const shouldShowNavigation = !loading && 
     user && 
@@ -46,9 +43,7 @@ export const MobileNavigationProvider: React.FC<MobileNavigationProviderProps> =
     shouldShowNavigation,
     showFAB,
     fabAction,
-    setFabAction,
-    isHelpModalOpen,
-    setIsHelpModalOpen
+    setFabAction
   };
 
   return (

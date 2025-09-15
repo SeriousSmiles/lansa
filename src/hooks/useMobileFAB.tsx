@@ -1,14 +1,22 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useMobileNavigation } from '@/contexts/MobileNavigationContext';
 
 export function useMobileFAB() {
-  const { setFabAction, setIsHelpModalOpen } = useMobileNavigation();
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
+  const { setFabAction } = useMobileNavigation();
 
   useEffect(() => {
     setFabAction(() => () => {
-      setIsHelpModalOpen(true);
+      setIsQuickActionsOpen(true);
     });
-  }, [setFabAction, setIsHelpModalOpen]);
+  }, [setFabAction]);
 
-  return {};
+  const closeQuickActions = () => {
+    setIsQuickActionsOpen(false);
+  };
+
+  return {
+    isQuickActionsOpen,
+    closeQuickActions
+  };
 }
