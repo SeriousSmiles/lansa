@@ -69,7 +69,7 @@ export function UserProfile({ userName, email, handleLogout, themeColor }: UserP
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-        className="w-56"
+        className="w-56 bg-popover border border-border z-[200]"
         onCloseAutoFocus={(e) => e.preventDefault()}
         loop
       >
@@ -83,6 +83,9 @@ export function UserProfile({ userName, email, handleLogout, themeColor }: UserP
             <Link to="/profile">Resume Builder</Link>
           </DropdownMenuItem>
         )}
+        <DropdownMenuItem asChild>
+          <Link to="/resources">Resources</Link>
+        </DropdownMenuItem>
         <DropdownMenuItem onSelect={safeHandler(() => {}, "Settings")}>
           Settings
         </DropdownMenuItem>

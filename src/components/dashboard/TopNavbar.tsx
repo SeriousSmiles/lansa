@@ -8,6 +8,9 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useUserType } from "@/hooks/useUserType";
 import { TablerIcon } from "@tabler/icons-react";
 import { AnimatedTabNav } from "@/components/navigation/AnimatedTabNav";
+import { Search } from "lucide-react";
+import { useUIStore } from "@/stores/uiStore";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type MenuItem = {
   title: string;
@@ -27,6 +30,8 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
   const isDarkTheme = themeColor ? getContrastTextColor(themeColor) === "#FFFFFF" : false;
   const { t } = useTranslation();
   const { userType } = useUserType();
+  const { setSearchOpen } = useUIStore();
+  const isMobile = useIsMobile();
 
   return (
     <header
@@ -49,6 +54,16 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
         </div>
         {/* Actions */}
         <div className="flex items-center gap-1 sm:gap-2">
+          {isMobile && (
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setSearchOpen(true)}
+              className="btn-animate"
+            >
+              <Search className="h-4 w-4" />
+            </Button>
+          )}
           {userType !== 'employer' && (
             <Link to="/profile">
               <Button className="btn-animate" size="sm">{t('navbar.resumeBuilder')}</Button>

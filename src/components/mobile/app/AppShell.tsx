@@ -3,11 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { BottomNav } from './BottomNav';
-import { TopBar } from './TopBar';
 import { QuickActionsSheet } from './QuickActionsSheet';
 import { SearchOverlay } from './SearchOverlay';
 import { useUIStore } from '@/stores/uiStore';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -21,12 +21,34 @@ export function AppShell({ children }: AppShellProps) {
   const location = useLocation();
   const { isQuickActionsOpen, isSearchOpen } = useUIStore();
   const isMobile = useIsMobile();
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = React.useState(false);
   
   const isAuthRoute = AUTH_ROUTES.includes(location.pathname);
   const isOnboardingRoute = ONBOARDING_ROUTES.includes(location.pathname);
   const isSharedProfile = location.pathname.startsWith('/profile/share/');
   
-  const showMobileNavigation = isMobile && !loading && user && !isAuthRoute && !isOnboardingRoute && !isSharedProfile;
+  // Check onboarding completion status
+  React.useEffect(() => {
+    async function checkOnboardingStatus() {
+      if (!user?.id) return;
+      
+      try {
+        const { data } = await supabase
+          .from('user_profiles')
+          .select('onboarding_completed')
+          .eq('user_id', user.id)
+          .single();
+          
+        setHasCompletedOnboarding(data?.onboarding_completed || false);
+      } catch (error) {
+        console.error('Error checking onboarding status:', error);
+      }
+    }
+    
+    checkOnboardingStatus();
+  }, [user?.id]);
+  
+  const showMobileNavigation = isMobile && !loading && user && hasCompletedOnboarding && !isAuthRoute && !isOnboardingRoute && !isSharedProfile;
   
   // On desktop, just render children without mobile shell
   if (!isMobile) {
@@ -37,20 +59,6 @@ export function AppShell({ children }: AppShellProps) {
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Safe area top padding */}
       <div className="mobile-safe-top" />
-      
-      {/* Top Bar */}
-      <AnimatePresence>
-        {showMobileNavigation && (
-          <motion.div
-            initial={{ y: -100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -100, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
-          >
-            <TopBar />
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Main Content */}
       <main 
@@ -60,7 +68,7 @@ export function AppShell({ children }: AppShellProps) {
         `}
         style={{
           minHeight: showMobileNavigation 
-            ? 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 64px - 80px)' 
+            ? 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 80px)' 
             : 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))'
         }}
       >

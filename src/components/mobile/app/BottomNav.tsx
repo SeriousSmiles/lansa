@@ -17,7 +17,7 @@ const tabs: NavTab[] = [
   { id: 'home', label: 'Home', icon: Home, to: '/dashboard' },
   { id: 'profile', label: 'Profile', icon: User, to: '/profile' },
   { id: 'center', label: 'Create', icon: Plus, to: '#' }, // FAB placeholder
-  { id: 'opportunities', label: 'Jobs', icon: Briefcase, to: '/discovery' },
+  { id: 'opportunities', label: 'Jobs', icon: Briefcase, to: '/opportunity-discovery' },
   { id: 'coach', label: 'Coach', icon: MessageSquare, to: '/content' },
 ];
 
@@ -28,7 +28,7 @@ export function BottomNav() {
   const getActiveTab = () => {
     if (location.pathname === '/dashboard') return 'home';
     if (location.pathname === '/profile') return 'profile';
-    if (location.pathname === '/discovery') return 'opportunities';
+    if (location.pathname === '/opportunity-discovery' || location.pathname === '/discovery') return 'opportunities';
     if (location.pathname === '/content') return 'coach';
     return 'home';
   };

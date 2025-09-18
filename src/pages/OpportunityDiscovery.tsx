@@ -10,15 +10,26 @@ import { swipeService, SwipeDirection, SwipeContext } from "@/services/swipeServ
 import { matchService } from "@/services/matchService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useUserType } from "@/hooks/useUserType";
 
 export default function OpportunityDiscovery() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'networking' | 'jobs'>('networking');
+  const { userType } = useUserType();
+  const [activeTab, setActiveTab] = useState<'networking' | 'jobs'>('jobs'); // Default to jobs for students
   const [profiles, setProfiles] = useState<DiscoveryProfile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [matchCount, setMatchCount] = useState(0);
   const [swipeCount, setSwipeCount] = useState(0);
   const [filters, setFilters] = useState<DiscoveryFilters>({});
+
+  // Set default tab based on user type
+  useEffect(() => {
+    if (userType === 'employer') {
+      setActiveTab('networking'); // Employers should see candidates by default
+    } else {
+      setActiveTab('jobs'); // Job seekers should see jobs by default  
+    }
+  }, [userType]);
 
   useEffect(() => {
     if (user) {

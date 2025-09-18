@@ -15,7 +15,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
-  { title: "Discovery", url: "/discovery", icon: Search },
+  { title: "Discovery", url: "/opportunity-discovery", icon: Search },
   { title: "Profile", url: "/profile", icon: User },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
@@ -128,7 +128,7 @@ export function MobileBottomNavigation() {
       {showFAB && (
         <button
           ref={fabRef}
-          className="fixed bottom-20 right-6 z-[99] md:hidden bg-gradient-to-r from-primary to-secondary text-primary-foreground h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
+          className="fixed bottom-24 right-6 z-[101] md:hidden bg-gradient-to-r from-primary to-secondary text-primary-foreground h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
           onClick={() => {
             // Add haptic-style feedback animation
             if (fabRef.current) {
