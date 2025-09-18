@@ -7,6 +7,7 @@ import { TopBar } from './TopBar';
 import { QuickActionsSheet } from './QuickActionsSheet';
 import { SearchOverlay } from './SearchOverlay';
 import { useUIStore } from '@/stores/uiStore';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -19,12 +20,18 @@ export function AppShell({ children }: AppShellProps) {
   const { user, loading } = useAuth();
   const location = useLocation();
   const { isQuickActionsOpen, isSearchOpen } = useUIStore();
+  const isMobile = useIsMobile();
   
   const isAuthRoute = AUTH_ROUTES.includes(location.pathname);
   const isOnboardingRoute = ONBOARDING_ROUTES.includes(location.pathname);
   const isSharedProfile = location.pathname.startsWith('/profile/share/');
   
-  const showNavigation = !loading && user && !isAuthRoute && !isOnboardingRoute && !isSharedProfile;
+  const showMobileNavigation = isMobile && !loading && user && !isAuthRoute && !isOnboardingRoute && !isSharedProfile;
+  
+  // On desktop, just render children without mobile shell
+  if (!isMobile) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -33,7 +40,7 @@ export function AppShell({ children }: AppShellProps) {
       
       {/* Top Bar */}
       <AnimatePresence>
-        {showNavigation && (
+        {showMobileNavigation && (
           <motion.div
             initial={{ y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -49,10 +56,10 @@ export function AppShell({ children }: AppShellProps) {
       <main 
         className={`
           flex-1 relative
-          ${showNavigation ? 'pb-20' : ''}
+          ${showMobileNavigation ? 'pb-20' : ''}
         `}
         style={{
-          minHeight: showNavigation 
+          minHeight: showMobileNavigation 
             ? 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 64px - 80px)' 
             : 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))'
         }}
@@ -76,7 +83,7 @@ export function AppShell({ children }: AppShellProps) {
 
       {/* Bottom Navigation */}
       <AnimatePresence>
-        {showNavigation && (
+        {showMobileNavigation && (
           <motion.div
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
