@@ -62,7 +62,7 @@ export function AppShell({ children }: AppShellProps) {
     showMobileNavigation: isMobile && !loading && user && hasCompletedOnboarding && !isAuthRoute && !isOnboardingRoute && !isSharedProfile 
   });
   
-  const showMobileNavigation = isMobile && !loading && user && hasCompletedOnboarding && !isAuthRoute && !isOnboardingRoute && !isSharedProfile;
+  const showMobileNavigation = isMobile && !loading && user && !isAuthRoute && !isOnboardingRoute && !isSharedProfile;
   
   // On desktop, just render children without mobile shell
   if (!isMobile) {

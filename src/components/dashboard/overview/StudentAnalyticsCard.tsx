@@ -206,35 +206,35 @@ export function StudentAnalyticsCard() {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-          <div className="text-center p-3 sm:p-4 bg-muted/50 rounded-lg">
+          <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200/50 rounded-lg">
             <div className="flex flex-col items-center gap-1 sm:gap-2">
-              <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              <p className="text-xl sm:text-2xl font-bold">{analytics.profileViews}</p>
-              <p className="text-xs sm:text-sm text-muted-foreground text-center">Profile Views</p>
+              <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+              <p className="text-xl sm:text-2xl font-bold text-blue-800">{analytics.profileViews}</p>
+              <p className="text-xs sm:text-sm text-blue-600/80 text-center">Profile Views</p>
             </div>
           </div>
           
-          <div className="text-center p-3 sm:p-4 bg-muted/50 rounded-lg">
+          <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-green-50 to-green-100 border border-green-200/50 rounded-lg">
             <div className="flex flex-col items-center gap-1 sm:gap-2">
-              <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
-              <p className="text-xl sm:text-2xl font-bold">{analytics.rightSwipes}</p>
-              <p className="text-xs sm:text-sm text-muted-foreground text-center">Likes</p>
+              <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+              <p className="text-xl sm:text-2xl font-bold text-green-800">{analytics.rightSwipes}</p>
+              <p className="text-xs sm:text-sm text-green-600/80 text-center">Likes</p>
             </div>
           </div>
           
-          <div className="text-center p-3 sm:p-4 bg-muted/50 rounded-lg">
+          <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200/50 rounded-lg">
             <div className="flex flex-col items-center gap-1 sm:gap-2">
-              <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
-              <p className="text-xl sm:text-2xl font-bold">{analytics.nudges}</p>
-              <p className="text-xs sm:text-sm text-muted-foreground text-center">Nudges</p>
+              <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+              <p className="text-xl sm:text-2xl font-bold text-purple-800">{analytics.nudges}</p>
+              <p className="text-xs sm:text-sm text-purple-600/80 text-center">Nudges</p>
             </div>
           </div>
           
-          <div className="text-center p-3 sm:p-4 bg-muted/50 rounded-lg">
+          <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200/50 rounded-lg">
             <div className="flex flex-col items-center gap-1 sm:gap-2">
-              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />
-              <p className="text-xl sm:text-2xl font-bold">{analytics.matches}</p>
-              <p className="text-xs sm:text-sm text-muted-foreground text-center">Matches</p>
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
+              <p className="text-xl sm:text-2xl font-bold text-orange-800">{analytics.matches}</p>
+              <p className="text-xs sm:text-sm text-orange-600/80 text-center">Matches</p>
             </div>
           </div>
         </div>
@@ -245,7 +245,7 @@ export function StudentAnalyticsCard() {
               <span className="text-sm font-medium">Match Rate</span>
               <span className="text-lg font-bold text-primary">{analytics.matchRate}%</span>
             </div>
-            <div className="w-full bg-muted rounded-full h-2 mt-2">
+            <div className="w-full bg-primary/10 rounded-full h-2 mt-2 border border-primary/20">
               <div 
                 className="bg-primary h-2 rounded-full transition-all duration-300" 
                 style={{ width: `${analytics.matchRate}%` }}

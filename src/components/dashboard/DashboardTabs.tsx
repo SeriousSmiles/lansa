@@ -41,19 +41,19 @@ export function DashboardTabs({
   return (
     <div ref={tabsRef}>
       <Tabs defaultValue="overview" className="mb-6">
-        <TabsList className="bg-muted">
+        <TabsList className="bg-card/50 border border-border/20 backdrop-blur-sm">
           <TabsTrigger 
             value="overview" 
-            className="btn-animate data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
+            className="btn-animate data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground hover:text-foreground"
           >
             Overview
           </TabsTrigger>
           <TabsTrigger 
             value="storybuilder" 
-            className="flex items-center gap-1.5 btn-animate data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
+            className="flex items-center gap-1.5 btn-animate data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground hover:text-foreground"
           >
             <span>Story Builder</span>
-            <Badge variant="secondary" className="text-xs px-1.5 py-0.5">Beta</Badge>
+            <Badge variant="secondary" className="text-xs px-1.5 py-0.5 bg-primary/10 text-primary border-0">Beta</Badge>
           </TabsTrigger>
         </TabsList>
         
