@@ -7,10 +7,9 @@ import { AddToHomeScreenPrompt } from "@/components/mobile/AddToHomeScreenPrompt
 import { HotjarScript } from "@/components/analytics/HotjarScript";
 import { CookieConsent } from "@/components/analytics/CookieConsent";
 
-import { MobileNavigationProvider } from "@/contexts/MobileNavigationContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { PageTransition } from "@/components/transitions/PageTransition";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AppShell } from "@/components/mobile/app/AppShell";
 import HomeSpotlight from "./pages/HomeSpotlight";
 import Index from "./pages/Index";
 import AuthCallback from "./pages/AuthCallback";
@@ -48,33 +47,32 @@ const App: React.FC = () => {
           <HotjarScript />
           <CookieConsent />
           <BrowserRouter>
-            <MobileNavigationProvider>
+            <AppShell>
               <Routes>
                 <Route path="/" element={<HomeSpotlight />} />
-                <Route path="/auth" element={<PageTransition><Index /></PageTransition>} />
-                <Route path="/auth/callback" element={<PageTransition><AuthCallback /></PageTransition>} />
+                <Route path="/auth" element={<Index />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
                 {/* Public SEO pages */}
-                <Route path="/help" element={<PageTransition><Help /></PageTransition>} />
-                <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
-                <Route path="/terms" element={<PageTransition><Terms /></PageTransition>} />
+                <Route path="/help" element={<Help />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
                 <Route element={<ProtectedRoute />}>
-                  <Route path="/onboarding" element={<PageTransition><Onboarding /></PageTransition>} />
-                  <Route path="/profile-starter" element={<PageTransition><ProfileStarter /></PageTransition>} />
-                  <Route path="/card" element={<PageTransition><Card /></PageTransition>} />
-                  <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
-                  <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
-                  <Route path="/resources" element={<PageTransition><Resources /></PageTransition>} />
-                  <Route path="/content" element={<PageTransition><ContentLibrary /></PageTransition>} />
-                  <Route path="/discovery" element={<PageTransition><OpportunityDiscovery /></PageTransition>} />
-                  <Route path="/employer-dashboard" element={<PageTransition><EmployerDashboard /></PageTransition>} />
-                  <Route path="/browse-candidates" element={<PageTransition><BrowseCandidates /></PageTransition>} />
+                  <Route path="/onboarding" element={<Onboarding />} />
+                  <Route path="/profile-starter" element={<ProfileStarter />} />
+                  <Route path="/card" element={<Card />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/resources" element={<Resources />} />
+                  <Route path="/content" element={<ContentLibrary />} />
+                  <Route path="/discovery" element={<OpportunityDiscovery />} />
+                  <Route path="/employer-dashboard" element={<EmployerDashboard />} />
+                  <Route path="/browse-candidates" element={<BrowseCandidates />} />
                 </Route>
                 {/* Public shared profile route - no authentication required */}
-                <Route path="/profile/share/:userId" element={<PageTransition><SharedProfile /></PageTransition>} />
+                <Route path="/profile/share/:userId" element={<SharedProfile />} />
                 <Route path="*" element={<HomeSpotlight />} />
               </Routes>
-              
-            </MobileNavigationProvider>
+            </AppShell>
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>

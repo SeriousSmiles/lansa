@@ -52,6 +52,7 @@
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
     "file-saver": "^2.0.5",
+    "framer-motion": "^12.23.14",
     "gsap": "^3.13.0",
     "html2canvas": "^1.4.1",
     "i18next": "^23.16.8",
@@ -72,7 +73,8 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.3",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

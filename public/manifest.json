@@ -1,0 +1,55 @@
+{
+  "name": "Lansa - Career Platform",
+  "short_name": "Lansa",
+  "description": "AI-powered career platform for students and professionals",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f97316",
+  "orientation": "portrait-primary",
+  "categories": ["business", "productivity", "education"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/lovable-uploads/155ecc34-3f01-4d49-b1ad-10c1a50803e2.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/lovable-uploads/155ecc34-3f01-4d49-b1ad-10c1a50803e2.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Upload Resume",
+      "short_name": "Upload",
+      "description": "Upload and parse your resume with AI",
+      "url": "/dashboard?action=upload",
+      "icons": [
+        {
+          "src": "/lovable-uploads/155ecc34-3f01-4d49-b1ad-10c1a50803e2.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Find Jobs",
+      "short_name": "Jobs",
+      "description": "Discover new opportunities",
+      "url": "/discovery",
+      "icons": [
+        {
+          "src": "/lovable-uploads/155ecc34-3f01-4d49-b1ad-10c1a50803e2.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false
+}
