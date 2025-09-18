@@ -39,7 +39,7 @@ export function ProfileGuideButton({
   const isComplete = completionPercentage >= 100;
 
   return (
-    <div className={cn("fixed bottom-6 right-6 z-40", className)}>
+    <div className={cn("fixed bottom-24 right-6 z-40", className)}>
       <Button
         size="lg"
         onClick={onClick}
