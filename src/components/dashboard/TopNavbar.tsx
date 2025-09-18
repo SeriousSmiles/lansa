@@ -64,7 +64,7 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
               <Search className="h-4 w-4" />
             </Button>
           )}
-          {userType !== 'employer' && (
+          {userType !== 'employer' && !isMobile && (
             <Link to="/profile">
               <Button className="btn-animate" size="sm">{t('navbar.resumeBuilder')}</Button>
             </Link>
