@@ -39,14 +39,28 @@ export function AppShell({ children }: AppShellProps) {
           .eq('user_id', user.id)
           .single();
           
+        console.log('Onboarding status check:', { data, onboarding_completed: data?.onboarding_completed });
         setHasCompletedOnboarding(data?.onboarding_completed || false);
       } catch (error) {
         console.error('Error checking onboarding status:', error);
+        // If there's an error, assume onboarding is completed to show navigation
+        setHasCompletedOnboarding(true);
       }
     }
     
     checkOnboardingStatus();
   }, [user?.id]);
+  
+  console.log('AppShell state:', { 
+    isMobile, 
+    loading, 
+    user: !!user, 
+    hasCompletedOnboarding, 
+    isAuthRoute, 
+    isOnboardingRoute, 
+    isSharedProfile,
+    showMobileNavigation: isMobile && !loading && user && hasCompletedOnboarding && !isAuthRoute && !isOnboardingRoute && !isSharedProfile 
+  });
   
   const showMobileNavigation = isMobile && !loading && user && hasCompletedOnboarding && !isAuthRoute && !isOnboardingRoute && !isSharedProfile;
   
