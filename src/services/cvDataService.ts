@@ -42,17 +42,18 @@ export interface CVAnalysisResult {
 
 export class CVDataService {
   /**
-   * Upload and parse a CV file using OpenAI Vision
+   * Upload and parse a CV file using Railway microservice
    */
-  static async uploadAndParseCV(file: File, userId: string, imageDataUrls: string[]): Promise<CVAnalysisResult> {
+  static async uploadAndParseCV(file: File, userId: string): Promise<CVAnalysisResult> {
     try {
-      // Call the parse-cv-vision edge function
-      const { data, error } = await supabase.functions.invoke('parse-cv-resume', {
-        body: {
-          imageDataUrls,
-          fileName: file.name,
-          userId
-        }
+      // Prepare FormData for Railway microservice
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('userId', userId);
+
+      // Call the parse-cv-railway edge function
+      const { data, error } = await supabase.functions.invoke('parse-cv-railway', {
+        body: formData
       });
 
       if (error) {
@@ -63,6 +64,51 @@ export class CVDataService {
     } catch (error) {
       console.error('Error uploading and parsing CV:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Get user's resume parsing history
+   */
+  static async getUserResumes(userId: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('user_resumes')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching user resumes:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get specific resume by ID
+   */
+  static async getResumeById(resumeId: string, userId: string): Promise<any | null> {
+    try {
+      const { data, error } = await supabase
+        .from('user_resumes')
+        .select('*')
+        .eq('id', resumeId)
+        .eq('user_id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error fetching resume by ID:', error);
+      return null;
     }
   }
 

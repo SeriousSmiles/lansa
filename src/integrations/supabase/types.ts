@@ -1167,6 +1167,57 @@ export type Database = {
         }
         Relationships: []
       }
+      user_resumes: {
+        Row: {
+          confidence_scores: Json | null
+          created_at: string
+          error_message: string | null
+          extracted_data: Json | null
+          file_size: number | null
+          id: string
+          original_filename: string
+          parsing_source: string
+          processed_at: string | null
+          processing_status: string
+          raw_response: Json | null
+          sections_found: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence_scores?: Json | null
+          created_at?: string
+          error_message?: string | null
+          extracted_data?: Json | null
+          file_size?: number | null
+          id?: string
+          original_filename: string
+          parsing_source?: string
+          processed_at?: string | null
+          processing_status?: string
+          raw_response?: Json | null
+          sections_found?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence_scores?: Json | null
+          created_at?: string
+          error_message?: string | null
+          extracted_data?: Json | null
+          file_size?: number | null
+          id?: string
+          original_filename?: string
+          parsing_source?: string
+          processed_at?: string | null
+          processing_status?: string
+          raw_response?: Json | null
+          sections_found?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

@@ -139,13 +139,11 @@ export function CVUploadModal({ open, onOpenChange, onComplete }: CVUploadModalP
         throw new Error("User not authenticated");
       }
 
-      // Convert file to images (PDF pages or direct image)
-      const imageDataUrls = await convertFileToImages(file);
-      console.log(`Converted ${file.name} to ${imageDataUrls.length} images`);
+      console.log(`Processing ${file.name} via Railway microservice`);
 
       // Import the CV data service and parse the CV
       const { CVDataService } = await import("@/services/cvDataService");
-      const analysisResult = await CVDataService.uploadAndParseCV(file, user.id, imageDataUrls);
+      const analysisResult = await CVDataService.uploadAndParseCV(file, user.id);
       
       // Convert to expected format
       const analysisData: CVAnalysisData = {
