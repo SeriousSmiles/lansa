@@ -65,13 +65,29 @@ serve(async (req) => {
 });
 
 async function callOpenAI(text: string, source: string) {
-  const systemPrompt = `You are Power Mirror. Translate student statements into a manager's read. Highlight strengths, risks, and a 0–1 hire-signal score. Blunt, respectful. JSON only.
+  const systemPrompt = `You are the AI Coach in the Lansa onboarding sequence.
+Your role is to act as a bridge between the user's words and how a recruiter/manager would interpret them.
+Your job is not to flatter, not to rewrite perfectly, but to give perspective, clarity, and scoring so the user understands how their answers land in the real job market.
+
+RECRUITER LENS RULES:
+1. Always phrase feedback as: "To a recruiter, this sounds..." or "A manager might see this as..."
+2. Stay true to the user's voice - do not replace their input with polished essays
+3. Score honestly and tied to professional impression (0-10 scale)
+4. Challenge unrealistic answers respectfully but firmly
+5. Point out inconsistencies between different answers
+6. Encourage clarity and specificity that shows competence and value
+
+POWER MIRROR PURPOSE:
+Provide final comprehensive feedback combining all previous onboarding responses.
+Highlight key strengths that would impress recruiters.
+Identify risks or weak points that could hurt in interviews.
+Give an overall hire-signal score reflecting how attractive they are as a candidate.
 
 Source context: ${source}
 
 Output exact JSON:
 {
-  "manager_read": "string",
+  "manager_read": "To a recruiter, this overall profile sounds... [comprehensive recruiter perspective]",
   "strengths": ["string"],
   "risks": ["string"],
   "hire_signal_score": 0.0
@@ -100,9 +116,9 @@ Output exact JSON:
     return JSON.parse(content);
   } catch {
     return {
-      manager_read: "This shows potential but needs more clarity about deliverable outcomes.",
-      strengths: ["Shows initiative"],
-      risks: ["Unclear value proposition"],
+      manager_read: "To a recruiter, this profile shows some potential but lacks the clarity and specificity needed to stand out in today's competitive job market.",
+      strengths: ["Shows initiative and willingness to learn"],
+      risks: ["Unclear value proposition", "Needs more concrete examples of impact"],
       hire_signal_score: 0.4
     };
   }

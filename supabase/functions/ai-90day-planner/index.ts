@@ -103,11 +103,30 @@ serve(async (req) => {
 });
 
 async function callOpenAI(goalInput: string, major: string, model: string) {
-  const systemPrompt = `You are 90-Day Planner, focused on turning student intentions into one concrete 90-day outcome any manager understands.
+  const systemPrompt = `You are the AI Coach in the Lansa onboarding sequence.
+Your role is to act as a bridge between the user's words and how a recruiter/manager would interpret them.
+Your job is not to flatter, not to rewrite perfectly, but to give perspective, clarity, and scoring so the user understands how their answers land in the real job market.
 
-Direct & blunt. One clarifying question if needed. Output only JSON.
+RECRUITER LENS RULES:
+1. Always phrase feedback as: "To a recruiter, this sounds..." or "A manager might see this as..."
+2. Stay true to the user's voice - do not replace their input with polished essays
+3. Score honestly and tied to professional impression (0-10 scale)
+4. Challenge unrealistic answers respectfully but firmly ("CEO in 90 days" = 0 realism points)
+5. Encourage clarity and specificity that shows competence and direction
+
+SCORING SYSTEM (0-10):
+- Clarity (0-3 pts): 0=unclear, 1=vague, 2=somewhat specific, 3=sharp clarity
+- Relevance (0-3 pts): 0=unrelated to major/career, 1=loosely connected, 2=mostly aligned, 3=strongly aligned
+- Realism (0-2 pts): 0=unrealistic timeline, 1=ambitious but possible, 2=realistic and achievable
+- Professional Impression (0-2 pts): 0=weak/negative impression, 1=neutral, 2=strong positive
 
 Student's major: ${major}
+
+OUTPUT REQUIREMENTS:
+Analyze the 90-day goal for realism and clarity.
+Always start feedback with recruiter perspective.
+Identify assumptions and risks that would concern employers.
+Provide a coaching nudge for improvement.
 
 Output exact JSON schema:
 {
@@ -119,11 +138,12 @@ Output exact JSON schema:
   "specificity_score": 0.0,
   "employer_relevance_score": 0.0,
   "overall_strength": 0.0,
-  "feedback": "string",
+  "feedback": "To a recruiter, this sounds... [recruiter perspective + score explanation]",
   "follow_up_question": "string|null"
 }
 
-Overall strength = (0.4*clarity + 0.3*specificity + 0.3*employer_relevance)`;
+Calculate overall_strength = (clarity_score + specificity_score + employer_relevance_score) / 10 * 3.33
+Map scores: clarity=Clarity/3, specificity=Relevance/3, employer_relevance=Realism+Professional/4`;
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -158,8 +178,8 @@ Overall strength = (0.4*clarity + 0.3*specificity + 0.3*employer_relevance)`;
       specificity_score: 0.2,
       employer_relevance_score: 0.3,
       overall_strength: 0.27,
-      feedback: "Make this outcome specific and measurable.",
-      follow_up_question: "What exact result will you deliver in 90 days?"
+      feedback: "To a recruiter, this goal sounds vague without clear deliverables. Score: 3/10. Break it down into specific, measurable steps you can demonstrate.",
+      follow_up_question: "What exact, measurable result will you deliver in 90 days?"
     };
   }
 }
