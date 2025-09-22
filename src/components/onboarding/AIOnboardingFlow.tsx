@@ -79,8 +79,9 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
       });
       
       if (error) throw error;
-      console.log('Skill analysis response:', data);
-      setSkillAnalysis(data);
+      const normalized = (data as any)?.analysis ?? data;
+      console.log('Skill analysis response (normalized):', normalized);
+      setSkillAnalysis(normalized);
     } catch (error) {
       console.error('Skill analysis error:', error);
     } finally {
@@ -100,8 +101,9 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
       });
       
       if (error) throw error;
-      console.log('Goal analysis response:', data);
-      setGoalAnalysis(data);
+      const normalized = (data as any)?.analysis ?? data;
+      console.log('Goal analysis response (normalized):', normalized);
+      setGoalAnalysis(normalized);
     } catch (error) {
       console.error('Goal analysis error:', error);
     } finally {
