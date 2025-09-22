@@ -9,7 +9,7 @@ const corsHeaders = {
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const railwayUrl = 'https://mcb-ai-parser-production.up.railway.app/upload';
+const railwayUrl = 'https://mcb-ai-parser-1-production.up.railway.app/upload';
 
 interface RailwayParseRequest {
   file: File;
