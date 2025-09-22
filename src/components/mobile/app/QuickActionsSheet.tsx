@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Upload, 
@@ -11,16 +11,20 @@ import {
   Camera,
   Plus
 } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { CVUploadModal } from '@/components/onboarding/cv/CVUploadModal';
+import { QRCodeModal } from '@/components/modals/QRCodeModal';
+import { AchievementModal } from '@/components/modals/AchievementModal';
 
 interface QuickAction {
   id: string;
   label: string;
   icon: React.ElementType;
   action: () => void;
-  color?: string;
+  bgColor: string;
+  iconColor: string;
 }
 
 interface QuickActionsSheetProps {
@@ -29,18 +33,22 @@ interface QuickActionsSheetProps {
 }
 
 export function QuickActionsSheet({ isOpen, onClose }: QuickActionsSheetProps) {
-  const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
+  const [showCVModal, setShowCVModal] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [showAchievementModal, setShowAchievementModal] = useState(false);
 
   const getQuickActions = (): QuickAction[] => {
-    // Role-based actions - simplified for demo
     const baseActions: QuickAction[] = [
       {
         id: 'update-profile',
         label: 'Update Profile',
         icon: FileText,
+        bgColor: 'bg-blue-500/10 hover:bg-blue-500/20',
+        iconColor: 'text-blue-500',
         action: () => {
-          console.log('Navigate to profile update');
+          navigate('/profile');
           onClose();
         }
       },
@@ -48,8 +56,10 @@ export function QuickActionsSheet({ isOpen, onClose }: QuickActionsSheetProps) {
         id: 'upload-resume',
         label: 'Upload Resume',
         icon: Upload,
+        bgColor: 'bg-green-500/10 hover:bg-green-500/20',
+        iconColor: 'text-green-500',
         action: () => {
-          console.log('Open resume upload');
+          setShowCVModal(true);
           onClose();
         }
       },
@@ -57,17 +67,21 @@ export function QuickActionsSheet({ isOpen, onClose }: QuickActionsSheetProps) {
         id: 'add-achievement',
         label: 'Add Achievement',
         icon: Award,
+        bgColor: 'bg-yellow-500/10 hover:bg-yellow-500/20',
+        iconColor: 'text-yellow-500',
         action: () => {
-          console.log('Add achievement');
+          setShowAchievementModal(true);
           onClose();
         }
       },
       {
         id: 'scan-qr',
-        label: 'Scan Profile QR',
+        label: 'Share Profile QR',
         icon: QrCode,
+        bgColor: 'bg-purple-500/10 hover:bg-purple-500/20',
+        iconColor: 'text-purple-500',
         action: () => {
-          console.log('Open QR scanner');
+          setShowQRModal(true);
           onClose();
         }
       }
@@ -77,6 +91,10 @@ export function QuickActionsSheet({ isOpen, onClose }: QuickActionsSheetProps) {
   };
 
   const actions = getQuickActions();
+
+  const handleCVUploadComplete = () => {
+    setShowCVModal(false);
+  };
 
   return (
     <AnimatePresence>
@@ -130,16 +148,16 @@ export function QuickActionsSheet({ isOpen, onClose }: QuickActionsSheetProps) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                     onClick={action.action}
-                    className="
+                    className={`
                       flex flex-col items-center justify-center p-6 rounded-2xl 
-                      bg-muted/50 hover:bg-muted transition-all duration-200
+                      ${action.bgColor} transition-all duration-200
                       touch-target active:scale-95 transform
-                    "
+                    `}
                   >
-                    <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-3">
-                      <Icon className="h-6 w-6 text-primary" />
+                    <div className={`h-12 w-12 rounded-2xl ${action.bgColor} flex items-center justify-center mb-3`}>
+                      <Icon className={`h-6 w-6 ${action.iconColor}`} />
                     </div>
-                    <span className="text-sm font-medium text-center">
+                    <span className="text-sm font-medium text-center text-foreground">
                       {action.label}
                     </span>
                   </motion.button>
@@ -152,6 +170,23 @@ export function QuickActionsSheet({ isOpen, onClose }: QuickActionsSheetProps) {
           </motion.div>
         </>
       )}
+      
+      {/* Modals */}
+      <CVUploadModal 
+        open={showCVModal}
+        onOpenChange={setShowCVModal}
+        onComplete={handleCVUploadComplete}
+      />
+      
+      <QRCodeModal 
+        isOpen={showQRModal}
+        onClose={() => setShowQRModal(false)}
+      />
+      
+      <AchievementModal 
+        isOpen={showAchievementModal}
+        onClose={() => setShowAchievementModal(false)}
+      />
     </AnimatePresence>
   );
 }
