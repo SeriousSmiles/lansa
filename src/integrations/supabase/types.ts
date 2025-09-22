@@ -1017,6 +1017,7 @@ export type Database = {
           is_public: boolean
           languages: Json | null
           last_name: string | null
+          location: string | null
           major: string | null
           migration_status: string | null
           name: string | null
@@ -1056,6 +1057,7 @@ export type Database = {
           is_public?: boolean
           languages?: Json | null
           last_name?: string | null
+          location?: string | null
           major?: string | null
           migration_status?: string | null
           name?: string | null
@@ -1095,6 +1097,7 @@ export type Database = {
           is_public?: boolean
           languages?: Json | null
           last_name?: string | null
+          location?: string | null
           major?: string | null
           migration_status?: string | null
           name?: string | null

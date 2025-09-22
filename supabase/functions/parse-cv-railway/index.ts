@@ -80,7 +80,7 @@ serve(async (req) => {
       const railwayData = await railwayResponse.json();
       console.log('Railway microservice response received');
 
-      // Extract and structure the data from Railway response
+      // Extract and structure the data from Railway response with source tracking
       const extractedData = {
         personalInfo: {
           name: railwayData.personal_info?.name || railwayData.name,
@@ -88,10 +88,26 @@ serve(async (req) => {
           summary: railwayData.personal_info?.summary || railwayData.summary,
           email: railwayData.personal_info?.email || railwayData.contact?.email,
           phone: railwayData.personal_info?.phone || railwayData.contact?.phone,
+          location: railwayData.personal_info?.location || railwayData.contact?.location || railwayData.location,
         },
         skills: railwayData.skills || [],
-        experience: railwayData.experience || railwayData.work_experience || [],
-        education: railwayData.education || []
+        experience: (railwayData.experience || railwayData.work_experience || []).map((exp: any, index: number) => ({
+          title: exp.title || exp.job_title || exp.position,
+          company: exp.company || exp.employer,
+          duration: exp.duration || `${exp.start_date || ''} - ${exp.end_date || 'Present'}`,
+          description: exp.description || exp.responsibilities || '',
+          source: 'resume-upload',
+          order_index: index,
+          is_user_edited: false
+        })),
+        education: (railwayData.education || []).map((edu: any, index: number) => ({
+          degree: edu.degree || edu.qualification,
+          institution: edu.institution || edu.school || edu.university,
+          year: edu.year || edu.graduation_year || edu.end_date || '',
+          source: 'resume-upload',
+          order_index: index,
+          is_user_edited: false
+        }))
       };
 
       // Calculate confidence scores based on Railway response

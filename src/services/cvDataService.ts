@@ -8,6 +8,7 @@ export interface CVExtractedData {
     summary?: string;
     email?: string;
     phone?: string;
+    location?: string;
   };
   skills?: string[];
   experience?: Array<{
@@ -15,11 +16,17 @@ export interface CVExtractedData {
     company: string;
     duration: string;
     description: string;
+    source?: string;
+    order_index?: number;
+    is_user_edited?: boolean;
   }>;
   education?: Array<{
     degree: string;
     institution: string;
     year: string;
+    source?: string;
+    order_index?: number;
+    is_user_edited?: boolean;
   }>;
 }
 
@@ -151,19 +158,27 @@ export class CVDataService {
         if (extractedData.personalInfo.phone) {
           updateData.phone_number = extractedData.personalInfo.phone;
         }
+        if (extractedData.personalInfo.location) {
+          updateData.location = extractedData.personalInfo.location;
+        }
       }
 
-      // Map skills - merge with existing skills
+      // Map skills - merge with existing skills, adding source tracking for new ones
       if (extractedData.skills) {
         const existingSkills = Array.isArray(currentProfile?.skills) ? currentProfile.skills as string[] : [];
         const newSkills = [...new Set([...existingSkills, ...extractedData.skills])];
         updateData.skills = newSkills;
       }
 
-      // Map experience - merge with existing experience
+      // Map experience - smart merge preserving user-edited content
       if (extractedData.experience) {
         const existingExperience = Array.isArray(currentProfile?.experiences) ? currentProfile.experiences as any[] : [];
-        const newExperience = [...existingExperience, ...extractedData.experience.map(exp => ({
+        
+        // Preserve existing user-edited experiences
+        const userEditedExperiences = existingExperience.filter(exp => exp.is_user_edited !== false);
+        
+        // Add new resume experiences with source tracking
+        const newResumeExperiences = extractedData.experience.map((exp, index) => ({
           id: `cv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           title: exp.title,
           company: exp.company,
@@ -171,22 +186,35 @@ export class CVDataService {
           description: exp.description,
           isCurrentRole: exp.duration.toLowerCase().includes('present'),
           startDate: this.extractStartDate(exp.duration),
-          endDate: this.extractEndDate(exp.duration)
-        }))];
-        updateData.experiences = newExperience;
+          endDate: this.extractEndDate(exp.duration),
+          source: exp.source || 'resume-upload',
+          order_index: exp.order_index ?? index,
+          is_user_edited: exp.is_user_edited ?? false
+        }));
+        
+        updateData.experiences = [...userEditedExperiences, ...newResumeExperiences];
       }
 
-      // Map education - merge with existing education
+      // Map education - smart merge preserving user-edited content
       if (extractedData.education) {
         const existingEducation = Array.isArray(currentProfile?.education) ? currentProfile.education as any[] : [];
-        const newEducation = [...existingEducation, ...extractedData.education.map(edu => ({
+        
+        // Preserve existing user-edited education
+        const userEditedEducation = existingEducation.filter(edu => edu.is_user_edited !== false);
+        
+        // Add new resume education with source tracking
+        const newResumeEducation = extractedData.education.map((edu, index) => ({
           id: `cv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           degree: edu.degree,
           institution: edu.institution,
           year: edu.year,
-          graduationYear: parseInt(edu.year) || new Date().getFullYear()
-        }))];
-        updateData.education = newEducation;
+          graduationYear: parseInt(edu.year) || new Date().getFullYear(),
+          source: edu.source || 'resume-upload',
+          order_index: edu.order_index ?? index,
+          is_user_edited: edu.is_user_edited ?? false
+        }));
+        
+        updateData.education = [...userEditedEducation, ...newResumeEducation];
       }
 
       // Update profile in database
