@@ -25,12 +25,12 @@ serve(async (req) => {
 
   try {
     const formData = await req.formData();
-    const file = formData.get('file') as File;
+    const file = formData.get('pdf') as File;
     const userId = formData.get('userId') as string;
     
     if (!file || !userId) {
       return new Response(
-        JSON.stringify({ error: 'Missing file or userId parameter' }), 
+        JSON.stringify({ error: 'Missing pdf file or userId parameter' }), 
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
