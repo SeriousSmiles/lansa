@@ -16,7 +16,7 @@ export function QRCodeModal({ isOpen, onClose }: QRCodeModalProps) {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const profileUrl = `${window.location.origin}/shared-profile/${user?.id}`;
+  const profileUrl = `${window.location.origin}/profile/share/${user?.id}`;
 
   useEffect(() => {
     if (isOpen && user?.id) {
