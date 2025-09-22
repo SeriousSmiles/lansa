@@ -55,7 +55,7 @@ export class CVDataService {
     try {
       // Prepare FormData for Railway microservice
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('pdf', file);
       formData.append('userId', userId);
 
       // Call the parse-cv-railway edge function

@@ -61,7 +61,7 @@ serve(async (req) => {
     try {
       // Prepare FormData for Railway microservice
       const railwayFormData = new FormData();
-      railwayFormData.append('file', file);
+      railwayFormData.append('pdf', file);
 
       console.log('Sending file to Railway microservice...');
 
