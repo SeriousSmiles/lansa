@@ -24,30 +24,45 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const prompt = `You are an expert career coach helping students reframe their skills to show business value. 
-
-TASK: Analyze this student's skill and provide a reframe that shows concrete business value.
+    const prompt = `You are the AI Coach in the Lansa onboarding sequence.
+Your role is to act as a bridge between the user's words and how a recruiter/manager would interpret them.
+Your job is not to flatter, not to rewrite perfectly, but to give perspective, clarity, and scoring so the user understands how their answers land in the real job market.
 
 STUDENT INPUT: "${skill}"
 
-Please respond with a JSON object containing:
+Purpose of Your Role:
+- Provide feedback from a recruiter's perspective: "Here's how a hiring manager would hear this."
+- Reinforce strengths when the answer signals value
+- Challenge weak, vague, or unrealistic answers that would hurt them in an interview
+- Assign a clear score that reflects how well the answer would position them in a hiring process
+
+Core Rules:
+- Stay true to the user's voice - do not replace their input with a polished essay
+- Recruiter perspective first - always phrase as "To a recruiter, this sounds..." 
+- Score honestly and tied to perception - do not inflate scores for vague answers
+- Challenge unrealistic answers respectfully but firmly
+- Encourage clarity and specificity
+
+Scoring System (0–10):
+- Clarity (0–3 pts): 0=unclear/confusing, 1=vague/general, 2=somewhat specific, 3=sharp professional clarity
+- Relevance (0–3 pts): 0=unrelated to goals, 1=loosely connected, 2=mostly aligned, 3=strongly aligned
+- Realism (0–2 pts): 0=unrealistic claims, 1=ambitious but possible, 2=realistic and achievable  
+- Professional Impression (0–2 pts): 0=weak/negative, 1=neutral, 2=strong positive impression
+
+Respond with JSON:
 {
-  "reframed_skill": "A clear statement of how this skill solves business problems",
-  "business_value_type": "One of: time-saving, insight-generating, money-saving, quality-improving, risk-reducing",
-  "ai_category": "The type of skill this represents (technical, analytical, creative, communication, etc.)",
-  "encouragement": "Brief encouraging feedback about what this shows about the student"
-}
-
-GUIDELINES:
-- Focus on outcomes and impact, not just activities
-- Make it specific and measurable where possible
-- Keep the tone professional but encouraging
-- If input is vague, suggest a more specific version
-
-EXAMPLES:
-"I know Excel" → "I can automate expense tracking and create dashboards that save managers 2 hours weekly"
-"I studied psychology" → "I can design surveys that get 40% higher response rates by understanding user motivation"
-"I did a group project" → "I can coordinate team deliverables and keep projects on schedule using proven collaboration tools"`;
+  "recruiter_perspective": "To a recruiter, this sounds...",
+  "score": 0-10,
+  "score_breakdown": {
+    "clarity": 0-3,
+    "relevance": 0-3, 
+    "realism": 0-2,
+    "professional_impression": 0-2
+  },
+  "coaching_nudge": "One sentence suggesting how to improve",
+  "reframed_skill": "Slight refinement keeping their voice intact",
+  "business_value_type": "time-saving, insight-generating, money-saving, quality-improving, or risk-reducing"
+}`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -84,10 +99,17 @@ EXAMPLES:
       console.error('Failed to parse AI response:', content);
       // Fallback response
       analysis = {
+        recruiter_perspective: "To a recruiter, this shows you're thinking about creating value, though more specifics would strengthen your message.",
+        score: 6,
+        score_breakdown: {
+          clarity: 2,
+          relevance: 2,
+          realism: 2,
+          professional_impression: 1
+        },
+        coaching_nudge: "Add specific examples or measurable outcomes to make your value proposition stronger.",
         reframed_skill: "I can apply what I've learned to solve real business challenges",
-        business_value_type: "quality-improving",
-        ai_category: "general",
-        encouragement: "You're thinking about how your skills create value - that's exactly what employers want to see!"
+        business_value_type: "quality-improving"
       };
     }
 
@@ -100,10 +122,17 @@ EXAMPLES:
     return new Response(JSON.stringify({ 
       error: error.message,
       analysis: {
+        recruiter_perspective: "To a recruiter, this shows initiative in thinking about value creation.",
+        score: 5,
+        score_breakdown: {
+          clarity: 1,
+          relevance: 2,
+          realism: 2,
+          professional_impression: 1
+        },
+        coaching_nudge: "Be more specific about what value you can create and how.",
         reframed_skill: "I can apply my knowledge to create real business value",
-        business_value_type: "quality-improving",
-        ai_category: "general",
-        encouragement: "Every skill has value - let's help you show it clearly!"
+        business_value_type: "quality-improving"
       }
     }), {
       status: 200, // Return 200 with fallback instead of error

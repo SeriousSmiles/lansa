@@ -51,11 +51,18 @@ export function NinetyDayPromiseStep({
       console.error('Error analyzing goal:', error);
       // Proceed with fallback
       onComplete(goal, {
+        recruiter_perspective: "To a recruiter, thinking about your 90-day goal shows forward-planning mindset that employers value.",
+        score: 6,
+        score_breakdown: {
+          clarity: 2,
+          relevance: 2,
+          realism: 2,
+          professional_impression: 1
+        },
+        coaching_nudge: "Add specific steps or measurable outcomes to make your goal more compelling.",
         interpretation: "You're thinking about specific outcomes and taking initiative - that's exactly what employers want to see!",
         initiative_type: "operational",
-        clarity_level: "clear",
-        strengths: "Shows forward-thinking and desire to contribute meaningfully",
-        employer_perspective: "This person thinks about results and wants to make an impact from day one."
+        clarity_level: "clear"
       });
     } finally {
       setIsAnalyzing(false);

@@ -19,9 +19,9 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const prompt = `You are Marcus, a realistic hiring manager with 15+ years of experience. Your job is to interpret student responses as they actually are - without adding polish or making assumptions.
-
-CRITICAL: Only interpret what they actually wrote. Do not add achievements or metrics they never mentioned. Be brutally honest about gaps.
+    const prompt = `You are the AI Coach in the Lansa onboarding sequence.
+Your role is to act as a bridge between the user's words and how a recruiter/manager would interpret them.
+Your job is not to flatter, not to rewrite perfectly, but to give perspective, clarity, and scoring so the user understands how their answers land in the real job market.
 
 STUDENT'S ACTUAL RESPONSES:
 - Academic Status: ${demographics?.academic_status || 'Not provided'}
@@ -30,30 +30,44 @@ STUDENT'S ACTUAL RESPONSES:
 - Their Value Skill Statement: "${skillReframe || 'Not provided'}"
 - Their 90-Day Goal: "${goalStatement || 'Not provided'}"
 
-YOUR REALISTIC MANAGER INTERPRETATION:
-"I'm reading these responses with a manager's eye - looking for what they actually demonstrate, not what they could become with coaching."
+Purpose of Your Role:
+- Provide feedback from a recruiter's perspective: "Here's how a hiring manager would hear this."
+- Reinforce strengths when the answer signals value
+- Challenge weak, vague, or unrealistic answers that would hurt them in an interview
+- Point out inconsistencies (e.g., "You said Marketing major but listed PHP/React as top skills — a recruiter may find this unclear")
+- Assign a clear overall score that reflects how well their combined answers position them
 
-RULES FOR REALISTIC INTERPRETATION:
-1. If they mention vague skills, call it out as vague (don't add specifics they didn't provide)
-2. If they lack business impact language, note that as a concern  
-3. If responses are generic, interpret them as showing limited business understanding
-4. Quote their EXACT words - do not paraphrase or improve them
-5. Point out both strengths AND realistic concerns a manager would have
+Core Rules:
+- Stay true to the user's voice - do not replace their input with a polished essay
+- Recruiter perspective first - always phrase as "To a recruiter, this sounds..." 
+- Score honestly and tied to perception - do not inflate scores for vague answers
+- Challenge unrealistic answers respectfully but firmly
+- Encourage clarity and specificity
+- Each answer is separate but look for contradictions between answers
+
+Scoring System (0–10) - Overall impression from all responses:
+- Clarity (0–3 pts): 0=unclear/confusing, 1=vague/general, 2=somewhat specific, 3=sharp professional clarity
+- Relevance (0–3 pts): 0=unrelated to stated goals, 1=loosely connected, 2=mostly aligned, 3=strongly aligned
+- Realism (0–2 pts): 0=unrealistic claims, 1=ambitious but possible, 2=realistic and achievable
+- Professional Impression (0–2 pts): 0=weak/negative, 1=neutral, 2=strong positive impression
 
 Respond with JSON:
 {
-  "mirror_message": "Reading your response '[exact quote]', as a manager I see: [realistic interpretation - both positive and concerning aspects]",
-  "key_strengths": ["Based on '[exact quote]', this shows [realistic strength]"],
-  "employer_perspective": "When I read '[exact quote]', my honest assessment is: [what a manager would actually think - including doubts/concerns]",
-  "next_level_hint": "The gap I'm seeing: [specific missing element that concerns managers]"
-}
-
-REALISTIC EXAMPLES:
-- "I could help with digital marketing" → "This is too vague - doesn't show understanding of business impact or specific capabilities"
-- "I'm good with people" → "Generic soft skill claim without evidence or context - raises questions about self-awareness"
-- "I want to learn and grow" → "Student-focused language rather than value-creation focus - suggests limited business maturity"
-
-Be honest about what their responses actually reveal - including limitations and areas of concern.`;
+  "recruiter_perspective": "To a recruiter, looking at all your responses together, this sounds...",
+  "score": 0-10,
+  "score_breakdown": {
+    "clarity": 0-3,
+    "relevance": 0-3,
+    "realism": 0-2,
+    "professional_impression": 0-2
+  },
+  "coaching_nudge": "One sentence suggesting the most important improvement",
+  "contradictions": ["If any contradictions between field of study and goals"],
+  "mirror_message": "Reading your responses, as a manager I see: [realistic interpretation]",
+  "key_strengths": ["Based on exact quotes, realistic strengths"],
+  "employer_perspective": "Overall assessment including any concerns",
+  "next_level_hint": "The gap that needs addressing most"
+}`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -92,6 +106,16 @@ Be honest about what their responses actually reveal - including limitations and
       const actualSkill = skillReframe || 'your skill input';
       const actualGoal = goalStatement || 'your 90-day goal';
       mirror = {
+        recruiter_perspective: `To a recruiter, looking at all your responses together, this shows someone trying to articulate value.`,
+        score: 6,
+        score_breakdown: {
+          clarity: 2,
+          relevance: 2,
+          realism: 2,
+          professional_impression: 1
+        },
+        coaching_nudge: "Add more specific examples and measurable outcomes to strengthen your overall impression.",
+        contradictions: [],
         mirror_message: `Reading what you wrote: "${actualSkill}" and "${actualGoal}" - as a manager, I see someone trying to articulate value, but the language is still quite general.`,
         key_strengths: ["Shows effort to think about business impact"],
         employer_perspective: `Your responses indicate you're learning to think beyond personal goals, which is positive, but I'd need more specific examples to assess your actual capabilities.`,
@@ -112,6 +136,16 @@ Be honest about what their responses actually reveal - including limitations and
     return new Response(JSON.stringify({ 
       error: error.message,
       mirror: {
+        recruiter_perspective: `To a recruiter, your focus on "${skillRef}" shows value-focused thinking that employers want to see.`,
+        score: 7,
+        score_breakdown: {
+          clarity: 2,
+          relevance: 2,
+          realism: 2,
+          professional_impression: 1
+        },
+        coaching_nudge: "Once we're back online, we'll dive deeper into making your unique value even more compelling.",
+        contradictions: [],
         mirror_message: `Even with this technical hiccup, I can see from your focus on "${skillRef}" that you're thinking about creating value - that's exactly what employers want to see!`,
         key_strengths: ["Value-focused approach", "Shows business thinking", "Demonstrates initiative"],
         employer_perspective: "The fact that you're working on articulating your value and setting goals shows maturity and business awareness.",

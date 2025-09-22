@@ -180,10 +180,17 @@ export async function analyzeSkillReframe(skill: string) {
   } catch (error) {
     console.error('Error analyzing skill reframe:', error);
     return {
+      recruiter_perspective: "To a recruiter, this shows you're thinking about creating value, though more specifics would strengthen your message.",
+      score: 6,
+      score_breakdown: {
+        clarity: 2,
+        relevance: 2,
+        realism: 2,
+        professional_impression: 1
+      },
+      coaching_nudge: "Add specific examples or measurable outcomes to make your value proposition stronger.",
       reframed_skill: "I can apply what I've learned to solve real business challenges",
-      business_value_type: "quality-improving",
-      ai_category: "general",
-      encouragement: "You're thinking about how your skills create value - that's exactly what employers want to see!"
+      business_value_type: "quality-improving"
     };
   }
 }
@@ -199,11 +206,18 @@ export async function analyzeNinetyDayGoal(goalStatement: string) {
   } catch (error) {
     console.error('Error analyzing 90-day goal:', error);
     return {
+      recruiter_perspective: "To a recruiter, thinking about your 90-day goal shows forward-planning mindset that employers value.",
+      score: 6,
+      score_breakdown: {
+        clarity: 2,
+        relevance: 2,
+        realism: 2,
+        professional_impression: 1
+      },
+      coaching_nudge: "Add specific steps or measurable outcomes to make your goal more compelling.",
       interpretation: "You're thinking about specific outcomes and taking initiative - that's exactly what employers want to see!",
       initiative_type: "operational",
-      clarity_level: "clear",
-      strengths: "Shows forward-thinking and desire to contribute meaningfully",
-      employer_perspective: "This person thinks about results and wants to make an impact from day one."
+      clarity_level: "clear"
     };
   }
 }
@@ -223,6 +237,16 @@ export async function generatePowerMirror(skillReframe: string, goalStatement: s
   } catch (error) {
     console.error('Error generating power mirror:', error);
     return {
+      recruiter_perspective: "To a recruiter, looking at all your responses together, this shows you're thinking like someone who wants to create value - that's the foundation of career success!",
+      score: 7,
+      score_breakdown: {
+        clarity: 2,
+        relevance: 2,
+        realism: 2,
+        professional_impression: 1
+      },
+      coaching_nudge: "Keep building on this foundation - you're on the right track!",
+      contradictions: [],
       mirror_message: "You're thinking like someone who wants to create value - that's the foundation of career success!",
       key_strengths: ["Value-focused thinking", "Initiative", "Growth mindset"],
       employer_perspective: "This person understands that work is about creating impact, not just completing tasks.",

@@ -59,10 +59,17 @@ export function SkillReframeStep({
       console.error('Error analyzing skill:', error);
       // Proceed with fallback
       onComplete(skill, {
+        recruiter_perspective: "To a recruiter, this shows you're thinking about creating value, though more specifics would strengthen your message.",
+        score: 6,
+        score_breakdown: {
+          clarity: 2,
+          relevance: 2,
+          realism: 2,
+          professional_impression: 1
+        },
+        coaching_nudge: "Add specific examples or measurable outcomes to make your value proposition stronger.",
         reframed_skill: "I can apply what I've learned to solve real business challenges",
-        business_value_type: "quality-improving",
-        ai_category: "general",
-        encouragement: "You're thinking about how your skills create value!"
+        business_value_type: "quality-improving"
       });
     } finally {
       setIsAnalyzing(false);
