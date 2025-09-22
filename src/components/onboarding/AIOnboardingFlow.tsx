@@ -17,6 +17,8 @@ import { ProgressBar } from "./ProgressBar";
 import { ActionCard } from "./ActionCard";
 import { ExampleShowcase } from "./ExampleShowcase";
 import { HoverInfo } from "./HoverInfo";
+import { SkillAnalysisDisplay } from "./SkillAnalysisDisplay";
+import { GoalAnalysisDisplay } from "./GoalAnalysisDisplay";
 import { supabase } from "@/integrations/supabase/client";
 import { useDebounce } from "@/hooks/use-debounce";
 
@@ -70,16 +72,15 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
     
     try {
       setIsLoading(true);
-      const { data, error } = await supabase.functions.invoke('ai-skill-reframer', {
-        body: {
-          user_id: user.id,
-          major: demographicsData.major,
-          raw_skill_input: skill
-        }
+      console.log('Calling analyze-skill-reframe with:', { skill, major: demographicsData.major });
+      
+      const { data, error } = await supabase.functions.invoke('analyze-skill-reframe', {
+        body: { skill }
       });
       
       if (error) throw error;
-      setSkillAnalysis(data.render_snippet);
+      console.log('Skill analysis response:', data);
+      setSkillAnalysis(data);
     } catch (error) {
       console.error('Skill analysis error:', error);
     } finally {
@@ -92,16 +93,15 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
     
     try {
       setIsLoading(true);
-      const { data, error } = await supabase.functions.invoke('ai-90day-planner', {
-        body: {
-          user_id: user.id,
-          major: demographicsData.major,
-          raw_goal_input: goal
-        }
+      console.log('Calling analyze-90day-goal with:', { goalStatement: goal });
+      
+      const { data, error } = await supabase.functions.invoke('analyze-90day-goal', {
+        body: { goalStatement: goal }
       });
       
       if (error) throw error;
-      setGoalAnalysis(data.render_snippet);
+      console.log('Goal analysis response:', data);
+      setGoalAnalysis(data);
     } catch (error) {
       console.error('Goal analysis error:', error);
     } finally {
@@ -110,19 +110,26 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
   };
 
   const generateMirror = async () => {
-    if (!user || !skillAnalysis?.value_statements?.[0]) return;
+    if (!user || !skillAnalysis?.reframed_skill) return;
     
     try {
-      const { data, error } = await supabase.functions.invoke('ai-power-mirror', {
+      console.log('Calling generate-power-mirror with:', { 
+        skillReframe: skillAnalysis.reframed_skill,
+        goalStatement: goalInput,
+        demographics: demographicsData 
+      });
+      
+      const { data, error } = await supabase.functions.invoke('generate-power-mirror', {
         body: {
-          user_id: user.id,
-          source: 'skill',
-          text: skillAnalysis.value_statements[0]
+          skillReframe: skillAnalysis.reframed_skill,
+          goalStatement: goalInput,
+          demographics: demographicsData
         }
       });
       
       if (error) throw error;
-      setMirrorData(data.render_snippet);
+      console.log('Mirror response:', data);
+      setMirrorData(data);
     } catch (error) {
       console.error('Mirror generation error:', error);
     }
@@ -428,53 +435,31 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
               {skillAnalysis && (
                 <div className="space-y-4">
                   <StrengthBar 
-                    strength={skillAnalysis.overall_strength} 
+                    strength={skillAnalysis.score / 10} 
                     weakestDimension={getWeakestDimension(skillAnalysis)}
                   />
                   
-                  {skillAnalysis.overall_strength < 0.7 && (
+                  {skillAnalysis.score < 7 && (
                     <WhyItMatters
                       explanation="Managers fund outcomes, not tools. They need to see the specific result you deliver."
-                      suggestion={skillAnalysis.feedback}
-                      clarifyingQuestion={skillAnalysis.follow_up_question}
+                      suggestion={skillAnalysis.coaching_nudge}
                     />
                   )}
 
-                  {skillAnalysis.value_statements && (
-                    <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
-                      <CardContent className="p-5">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                            Manager View
-                          </Badge>
-                        </div>
-                        <h4 className="font-medium text-green-900 dark:text-green-100 mb-3">
-                          How this reads to managers:
-                        </h4>
-                        <ul className="space-y-2">
-                          {skillAnalysis.value_statements.map((statement: string, i: number) => (
-                            <li key={i} className="flex items-start gap-2 text-green-800 dark:text-green-200">
-                              <span className="text-green-600 mt-1">•</span>
-                              <span className="text-sm">{statement}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  )}
+                  <SkillAnalysisDisplay analysis={skillAnalysis} />
                 </div>
               )}
 
               <div className="flex gap-3 pt-4">
                 <Button 
                   onClick={() => setCurrentStep('goal')}
-                  disabled={!skillAnalysis || skillAnalysis.overall_strength < 0.5}
+                  disabled={!skillAnalysis || skillAnalysis.score < 5}
                   className="flex-1 py-4 text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
                   size="lg"
                 >
                   Continue to 90-Day Goal ✨
                 </Button>
-                {skillAnalysis && skillAnalysis.overall_strength >= 0.5 && (
+                {skillAnalysis && skillAnalysis.score >= 5 && (
                   <Button 
                     variant="outline" 
                     onClick={() => analyzeSkill(skillInput)}
@@ -545,35 +530,18 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
               {goalAnalysis && (
                 <div className="space-y-4">
                   <StrengthBar 
-                    strength={goalAnalysis.overall_strength} 
+                    strength={goalAnalysis.score / 10} 
                     weakestDimension={getWeakestDimension(goalAnalysis)}
                   />
                   
-                  {goalAnalysis.overall_strength < 0.7 && (
+                  {goalAnalysis.score < 7 && (
                     <WhyItMatters
                       explanation="Managers need to see a clear, measurable outcome they can track in 90 days."
-                      suggestion={goalAnalysis.feedback}
-                      clarifyingQuestion={goalAnalysis.follow_up_question}
+                      suggestion={goalAnalysis.coaching_nudge}
                     />
                   )}
 
-                  {goalAnalysis.goal_statement && (
-                    <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
-                      <CardContent className="p-5">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                            Refined Goal
-                          </Badge>
-                        </div>
-                        <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
-                          Your enhanced 90-day promise:
-                        </h4>
-                        <p className="text-blue-800 dark:text-blue-200 font-medium text-base bg-white/50 dark:bg-gray-800/50 p-3 rounded border-l-4 border-blue-500">
-                          {goalAnalysis.goal_statement}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
+                  <GoalAnalysisDisplay analysis={goalAnalysis} />
                 </div>
               )}
 
@@ -583,13 +551,13 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                     await generateMirror();
                     setCurrentStep('summary');
                   }}
-                  disabled={!goalAnalysis || goalAnalysis.overall_strength < 0.5}
+                  disabled={!goalAnalysis || goalAnalysis.score < 5}
                   className="flex-1 py-4 text-sm bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
                   size="lg"
                 >
                   See Manager's View 👁️
                 </Button>
-                {goalAnalysis && goalAnalysis.overall_strength >= 0.5 && (
+                {goalAnalysis && goalAnalysis.score >= 5 && (
                   <Button 
                     variant="outline" 
                     onClick={() => analyzeGoal(goalInput)}
@@ -638,7 +606,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                         💭 Internal manager thoughts:
                       </h3>
                       <p className="text-blue-800 dark:text-blue-200 italic text-base leading-relaxed bg-white/50 dark:bg-gray-800/50 p-4 rounded border-l-4 border-blue-500">
-                        "{mirrorData.manager_read}"
+                        "{mirrorData.mirror_message || mirrorData.employer_perspective}"
                       </p>
                     </CardContent>
                   </Card>
@@ -652,7 +620,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                     status="completed"
                   >
                     <ul className="space-y-2">
-                      {mirrorData.strengths?.map((strength: string, i: number) => (
+                      {mirrorData.key_strengths?.map((strength: string, i: number) => (
                         <li key={i} className="flex items-start gap-2 text-green-800 dark:text-green-200">
                           <span className="text-green-600 mt-1">✓</span>
                           <span className="text-sm">{strength}</span>
@@ -668,12 +636,10 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                     status="completed"
                   >
                     <ul className="space-y-2">
-                      {mirrorData.risks?.map((risk: string, i: number) => (
-                        <li key={i} className="flex items-start gap-2 text-red-800 dark:text-red-200">
-                          <span className="text-red-600 mt-1">⚠</span>
-                          <span className="text-sm">{risk}</span>
-                        </li>
-                      ))}
+                      <li className="flex items-start gap-2 text-orange-800 dark:text-orange-200">
+                        <span className="text-orange-600 mt-1">💡</span>
+                        <span className="text-sm">{mirrorData.next_level_hint || "Continue building your profile to strengthen your position"}</span>
+                      </li>
                     </ul>
                   </ActionCard>
                 </div>
@@ -682,16 +648,16 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                   <CardContent className="p-6">
                     <div className="text-center mb-4">
                       <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 text-lg px-4 py-2">
-                        Hire Signal: {Math.round((mirrorData.hire_signal_score || 0) * 100)}%
+                        Recruiter Score: {mirrorData.score || 7}/10
                       </Badge>
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium text-purple-900 dark:text-purple-100">Likelihood to hire:</span>
+                      <span className="text-sm font-medium text-purple-900 dark:text-purple-100">Recruiter Assessment:</span>
                       <div className="flex-1 bg-purple-200 dark:bg-purple-800 rounded-full h-3 relative overflow-hidden">
                         <div 
                           className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-1000 shadow-lg"
-                          style={{ width: `${(mirrorData.hire_signal_score || 0) * 100}%` }}
+                          style={{ width: `${((mirrorData.score || 7) / 10) * 100}%` }}
                         />
                       </div>
                     </div>
@@ -730,12 +696,13 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
 }
 
 function getWeakestDimension(analysis: any): 'clarity' | 'specificity' | 'relevance' {
-  if (!analysis) return 'clarity';
+  if (!analysis?.score_breakdown) return 'clarity';
   
+  const { score_breakdown } = analysis;
   const scores = {
-    clarity: analysis.clarity_score || 0,
-    specificity: analysis.specificity_score || 0,
-    relevance: analysis.employer_relevance_score || 0
+    clarity: score_breakdown.clarity || 0,
+    specificity: score_breakdown.realism || 0,  // Map realism to specificity
+    relevance: score_breakdown.relevance || 0
   };
   
   return Object.entries(scores).reduce((a, b) => scores[a[0]] < scores[b[0]] ? a : b)[0] as 'clarity' | 'specificity' | 'relevance';
