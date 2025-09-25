@@ -190,8 +190,10 @@ Focus on:
       )
     );
 
-    // Check for mismatches with user onboarding data
+    // Generate dynamic gap analysis based on user profile and CV
     const mismatchWarnings = [];
+    const gapAnalysis = [];
+    const improvements = [];
     
     // Compare CV data with user answers/goals
     if (userAnswers) {
@@ -207,19 +209,46 @@ Focus on:
       if (academicStatus === 'student' && extractedData.experience.length > 2) {
         mismatchWarnings.push('CV shows extensive work experience but you selected "student" status');
       }
+
+      // Generate dynamic gap analysis based on career goals
+      if (userCareerGoal?.toLowerCase().includes('software') || userCareerGoal?.toLowerCase().includes('developer')) {
+        if (!extractedData.skills.some(skill => skill.toLowerCase().includes('cloud'))) {
+          gapAnalysis.push('Cloud platforms (AWS/Azure/GCP) missing - essential for modern development roles');
+        }
+        if (!extractedData.skills.some(skill => skill.toLowerCase().includes('docker') || skill.toLowerCase().includes('kubernetes'))) {
+          gapAnalysis.push('Container technologies (Docker/Kubernetes) could strengthen your profile');
+        }
+      }
+      
+      if (userCareerGoal?.toLowerCase().includes('data') || userCareerGoal?.toLowerCase().includes('analyst')) {
+        if (!extractedData.skills.some(skill => skill.toLowerCase().includes('python') || skill.toLowerCase().includes('sql'))) {
+          gapAnalysis.push('Data analysis tools (Python/SQL) are expected for data roles');
+        }
+      }
     }
 
-    const gapAnalysis = [
-      "Missing cloud platforms (AWS/Azure certification)",
-      "No mobile development experience mentioned", 
-      "Consider adding project management skills"
-    ];
-
-    const improvements = [
-      "Replace 'responsible for' with 'spearheaded' or 'orchestrated'",
-      "Add specific metrics and KPIs to achievements",
-      "Include technologies used in each role"
-    ];
+    // Analyze content for improvement opportunities
+    const experienceTexts = extractedData.experience.map(exp => exp.description.toLowerCase()).join(' ');
+    
+    if (experienceTexts.includes('responsible for')) {
+      improvements.push('Replace "responsible for" with stronger action verbs like "spearheaded", "orchestrated", or "delivered"');
+    }
+    
+    // Check for lack of quantified achievements
+    const hasNumbers = /\d+/.test(experienceTexts);
+    if (!hasNumbers) {
+      improvements.push('Add specific metrics and KPIs to show measurable impact (e.g., "increased efficiency by 25%")');
+    }
+    
+    // Check for generic descriptions
+    if (experienceTexts.includes('worked on') || experienceTexts.includes('helped with')) {
+      improvements.push('Use specific language - replace "worked on" with "developed", "implemented", or "optimized"');
+    }
+    
+    // Ensure we have at least one improvement suggestion
+    if (improvements.length === 0) {
+      improvements.push('Consider adding more specific technical details about tools and technologies used in each role');
+    }
 
     // Store CV metadata in user profile
     const cvMetadata = {

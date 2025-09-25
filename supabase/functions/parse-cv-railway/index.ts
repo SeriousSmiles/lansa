@@ -144,19 +144,67 @@ serve(async (req) => {
         throw new Error('Failed to update resume record');
       }
 
-      // Generate suggestions based on extracted data
+      // Fetch user context for dynamic analysis
+      const { data: userProfile } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      const { data: userAnswers } = await supabase
+        .from('user_answers')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      // Generate dynamic suggestions based on extracted data and user context
+      const skillMatches = extractedData.skills.filter((skill: string) => 
+        userProfile?.skills?.some((existing: string) => 
+          existing.toLowerCase().includes(skill.toLowerCase()) || 
+          skill.toLowerCase().includes(existing.toLowerCase())
+        )
+      ).slice(0, 5);
+
+      // Dynamic gap analysis based on career goals
+      const gapAnalysis = [];
+      const userCareerGoal = userAnswers?.career_path || userAnswers?.desired_outcome;
+      
+      if (userCareerGoal?.toLowerCase().includes('software') || userCareerGoal?.toLowerCase().includes('developer')) {
+        if (!extractedData.skills.some((skill: string) => skill.toLowerCase().includes('cloud'))) {
+          gapAnalysis.push('Cloud platforms (AWS/Azure/GCP) - critical for modern development roles');
+        }
+        if (!extractedData.skills.some((skill: string) => skill.toLowerCase().includes('react') || skill.toLowerCase().includes('vue'))) {
+          gapAnalysis.push('Modern frontend frameworks (React/Vue) could strengthen your profile');
+        }
+      } else if (userCareerGoal?.toLowerCase().includes('data')) {
+        if (!extractedData.skills.some((skill: string) => skill.toLowerCase().includes('python') || skill.toLowerCase().includes('sql'))) {
+          gapAnalysis.push('Data analysis tools (Python/SQL/R) are essential for data roles');
+        }
+      } else {
+        gapAnalysis.push('Digital literacy skills could enhance your profile across industries');
+      }
+
+      // Dynamic improvements based on actual content
+      const improvements = [];
+      const experienceTexts = extractedData.experience.map((exp: any) => exp.description.toLowerCase()).join(' ');
+      
+      if (experienceTexts.includes('responsible for')) {
+        improvements.push('Replace "responsible for" with impact-focused verbs like "delivered", "optimized", or "transformed"');
+      }
+      
+      const hasMetrics = /\d+%|\d+\s*(increase|decrease|growth|improvement)/.test(experienceTexts);
+      if (!hasMetrics) {
+        improvements.push('Add quantifiable achievements - recruiters want to see measurable impact');
+      }
+      
+      if (improvements.length === 0) {
+        improvements.push('Consider highlighting specific technologies and methodologies used in each role');
+      }
+
       const suggestions = {
-        skillMatches: extractedData.skills.slice(0, 5),
-        gapAnalysis: [
-          "Consider adding cloud platforms (AWS/Azure) to your skillset",
-          "Mobile development experience could enhance your profile",
-          "Project management certifications would be valuable"
-        ],
-        improvements: [
-          "Use stronger action verbs like 'orchestrated' or 'spearheaded'",
-          "Include specific metrics and quantifiable achievements",
-          "Add technical stack details for each role"
-        ],
+        skillMatches: skillMatches.length > 0 ? skillMatches : extractedData.skills.slice(0, 3),
+        gapAnalysis,
+        improvements,
         confidence: confidenceScores.overall * 100
       };
 
@@ -179,7 +227,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
 
-    } catch (processingError) {
+    } catch (processingError: any) {
       console.error('Error during CV processing:', processingError);
       
       // Update resume record with error status
@@ -195,7 +243,7 @@ serve(async (req) => {
       throw processingError;
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in parse-cv-railway function:', error);
     return new Response(
       JSON.stringify({ 

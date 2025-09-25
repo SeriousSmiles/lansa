@@ -167,7 +167,19 @@ serve(async (req) => {
     // Validate API key
     if (!openAIApiKey) {
       console.error('OpenAI API key not configured');
-      throw new Error('OpenAI API key not configured');
+      return new Response(JSON.stringify({
+        error: 'AI service temporarily unavailable',
+        guidance: {
+          message: "I'm experiencing technical difficulties, but I'm still here to help! While I reconnect, let's focus on what makes you unique. What's one accomplishment from your studies or work that you're proud of?",
+          suggestions: {},
+          reasoning: "Temporary technical issue - let's continue our conversation to gather context",
+          nextSteps: ["Share a specific achievement or project you've worked on", "Tell me about a challenge you've overcome"],
+          isComplete: false
+        }
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Aggregate comprehensive user context
@@ -190,7 +202,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
           { role: 'system', content: systemPrompt },
           ...messages
@@ -209,33 +221,58 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const guidance: GuidanceResponse = JSON.parse(data.choices[0].message.content);
+    let guidance: GuidanceResponse;
+    
+    try {
+      guidance = JSON.parse(data.choices[0].message.content);
+      
+      // Validate that we have meaningful suggestions
+      if (!guidance.suggestions || Object.keys(guidance.suggestions).length === 0) {
+        console.warn('Empty suggestions received from AI');
+        guidance = getEnhancedFallbackResponse(userContext);
+      }
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', parseError);
+      console.log('Raw AI response:', data.choices?.[0]?.message?.content);
+      guidance = getEnhancedFallbackResponse(userContext);
+    }
 
     console.log('Generated guidance:', guidance);
 
     return new Response(JSON.stringify({ guidance }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-  } catch (error) {
-    console.error('Error in generate-interactive-profile-guidance:', error);
-    console.error('Error details:', { 
-      message: error.message, 
-      stack: error.stack,
-      apiKey: openAIApiKey ? 'Present' : 'Missing'
-    });
-    
-    return new Response(JSON.stringify({ 
-      error: error.message,
-      guidance: {
-        message: "I'm having a technical hiccup, but I'm still here to help! While I reconnect, let's focus on what makes you unique. What's one accomplishment from your studies or work that you're proud of?",
-        suggestions: {},
-        reasoning: "Temporary technical issue - let's continue our conversation to gather context",
-        nextSteps: ["Share a specific achievement or project you've worked on", "Tell me about a challenge you've overcome"],
-        isComplete: false
-      }
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    } catch (error: any) {
+      console.error('Error in generate-interactive-profile-guidance:', error);
+      console.error('Error details:', { 
+        message: error.message, 
+        stack: error.stack,
+        apiKey: openAIApiKey ? 'Present' : 'Missing'
+      });
+      
+      const fallbackGuidance = getEnhancedFallbackResponse();
+      
+      return new Response(JSON.stringify({ 
+        error: error.message,
+        guidance: fallbackGuidance
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
   }
 });
+
+function getEnhancedFallbackResponse(userContext?: UserContext): GuidanceResponse {
+  const careerGoal = userContext?.userAnswers?.desired_outcome || userContext?.userAnswers?.career_path;
+  
+  return {
+    message: `I'm experiencing a temporary hiccup, but let's keep building your profile! ${careerGoal ? `I see you're focused on ${careerGoal} - that's exciting!` : ''} While I reconnect, tell me about a recent project or achievement you're proud of.`,
+    suggestions: {
+      title: userContext?.profileData?.major ? `${userContext.profileData.major} focused on delivering results` : "Results-driven professional ready to make an impact",
+      about: careerGoal ? `Passionate about ${careerGoal} with a commitment to continuous learning and delivering value through innovative solutions.` : "Dedicated professional with a passion for continuous learning and delivering measurable results in collaborative environments."
+    },
+    reasoning: "Providing helpful fallback content while technical issues are resolved",
+    nextSteps: ["Share a specific project or achievement", "Tell me about your biggest learning moment", "Describe what excites you most about your field"],
+    isComplete: false
+  };
+}

@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { CVUploadArea } from "./CVUploadArea";
 import { CVParsingProgress } from "./CVParsingProgress";
-import { CVAnalysisResults } from "./CVAnalysisResults";
+import { EnhancedCVAnalysisResults } from "./EnhancedCVAnalysisResults";
+import { CVLoadingProgress } from "./CVLoadingProgress";
 import { FileText, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import * as pdfjs from 'pdfjs-dist';
@@ -273,7 +274,7 @@ export function CVUploadModal({ open, onOpenChange, onComplete }: CVUploadModalP
               <DialogTitle className="text-2xl font-bold">Analyzing Your CV</DialogTitle>
             </DialogHeader>
             <div className="mt-6">
-              <CVParsingProgress fileName={uploadedFile?.name || "your-cv.pdf"} />
+              <CVLoadingProgress fileName={uploadedFile?.name || "your-cv.pdf"} />
             </div>
           </>
         )}
@@ -290,7 +291,7 @@ export function CVUploadModal({ open, onOpenChange, onComplete }: CVUploadModalP
               </p>
             </DialogHeader>
             <div className="mt-6">
-              <CVAnalysisResults 
+              <EnhancedCVAnalysisResults 
                 data={analysisData}
                 onApply={handleApplyData}
                 onSkip={handleSkip}
