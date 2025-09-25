@@ -160,7 +160,7 @@ Focus on authenticity, growth, and professional impact. Make it memorable and en
       }
     );
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in generate-story-builder function:', error);
     return new Response(
       JSON.stringify({

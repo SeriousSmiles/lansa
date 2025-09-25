@@ -117,10 +117,10 @@ Respond with JSON:
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
-    console.error('Error in analyze-skill-reframe:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message,
+    } catch (error: any) {
+      console.error('Error in analyze-skill-reframe:', error);
+      return new Response(JSON.stringify({
+        error: error.message,
       analysis: {
         recruiter_perspective: "To a recruiter, this shows initiative in thinking about value creation.",
         score: 5,

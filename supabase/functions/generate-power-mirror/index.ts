@@ -127,11 +127,11 @@ Respond with JSON:
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in generate-power-mirror:', error);
-    // Create error fallback that still references their input when possible
-    const skillRef = (req.body && JSON.parse(req.body)?.skillReframe) || 'your value-focused thinking';
-    const goalRef = (req.body && JSON.parse(req.body)?.goalStatement) || 'your forward-planning mindset';
+    // Create error fallback - can't access req.body in catch block
+    const skillRef = 'your value-focused thinking';
+    const goalRef = 'your forward-planning mindset';
     
     return new Response(JSON.stringify({ 
       error: error.message,

@@ -123,7 +123,7 @@ Respond with JSON:
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in analyze-90day-goal:', error);
     // Try to extract goal from request body for contextual fallback
     let contextualGoal = "your 90-day planning";

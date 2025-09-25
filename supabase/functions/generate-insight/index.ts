@@ -147,17 +147,17 @@ Response guidelines:
           } 
         }
       );
-    } catch (aiError) {
-      console.error('AI generation error:', aiError);
-      
-      // Get a fallback insight based on identity
-      const fallbackInsight = getFallbackInsight(userAnswers?.identity);
-      
-      return new Response(
-        JSON.stringify({ 
-          insight: fallbackInsight,
-          success: false,
-          error: aiError.message
+        } catch (aiError: any) {
+          console.error('AI generation error:', aiError);
+          
+          // Get a fallback insight based on identity
+          const fallbackInsight = getFallbackInsight(userAnswers?.identity);
+          
+          return new Response(
+            JSON.stringify({ 
+              insight: fallbackInsight,
+              success: false,
+              error: aiError.message
         }),
         { 
           headers: { 
@@ -167,7 +167,7 @@ Response guidelines:
         }
       );
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in generate-insight function:', error);
     
     return new Response(
