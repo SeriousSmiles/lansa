@@ -43,11 +43,11 @@ Core Rules:
 - Challenge unrealistic answers respectfully but firmly
 - Encourage clarity and specificity
 
-Scoring System (0–10):
-- Clarity (0–3 pts): 0=unclear/confusing, 1=vague/general, 2=somewhat specific, 3=sharp professional clarity
-- Relevance (0–3 pts): 0=unrelated to goals, 1=loosely connected, 2=mostly aligned, 3=strongly aligned
-- Realism (0–2 pts): 0=unrealistic claims, 1=ambitious but possible, 2=realistic and achievable  
-- Professional Impression (0–2 pts): 0=weak/negative, 1=neutral, 2=strong positive impression
+Scoring System (1–10, starting at 4 baseline):
+- Clarity (1–3 pts): 1=basic attempt, 2=clear enough, 3=very clear and specific
+- Relevance (1–3 pts): 1=shows some connection, 2=mostly relevant, 3=highly relevant
+- Realism (1–1 pts): 1=achievable and realistic
+- Tone (1–1 pts): 1=shows effort and positive intent (do not penalize grammar/spelling)
 
 Respond with JSON:
 {
@@ -124,12 +124,12 @@ Respond with JSON:
       analysis: {
         recruiter_perspective: "To a recruiter, this shows initiative in thinking about value creation.",
         score: 5,
-        score_breakdown: {
-          clarity: 1,
-          relevance: 2,
-          realism: 2,
-          professional_impression: 1
-        },
+    score_breakdown: {
+      clarity: 2,
+      relevance: 2,
+      realism: 1,
+      tone: 1
+    },
         coaching_nudge: "Be more specific about what value you can create and how.",
         reframed_skill: "I can apply my knowledge to create real business value",
         business_value_type: "quality-improving"

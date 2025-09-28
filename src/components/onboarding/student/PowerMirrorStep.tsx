@@ -43,12 +43,12 @@ export function PowerMirrorStep({
         console.error('Error generating mirror:', error);
         setMirror({
           recruiter_perspective: "You're thinking like someone who wants to create value - that's the foundation of career success!",
-          score: 7,
+          score: 5,
           score_breakdown: {
             clarity: 2,
             relevance: 2,
-            realism: 2,
-            professional_impression: 1
+            realism: 1,
+            tone: 1
           },
           coaching_nudge: "Keep building on this foundation - you're on the right track!",
           mirror_message: "You're thinking like someone who wants to create value - that's the foundation of career success!",
@@ -144,12 +144,12 @@ export function PowerMirrorStep({
                       <div className="font-semibold">{mirror.score_breakdown.relevance}/3</div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-muted-foreground">Realism</div>
-                      <div className="font-semibold">{mirror.score_breakdown.realism}/2</div>
+                      <div className="text-lansa-muted-foreground">Realism</div>
+                      <div className="font-semibold">{mirror.score_breakdown.realism}/1</div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-muted-foreground">Professional</div>
-                      <div className="font-semibold">{mirror.score_breakdown.professional_impression}/2</div>
+                      <div className="text-lansa-muted-foreground">Tone</div>
+                      <div className="font-semibold">{mirror.score_breakdown.tone || mirror.score_breakdown.professional_impression}/1</div>
                     </div>
                   </div>
                 )}
@@ -196,7 +196,7 @@ export function PowerMirrorStep({
                 <h3 className="text-base font-semibold text-foreground">
                   What Employers See:
                 </h3>
-                <div className="bg-muted/30 p-4 rounded-lg">
+                <div className="bg-lansa-muted/10 p-4 rounded-lg">
                   <p className="text-sm text-foreground italic">
                     "{mirror.employer_perspective}"
                   </p>

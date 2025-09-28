@@ -43,11 +43,11 @@ Core Rules:
 - Challenge unrealistic answers: "Recruiters admire ambition, but this might sound unrealistic without clear steps"
 - Encourage clarity and specificity
 
-Scoring System (0–10):
-- Clarity (0–3 pts): 0=unclear/confusing, 1=vague/general, 2=somewhat specific, 3=sharp professional clarity
-- Relevance (0–3 pts): 0=unrelated to career goals, 1=loosely connected, 2=mostly aligned, 3=strongly aligned
-- Realism (0–2 pts): 0=unrealistic ("CEO in 90 days"), 1=ambitious but possible if explained, 2=realistic and achievable
-- Professional Impression (0–2 pts): 0=weak/negative impression, 1=neutral impression, 2=strong positive impression
+Scoring System (1–8, starting at 4 baseline):
+- Clarity (1–3 pts): 1=basic attempt, 2=clear direction, 3=very specific and measurable
+- Relevance (1–3 pts): 1=career-related, 2=aligned with goals, 3=directly career-advancing
+- Realism (1–1 pts): 1=achievable in timeframe (be generous, reward effort)
+- Tone (1–1 pts): 1=shows effort and planning (do not penalize grammar/casual language)
 
 Good vs Bad Examples:
 - "I want to get a job in 90 days" → Score: 5/10 - "A recruiter will hear determination, but 90 days without more detail may sound unrealistic"
@@ -106,12 +106,12 @@ Respond with JSON:
       analysis = {
         recruiter_perspective: `To a recruiter, reading "${goalStatement}" shows forward-planning mindset, though more specifics would strengthen the impression.`,
         score: 6,
-        score_breakdown: {
-          clarity: goalStatement.length > 50 ? 2 : 1,
-          relevance: 2,
-          realism: 2,
-          professional_impression: 1
-        },
+      score_breakdown: {
+        clarity: goalStatement.length > 50 ? 2 : 1,
+        relevance: 2,
+        realism: 1,
+        tone: 1
+      },
         coaching_nudge: "Add specific steps or measurable outcomes to make your 90-day goal more compelling.",
         interpretation: `When I read your goal of "${goalStatement}", I can see you're thinking ahead about making a contribution.`,
         initiative_type: "operational",
@@ -144,8 +144,8 @@ Respond with JSON:
         score_breakdown: {
           clarity: 2,
           relevance: 2,
-          realism: 2,
-          professional_impression: 1
+          realism: 1,
+          tone: 1
         },
         coaching_nudge: "When you can, add specific steps to make your goal even stronger.",
         interpretation: `The fact that you're thinking about ${contextualGoal} shows forward-planning mindset.`,

@@ -39,7 +39,7 @@ const TextQuestionCard: React.FC<TextQuestionCardProps> = ({
                   ? "bg-[hsl(var(--primary))]"
                   : index === stepNumber - 1
                   ? "border-2 border-[hsl(var(--primary))]"
-                  : "bg-gray-200"
+                  : "bg-lansa-muted/30"
               }`}
             />
           ))}
