@@ -35,6 +35,7 @@ export default function HomeSpotlight() {
   const currentContent = TAB_CONTENT[activeTab];
 
   const gridRef = useRef<HTMLDivElement>(null);
+  const [gridReady, setGridReady] = useState(false);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -67,6 +68,9 @@ export default function HomeSpotlight() {
         requestAnimationFrame(layoutGrid);
         return;
       }
+      
+      // Hide during layout to prevent layout shift measurement
+      container.style.opacity = '0';
       
       const screenWidth = window.innerWidth;
       
@@ -131,6 +135,15 @@ export default function HomeSpotlight() {
           card.style.margin = '0';
         });
       }
+      
+      // Show grid after positioning is complete
+      requestAnimationFrame(() => {
+        if (container) {
+          container.style.opacity = '1';
+          container.style.transition = 'opacity 0.3s ease-in';
+          setGridReady(true);
+        }
+      });
     };
 
     // Initial layout
@@ -324,7 +337,9 @@ export default function HomeSpotlight() {
             // Prevent initial clustering by setting default positioning
             transform: 'translate(-50%, -50%)',
             left: '50%',
-            top: '50%'
+            top: '50%',
+            opacity: 0,
+            willChange: 'opacity'
           }}
         >
           {TESTIMONIALS.concat(TESTIMONIALS).map((t, i) => (
