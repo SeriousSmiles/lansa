@@ -123,7 +123,10 @@ export function EnhancedCVAnalysisResults({
             {confidence >= 80 ? "Excellent match!" : confidence >= 60 ? "Good foundation!" : "Let's improve this together!"}
           </h3>
           <p className="text-sm text-muted-foreground">
-            We detected {data.extractedData.skills.length} skills, {data.extractedData.experience.length} roles, and {data.extractedData.education.length} education entries
+            {data.extractedData.name && (
+              <>Name: {data.extractedData.name} • </>
+            )}
+            {data.extractedData.skills.length} skills • {data.extractedData.experience.length} roles • {data.extractedData.education.length} education entries
           </p>
         </div>
       </div>
@@ -180,36 +183,90 @@ export function EnhancedCVAnalysisResults({
             <CollapsibleContent>
               <CardContent className="pt-0">
                 <div className="space-y-4">
-                  {/* Skills Preview */}
-                  <div>
-                    <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-                      <Wrench className="h-4 w-4" />
-                      Skills Detected
-                    </h4>
-                    <div className="flex flex-wrap gap-1">
-                      {data.extractedData.skills.slice(0, 8).map((skill) => (
-                        <Badge key={skill} variant="secondary" className="bg-green-50 text-green-700 text-xs">
-                          {skill}
-                        </Badge>
-                      ))}
-                      {data.extractedData.skills.length > 8 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{data.extractedData.skills.length - 8} more
-                        </Badge>
-                      )}
+                  {/* Personal Info Preview */}
+                  {(data.extractedData.name || data.extractedData.title || data.extractedData.contact?.email) && (
+                    <div>
+                      <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        Personal Information
+                      </h4>
+                      <div className="space-y-1 text-sm">
+                        {data.extractedData.name && (
+                          <p><span className="font-medium">Name:</span> {data.extractedData.name}</p>
+                        )}
+                        {data.extractedData.title && (
+                          <p><span className="font-medium">Title:</span> {data.extractedData.title}</p>
+                        )}
+                        {data.extractedData.contact?.email && (
+                          <p><span className="font-medium">Email:</span> {data.extractedData.contact.email}</p>
+                        )}
+                        {data.extractedData.contact?.phone && (
+                          <p><span className="font-medium">Phone:</span> {data.extractedData.contact.phone}</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Skills Preview */}
+                  {data.extractedData.skills.length > 0 && (
+                    <div>
+                      <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                        <Wrench className="h-4 w-4" />
+                        Skills Detected ({data.extractedData.skills.length})
+                      </h4>
+                      <div className="flex flex-wrap gap-1">
+                        {data.extractedData.skills.slice(0, 8).map((skill) => (
+                          <Badge key={skill} variant="secondary" className="bg-green-50 text-green-700 text-xs">
+                            {skill}
+                          </Badge>
+                        ))}
+                        {data.extractedData.skills.length > 8 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{data.extractedData.skills.length - 8} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Experience Summary */}
                   {data.extractedData.experience.length > 0 && (
                     <div>
                       <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
                         <Briefcase className="h-4 w-4" />
-                        Latest Experience
+                        Work Experience ({data.extractedData.experience.length})
                       </h4>
-                      <div className="text-sm">
-                        <p className="font-medium">{data.extractedData.experience[0].title}</p>
-                        <p className="text-muted-foreground">{data.extractedData.experience[0].company} • {data.extractedData.experience[0].duration}</p>
+                      <div className="space-y-2">
+                        {data.extractedData.experience.slice(0, 2).map((exp, index) => (
+                          <div key={index} className="text-sm border-l-2 border-green-200 pl-3">
+                            <p className="font-medium">{exp.title}</p>
+                            <p className="text-muted-foreground">{exp.company} • {exp.duration}</p>
+                          </div>
+                        ))}
+                        {data.extractedData.experience.length > 2 && (
+                          <p className="text-xs text-muted-foreground">+{data.extractedData.experience.length - 2} more positions</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Education Summary */}
+                  {data.extractedData.education.length > 0 && (
+                    <div>
+                      <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                        <GraduationCap className="h-4 w-4" />
+                        Education ({data.extractedData.education.length})
+                      </h4>
+                      <div className="space-y-2">
+                        {data.extractedData.education.slice(0, 2).map((edu, index) => (
+                          <div key={index} className="text-sm border-l-2 border-green-200 pl-3">
+                            <p className="font-medium">{edu.degree}</p>
+                            <p className="text-muted-foreground">{edu.institution} • {edu.year}</p>
+                          </div>
+                        ))}
+                        {data.extractedData.education.length > 2 && (
+                          <p className="text-xs text-muted-foreground">+{data.extractedData.education.length - 2} more entries</p>
+                        )}
                       </div>
                     </div>
                   )}

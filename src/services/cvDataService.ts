@@ -141,25 +141,25 @@ export class CVDataService {
       // Prepare update data
       const updateData: any = {};
 
-      // Map personal info
+      // Map personal info - only update if values exist and are not empty
       if (extractedData.personalInfo) {
-        if (extractedData.personalInfo.name) {
-          updateData.name = extractedData.personalInfo.name;
+        if (extractedData.personalInfo.name && extractedData.personalInfo.name.trim()) {
+          updateData.name = extractedData.personalInfo.name.trim();
         }
-        if (extractedData.personalInfo.title) {
-          updateData.title = extractedData.personalInfo.title;
+        if (extractedData.personalInfo.title && extractedData.personalInfo.title.trim()) {
+          updateData.title = extractedData.personalInfo.title.trim();
         }
-        if (extractedData.personalInfo.summary) {
-          updateData.about_text = extractedData.personalInfo.summary;
+        if (extractedData.personalInfo.summary && extractedData.personalInfo.summary.trim()) {
+          updateData.about_text = extractedData.personalInfo.summary.trim();
         }
-        if (extractedData.personalInfo.email) {
-          updateData.email = extractedData.personalInfo.email;
+        if (extractedData.personalInfo.email && extractedData.personalInfo.email.trim()) {
+          updateData.email = extractedData.personalInfo.email.trim();
         }
-        if (extractedData.personalInfo.phone) {
-          updateData.phone_number = extractedData.personalInfo.phone;
+        if (extractedData.personalInfo.phone && extractedData.personalInfo.phone.trim()) {
+          updateData.phone_number = extractedData.personalInfo.phone.trim();
         }
-        if (extractedData.personalInfo.location) {
-          updateData.location = extractedData.personalInfo.location;
+        if (extractedData.personalInfo.location && extractedData.personalInfo.location.trim()) {
+          updateData.location = extractedData.personalInfo.location.trim();
         }
       }
 

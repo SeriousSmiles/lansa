@@ -80,43 +80,63 @@ serve(async (req) => {
       const railwayData = await railwayResponse.json();
       console.log('Railway microservice response received');
 
-      // Normalize Railway response
+      // Normalize Railway response with better field extraction
       let normalized: any = { personalInfo: {}, skills: [], experience: [], education: [] };
 
       if (Array.isArray(railwayData.extracted) && railwayData.extracted.length > 0) {
         const first = railwayData.extracted[0]; // if multi-page, you can merge instead
 
+        // Extract personal info with fallbacks and better validation
         normalized.personalInfo = {
-          name: first.full_name || null,
-          title: first.title || null,
-          summary: first.summary || null,
-          email: first.contact?.email || null,
-          phone: first.contact?.phone || null,
-          location: first.location || null,
+          name: first.full_name || first.name || null,
+          title: first.title || first.job_title || first.position || null,
+          summary: first.summary || first.profile_summary || first.objective || null,
+          email: first.contact?.email || first.email || null,
+          phone: first.contact?.phone || first.phone || first.contact?.phone_number || null,
+          location: first.location || first.address || first.contact?.address || null,
         };
 
-        normalized.skills = first.skills || [];
+        // Extract skills with better handling
+        normalized.skills = first.skills || first.technical_skills || first.skill_list || [];
 
-        normalized.experience = (first.work_experience || []).map((exp: any, index: number) => ({
-          title: exp.title,
-          company: exp.company,
-          duration: exp.duration,
-          description: exp.description,
+        // Extract experience with better field mapping
+        const workExperience = first.work_experience || first.experience || first.employment || [];
+        normalized.experience = workExperience.map((exp: any, index: number) => ({
+          title: exp.title || exp.position || exp.job_title || 'Unknown Position',
+          company: exp.company || exp.employer || exp.organization || 'Unknown Company',
+          duration: exp.duration || exp.dates || exp.period || 'Unknown Period',
+          description: exp.description || exp.responsibilities || exp.duties || 'No description provided',
           source: 'resume-upload',
           order_index: index,
           is_user_edited: false
         }));
 
-        normalized.education = (first.education || []).map((edu: any, index: number) => ({
-          degree: edu.degree,
-          institution: edu.school,
-          year: edu.year,
+        // Extract education with better field mapping
+        const educationData = first.education || first.academic_background || first.qualifications || [];
+        normalized.education = educationData.map((edu: any, index: number) => ({
+          degree: edu.degree || edu.qualification || edu.program || 'Unknown Degree',
+          institution: edu.school || edu.university || edu.institution || edu.college || 'Unknown Institution',
+          year: edu.year || edu.graduation_year || edu.end_date || 'Unknown Year',
           source: 'resume-upload',
           order_index: index,
           is_user_edited: false
         }));
       } else {
-        console.warn("Railway response missing or empty, raw:", railwayData);
+        console.warn("Railway response missing or empty, raw:", JSON.stringify(railwayData, null, 2));
+        
+        // If Railway fails, try to extract basic info from any available fields
+        if (railwayData && typeof railwayData === 'object') {
+          normalized.personalInfo = {
+            name: railwayData.name || railwayData.full_name || null,
+            title: railwayData.title || railwayData.position || null,
+            summary: railwayData.summary || null,
+            email: railwayData.email || null,
+            phone: railwayData.phone || null,
+          };
+          normalized.skills = railwayData.skills || [];
+          normalized.experience = railwayData.experience || [];
+          normalized.education = railwayData.education || [];
+        }
       }
 
       // Check what was actually found

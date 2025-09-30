@@ -167,43 +167,9 @@ export function CVUploadModal({ open, onOpenChange, onComplete }: CVUploadModalP
       setCurrentStep('results');
     } catch (error) {
       console.error('Error processing CV:', error);
-      // Fall back to mock data on error
-      const mockAnalysis: CVAnalysisData = {
-        extractedData: {
-          name: "John Doe",
-          title: "Software Developer",
-          summary: "Experienced software developer with 5+ years in web development, specializing in React and Node.js applications.",
-          skills: ["JavaScript", "React", "Node.js", "Python", "SQL", "Git"],
-          experience: [
-            {
-              title: "Senior Software Developer",
-              company: "Tech Corp",
-              duration: "2022-Present",
-              description: "Led development of web applications using React and Node.js"
-            }
-          ],
-          education: [
-            {
-              degree: "Bachelor of Computer Science",
-              institution: "University of Technology", 
-              year: "2020"
-            }
-          ],
-          contact: {
-            email: "john.doe@email.com",
-            phone: "+1234567890"
-          }
-        },
-        suggestions: {
-          skillMatches: ["JavaScript", "React", "Node.js"],
-          gapAnalysis: ["Missing cloud platforms (AWS/Azure)", "No mobile development mentioned"],
-          improvements: ["Add specific project achievements", "Include metrics and KPIs"],
-          mismatchWarnings: ["CV shows extensive experience but your profile indicates student status"],
-          confidence: 65
-        }
-      };
-      setAnalysisData(mockAnalysis);
-      setCurrentStep('results');
+      // Show error to user instead of mock data
+      setCurrentStep('upload');
+      throw error;
     }
   };
 
@@ -216,12 +182,55 @@ export function CVUploadModal({ open, onOpenChange, onComplete }: CVUploadModalP
         throw new Error("User not authenticated");
       }
 
-      await CVDataService.applyCVDataToProfile(user.id, selectedData);
+      // Convert the data to the format expected by applyCVDataToProfile
+      const convertedData: Partial<import("@/services/cvDataService").CVExtractedData> = {};
+
+      // Map personal info
+      if (selectedData.name || selectedData.title || selectedData.summary || selectedData.contact) {
+        convertedData.personalInfo = {
+          name: selectedData.name,
+          title: selectedData.title,
+          summary: selectedData.summary,
+          email: selectedData.contact?.email,
+          phone: selectedData.contact?.phone,
+        };
+      }
+
+      // Map skills
+      if (selectedData.skills) {
+        convertedData.skills = selectedData.skills;
+      }
+
+      // Map experience
+      if (selectedData.experience) {
+        convertedData.experience = selectedData.experience.map((exp, index) => ({
+          title: exp.title,
+          company: exp.company,
+          duration: exp.duration,
+          description: exp.description,
+          source: 'resume-upload',
+          order_index: index,
+          is_user_edited: false
+        }));
+      }
+
+      // Map education
+      if (selectedData.education) {
+        convertedData.education = selectedData.education.map((edu, index) => ({
+          degree: edu.degree,
+          institution: edu.institution,
+          year: edu.year,
+          source: 'resume-upload',
+          order_index: index,
+          is_user_edited: false
+        }));
+      }
+
+      await CVDataService.applyCVDataToProfile(user.id, convertedData);
       onComplete();
     } catch (error) {
       console.error('Error applying CV data:', error);
-      // For now, just complete the flow - in production you'd handle the error
-      onComplete();
+      throw error; // Re-throw to show error to user
     }
   };
 
