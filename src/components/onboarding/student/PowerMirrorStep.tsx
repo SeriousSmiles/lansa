@@ -6,6 +6,7 @@ import { LoadingSpinner } from "@/components/loading";
 import { generatePowerMirror, StudentDemographics } from "@/services/question/studentOnboardingService";
 import { OnboardingLayout } from "../layout/OnboardingLayout";
 import { OnboardingCard } from "../layout/OnboardingCard";
+import { PowerMirrorErrorBoundary, usePowerMirrorErrorHandler } from "../PowerMirrorErrorBoundary";
 import lansaPowerMirrorImage from "@/assets/onboarding/lansa-power-mirror.jpg";
 
 interface PowerMirrorStepProps {
@@ -29,6 +30,7 @@ export function PowerMirrorStep({
 }: PowerMirrorStepProps) {
   const [mirror, setMirror] = useState<any>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const { handleError } = usePowerMirrorErrorHandler();
 
   useEffect(() => {
     // Scroll to top when component mounts
@@ -40,22 +42,8 @@ export function PowerMirrorStep({
         const mirrorData = await generatePowerMirror(skillReframe, goalStatement, demographics);
         setMirror(mirrorData);
       } catch (error) {
-        console.error('Error generating mirror:', error);
-        setMirror({
-          recruiter_perspective: "You're thinking like someone who wants to create value - that's the foundation of career success!",
-          score: 5,
-          score_breakdown: {
-            clarity: 2,
-            relevance: 2,
-            realism: 1,
-            tone: 1
-          },
-          coaching_nudge: "Keep building on this foundation - you're on the right track!",
-          mirror_message: "You're thinking like someone who wants to create value - that's the foundation of career success!",
-          key_strengths: ["Value-focused thinking", "Initiative", "Growth mindset"],
-          employer_perspective: "This person understands that work is about creating impact, not just completing tasks.",
-          next_level_hint: "Keep building on this foundation - you're on the right track!"
-        });
+        const errorResult = handleError(error, 'generateMirror');
+        setMirror(errorResult.fallbackData);
       } finally {
         setIsGenerating(false);
       }
@@ -101,17 +89,18 @@ export function PowerMirrorStep({
   }
 
   return (
-    <OnboardingLayout 
-      currentStep={stepNumber} 
-      totalSteps={totalSteps}
-      title="Getting Started"
-    >
-      <OnboardingCard
+    <PowerMirrorErrorBoundary>
+      <OnboardingLayout 
+        currentStep={stepNumber} 
+        totalSteps={totalSteps}
+        title="Getting Started"
+      >
+        <OnboardingCard
         image={lansaPowerMirrorImage}
         imageAlt="Professional transformation mirror"
         title="How Employers See You"
         subtitle="Based on what you wrote, here's how a hiring manager might interpret your answers."
-        stepBadge={`Step ${stepNumber} of {totalSteps} • Power Mirror`}
+        stepBadge={`Step ${stepNumber} of ${totalSteps} • Power Mirror`}
       >
         <div className="space-y-6">
 
@@ -149,7 +138,7 @@ export function PowerMirrorStep({
                     </div>
                     <div className="space-y-1">
                       <div className="text-lansa-muted-foreground">Tone</div>
-                      <div className="font-semibold">{mirror.score_breakdown.tone || mirror.score_breakdown.professional_impression}/1</div>
+                      <div className="font-semibold">{mirror.score_breakdown.tone || mirror.score_breakdown.professional_impression || 0}/1</div>
                     </div>
                   </div>
                 )}
@@ -242,7 +231,8 @@ export function PowerMirrorStep({
             </p>
           </div>
         </div>
-      </OnboardingCard>
-    </OnboardingLayout>
+        </OnboardingCard>
+      </OnboardingLayout>
+    </PowerMirrorErrorBoundary>
   );
 }

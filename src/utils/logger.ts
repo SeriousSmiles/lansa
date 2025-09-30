@@ -9,7 +9,11 @@ const filterSensitiveData = (obj: any): any => {
   
   const sensitiveKeys = [
     'access_token', 'refresh_token', 'provider_token', 'session', 
-    'password', 'email', 'phone', 'user_metadata', 'app_metadata'
+    'password', 'email', 'phone', 'user_metadata', 'app_metadata',
+    'user_id', 'id', 'recruiter_perspective', 'mirror_message', 'ai_interpretation',
+    'skill', 'goalStatement', 'skillReframe', 'goal_statement', 'original_skill',
+    'reframed_skill', 'coaching_nudge', 'key_strengths', 'employer_perspective',
+    'score_breakdown', 'contradictions', 'analysis', 'mirror', 'response'
   ];
   
   if (Array.isArray(obj)) {
@@ -56,4 +60,17 @@ export const logUserAction = (action: string, data?: any) => {
   
   const safeData = data ? filterSensitiveData(data) : undefined;
   console.log(`Action: ${action}`, safeData);
+};
+
+// AI service logging (secure)
+export const logAICall = (service: string, success: boolean, duration?: number) => {
+  if (DEMO_CONFIG.DEMO_QUIET) return;
+  console.log(`AI Service: ${service} - ${success ? 'SUCCESS' : 'FAILED'}${duration ? ` (${duration}ms)` : ''}`);
+};
+
+// Development-only detailed logging
+export const devLog = (...args: any[]) => {
+  if (import.meta.env.DEV && !DEMO_CONFIG.DEMO_QUIET) {
+    console.log('[DEV]', ...args.map(filterSensitiveData));
+  }
 };

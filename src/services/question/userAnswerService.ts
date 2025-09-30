@@ -1,20 +1,20 @@
 import { supabase } from "@/integrations/supabase/client";
 import { UserAnswers } from "./types";
+import { logUserAction, error as logError } from "@/utils/logger";
 
 export async function saveUserAnswers(userId: string, answers: UserAnswers) {
   try {
-    console.log("Saving user answers:", userId, answers);
+    logUserAction("save_user_answers");
     
     // First check if the user exists in the auth.users table
     const { data: authUser, error: authError } = await supabase.auth.getUser();
     
     if (authError || !authUser?.user) {
-      console.error("User authentication error:", authError);
+      logError("User authentication error");
       return { success: false, error: authError };
     }
     
     // Use upsert for simplicity - it handles both insert and update
-    console.log("Upserting user answers for user:", userId);
     const { error } = await supabase
       .from('user_answers')
       .upsert({ 
@@ -34,7 +34,7 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
       });
     
     if (error) {
-      console.error("Error upserting answers:", error);
+      logError("Error upserting answers");
       return { success: false, error };
     }
     
@@ -69,20 +69,19 @@ export async function saveUserAnswers(userId: string, answers: UserAnswers) {
           }]);
       }
     } catch (profileError: any) {
-      console.error("Error updating user profile:", profileError);
+      logError("Error updating user profile");
       // Don't prevent the flow if profile update fails
     }
     
     return { success: true };
   } catch (error) {
-    console.error('Error saving user answers:', error);
+    logError('Error saving user answers');
     return { success: false, error };
   }
 }
 
 export async function getUserAnswers(userId: string): Promise<UserAnswers | null> {
   try {
-    console.log("Fetching user answers for:", userId);
     const { data, error } = await supabase
       .from('user_answers')
       .select('gender, age_group, identity, desired_outcome, career_path, career_path_onboarding_completed, onboarding_inputs, ai_onboarding_card, user_type')
@@ -91,21 +90,18 @@ export async function getUserAnswers(userId: string): Promise<UserAnswers | null
       .limit(1);
     
     if (error) {
-      console.error("Error fetching answers:", error);
+      logError("Error fetching answers");
       throw error;
     }
     
     // If no data or empty array, return null
     if (!data || data.length === 0) {
-      console.log("No answers found for user:", userId);
       return null;
     }
-    
-    console.log("Found answers for user:", userId, data[0]);
     // Return the most recent answer
     return data[0] as UserAnswers;
   } catch (error) {
-    console.error('Error fetching user answers:', error);
+    logError('Error fetching user answers');
     throw error;
   }
 }

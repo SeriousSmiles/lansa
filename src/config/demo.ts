@@ -2,8 +2,8 @@
 // Set these to false after the demo to restore full functionality
 
 export const DEMO_CONFIG = {
-  // Quiet console logs and hide sensitive data
-  DEMO_QUIET: true,
+  // Quiet console logs and hide sensitive data - ENABLED for production security
+  DEMO_QUIET: !import.meta.env.DEV,
   
   // Make risky menu actions safe no-ops
   DEMO_MODE: true,
@@ -82,8 +82,10 @@ export const safeHandler = (realAction?: () => void, actionName?: string) => {
         import('sonner').then(({ toast }) => {
           toast.info(`${actionName} - Coming soon after demo`);
         }).catch(() => {
-          // Fallback if toast fails to load
-          console.log(`${actionName} temporarily disabled for demo`);
+          // Fallback if toast fails to load - use secure logging
+          import('../utils/logger').then(({ log }) => {
+            log(`${actionName} temporarily disabled for demo`);
+          });
         });
       }
       return;

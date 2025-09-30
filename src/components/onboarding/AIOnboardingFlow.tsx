@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { logAICall } from "@/utils/logger";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -70,9 +71,9 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
   const analyzeSkill = async (skill: string) => {
     if (!user) return;
     
+    const startTime = Date.now();
     try {
       setIsLoading(true);
-      console.log('Calling analyze-skill-reframe with:', { skill, major: demographicsData.major });
       
       const { data, error } = await supabase.functions.invoke('analyze-skill-reframe', {
         body: { skill }
@@ -80,10 +81,10 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
       
       if (error) throw error;
       const normalized = (data as any)?.analysis ?? data;
-      console.log('Skill analysis response (normalized):', normalized);
+      logAICall('analyze-skill-reframe', true, Date.now() - startTime);
       setSkillAnalysis(normalized);
     } catch (error) {
-      console.error('Skill analysis error:', error);
+      logAICall('analyze-skill-reframe', false, Date.now() - startTime);
     } finally {
       setIsLoading(false);
     }
@@ -92,9 +93,9 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
   const analyzeGoal = async (goal: string) => {
     if (!user) return;
     
+    const startTime = Date.now();
     try {
       setIsLoading(true);
-      console.log('Calling analyze-90day-goal with:', { goalStatement: goal });
       
       const { data, error } = await supabase.functions.invoke('analyze-90day-goal', {
         body: { goalStatement: goal }
@@ -102,10 +103,10 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
       
       if (error) throw error;
       const normalized = (data as any)?.analysis ?? data;
-      console.log('Goal analysis response (normalized):', normalized);
+      logAICall('analyze-90day-goal', true, Date.now() - startTime);
       setGoalAnalysis(normalized);
     } catch (error) {
-      console.error('Goal analysis error:', error);
+      logAICall('analyze-90day-goal', false, Date.now() - startTime);
     } finally {
       setIsLoading(false);
     }
@@ -114,13 +115,8 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
   const generateMirror = async () => {
     if (!user || !skillAnalysis?.reframed_skill) return;
     
+    const startTime = Date.now();
     try {
-      console.log('Calling generate-power-mirror with:', { 
-        skillReframe: skillAnalysis.reframed_skill,
-        goalStatement: goalInput,
-        demographics: demographicsData 
-      });
-      
       const { data, error } = await supabase.functions.invoke('generate-power-mirror', {
         body: {
           skillReframe: skillAnalysis.reframed_skill,
@@ -130,10 +126,10 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
       });
       
       if (error) throw error;
-      console.log('Mirror response:', data);
+      logAICall('generate-power-mirror', true, Date.now() - startTime);
       setMirrorData(data);
     } catch (error) {
-      console.error('Mirror generation error:', error);
+      logAICall('generate-power-mirror', false, Date.now() - startTime);
     }
   };
 

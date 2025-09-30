@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { UserAnswers } from "./types";
+import { logAICall, error as logError } from "@/utils/logger";
 
 export interface StudentDemographics {
   academic_status: string;
@@ -37,7 +38,7 @@ export async function saveStudentDemographics(userId: string, demographics: Stud
     });
 
   if (error) {
-    console.error('Error saving student demographics:', error);
+    logError('Error saving student demographics');
     throw error;
   }
 }
@@ -50,7 +51,7 @@ export async function savePowerSkill(powerSkill: PowerSkill): Promise<string> {
     .single();
 
   if (error) {
-    console.error('Error saving power skill:', error);
+    logError('Error saving power skill');
     throw error;
   }
 
@@ -65,7 +66,7 @@ export async function saveNinetyDayGoal(goal: NinetyDayGoal): Promise<string> {
     .single();
 
   if (error) {
-    console.error('Error saving 90-day goal:', error);
+    logError('Error saving 90-day goal');
     throw error;
   }
 
@@ -90,7 +91,7 @@ export async function markStudentOnboardingComplete(userId: string): Promise<voi
       });
 
     if (error) {
-      console.error('Error marking student onboarding complete:', error);
+      logError('Error marking student onboarding complete');
       throw error;
     }
 
@@ -122,13 +123,13 @@ export async function markStudentOnboardingComplete(userId: string): Promise<voi
         });
 
       if (profileError) {
-        console.error('Error updating user profile:', profileError);
+        logError('Error updating user profile');
         // Don't throw here as the main onboarding completion succeeded
       }
     }
-  } catch (error) {
-    console.error('Error marking student onboarding complete:', error);
-    throw error;
+  } catch (err) {
+    logError('Error marking student onboarding complete');
+    throw err;
   }
 }
 
@@ -170,15 +171,17 @@ export async function getStudentOnboardingData(userId: string) {
 }
 
 export async function analyzeSkillReframe(skill: string) {
+  const startTime = Date.now();
   try {
     const { data, error } = await supabase.functions.invoke('analyze-skill-reframe', {
       body: { skill }
     });
 
     if (error) throw error;
+    logAICall('analyze-skill-reframe', true, Date.now() - startTime);
     return data.analysis;
-  } catch (error) {
-    console.error('Error analyzing skill reframe:', error);
+  } catch (err) {
+    logAICall('analyze-skill-reframe', false, Date.now() - startTime);
     return {
       recruiter_perspective: "To a recruiter, this shows you're thinking about creating value, though more specifics would strengthen your message.",
       score: 6,
@@ -196,15 +199,17 @@ export async function analyzeSkillReframe(skill: string) {
 }
 
 export async function analyzeNinetyDayGoal(goalStatement: string) {
+  const startTime = Date.now();
   try {
     const { data, error } = await supabase.functions.invoke('analyze-90day-goal', {
       body: { goalStatement }
     });
 
     if (error) throw error;
+    logAICall('analyze-90day-goal', true, Date.now() - startTime);
     return data.analysis;
-  } catch (error) {
-    console.error('Error analyzing 90-day goal:', error);
+  } catch (err) {
+    logAICall('analyze-90day-goal', false, Date.now() - startTime);
     return {
       recruiter_perspective: "To a recruiter, thinking about your 90-day goal shows forward-planning mindset that employers value.",
       score: 6,
@@ -223,6 +228,7 @@ export async function analyzeNinetyDayGoal(goalStatement: string) {
 }
 
 export async function generatePowerMirror(skillReframe: string, goalStatement: string, demographics: StudentDemographics) {
+  const startTime = Date.now();
   try {
     const { data, error } = await supabase.functions.invoke('generate-power-mirror', {
       body: { 
@@ -233,9 +239,10 @@ export async function generatePowerMirror(skillReframe: string, goalStatement: s
     });
 
     if (error) throw error;
+    logAICall('generate-power-mirror', true, Date.now() - startTime);
     return data.mirror;
-  } catch (error) {
-    console.error('Error generating power mirror:', error);
+  } catch (err) {
+    logAICall('generate-power-mirror', false, Date.now() - startTime);
     return {
       recruiter_perspective: "To a recruiter, looking at all your responses together, this shows you're thinking like someone who wants to create value - that's the foundation of career success!",
       score: 7,
