@@ -360,45 +360,107 @@ export type Database = {
         }
         Relationships: []
       }
+      job_applications: {
+        Row: {
+          applicant_user_id: string
+          cover_note: string | null
+          created_at: string
+          id: string
+          job_id: string
+          responded_at: string | null
+          status: string
+          updated_at: string
+          viewed_at: string | null
+        }
+        Insert: {
+          applicant_user_id: string
+          cover_note?: string | null
+          created_at?: string
+          id?: string
+          job_id: string
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+          viewed_at?: string | null
+        }
+        Update: {
+          applicant_user_id?: string
+          cover_note?: string | null
+          created_at?: string
+          id?: string
+          job_id?: string
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "job_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_listings: {
         Row: {
           business_id: string
+          category: string | null
           created_at: string
           description: string | null
+          expires_at: string | null
           id: string
           is_active: boolean
+          is_remote: boolean | null
           job_image: string | null
+          job_type: string | null
           location: string | null
           mode: Database["public"]["Enums"]["match_context"]
           organization_id: string | null
+          salary_range: string | null
+          target_user_types: string[] | null
           title: string
           top_skills: string[] | null
           updated_at: string
         }
         Insert: {
           business_id: string
+          category?: string | null
           created_at?: string
           description?: string | null
+          expires_at?: string | null
           id?: string
           is_active?: boolean
+          is_remote?: boolean | null
           job_image?: string | null
+          job_type?: string | null
           location?: string | null
           mode: Database["public"]["Enums"]["match_context"]
           organization_id?: string | null
+          salary_range?: string | null
+          target_user_types?: string[] | null
           title: string
           top_skills?: string[] | null
           updated_at?: string
         }
         Update: {
           business_id?: string
+          category?: string | null
           created_at?: string
           description?: string | null
+          expires_at?: string | null
           id?: string
           is_active?: boolean
+          is_remote?: boolean | null
           job_image?: string | null
+          job_type?: string | null
           location?: string | null
           mode?: Database["public"]["Enums"]["match_context"]
           organization_id?: string | null
+          salary_range?: string | null
+          target_user_types?: string[] | null
           title?: string
           top_skills?: string[] | null
           updated_at?: string
