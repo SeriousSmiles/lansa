@@ -80,35 +80,66 @@ serve(async (req) => {
       const railwayData = await railwayResponse.json();
       console.log('Railway microservice response received');
 
-      // Extract and structure the data from Railway response with source tracking
-      const extractedData = {
-        personalInfo: {
-          name: railwayData.personal_info?.name || railwayData.name,
-          title: railwayData.personal_info?.title || railwayData.title,
-          summary: railwayData.personal_info?.summary || railwayData.summary,
-          email: railwayData.personal_info?.email || railwayData.contact?.email,
-          phone: railwayData.personal_info?.phone || railwayData.contact?.phone,
-          location: railwayData.personal_info?.location || railwayData.contact?.location || railwayData.location,
-        },
-        skills: railwayData.skills || [],
-        experience: (railwayData.experience || railwayData.work_experience || []).map((exp: any, index: number) => ({
-          title: exp.title || exp.job_title || exp.position,
-          company: exp.company || exp.employer,
-          duration: exp.duration || `${exp.start_date || ''} - ${exp.end_date || 'Present'}`,
-          description: exp.description || exp.responsibilities || '',
+      // Normalize Railway response
+      let normalized: any = { personalInfo: {}, skills: [], experience: [], education: [] };
+
+      if (Array.isArray(railwayData.extracted) && railwayData.extracted.length > 0) {
+        const first = railwayData.extracted[0]; // if multi-page, you can merge instead
+
+        normalized.personalInfo = {
+          name: first.full_name || null,
+          title: first.title || null,
+          summary: first.summary || null,
+          email: first.contact?.email || null,
+          phone: first.contact?.phone || null,
+          location: first.location || null,
+        };
+
+        normalized.skills = first.skills || [];
+
+        normalized.experience = (first.work_experience || []).map((exp: any, index: number) => ({
+          title: exp.title,
+          company: exp.company,
+          duration: exp.duration,
+          description: exp.description,
           source: 'resume-upload',
           order_index: index,
           is_user_edited: false
-        })),
-        education: (railwayData.education || []).map((edu: any, index: number) => ({
-          degree: edu.degree || edu.qualification,
-          institution: edu.institution || edu.school || edu.university,
-          year: edu.year || edu.graduation_year || edu.end_date || '',
+        }));
+
+        normalized.education = (first.education || []).map((edu: any, index: number) => ({
+          degree: edu.degree,
+          institution: edu.school,
+          year: edu.year,
           source: 'resume-upload',
           order_index: index,
           is_user_edited: false
-        }))
-      };
+        }));
+      } else {
+        console.warn("Railway response missing or empty, raw:", railwayData);
+      }
+
+      // Check what was actually found
+      const sectionsFound: string[] = [];
+      if (normalized.personalInfo.name || normalized.personalInfo.email) sectionsFound.push("personalInfo");
+      if (normalized.skills.length > 0) sectionsFound.push("skills");
+      if (normalized.experience.length > 0) sectionsFound.push("experience");
+      if (normalized.education.length > 0) sectionsFound.push("education");
+
+      // Compare name with user profile
+      const { data: userProfileForNameCheck } = await supabase
+        .from('user_profiles')
+        .select('name')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      let nameWarning: string | null = null;
+      if (userProfileForNameCheck?.name && normalized.personalInfo.name &&
+          normalized.personalInfo.name.toLowerCase() !== userProfileForNameCheck.name.toLowerCase()) {
+        nameWarning = `Uploaded CV shows "${normalized.personalInfo.name}" but your profile is "${userProfileForNameCheck.name}". Do you want to continue?`;
+      }
+
+      const extractedData = normalized;
 
       // Calculate confidence scores based on Railway response
       const confidenceScores = {
@@ -118,13 +149,6 @@ serve(async (req) => {
         experience: railwayData.confidence_scores?.experience || 0.85,
         education: railwayData.confidence_scores?.education || 0.8
       };
-
-      // Determine sections found
-      const sectionsFound = [];
-      if (extractedData.personalInfo.name || extractedData.personalInfo.email) sectionsFound.push('personal_info');
-      if (extractedData.skills.length > 0) sectionsFound.push('skills');
-      if (extractedData.experience.length > 0) sectionsFound.push('experience');
-      if (extractedData.education.length > 0) sectionsFound.push('education');
 
       // Update resume record with parsed data
       const { error: updateError } = await supabase
@@ -212,6 +236,7 @@ serve(async (req) => {
         id: resumeRecord.id,
         extractedData,
         suggestions,
+        nameWarning,
         metadata: {
           originalFileName: file.name,
           uploadedAt: resumeRecord.created_at,
