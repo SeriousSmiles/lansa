@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { gsap } from "gsap";
 import { TopNavbar } from "./TopNavbar";
 
-import { IconHome, IconBook, IconVideo, IconUser } from "@tabler/icons-react";
+import { IconHome, IconBook, IconVideo, IconUser, IconBriefcase } from "@tabler/icons-react";
 import { AnnouncementBanner } from "@/components/common/AnnouncementBanner";
 
 import { useUserType } from "@/hooks/useUserType";
@@ -44,6 +44,11 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
           title: "Dashboard",
           url: "/dashboard",
           icon: IconHome,
+        },
+        {
+          title: "Jobs",
+          url: "/jobs",
+          icon: IconBriefcase,
         },
         {
           title: "Resources",

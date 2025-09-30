@@ -28,6 +28,7 @@ import EmployerDashboard from "./pages/EmployerDashboard";
 import Resources from "./pages/Resources";
 import ContentLibrary from "./pages/ContentLibrary";
 import Card from "./pages/Card";
+import JobFeed from "./pages/JobFeed";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -66,6 +67,7 @@ const App: React.FC = () => {
                   <Route path="/content" element={<ContentLibrary />} />
                   <Route path="/discovery" element={<OpportunityDiscovery />} />
                   <Route path="/opportunity-discovery" element={<OpportunityDiscovery />} />
+                  <Route path="/jobs" element={<JobFeed />} />
                   <Route path="/employer-dashboard" element={<EmployerDashboard />} />
                   <Route path="/browse-candidates" element={<BrowseCandidates />} />
                 </Route>

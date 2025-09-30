@@ -109,3 +109,9 @@ verify_jwt = true
 
 [functions.ai-profile-stylist]
 verify_jwt = true
+
+[functions.fetch-job-feed]
+verify_jwt = true
+
+[functions.apply-for-job]
+verify_jwt = true
