@@ -20,6 +20,7 @@ import { useProfileData } from "@/hooks/useProfileData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { safeHandler } from "@/config/demo";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DesktopProfileActionsProps {
   userId?: string;
@@ -51,6 +52,7 @@ export function DesktopProfileActions({
   const { user } = useAuth();
   const { userType } = useUserType();
   const profileData = useProfileData(userId);
+  const isMobile = useIsMobile();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isProfilePublic, setIsProfilePublic] = useState(false);
   const [isUpdatingPublicStatus, setIsUpdatingPublicStatus] = useState(false);
@@ -116,20 +118,21 @@ export function DesktopProfileActions({
         Quick Actions
       </Button>
 
-      {/* Actions Menu */}
-      <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-        <DropdownMenuTrigger asChild>
-          <Button 
-            variant={isDarkTheme ? "contrast" : "outline"} 
-            size="sm"
-            style={{
-              borderColor: `${coverColor}50`,
-              color: textColor
-            }}
-          >
-            <IconMenu2 className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
+      {/* Actions Menu - Hidden on mobile */}
+      {!isMobile && (
+        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant={isDarkTheme ? "contrast" : "outline"} 
+              size="sm"
+              style={{
+                borderColor: `${coverColor}50`,
+                color: textColor
+              }}
+            >
+              <IconMenu2 className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
         <DropdownMenuContent 
           align="end" 
           className="w-56 bg-background border border-border z-50"
@@ -213,6 +216,7 @@ export function DesktopProfileActions({
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
+      )}
 
       {/* Modals and Dialogs */}
       {userProfile && (
