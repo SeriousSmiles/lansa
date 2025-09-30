@@ -389,7 +389,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
           stepNumber={getStepNumber()}
           totalSteps={5}
           title="Transform Your Skills"
-          subtitle="Turn your academic abilities into business value that managers understand"
+          subtitle="Turn your academic abilities into business value that recruiters like"
           image={skillTransformImage}
           powerMoment="Power Moment #1"
         />
@@ -412,7 +412,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                   
                   <div className="space-y-2">
                     <Label htmlFor="skill" className="text-base font-medium">
-                      I could help a company by...
+                      I could help a project by...
                     </Label>
                     <Textarea
                       id="skill"
@@ -484,7 +484,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
           stepNumber={getStepNumber()}
           totalSteps={5}
           title="Your 90-Day Promise"
-          subtitle="What specific, measurable outcome will you deliver in your first 90 days?"
+          subtitle="What specific, outcome can you deliver in your first 90 days?"
           image={ninetyDayGoalImage}
           powerMoment="Power Moment #2"
         />
@@ -494,7 +494,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
             <div className="space-y-6">
               <ActionCard
                 title="What will you achieve in 90 days?"
-                description="Be specific about measurable outcomes that managers can track"
+                description="Be specific about results that you can prove."
                 icon={Trophy}
                 status="active"
               >
