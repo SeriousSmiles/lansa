@@ -93,6 +93,7 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
           onEditLanguage={profile.editLanguage}
           onRemoveLanguage={profile.removeLanguage}
           onUploadProfileImage={profile.uploadProfileImage}
+          userId={profile.user?.id}
         />
         
         {/* Open Market Button */}

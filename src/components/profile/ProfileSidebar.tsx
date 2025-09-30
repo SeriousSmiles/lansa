@@ -20,6 +20,7 @@ interface ProfileSidebarProps {
   profileImage?: string;
   professionalGoal?: string;
   biggestChallenge?: string;
+  userId?: string;
   onUpdate?: (field: string, value: string) => Promise<void>;
   onUpdateUserName?: (name: string) => Promise<void>;
   onUpdateTitle?: (title: string) => Promise<void>;
@@ -48,6 +49,7 @@ export function ProfileSidebar({
   profileImage,
   professionalGoal = "",
   biggestChallenge = "",
+  userId,
   onUpdate,
   onUpdateUserName,
   onUpdateTitle,
@@ -107,6 +109,7 @@ export function ProfileSidebar({
         onAddSkill={handleAddSkill}
         onRemoveSkill={handleRemoveSkill}
         highlightColor={highlightColor}
+        userId={userId}
       />
       
       {/* Languages */}
