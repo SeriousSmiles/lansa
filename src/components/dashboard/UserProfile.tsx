@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,7 +24,9 @@ interface UserProfileProps {
 export function UserProfile({ userName, email, handleLogout, themeColor }: UserProfileProps) {
   const { user } = useAuth();
   const { userType } = useUserType();
+  const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState<string>("");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -46,7 +48,7 @@ export function UserProfile({ userName, email, handleLogout, themeColor }: UserP
   }, [user?.id]);
 
   return (
-    <DropdownMenu modal>
+    <DropdownMenu modal open={isMenuOpen} onOpenChange={setIsMenuOpen}>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
@@ -79,18 +81,30 @@ export function UserProfile({ userName, email, handleLogout, themeColor }: UserP
         </div>
         <DropdownMenuSeparator />
         {userType !== 'employer' && (
-          <DropdownMenuItem asChild>
-            <Link to="/profile">Resume Builder</Link>
+          <DropdownMenuItem onSelect={() => {
+            setIsMenuOpen(false);
+            navigate("/profile");
+          }}>
+            Resume Builder
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem asChild>
-          <Link to="/resources">Resources</Link>
+        <DropdownMenuItem onSelect={() => {
+          setIsMenuOpen(false);
+          navigate("/resources");
+        }}>
+          Resources
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={safeHandler(() => {}, "Settings")}>
+        <DropdownMenuItem onSelect={() => {
+          setIsMenuOpen(false);
+          safeHandler(() => {}, "Settings")();
+        }}>
           Settings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => {
+          setIsMenuOpen(false);
+          handleLogout();
+        }}>Log out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

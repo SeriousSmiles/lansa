@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +21,9 @@ interface MobileUserProfileProps {
 
 export function MobileUserProfile({ userName, email, handleLogout, themeColor }: MobileUserProfileProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState<string>("");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -43,7 +45,7 @@ export function MobileUserProfile({ userName, email, handleLogout, themeColor }:
   }, [user?.id]);
 
   return (
-    <DropdownMenu modal>
+    <DropdownMenu modal open={isMenuOpen} onOpenChange={setIsMenuOpen}>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
@@ -75,14 +77,23 @@ export function MobileUserProfile({ userName, email, handleLogout, themeColor }:
           <p className="text-xs text-muted-foreground">{email}</p>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link to="/profile">Resume Builder</Link>
+        <DropdownMenuItem onSelect={() => {
+          setIsMenuOpen(false);
+          navigate("/profile");
+        }}>
+          Resume Builder
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={safeHandler(() => {}, "Settings")}>
+        <DropdownMenuItem onSelect={() => {
+          setIsMenuOpen(false);
+          safeHandler(() => {}, "Settings")();
+        }}>
           Settings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => {
+          setIsMenuOpen(false);
+          handleLogout();
+        }}>Log out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
