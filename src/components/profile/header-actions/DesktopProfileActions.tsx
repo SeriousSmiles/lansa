@@ -20,6 +20,7 @@ import { useProfileData } from "@/hooks/useProfileData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { safeHandler } from "@/config/demo";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DesktopProfileActionsProps {
   userId?: string;
@@ -51,6 +52,7 @@ export function DesktopProfileActions({
   const { user } = useAuth();
   const { userType } = useUserType();
   const profileData = useProfileData(userId);
+  const isMobile = useIsMobile();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isProfilePublic, setIsProfilePublic] = useState(false);
   const [isUpdatingPublicStatus, setIsUpdatingPublicStatus] = useState(false);
@@ -105,16 +107,18 @@ export function DesktopProfileActions({
 
   return (
     <div className="flex items-center gap-2">
-      {/* Quick Actions - Standalone prominent button */}
-      <Button
-        onClick={() => setIsQuickActionsOpen(true)}
-        variant="primary"
-        size="sm"
-        className="bg-primary text-primary-foreground hover:bg-primary/90"
-      >
-        <IconBolt className="h-4 w-4 mr-2" />
-        Quick Actions
-      </Button>
+      {/* Quick Actions - Standalone prominent button - Hidden on mobile */}
+      {!isMobile && (
+        <Button
+          onClick={() => setIsQuickActionsOpen(true)}
+          variant="primary"
+          size="sm"
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          <IconBolt className="h-4 w-4 mr-2" />
+          Quick Actions
+        </Button>
+      )}
 
       {/* Actions Menu */}
       <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>

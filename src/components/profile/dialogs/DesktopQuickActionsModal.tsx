@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Upload, 
@@ -32,6 +32,18 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
   const [showCVModal, setShowCVModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [showAchievementModal, setShowAchievementModal] = useState(false);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   const quickActions: QuickAction[] = [
     {
@@ -93,18 +105,19 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-modal"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-modal"
             onClick={onClose}
           />
 
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed inset-0 z-modal flex items-center justify-center p-4"
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed bottom-0 left-0 right-0 z-modal flex justify-center p-4 pb-8 pointer-events-none"
           >
-            <div className="bg-card rounded-3xl p-8 w-full max-w-2xl mx-auto shadow-xl">
+            <div className="bg-card rounded-3xl p-8 w-full max-w-2xl mx-auto shadow-xl pointer-events-auto">
               {/* Header */}
               <div className="flex items-center justify-between mb-8">
                 <div>
