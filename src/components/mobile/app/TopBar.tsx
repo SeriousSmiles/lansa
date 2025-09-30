@@ -79,15 +79,13 @@ export function TopBar() {
               <Search className="h-5 w-5" />
             </Button>
             
-            {location.pathname !== '/profile' && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="touch-target p-2"
-              >
-                <MoreHorizontal className="h-5 w-5" />
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="touch-target p-2"
+            >
+              <MoreHorizontal className="h-5 w-5" />
+            </Button>
           </div>
         </div>
       </div>
