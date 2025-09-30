@@ -208,7 +208,7 @@ export function CVUploadHistory({ userId, onBack, onReuse }: CVUploadHistoryProp
           {uploads.map((upload) => {
             const dataQuality = getDataQuality(upload);
             const hasUsableData = upload.processing_status === 'completed' && dataQuality;
-            const hasError = upload.error_message || upload.processing_status === 'failed';
+            const hasError = Boolean(upload.error_message || upload.processing_status === 'failed');
             
             return (
               <Card key={upload.id} className="transition-all hover:shadow-md">

@@ -225,7 +225,6 @@ export function CVUploadManager({
             data={analysisData}
             onApply={handleApplyData}
             onSkip={handleSkip}
-            onRetry={selectedFile ? handleRetry : undefined}
             fileName={selectedFile?.name}
           />
         ) : null;

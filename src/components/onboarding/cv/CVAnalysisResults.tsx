@@ -1,8 +1,11 @@
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   CheckCircle, 
   AlertTriangle, 
@@ -14,15 +17,59 @@ import {
   TrendingUp,
   Eye,
   ChevronDown,
-  ChevronUp
-} from "lucide-react";
-import { CVAnalysisData } from "./CVUploadModal";
-import { cn } from "@/lib/utils";
+  ChevronUp,
+  Sparkles,
+  Target,
+  TrendingDown,
+  RefreshCw,
+  FileText,
+  Award,
+  MapPin,
+  Mail,
+  Phone
+} from 'lucide-react';
 
 interface CVAnalysisResultsProps {
-  data: CVAnalysisData;
-  onApply: (selectedData: Partial<CVAnalysisData['extractedData']>) => void;
+  data: {
+    extractedData: {
+      name?: string;
+      title?: string;
+      summary?: string;
+      contact?: {
+        email?: string;
+        phone?: string;
+        location?: string;
+      };
+      skills?: string[];
+      experience?: Array<{
+        title: string;
+        company: string;
+        duration: string;
+        description: string;
+      }>;
+      education?: Array<{
+        degree: string;
+        institution: string;
+        year: string;
+      }>;
+    };
+    suggestions: {
+      skillMatches: string[];
+      gapAnalysis: string[];
+      improvements: string[];
+      mismatchWarnings?: string[];
+      confidence: number;
+    };
+    metadata?: {
+      originalFileName: string;
+      uploadedAt: string;
+      extractionConfidence: number;
+      sectionsFound: string[];
+    };
+  };
+  onApply: (selectedData: any) => void;
   onSkip: () => void;
+  fileName?: string;
 }
 
 interface SectionSelection {
@@ -32,14 +79,25 @@ interface SectionSelection {
   education: boolean;
 }
 
-export function CVAnalysisResults({ data, onApply, onSkip }: CVAnalysisResultsProps) {
+export function CVAnalysisResults({ 
+  data, 
+  onApply, 
+  onSkip, 
+  fileName
+}: CVAnalysisResultsProps) {
   const [selections, setSelections] = useState<SectionSelection>({
     personalInfo: true,
     skills: true,
     experience: true,
     education: true,
   });
-  const [showPreview, setShowPreview] = useState(false);
+  
+  const [expandedSections, setExpandedSections] = useState({
+    extracted: true,
+    gaps: false,
+    improvements: false,
+    details: false
+  });
 
   const handleSectionToggle = (section: keyof SectionSelection) => {
     setSelections(prev => ({
@@ -48,290 +106,387 @@ export function CVAnalysisResults({ data, onApply, onSkip }: CVAnalysisResultsPr
     }));
   };
 
-  const handleApplyAll = () => {
-    const selectedData: Partial<CVAnalysisData['extractedData']> = {};
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  const handleApplySelected = () => {
+    const selectedData: any = {};
     
     if (selections.personalInfo) {
-      selectedData.name = data.extractedData.name;
-      selectedData.title = data.extractedData.title;
-      selectedData.summary = data.extractedData.summary;
-      selectedData.contact = data.extractedData.contact;
+      selectedData.personalInfo = {
+        name: data.extractedData.name,
+        title: data.extractedData.title,
+        summary: data.extractedData.summary,
+        ...data.extractedData.contact
+      };
     }
     if (selections.skills) {
-      selectedData.skills = data.extractedData.skills;
+      selectedData.skills = data.extractedData.skills || [];
     }
     if (selections.experience) {
-      selectedData.experience = data.extractedData.experience;
+      selectedData.experience = data.extractedData.experience || [];
     }
     if (selections.education) {
-      selectedData.education = data.extractedData.education;
+      selectedData.education = data.extractedData.education || [];
     }
 
     onApply(selectedData);
   };
 
   const selectedCount = Object.values(selections).filter(Boolean).length;
+  const confidence = Math.round(data.suggestions.confidence);
+  const hasContact = data.extractedData.contact && 
+    (data.extractedData.contact.email || data.extractedData.contact.phone || data.extractedData.contact.location);
+
+  const skillsCount = data.extractedData.skills?.length || 0;
+  const experienceCount = data.extractedData.experience?.length || 0;
+  const educationCount = data.extractedData.education?.length || 0;
 
   return (
     <div className="space-y-6">
-      {/* Summary Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card className="text-center">
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold text-primary">{data.suggestions.confidence}%</div>
-            <p className="text-sm text-muted-foreground">Match Quality</p>
-          </CardContent>
-        </Card>
-        <Card className="text-center">
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold text-primary">{data.extractedData.skills.length}</div>
-            <p className="text-sm text-muted-foreground">Skills Found</p>
-          </CardContent>
-        </Card>
-        <Card className="text-center">
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold text-primary">{data.suggestions.improvements.length}</div>
-            <p className="text-sm text-muted-foreground">Improvements</p>
-          </CardContent>
-        </Card>
+      {/* Success Header */}
+      <div className="text-center space-y-4 pb-6 border-b">
+        <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center">
+          <CheckCircle className="w-10 h-10 text-white" />
+        </div>
+        <div>
+          <h3 className="text-2xl font-bold text-green-900">
+            CV Analysis Complete!
+          </h3>
+          <p className="text-green-700">
+            Successfully extracted data from <span className="font-medium">{fileName}</span>
+          </p>
+          <div className="flex items-center justify-center gap-4 mt-2 text-sm text-green-600">
+            <span>{skillsCount} skills</span>
+            <span>•</span>
+            <span>{experienceCount} experiences</span>
+            <span>•</span>
+            <span>{educationCount} education</span>
+          </div>
+        </div>
       </div>
+
+      {/* Confidence Score */}
+      <Card className="border-l-4 border-l-primary">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <Award className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">
+                  Extraction Quality: {confidence}%
+                </CardTitle>
+                <CardDescription>
+                  {confidence >= 80 ? "Excellent extraction quality" : 
+                   confidence >= 60 ? "Good extraction quality" : 
+                   "Partial extraction - you may want to review and add missing details"}
+                </CardDescription>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-primary">{confidence}%</div>
+              <Progress value={confidence} className="w-20 mt-1" />
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
 
       {/* Mismatch Warnings */}
       {data.suggestions.mismatchWarnings && data.suggestions.mismatchWarnings.length > 0 && (
-        <Card className="border-l-4 border-l-red-500 bg-red-50/50">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-600" />
-              <CardTitle className="text-base text-red-800">Data Mismatch Detected</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-2 mb-3">
+        <Alert className="border-amber-200 bg-amber-50">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-amber-800">
+            <strong>Areas to review:</strong>
+            <ul className="list-disc list-inside mt-2 space-y-1">
               {data.suggestions.mismatchWarnings.map((warning, index) => (
-                <p key={index} className="text-sm text-red-700 flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                  {warning}
-                </p>
+                <li key={index} className="text-sm">{warning}</li>
               ))}
-            </div>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" className="border-red-200 text-red-700 hover:bg-red-50">
-                Review First
-              </Button>
-              <Button size="sm" variant="ghost" className="text-red-600">
-                Update Onboarding
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </ul>
+          </AlertDescription>
+        </Alert>
       )}
 
-      {/* Key Insights */}
-      <div className="space-y-3">
-        {/* Skills Match */}
+      {/* Extracted Content Preview */}
+      <Collapsible open={expandedSections.extracted} onOpenChange={() => toggleSection('extracted')}>
         <Card className="border-l-4 border-l-green-500">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              <CardTitle className="text-base">We matched {data.suggestions.skillMatches.length} skills</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="flex flex-wrap gap-1 mb-3">
-              {data.suggestions.skillMatches.map((skill) => (
-                <Badge key={skill} variant="secondary" className="bg-green-50 text-green-700">
-                  {skill}
-                </Badge>
-              ))}
-            </div>
-            <div className="flex items-center justify-between">
-              <Checkbox 
-                id="skills"
-                checked={selections.skills}
-                onCheckedChange={() => handleSectionToggle('skills')}
-              />
-              <Button size="sm" variant="outline">
-                Add to Profile
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Gap Analysis */}
-        <Card className="border-l-4 border-l-orange-500">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-600" />
-              <CardTitle className="text-base">We found gaps compared to your goals</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-2 mb-3">
-              {data.suggestions.gapAnalysis.map((gap, index) => (
-                <p key={index} className="text-sm text-muted-foreground flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                  {gap}
-                </p>
-              ))}
-            </div>
-            <Button size="sm" variant="outline">
-              See Fixes
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Improvements */}
-        <Card className="border-l-4 border-l-blue-500">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-blue-600" />
-              <CardTitle className="text-base">We found better power verbs</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-2 mb-3">
-              {data.suggestions.improvements.map((improvement, index) => (
-                <p key={index} className="text-sm text-muted-foreground flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                  {improvement}
-                </p>
-              ))}
-            </div>
-            <Button size="sm" variant="outline">
-              Upgrade Wording
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Detailed Selection */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Select Data to Import</CardTitle>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setShowPreview(!showPreview)}
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              {showPreview ? 'Hide' : 'Preview'}
-              {showPreview ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />}
-            </Button>
-          </div>
-          <CardDescription>
-            Choose which sections to add to your profile ({selectedCount} selected)
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Personal Info */}
-          <div className="flex items-center justify-between p-3 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <Checkbox 
-                id="personalInfo"
-                checked={selections.personalInfo}
-                onCheckedChange={() => handleSectionToggle('personalInfo')}
-              />
-              <User className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="font-medium">Personal Information</p>
-                <p className="text-sm text-muted-foreground">Name, title, summary</p>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="pb-3 cursor-pointer hover:bg-green-50/50 transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Eye className="h-5 w-5 text-green-600" />
+                  <CardTitle className="text-base">Extracted Information</CardTitle>
+                </div>
+                {expandedSections.extracted ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </div>
-            </div>
-          </div>
-
-          {/* Experience */}
-          <div className="flex items-center justify-between p-3 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <Checkbox 
-                id="experience"
-                checked={selections.experience}
-                onCheckedChange={() => handleSectionToggle('experience')}
-              />
-              <Briefcase className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="font-medium">Work Experience</p>
-                <p className="text-sm text-muted-foreground">{data.extractedData.experience.length} positions</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Education */}
-          <div className="flex items-center justify-between p-3 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <Checkbox 
-                id="education"
-                checked={selections.education}
-                onCheckedChange={() => handleSectionToggle('education')}
-              />
-              <GraduationCap className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="font-medium">Education</p>
-                <p className="text-sm text-muted-foreground">{data.extractedData.education.length} entries</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Skills */}
-          <div className="flex items-center justify-between p-3 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <Checkbox 
-                id="skills"
-                checked={selections.skills}
-                onCheckedChange={() => handleSectionToggle('skills')}
-              />
-              <Wrench className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="font-medium">Skills</p>
-                <p className="text-sm text-muted-foreground">{data.extractedData.skills.length} skills identified</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Preview Section */}
-          {showPreview && (
-            <div className="mt-4 p-4 bg-muted/50 rounded-lg space-y-3">
-              {selections.personalInfo && (
+              <CardDescription>
+                Review what we found in your CV - {skillsCount} skills detected
+              </CardDescription>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0 space-y-6">
+              {/* Personal Information */}
+              {(data.extractedData.name || data.extractedData.title || hasContact) && (
                 <div>
-                  <h4 className="font-medium text-sm text-primary">Personal Info</h4>
-                  <p className="text-sm">{data.extractedData.title}</p>
-                  <p className="text-xs text-muted-foreground line-clamp-2">{data.extractedData.summary}</p>
+                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Personal Information
+                  </h4>
+                  <div className="bg-green-50/50 rounded-lg p-4 space-y-2">
+                    {data.extractedData.name && (
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">Name:</span>
+                        <span>{data.extractedData.name}</span>
+                      </div>
+                    )}
+                    {data.extractedData.title && (
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">Title:</span>
+                        <span>{data.extractedData.title}</span>
+                      </div>
+                    )}
+                    {data.extractedData.contact?.email && (
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <span>{data.extractedData.contact.email}</span>
+                      </div>
+                    )}
+                    {data.extractedData.contact?.phone && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <span>{data.extractedData.contact.phone}</span>
+                      </div>
+                    )}
+                    {data.extractedData.contact?.location && (
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <span>{data.extractedData.contact.location}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
-              {selections.skills && (
+
+              {/* Skills */}
+              {skillsCount > 0 && (
                 <div>
-                  <h4 className="font-medium text-sm text-primary">Skills</h4>
-                  <div className="flex flex-wrap gap-1">
-                    {data.extractedData.skills.slice(0, 6).map((skill) => (
-                      <Badge key={skill} variant="outline" className="text-xs">
+                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                    <Wrench className="h-4 w-4" />
+                    Skills ({skillsCount})
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {data.extractedData.skills!.slice(0, 8).map((skill, index) => (
+                      <Badge key={index} variant="secondary" className="bg-green-50 text-green-700">
                         {skill}
                       </Badge>
                     ))}
-                    {data.extractedData.skills.length > 6 && (
+                    {skillsCount > 8 && (
                       <Badge variant="outline" className="text-xs">
-                        +{data.extractedData.skills.length - 6} more
+                        +{skillsCount - 8} more
                       </Badge>
                     )}
                   </div>
                 </div>
               )}
+
+              {/* Experience */}
+              {experienceCount > 0 && (
+                <div>
+                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                    <Briefcase className="h-4 w-4" />
+                    Work Experience ({experienceCount})
+                  </h4>
+                  <div className="space-y-3">
+                    {data.extractedData.experience!.map((exp, index) => (
+                      <div key={index} className="bg-green-50/50 rounded-lg p-4">
+                        <div className="font-medium">{exp.title}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {exp.company} • {exp.duration}
+                        </div>
+                        {exp.description && (
+                          <div className="text-sm mt-2 text-gray-700">
+                            {exp.description.substring(0, 150)}
+                            {exp.description.length > 150 && '...'}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Education */}
+              {educationCount > 0 && (
+                <div>
+                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4" />
+                    Education ({educationCount})
+                  </h4>
+                  <div className="space-y-2">
+                    {data.extractedData.education!.map((edu, index) => (
+                      <div key={index} className="bg-green-50/50 rounded-lg p-3">
+                        <div className="font-medium">{edu.degree}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {edu.institution} • {edu.year}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
+      {/* Gap Analysis */}
+      {data.suggestions.gapAnalysis.length > 0 && (
+        <Collapsible open={expandedSections.gaps} onOpenChange={() => toggleSection('gaps')}>
+          <Card className="border-l-4 border-l-orange-500">
+            <CollapsibleTrigger asChild>
+              <CardHeader className="pb-3 cursor-pointer hover:bg-orange-50/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-orange-600" />
+                    <CardTitle className="text-base">Opportunities to Strengthen</CardTitle>
+                  </div>
+                  {expandedSections.gaps ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </div>
+                <CardDescription>
+                  {data.suggestions.gapAnalysis.length} areas to consider adding
+                </CardDescription>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                <div className="space-y-3">
+                  {data.suggestions.gapAnalysis.map((gap, index) => (
+                    <div key={index} className="flex items-start gap-3 p-3 bg-orange-50/50 rounded-lg">
+                      <TrendingDown className="h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-orange-900">{gap}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
+
+      {/* Improvements */}
+      {data.suggestions.improvements.length > 0 && (
+        <Collapsible open={expandedSections.improvements} onOpenChange={() => toggleSection('improvements')}>
+          <Card className="border-l-4 border-l-blue-500">
+            <CollapsibleTrigger asChild>
+              <CardHeader className="pb-3 cursor-pointer hover:bg-blue-50/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-blue-600" />
+                    <CardTitle className="text-base">Suggested Improvements</CardTitle>
+                  </div>
+                  {expandedSections.improvements ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </div>
+                <CardDescription>
+                  Ways to enhance your profile impact
+                </CardDescription>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                <div className="space-y-3">
+                  {data.suggestions.improvements.map((improvement, index) => (
+                    <div key={index} className="flex items-start gap-3 p-3 bg-blue-50/50 rounded-lg">
+                      <Zap className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-blue-900">{improvement}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
+
+      {/* Selection Controls */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Sparkles className="h-5 w-5" />
+            Choose What to Apply ({selectedCount} sections selected)
+          </CardTitle>
+          <CardDescription>
+            Select which sections to add to your profile. You can edit everything later.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center space-x-3">
+              <Checkbox 
+                id="personalInfo"
+                checked={selections.personalInfo}
+                onCheckedChange={() => handleSectionToggle('personalInfo')}
+              />
+              <label htmlFor="personalInfo" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
+                <User className="h-4 w-4" />
+                Personal Info
+              </label>
             </div>
-          )}
+            <div className="flex items-center space-x-3">
+              <Checkbox 
+                id="skills"
+                checked={selections.skills}
+                onCheckedChange={() => handleSectionToggle('skills')}
+              />
+              <label htmlFor="skills" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
+                <Wrench className="h-4 w-4" />
+                Skills ({skillsCount})
+              </label>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Checkbox 
+                id="experience"
+                checked={selections.experience}
+                onCheckedChange={() => handleSectionToggle('experience')}
+              />
+              <label htmlFor="experience" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
+                <Briefcase className="h-4 w-4" />
+                Experience ({experienceCount})
+              </label>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Checkbox 
+                id="education"
+                checked={selections.education}
+                onCheckedChange={() => handleSectionToggle('education')}
+              />
+              <label htmlFor="education" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
+                <GraduationCap className="h-4 w-4" />
+                Education ({educationCount})
+              </label>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       {/* Action Buttons */}
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
         <Button 
-          onClick={handleApplyAll}
+          onClick={handleApplySelected}
           className="flex-1"
           disabled={selectedCount === 0}
+          size="lg"
         >
           <TrendingUp className="h-4 w-4 mr-2" />
-          Apply Selected ({selectedCount})
+          Apply to Profile ({selectedCount} sections)
         </Button>
-        <Button variant="outline" onClick={onSkip}>
-          Skip
+        <Button variant="outline" onClick={onSkip} size="lg">
+          Skip for Now
         </Button>
       </div>
     </div>
