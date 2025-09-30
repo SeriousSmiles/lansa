@@ -1,5 +1,5 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -16,6 +16,8 @@ interface MobileHeaderProps {
 }
 
 export function MobileHeader({ themeColor, items, userName, email, onLogout }: MobileHeaderProps) {
+  const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   // Determine if the theme is dark based on luminance
   const isDarkTheme = themeColor ? getContrastTextColor(themeColor) === "#FFFFFF" : false;
   
@@ -27,13 +29,16 @@ export function MobileHeader({ themeColor, items, userName, email, onLogout }: M
         borderColor: `${themeColor}30`
       } : {}}
     >
-      <Link to="/dashboard">
+      <div 
+        onClick={() => navigate("/dashboard")}
+        className="cursor-pointer"
+      >
         <img
           src="https://cdn.builder.io/api/v1/image/assets/TEMP/41285a6d1f6906d8349429ceb652f953bf730d06?placeholderIfAbsent=true"
           alt="Lansa Logo"
           className="aspect-[2.7] object-contain w-[92px]"
         />
-      </Link>
+      </div>
       <div className="flex items-center gap-2">
         <MobileUserProfile 
           userName={userName}
@@ -41,23 +46,25 @@ export function MobileHeader({ themeColor, items, userName, email, onLogout }: M
           handleLogout={onLogout}
           themeColor={themeColor}
         />
-        <DropdownMenu>
+        <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm">
               <Menu className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="bg-background border shadow-lg">
-            <DropdownMenuItem asChild>
-              <Link to="/discovery" className="w-full">
-                Discovery
-              </Link>
+            <DropdownMenuItem onSelect={() => {
+              setIsMenuOpen(false);
+              navigate("/discovery");
+            }}>
+              Discovery
             </DropdownMenuItem>
             {items.filter(item => item.title !== "Dashboard").map((item) => (
-              <DropdownMenuItem key={item.title} asChild>
-                <Link to={item.url} className="w-full">
-                  {item.title}
-                </Link>
+              <DropdownMenuItem key={item.title} onSelect={() => {
+                setIsMenuOpen(false);
+                navigate(item.url);
+              }}>
+                {item.title}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>

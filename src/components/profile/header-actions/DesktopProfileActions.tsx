@@ -56,6 +56,7 @@ export function DesktopProfileActions({
   const [isUpdatingPublicStatus, setIsUpdatingPublicStatus] = useState(false);
   const [isDesignerOpen, setIsDesignerOpen] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Check if user is Lansa certified
   const isLansaCertified = userProfile?.certifications?.some((cert: any) => 
@@ -116,7 +117,7 @@ export function DesktopProfileActions({
       </Button>
 
       {/* Actions Menu */}
-      <DropdownMenu>
+      <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
         <DropdownMenuTrigger asChild>
           <Button 
             variant={isDarkTheme ? "contrast" : "outline"} 
@@ -135,6 +136,7 @@ export function DesktopProfileActions({
         >
           <DropdownMenuItem onSelect={(e) => {
             e.preventDefault();
+            setIsDropdownOpen(false);
             handleShare();
           }}>
             <IconShare className="h-4 w-4 mr-2" />
@@ -143,6 +145,7 @@ export function DesktopProfileActions({
 
           <DropdownMenuItem onSelect={(e) => {
             e.preventDefault();
+            setIsDropdownOpen(false);
             setIsPreviewOpen(true);
           }}>
             <IconEye className="h-4 w-4 mr-2" />
@@ -151,6 +154,7 @@ export function DesktopProfileActions({
 
           <DropdownMenuItem onSelect={(e) => {
             e.preventDefault();
+            setIsDropdownOpen(false);
             setIsDesignerOpen(true);
           }}>
             <IconPalette className="h-4 w-4 mr-2" />
@@ -159,6 +163,7 @@ export function DesktopProfileActions({
 
           <DropdownMenuItem onSelect={(e) => {
             e.preventDefault();
+            setIsDropdownOpen(false);
             onOpenGuidedSetup?.();
           }}>
             <IconSettings className="h-4 w-4 mr-2" />
@@ -170,6 +175,7 @@ export function DesktopProfileActions({
           <DropdownMenuItem 
             onSelect={(e) => {
               e.preventDefault();
+              setIsDropdownOpen(false);
               safeHandler(handleMakeProfilePublic, "Make Profile Public")();
             }}
             disabled={!isLansaCertified || isUpdatingPublicStatus}
