@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Building2, MapPin, Clock, Sparkles } from "lucide-react";
+import { Building2, MapPin, Clock, Sparkles, Bookmark } from "lucide-react";
 import { LearningJobListing, learningJobFeedService } from "@/services/learningJobFeedService";
 import { formatDistanceToNow } from "date-fns";
 import { useEffect, useRef, useState } from "react";
@@ -17,6 +17,7 @@ interface LearningJobPostCardProps {
 export function LearningJobPostCard({ job, onApply, onViewDetails, disableApply }: LearningJobPostCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [hasRecordedView, setHasRecordedView] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   // Record view interaction when card is in viewport
   useEffect(() => {
@@ -51,6 +52,21 @@ export function LearningJobPostCard({ job, onApply, onViewDetails, disableApply 
       return;
     }
     onApply(job.id);
+  };
+
+  const handleSave = async () => {
+    if (disableApply) {
+      toast.error("Complete certification to save jobs");
+      return;
+    }
+    try {
+      await learningJobFeedService.recordInteraction(job.id, 'save');
+      setIsSaved(true);
+      toast.success("Job saved!");
+    } catch (error) {
+      console.error('Error saving job:', error);
+      toast.error("Failed to save job");
+    }
   };
 
   return (
@@ -151,6 +167,16 @@ export function LearningJobPostCard({ job, onApply, onViewDetails, disableApply 
           </span>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSave}
+            disabled={disableApply || isSaved}
+            className="gap-1"
+          >
+            <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+            {isSaved ? 'Saved' : 'Save'}
+          </Button>
           <Button
             variant="outline"
             size="sm"
