@@ -4,7 +4,7 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { LearningJobPostCard } from "@/components/jobs/LearningJobPostCard";
 import { CertificationTeaserBanner } from "@/components/jobs/CertificationTeaserBanner";
 import { JobDetailModal } from "@/components/jobs/JobDetailModal";
-import { JobFilters } from "@/components/jobs/JobFilters";
+import { LearningJobFilters } from "@/components/jobs/LearningJobFilters";
 import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles } from "lucide-react";
 import { 
@@ -42,12 +42,12 @@ export default function LearningJobFeed() {
     if (!user) return;
 
     const { data } = await supabase
-      .from('user_profiles')
-      .select('lansa_certified')
+      .from('user_certifications')
+      .select('lansa_certified, verified')
       .eq('user_id', user.id)
       .maybeSingle();
 
-    setIsCertified(data?.lansa_certified || false);
+    setIsCertified((data?.lansa_certified && data?.verified) || false);
   };
 
   const loadJobs = async () => {
@@ -85,7 +85,10 @@ export default function LearningJobFeed() {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout 
+      userName={user?.email?.split('@')[0] || 'User'} 
+      email={user?.email || ''}
+    >
       <div className="container max-w-4xl mx-auto py-8 px-4">
         {/* Header */}
         <div className="mb-6">
@@ -113,7 +116,7 @@ export default function LearningJobFeed() {
         {/* Filters */}
         {showFilters && (
           <div className="mb-6">
-            <JobFilters
+            <LearningJobFilters
               filters={filters}
               onFilterChange={handleFilterChange}
             />
