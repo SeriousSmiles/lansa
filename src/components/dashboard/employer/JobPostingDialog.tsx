@@ -11,10 +11,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { X, Calendar as CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface JobListing {
   id: string;
@@ -24,6 +30,12 @@ interface JobListing {
   mode: string;
   is_active: boolean;
   top_skills: string[];
+  target_user_types?: string[];
+  category?: string;
+  job_type?: string;
+  is_remote?: boolean;
+  salary_range?: string;
+  expires_at?: string;
   created_at: string;
 }
 
@@ -34,14 +46,36 @@ interface JobPostingDialogProps {
   editingJob?: JobListing | null;
 }
 
+const USER_TYPES = [
+  { value: "student", label: "Students", description: "University/college students looking for opportunities" },
+  { value: "job_seeker", label: "Job Seekers", description: "Active professionals seeking new positions" },
+  { value: "freelancer", label: "Freelancers", description: "Independent contractors and consultants" },
+  { value: "entrepreneur", label: "Entrepreneurs", description: "Business owners and startup founders" },
+  { value: "visionary", label: "Visionaries", description: "Strategic thinkers and innovators" }
+];
+
+const JOB_CATEGORIES = [
+  "Engineering", "Marketing", "Design", "Sales", "Product", 
+  "Operations", "Finance", "Human Resources", "Customer Success", "Data Science"
+];
+
+const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship", "Temporary"];
+
 export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: JobPostingDialogProps) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     location: "",
-    mode: "",
+    category: "",
+    jobType: "",
+    salaryMin: "",
+    salaryMax: "",
+    currency: "USD",
     skills: [] as string[],
-    newSkill: ""
+    newSkill: "",
+    targetUserTypes: [] as string[],
+    isRemote: false,
+    expiresAt: undefined as Date | undefined
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
@@ -52,23 +86,37 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
         title: editingJob.title,
         description: editingJob.description,
         location: editingJob.location,
-        mode: editingJob.mode,
+        category: editingJob.category || "",
+        jobType: editingJob.job_type || "",
+        salaryMin: "",
+        salaryMax: "",
+        currency: "USD",
         skills: editingJob.top_skills || [],
-        newSkill: ""
+        newSkill: "",
+        targetUserTypes: editingJob.target_user_types || [],
+        isRemote: editingJob.is_remote || false,
+        expiresAt: editingJob.expires_at ? new Date(editingJob.expires_at) : undefined
       });
     } else {
       setFormData({
         title: "",
         description: "",
         location: "",
-        mode: "",
+        category: "",
+        jobType: "",
+        salaryMin: "",
+        salaryMax: "",
+        currency: "USD",
         skills: [],
-        newSkill: ""
+        newSkill: "",
+        targetUserTypes: [],
+        isRemote: false,
+        expiresAt: undefined
       });
     }
   }, [editingJob, isOpen]);
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -89,12 +137,20 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
     }));
   };
 
+  const toggleUserType = (userType: string) => {
+    setFormData(prev => ({
+      ...prev,
+      targetUserTypes: prev.targetUserTypes.includes(userType)
+        ? prev.targetUserTypes.filter(t => t !== userType)
+        : [...prev.targetUserTypes, userType]
+    }));
+  };
+
   const handleSubmit = async () => {
     if (!user?.id) return;
     
     setIsSubmitting(true);
     try {
-      // Get or create business profile
       let { data: businessProfile, error: profileError } = await supabase
         .from('business_profiles')
         .select('id')
@@ -102,7 +158,6 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
         .single();
 
       if (profileError && profileError.code === 'PGRST116') {
-        // Create business profile if it doesn't exist
         const { data: businessData } = await supabase
           .from('business_onboarding_data')
           .select('company_name, business_services')
@@ -129,18 +184,27 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
         throw profileError;
       }
 
+      const salaryRange = (formData.salaryMin || formData.salaryMax)
+        ? `${formData.currency} ${formData.salaryMin || '0'} - ${formData.salaryMax || 'Competitive'}`
+        : null;
+
       const jobData = {
         business_id: businessProfile.id,
         title: formData.title,
         description: formData.description,
         location: formData.location,
+        category: formData.category,
+        job_type: formData.jobType.toLowerCase().replace(/\s+/g, '_'),
         mode: 'employee' as const,
         top_skills: formData.skills,
+        target_user_types: formData.targetUserTypes,
+        is_remote: formData.isRemote,
+        salary_range: salaryRange,
+        expires_at: formData.expiresAt ? formData.expiresAt.toISOString() : null,
         is_active: true
       };
 
       if (editingJob) {
-        // Update existing job
         const { error } = await supabase
           .from('job_listings')
           .update(jobData)
@@ -149,7 +213,6 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
         if (error) throw error;
         toast.success("Job updated successfully!");
       } else {
-        // Create new job
         const { error } = await supabase
           .from('job_listings')
           .insert(jobData);
@@ -167,11 +230,12 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
     }
   };
 
-  const isFormValid = formData.title && formData.description && formData.location && formData.mode;
+  const isFormValid = formData.title && formData.description && formData.location && 
+                      formData.category && formData.jobType && formData.targetUserTypes.length > 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {editingJob ? "Edit Job Listing" : "Post New Job"}
@@ -180,7 +244,7 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
         
         <div className="space-y-6">
           <div>
-            <Label htmlFor="title">Job Title</Label>
+            <Label htmlFor="title">Job Title *</Label>
             <Input
               id="title"
               value={formData.title}
@@ -190,8 +254,59 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
             />
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="category">Category *</Label>
+              <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {JOB_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="jobType">Job Type *</Label>
+              <Select value={formData.jobType} onValueChange={(value) => handleInputChange('jobType', value)}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select job type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {JOB_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div>
-            <Label htmlFor="description">Job Description</Label>
+            <Label>Target Audience * <span className="text-xs text-muted-foreground">(Select all that apply)</span></Label>
+            <div className="mt-2 space-y-3">
+              {USER_TYPES.map((userType) => (
+                <div key={userType.value} className="flex items-start space-x-3 p-3 rounded-lg border border-border/50 hover:border-border transition-colors">
+                  <Checkbox
+                    id={userType.value}
+                    checked={formData.targetUserTypes.includes(userType.value)}
+                    onCheckedChange={() => toggleUserType(userType.value)}
+                  />
+                  <div className="flex-1">
+                    <label htmlFor={userType.value} className="font-medium cursor-pointer">
+                      {userType.label}
+                    </label>
+                    <p className="text-xs text-muted-foreground">{userType.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="description">Job Description *</Label>
             <Textarea
               id="description"
               value={formData.description}
@@ -203,7 +318,7 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="location">Location *</Label>
               <Input
                 id="location"
                 value={formData.location}
@@ -213,19 +328,65 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
               />
             </div>
 
-            <div>
-              <Label htmlFor="mode">Work Mode</Label>
-              <Select value={formData.mode} onValueChange={(value) => handleInputChange('mode', value)}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select work mode" />
+            <div className="flex items-center space-x-2 pt-6">
+              <Switch
+                id="isRemote"
+                checked={formData.isRemote}
+                onCheckedChange={(checked) => handleInputChange('isRemote', checked)}
+              />
+              <Label htmlFor="isRemote" className="cursor-pointer">Remote Work Available</Label>
+            </div>
+          </div>
+
+          <div>
+            <Label>Salary Range (Optional)</Label>
+            <div className="grid grid-cols-3 gap-2 mt-1">
+              <Input
+                value={formData.salaryMin}
+                onChange={(e) => handleInputChange('salaryMin', e.target.value)}
+                placeholder="Min"
+                type="number"
+              />
+              <Input
+                value={formData.salaryMax}
+                onChange={(e) => handleInputChange('salaryMax', e.target.value)}
+                placeholder="Max"
+                type="number"
+              />
+              <Select value={formData.currency} onValueChange={(value) => handleInputChange('currency', value)}>
+                <SelectTrigger>
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="remote">Remote</SelectItem>
-                  <SelectItem value="hybrid">Hybrid</SelectItem>
-                  <SelectItem value="on_site">On-site</SelectItem>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="EUR">EUR</SelectItem>
+                  <SelectItem value="GBP">GBP</SelectItem>
+                  <SelectItem value="CAD">CAD</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div>
+            <Label>Expiration Date (Optional)</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={cn("w-full justify-start text-left font-normal mt-1", !formData.expiresAt && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {formData.expiresAt ? format(formData.expiresAt, "PPP") : "Select expiration date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={formData.expiresAt}
+                  onSelect={(date) => handleInputChange('expiresAt', date)}
+                  disabled={(date) => date < new Date()}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div>

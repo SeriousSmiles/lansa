@@ -51,7 +51,10 @@ export function MobileJobCreator({
     skills: initialData.skills || [],
     experienceLevel: initialData.experienceLevel || "",
     isRemote: initialData.isRemote || false,
-    isActive: initialData.isActive !== undefined ? initialData.isActive : true
+    isActive: initialData.isActive !== undefined ? initialData.isActive : true,
+    targetUserTypes: initialData.targetUserTypes || [],
+    category: initialData.category || "",
+    expiresAt: initialData.expiresAt || undefined
   });
 
   const [newRequirement, setNewRequirement] = useState("");
@@ -66,6 +69,14 @@ export function MobileJobCreator({
   const workTypes = ["On-site", "Remote", "Hybrid"];
   const experienceLevels = ["Entry Level", "Mid Level", "Senior Level", "Executive"];
   const currencies = ["USD", "EUR", "GBP", "CAD", "AUD"];
+  const categories = ["Engineering", "Marketing", "Design", "Sales", "Product", "Operations", "Finance", "Human Resources", "Customer Success", "Data Science"];
+  const userTypes = [
+    { value: "student", label: "Students" },
+    { value: "job_seeker", label: "Job Seekers" },
+    { value: "freelancer", label: "Freelancers" },
+    { value: "entrepreneur", label: "Entrepreneurs" },
+    { value: "visionary", label: "Visionaries" }
+  ];
 
   const updateJobData = (field: keyof JobFormData, value: any) => {
     setJobData(prev => ({ ...prev, [field]: value }));
@@ -84,12 +95,53 @@ export function MobileJobCreator({
     updateJobData(field, newArray);
   };
 
+  const toggleUserType = (userType: string) => {
+    const newTypes = jobData.targetUserTypes.includes(userType)
+      ? jobData.targetUserTypes.filter(t => t !== userType)
+      : [...jobData.targetUserTypes, userType];
+    updateJobData('targetUserTypes', newTypes);
+  };
+
   const steps: JobStep[] = [
+    {
+      id: "target_audience",
+      title: "Target Audience",
+      description: "Who is this job for?",
+      validation: () => jobData.targetUserTypes.length > 0,
+      component: (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">Select all user types that would be a good fit for this position</p>
+          {userTypes.map((userType) => (
+            <div
+              key={userType.value}
+              onClick={() => toggleUserType(userType.value)}
+              className={cn(
+                "p-4 rounded-lg border-2 cursor-pointer transition-all",
+                jobData.targetUserTypes.includes(userType.value)
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-primary/50"
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-medium">{userType.label}</span>
+                {jobData.targetUserTypes.includes(userType.value) && (
+                  <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                    <svg className="h-3 w-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )
+    },
     {
       id: "basics",
       title: "Job Basics",
       description: "Let's start with the essential details",
-      validation: () => jobData.title.length > 0 && jobData.jobType.length > 0 && jobData.location.length > 0,
+      validation: () => jobData.title.length > 0 && jobData.jobType.length > 0 && jobData.location.length > 0 && jobData.category.length > 0,
       component: (
         <div className="space-y-6">
           <div>
@@ -126,6 +178,20 @@ export function MobileJobCreator({
               placeholder="e.g. New York, NY or Remote"
               className="mt-2 h-12 text-base"
             />
+          </div>
+
+          <div>
+            <Label htmlFor="category" className="text-base font-medium">Category *</Label>
+            <Select value={jobData.category} onValueChange={(value) => updateJobData('category', value)}>
+              <SelectTrigger className="mt-2 h-12 text-base">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>

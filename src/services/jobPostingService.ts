@@ -31,6 +31,9 @@ export interface JobFormData {
   experienceLevel: string;
   isRemote: boolean;
   isActive: boolean;
+  targetUserTypes: string[];
+  category: string;
+  expiresAt?: string;
 }
 
 export const jobPostingService = {
@@ -78,6 +81,10 @@ export const jobPostingService = {
       }
 
       // Convert JobFormData to JobListing format
+      const salaryRange = (jobData.salaryMin || jobData.salaryMax) 
+        ? `${jobData.currency} ${jobData.salaryMin || '0'} - ${jobData.salaryMax || 'Competitive'}`
+        : null;
+
       const jobListingData = {
         business_id: businessProfile.id,
         title: jobData.title,
@@ -85,7 +92,13 @@ export const jobPostingService = {
         location: jobData.location,
         top_skills: jobData.skills,
         mode: 'employee' as const,
-        is_active: jobData.isActive
+        is_active: jobData.isActive,
+        target_user_types: jobData.targetUserTypes,
+        category: jobData.category,
+        job_type: jobData.jobType.toLowerCase().replace(/\s+/g, '_'),
+        is_remote: jobData.isRemote || jobData.workType === 'Remote',
+        salary_range: salaryRange,
+        expires_at: jobData.expiresAt || null
       };
 
       const { data, error } = await supabase
