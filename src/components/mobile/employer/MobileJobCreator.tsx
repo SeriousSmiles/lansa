@@ -12,6 +12,7 @@ import { MobileCardLayout } from "@/components/mobile/MobileCardLayout";
 import { gsap } from "gsap";
 import { jobPostingService, JobFormData } from "@/services/jobPostingService";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface MobileJobCreatorProps {
   onComplete: (jobData: JobFormData) => void;
