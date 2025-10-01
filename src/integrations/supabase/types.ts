@@ -321,6 +321,36 @@ export type Database = {
           },
         ]
       }
+      companies: {
+        Row: {
+          created_at: string
+          id: string
+          industry: string | null
+          location: string | null
+          logo_url: string | null
+          name: string
+          size: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          industry?: string | null
+          location?: string | null
+          logo_url?: string | null
+          name: string
+          size?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          industry?: string | null
+          location?: string | null
+          logo_url?: string | null
+          name?: string
+          size?: string | null
+        }
+        Relationships: []
+      }
       growth_prompts: {
         Row: {
           action_label: string
@@ -404,6 +434,90 @@ export type Database = {
           },
         ]
       }
+      job_applications_v2: {
+        Row: {
+          applicant_user_id: string
+          cover_note: string | null
+          created_at: string
+          id: string
+          job_id: string
+          status: Database["public"]["Enums"]["application_status"]
+          updated_at: string
+        }
+        Insert: {
+          applicant_user_id: string
+          cover_note?: string | null
+          created_at?: string
+          id?: string
+          job_id: string
+          status?: Database["public"]["Enums"]["application_status"]
+          updated_at?: string
+        }
+        Update: {
+          applicant_user_id?: string
+          cover_note?: string | null
+          created_at?: string
+          id?: string
+          job_id?: string
+          status?: Database["public"]["Enums"]["application_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_v2_applicant_user_id_fkey"
+            columns: ["applicant_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "job_applications_v2_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "job_listings_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_interactions: {
+        Row: {
+          created_at: string
+          id: string
+          job_id: string
+          type: Database["public"]["Enums"]["interaction_type"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_id: string
+          type: Database["public"]["Enums"]["interaction_type"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_id?: string
+          type?: Database["public"]["Enums"]["interaction_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_interactions_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "job_listings_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_interactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       job_listings: {
         Row: {
           business_id: string
@@ -478,6 +592,143 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_listings_v2: {
+        Row: {
+          category: string
+          company_id: string
+          created_by: string | null
+          description: string
+          expires_at: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          is_remote: boolean | null
+          job_type: Database["public"]["Enums"]["job_type"]
+          location: string | null
+          posted_at: string
+          salary_range: string | null
+          search_tsv: unknown | null
+          skills_required: Json | null
+          target_user_types: Json | null
+          title: string
+        }
+        Insert: {
+          category: string
+          company_id: string
+          created_by?: string | null
+          description: string
+          expires_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_remote?: boolean | null
+          job_type: Database["public"]["Enums"]["job_type"]
+          location?: string | null
+          posted_at?: string
+          salary_range?: string | null
+          search_tsv?: unknown | null
+          skills_required?: Json | null
+          target_user_types?: Json | null
+          title: string
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          created_by?: string | null
+          description?: string
+          expires_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_remote?: boolean | null
+          job_type?: Database["public"]["Enums"]["job_type"]
+          location?: string | null
+          posted_at?: string
+          salary_range?: string | null
+          search_tsv?: unknown | null
+          skills_required?: Json | null
+          target_user_types?: Json | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_listings_v2_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_listings_v2_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      job_recommendations: {
+        Row: {
+          created_at: string
+          job_id: string
+          reason: string | null
+          score: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          job_id: string
+          reason?: string | null
+          score: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          job_id?: string
+          reason?: string | null
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_recommendations_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "job_listings_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_recommendations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      job_skills: {
+        Row: {
+          job_id: string
+          skill_name: string
+        }
+        Insert: {
+          job_id: string
+          skill_name: string
+        }
+        Update: {
+          job_id?: string
+          skill_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_skills_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "job_listings_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -999,6 +1250,38 @@ export type Database = {
         }
         Relationships: []
       }
+      user_job_prefs: {
+        Row: {
+          categories: Json | null
+          job_types: Json | null
+          remote_only: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          categories?: Json | null
+          job_types?: Json | null
+          remote_only?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          categories?: Json | null
+          job_types?: Json | null
+          remote_only?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_job_prefs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       user_migration_mapping: {
         Row: {
           clerk_user_id: string | null
@@ -1442,12 +1725,15 @@ export type Database = {
         | "org_admin"
         | "org_manager"
         | "org_member"
+      application_status: "pending" | "accepted" | "declined" | "withdrawn"
       career_path_type:
         | "student"
         | "visionary"
         | "entrepreneur"
         | "freelancer"
         | "business"
+      interaction_type: "view" | "save" | "apply" | "ignore" | "share"
+      job_type: "full_time" | "part_time" | "contract" | "internship"
       match_context: "employee" | "internship"
       swipe_direction: "right" | "left" | "nudge"
     }
@@ -1586,6 +1872,7 @@ export const Constants = {
         "org_manager",
         "org_member",
       ],
+      application_status: ["pending", "accepted", "declined", "withdrawn"],
       career_path_type: [
         "student",
         "visionary",
@@ -1593,6 +1880,8 @@ export const Constants = {
         "freelancer",
         "business",
       ],
+      interaction_type: ["view", "save", "apply", "ignore", "share"],
+      job_type: ["full_time", "part_time", "contract", "internship"],
       match_context: ["employee", "internship"],
       swipe_direction: ["right", "left", "nudge"],
     },
