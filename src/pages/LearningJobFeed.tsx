@@ -1,0 +1,173 @@
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { LearningJobPostCard } from "@/components/jobs/LearningJobPostCard";
+import { CertificationTeaserBanner } from "@/components/jobs/CertificationTeaserBanner";
+import { JobDetailModal } from "@/components/jobs/JobDetailModal";
+import { JobFilters } from "@/components/jobs/JobFilters";
+import { Button } from "@/components/ui/button";
+import { Loader2, Sparkles } from "lucide-react";
+import { 
+  LearningJobListing, 
+  learningJobFeedService,
+  LearningFeedFilters 
+} from "@/services/learningJobFeedService";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+export default function LearningJobFeed() {
+  const { user } = useAuth();
+  const [jobs, setJobs] = useState<LearningJobListing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedJob, setSelectedJob] = useState<LearningJobListing | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [isCertified, setIsCertified] = useState(false);
+  const [isTeaser, setIsTeaser] = useState(false);
+  const [hasRecommendations, setHasRecommendations] = useState(false);
+  const [filters, setFilters] = useState<LearningFeedFilters>({
+    categories: [],
+    job_types: [],
+    remote_only: false,
+    search: "",
+  });
+
+  useEffect(() => {
+    if (user) {
+      checkCertification();
+      loadJobs();
+    }
+  }, [user, filters]);
+
+  const checkCertification = async () => {
+    if (!user) return;
+
+    const { data } = await supabase
+      .from('user_profiles')
+      .select('lansa_certified')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    setIsCertified(data?.lansa_certified || false);
+  };
+
+  const loadJobs = async () => {
+    try {
+      setLoading(true);
+      const response = await learningJobFeedService.fetchJobs(filters);
+      setJobs(response.jobs);
+      setIsTeaser(response.teaser);
+      setHasRecommendations(response.has_recommendations);
+    } catch (error) {
+      console.error('Error loading jobs:', error);
+      toast.error('Failed to load jobs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilterChange = (newFilters: Partial<LearningFeedFilters>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
+  };
+
+  const handleApply = async (jobId: string) => {
+    if (!isCertified) {
+      toast.error("Complete certification to apply for jobs");
+      return;
+    }
+
+    try {
+      await learningJobFeedService.applyForJob(jobId);
+      toast.success("Application submitted successfully!");
+      loadJobs(); // Refresh to update application status
+    } catch (error: any) {
+      toast.error(error.message || "Failed to submit application");
+    }
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="container max-w-4xl mx-auto py-8 px-4">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              Job Feed
+              {hasRecommendations && (
+                <Sparkles className="w-6 h-6 text-primary" />
+              )}
+            </h1>
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              {showFilters ? "Hide" : "Show"} Filters
+            </Button>
+          </div>
+          {hasRecommendations && (
+            <p className="text-sm text-muted-foreground">
+              Personalized recommendations based on your profile and preferences
+            </p>
+          )}
+        </div>
+
+        {/* Filters */}
+        {showFilters && (
+          <div className="mb-6">
+            <JobFilters
+              filters={filters}
+              onFilterChange={handleFilterChange}
+            />
+          </div>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        )}
+
+        {/* Jobs List */}
+        {!loading && jobs.length > 0 && (
+          <div className="space-y-4">
+            {jobs.map((job) => (
+              <LearningJobPostCard
+                key={job.id}
+                job={job}
+                onApply={handleApply}
+                onViewDetails={setSelectedJob}
+                disableApply={!isCertified}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Certification Teaser */}
+        {isTeaser && !loading && (
+          <div className="mt-8">
+            <CertificationTeaserBanner />
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && jobs.length === 0 && !isTeaser && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">
+              No jobs found matching your criteria. Try adjusting your filters.
+            </p>
+          </div>
+        )}
+
+        {/* Job Detail Modal */}
+        {selectedJob && (
+          <JobDetailModal
+            job={selectedJob as any}
+            isOpen={!!selectedJob}
+            onClose={() => setSelectedJob(null)}
+            onApply={handleApply}
+          />
+        )}
+      </div>
+    </DashboardLayout>
+  );
+}
