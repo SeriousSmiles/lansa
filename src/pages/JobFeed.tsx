@@ -1,19 +1,25 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { JobCard } from "@/components/jobs/JobCard";
+import { JobPostCard } from "@/components/jobs/JobPostCard";
 import { JobFilters } from "@/components/jobs/JobFilters";
 import { JobDetailModal } from "@/components/jobs/JobDetailModal";
 import { jobFeedService, JobListing } from "@/services/jobFeedService";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SEOHead } from "@/components/SEOHead";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 export default function JobFeed() {
   const isMobile = useIsMobile();
   const [jobs, setJobs] = useState<JobListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState<JobListing | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState({
     category: 'all',
     jobType: 'all',
@@ -77,20 +83,40 @@ export default function JobFeed() {
         </header>
 
         {/* Main Content */}
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-6 lg:py-8">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Filters Sidebar */}
-            <div className="lg:col-span-1">
-              <div className="lg:sticky lg:top-24">
-                <JobFilters
-                  filters={filters}
-                  onFilterChange={handleFilterChange}
-                />
+            {/* Mobile Filters */}
+            {isMobile ? (
+              <div className="mb-4">
+                <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="outline" className="w-full">
+                      <Filter className="w-4 h-4 mr-2" />
+                      {filtersOpen ? 'Hide Filters' : 'Show Filters'}
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-4">
+                    <JobFilters
+                      filters={filters}
+                      onFilterChange={handleFilterChange}
+                    />
+                  </CollapsibleContent>
+                </Collapsible>
               </div>
-            </div>
+            ) : (
+              /* Desktop Filters Sidebar */
+              <div className="lg:col-span-1">
+                <div className="lg:sticky lg:top-24">
+                  <JobFilters
+                    filters={filters}
+                    onFilterChange={handleFilterChange}
+                  />
+                </div>
+              </div>
+            )}
 
-            {/* Jobs Grid */}
-            <div className="lg:col-span-3">
+            {/* Jobs Feed */}
+            <div className={isMobile ? "col-span-1" : "lg:col-span-3"}>
               {loading ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -114,9 +140,9 @@ export default function JobFeed() {
                   </Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 gap-6 max-w-2xl mx-auto">
                   {jobs.map((job) => (
-                    <JobCard
+                    <JobPostCard
                       key={job.id}
                       job={job}
                       onApply={handleApply}
