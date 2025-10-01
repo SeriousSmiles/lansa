@@ -44,14 +44,14 @@ Deno.serve(async (req) => {
     const page = parseInt(url.searchParams.get('page') || '1');
     const limit = parseInt(url.searchParams.get('limit') || '20');
 
-    // Get user profile to determine career_path
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('career_path, identity')
+    // Get user type from user_answers table
+    const { data: userAnswers } = await supabase
+      .from('user_answers')
+      .select('career_path, user_type')
       .eq('user_id', user.id)
       .single();
 
-    const userType = profile?.career_path || profile?.identity || 'student';
+    const userType = userAnswers?.career_path || userAnswers?.user_type || 'student';
 
     // Build query
     let query = supabase
