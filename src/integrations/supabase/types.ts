@@ -963,6 +963,42 @@ export type Database = {
           },
         ]
       }
+      user_job_preferences: {
+        Row: {
+          categories: string[] | null
+          filtering_mode: string
+          id: string
+          is_remote_preferred: boolean | null
+          job_types: string[] | null
+          location_preferences: string[] | null
+          preferences_set_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          categories?: string[] | null
+          filtering_mode?: string
+          id?: string
+          is_remote_preferred?: boolean | null
+          job_types?: string[] | null
+          location_preferences?: string[] | null
+          preferences_set_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          categories?: string[] | null
+          filtering_mode?: string
+          id?: string
+          is_remote_preferred?: boolean | null
+          job_types?: string[] | null
+          location_preferences?: string[] | null
+          preferences_set_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_migration_mapping: {
         Row: {
           clerk_user_id: string | null

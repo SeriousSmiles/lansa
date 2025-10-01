@@ -35,30 +35,70 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get query parameters
+    console.log('Fetching job feed for user:', user.id);
+
+    // Parse filters from request body or query params
     const url = new URL(req.url);
-    const category = url.searchParams.get('category');
-    const jobType = url.searchParams.get('jobType');
-    const isRemote = url.searchParams.get('isRemote');
-    const search = url.searchParams.get('search');
-    const page = parseInt(url.searchParams.get('page') || '1');
-    const limit = parseInt(url.searchParams.get('limit') || '20');
+    let category = url.searchParams.get('category');
+    let jobType = url.searchParams.get('jobType');
+    let isRemote = url.searchParams.get('isRemote');
+    let search = url.searchParams.get('search');
+    let page = parseInt(url.searchParams.get('page') || '1');
+    let limit = parseInt(url.searchParams.get('limit') || '20');
+
+    // Try to parse from body if POST
+    if (req.method === 'POST') {
+      try {
+        const body = await req.json();
+        category = body.category || category;
+        jobType = body.jobType || jobType;
+        isRemote = body.isRemote !== undefined ? String(body.isRemote) : isRemote;
+        search = body.search || search;
+        page = body.page || page;
+        limit = body.limit || limit;
+      } catch (e) {
+        // Body parsing failed, use query params
+      }
+    }
 
     // Get user type from user_answers table
     const { data: userAnswers } = await supabase
       .from('user_answers')
       .select('career_path, user_type')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     const userType = userAnswers?.career_path || userAnswers?.user_type || 'student';
+    console.log('User type:', userType);
 
-    // Build query
+    // Check if user is certified and has preferences
+    const { data: certData } = await supabase
+      .from('user_certifications')
+      .select('lansa_certified, verified')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const isCertified = certData?.lansa_certified && certData?.verified;
+    console.log('User certified:', isCertified);
+
+    let userPreferences = null;
+    if (isCertified) {
+      const { data: prefData } = await supabase
+        .from('user_job_preferences')
+        .select('categories, job_types, is_remote_preferred, filtering_mode')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      userPreferences = prefData;
+      console.log('User preferences:', userPreferences);
+    }
+
+    // Build query - LEFT join so jobs without business profiles still show
     let query = supabase
       .from('job_listings')
       .select(`
         *,
-        business_profiles!inner(
+        business_profiles(
           company_name,
           industry,
           location,
@@ -71,36 +111,66 @@ Deno.serve(async (req) => {
         )
       `, { count: 'exact' })
       .eq('is_active', true)
-      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
-      .order('created_at', { ascending: false });
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
 
-    // Filter by target user types
-    if (userType) {
-      query = query.contains('target_user_types', [userType]);
+    // Apply user preferences if certified and in strict mode
+    if (isCertified && userPreferences && userPreferences.filtering_mode === 'strict') {
+      console.log('Applying strict filtering based on preferences');
+      
+      // Filter by preferred categories
+      if (userPreferences.categories && userPreferences.categories.length > 0) {
+        query = query.overlaps('target_user_types', userPreferences.categories);
+      }
+      
+      // Filter by preferred job types
+      if (userPreferences.job_types && userPreferences.job_types.length > 0) {
+        const jobTypeFilters = userPreferences.job_types.map((jt: string) => 
+          `job_type.eq.${jt.toLowerCase().replace('-', '_')}`
+        ).join(',');
+        query = query.or(jobTypeFilters);
+      }
+      
+      // Filter by remote preference
+      if (userPreferences.is_remote_preferred) {
+        query = query.eq('is_remote', true);
+      }
+    } else {
+      // Lite mode or not certified - show relevant jobs for user type
+      console.log('Applying lite filtering or no preferences');
+      if (userType) {
+        // Show jobs that target this user type OR have no specific target
+        query = query.or(`target_user_types.cs.{${userType}},target_user_types.is.null`);
+      }
     }
 
-    // Apply filters
+    // Apply manual filters (override preferences)
     if (category && category !== 'all') {
+      console.log('Filtering by category:', category);
       query = query.eq('category', category);
     }
 
     if (jobType && jobType !== 'all') {
+      console.log('Filtering by job type:', jobType);
       query = query.eq('job_type', jobType);
     }
 
     if (isRemote === 'true') {
+      console.log('Filtering remote jobs only');
       query = query.eq('is_remote', true);
     }
 
     if (search) {
+      console.log('Searching for:', search);
       query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
     }
 
-    // Apply pagination
+    // Apply pagination and order
+    query = query.order('created_at', { ascending: false });
     const from = (page - 1) * limit;
     const to = from + limit - 1;
     query = query.range(from, to);
 
+    console.log('Executing query...');
     const { data: jobs, error, count } = await query;
 
     if (error) {

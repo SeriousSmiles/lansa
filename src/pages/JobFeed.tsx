@@ -8,6 +8,9 @@ import { JobDetailModal } from "@/components/jobs/JobDetailModal";
 import { jobFeedService, JobListing } from "@/services/jobFeedService";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SEOHead } from "@/components/SEOHead";
+import { PreferenceSetupModal } from "@/components/preferences/PreferenceSetupModal";
+import { useJobPreferences } from "@/hooks/useJobPreferences";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Collapsible,
   CollapsibleContent,
@@ -15,6 +18,7 @@ import {
 } from "@/components/ui/collapsible";
 
 export default function JobFeed() {
+  const { user } = useAuth();
   const isMobile = useIsMobile();
   const [jobs, setJobs] = useState<JobListing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,9 +31,21 @@ export default function JobFeed() {
     search: '',
   });
 
+  const {
+    showPreferenceSetup,
+    setShowPreferenceSetup,
+    refreshPreferences
+  } = useJobPreferences();
+
   useEffect(() => {
     loadJobs();
   }, [filters]);
+
+  const handlePreferenceSetupClose = () => {
+    setShowPreferenceSetup(false);
+    refreshPreferences();
+    loadJobs(); // Reload jobs with new preferences
+  };
 
   const loadJobs = async () => {
     setLoading(true);
@@ -61,6 +77,14 @@ export default function JobFeed() {
         title="Job Opportunities | Lansa"
         description="Discover internships and job opportunities tailored to your profile"
       />
+      
+      {user && (
+        <PreferenceSetupModal
+          open={showPreferenceSetup}
+          onClose={handlePreferenceSetupClose}
+          userId={user.id}
+        />
+      )}
       
       <div className="min-h-screen bg-background">
         {/* Header */}
