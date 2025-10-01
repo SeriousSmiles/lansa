@@ -30,6 +30,7 @@ import ContentLibrary from "./pages/ContentLibrary";
 import Card from "./pages/Card";
 import JobFeed from "./pages/JobFeed";
 import LearningJobFeed from "./pages/LearningJobFeed";
+import DevTools from "./pages/DevTools";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -68,8 +69,9 @@ const App: React.FC = () => {
                   <Route path="/content" element={<ContentLibrary />} />
                   <Route path="/discovery" element={<OpportunityDiscovery />} />
                   <Route path="/opportunity-discovery" element={<OpportunityDiscovery />} />
-                  <Route path="/jobs" element={<LearningJobFeed />} />
-                  <Route path="/jobs/legacy" element={<JobFeed />} />
+          <Route path="/jobs" element={<LearningJobFeed />} />
+          <Route path="/jobs/legacy" element={<JobFeed />} />
+          <Route path="/dev-tools" element={<DevTools />} />
                   <Route path="/employer-dashboard" element={<EmployerDashboard />} />
                   <Route path="/browse-candidates" element={<BrowseCandidates />} />
                 </Route>
