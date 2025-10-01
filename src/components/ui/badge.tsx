@@ -10,12 +10,21 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-transparent bg-[#FF6B4A]/30 text-[#FF6B4A] font-medium text-[12px]", // freelancer
+          "border-transparent bg-primary/20 text-primary font-medium",
         secondary:
-          "border-transparent bg-[#FF6B4A]/30 text-[#FF6B4A] font-medium text-[12px]", // job-seeker
+          "border-transparent bg-blue-500/20 text-blue-700 dark:text-blue-400 font-medium",
         destructive:
-          "border-transparent bg-[#FF6B4A]/30 text-[#FF6B4A] font-medium text-[12px]", // entrepreneur
-        outline: "border-transparent bg-[#FF6B4A]/30 text-[#FF6B4A] font-medium text-[12px]", // student
+          "border-transparent bg-red-500/20 text-red-700 dark:text-red-400 font-medium",
+        outline: 
+          "border-border bg-background text-foreground hover:bg-accent",
+        success:
+          "border-transparent bg-green-500/20 text-green-700 dark:text-green-400 font-medium",
+        purple:
+          "border-transparent bg-purple-500/20 text-purple-700 dark:text-purple-400 font-medium",
+        teal:
+          "border-transparent bg-teal-500/20 text-teal-700 dark:text-teal-400 font-medium",
+        muted:
+          "border-transparent bg-muted text-muted-foreground font-normal",
       },
     },
     defaultVariants: {
