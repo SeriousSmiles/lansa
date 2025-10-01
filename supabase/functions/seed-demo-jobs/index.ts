@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
 
     const { data: createdCompanies, error: companyError } = await supabase
       .from('companies')
-      .upsert(companies, { onConflict: 'name' })
+      .insert(companies)
       .select();
 
     if (companyError) {
