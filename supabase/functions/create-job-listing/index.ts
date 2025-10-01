@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
+import { requireRole, formatAuthError } from '../_shared/guard.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,40 +18,15 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      global: {
+        headers: { Authorization: req.headers.get('Authorization')! },
+      },
+    });
 
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Invalid token' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Check if user is recruiter
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('career_path')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (profile?.career_path !== 'recruiter') {
-      return new Response(
-        JSON.stringify({ error: 'Only recruiters can create job listings' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    // Guard: Require employer role and completed onboarding
+    const authState = await requireRole(supabase, ['employer']);
+    console.log('Authorized employer creating job:', authState.userId);
 
     const {
       company_id,
@@ -85,7 +61,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Creating job listing for user ${user.id}`);
+    console.log(`Creating job listing for user ${authState.userId}`);
 
     // Insert job listing
     const { data: job, error: jobError } = await supabase
@@ -103,7 +79,7 @@ Deno.serve(async (req) => {
         salary_range,
         is_remote,
         expires_at,
-        created_by: user.id,
+        created_by: authState.userId,
       })
       .select()
       .single();
@@ -140,12 +116,6 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     console.error('Error in create-job-listing:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    return formatAuthError(error);
   }
 });
