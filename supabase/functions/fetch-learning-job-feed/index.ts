@@ -48,11 +48,22 @@ Deno.serve(async (req) => {
     // Load user profile once
     const { data: profile } = await supabase
       .from('user_profiles')
-      .select('user_id, career_path, lansa_certified, verified')
+      .select('user_id, career_path')
       .eq('user_id', user.id)
       .maybeSingle();
 
     console.log('User profile:', profile);
+
+    // Check certification status from user_certifications table
+    const { data: certification } = await supabase
+      .from('user_certifications')
+      .select('lansa_certified, verified')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    console.log('User certification:', certification);
+
+    const isCertified = certification?.lansa_certified === true && certification?.verified === true;
 
     // Load user preferences
     const { data: prefs } = await supabase
@@ -148,7 +159,7 @@ Deno.serve(async (req) => {
 
     // Certification teaser gating
     let teaser = false;
-    if (!profile?.lansa_certified || profile.lansa_certified !== true) {
+    if (!isCertified) {
       console.log('User not certified, limiting to 5 jobs with teaser');
       teaser = true;
       orderedJobs = orderedJobs.slice(0, 5);
