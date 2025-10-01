@@ -172,12 +172,12 @@ export function LearningJobPostCard({ job, onApply, onViewDetails, disableApply 
             <p className="text-xs font-semibold text-foreground mb-2">Skills</p>
             <div className="flex flex-wrap gap-2">
               {job.skills_required.slice(0, 8).map((skill, index) => (
-                <Badge key={index} variant="muted" className="text-xs">
+                <Badge key={index} variant="outline" className="text-xs">
                   {skill}
                 </Badge>
               ))}
               {job.skills_required.length > 8 && (
-                <Badge variant="muted" className="text-xs font-semibold">
+                <Badge variant="outline" className="text-xs font-semibold">
                   +{job.skills_required.length - 8}
                 </Badge>
               )}
