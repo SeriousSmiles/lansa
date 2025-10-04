@@ -7,6 +7,7 @@ import { generatePowerMirror, StudentDemographics } from "@/services/question/st
 import { OnboardingLayout } from "../layout/OnboardingLayout";
 import { OnboardingCard } from "../layout/OnboardingCard";
 import { PowerMirrorErrorBoundary, usePowerMirrorErrorHandler } from "../PowerMirrorErrorBoundary";
+import { CollapsibleAnalysisCard } from "../CollapsibleAnalysisCard";
 import lansaPowerMirrorImage from "@/assets/onboarding/lansa-power-mirror.jpg";
 import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
@@ -193,115 +194,139 @@ export function PowerMirrorStep({
           )}
 
           {mirror && (
-            <div className="space-y-6">
-              {/* Overall Score Display */}
-              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 p-6 rounded-lg space-y-4">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-2 md:space-y-0">
-                  <h3 className="text-lg font-bold text-foreground">Your Recruiter Score</h3>
-                  <div className="flex items-center space-x-2">
-                    <div className={`text-2xl font-bold px-3 py-1 rounded ${
-                      mirror.score >= 8 ? 'text-green-600 bg-green-100 dark:bg-green-900/30' :
-                      mirror.score >= 6 ? 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30' :
-                      'text-red-600 bg-red-100 dark:bg-red-900/30'
-                    }`}>
-                      {mirror.score}/10
-                    </div>
+            <div className="space-y-4">
+              {/* Overall Score - Hero Section */}
+              <div className="text-center space-y-4 p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/20">
+                <div className="space-y-2">
+                  <div className="text-6xl font-bold text-primary">
+                    {mirror.score}/10
                   </div>
+                  <p className="text-lg font-medium text-foreground">
+                    Overall Impression Score
+                  </p>
+                  <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                    {mirror.score >= 8 ? "Strong impression - you're presenting yourself well!" :
+                     mirror.score >= 6 ? "Good foundation - room to strengthen your message" :
+                     "Let's refine your story together"}
+                  </p>
                 </div>
-                
+
                 {/* Score Breakdown */}
                 {mirror.score_breakdown && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4">
                     <div className="space-y-1">
-                      <div className="text-muted-foreground">Clarity</div>
-                      <div className="font-semibold">{mirror.score_breakdown.clarity ?? 0}/3</div>
+                      <div className="text-2xl font-bold text-primary">
+                        {mirror.score_breakdown.clarity ?? 0}/3
+                      </div>
+                      <p className="text-xs text-muted-foreground">Clarity</p>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-muted-foreground">Relevance</div>
-                      <div className="font-semibold">{mirror.score_breakdown.relevance ?? 0}/3</div>
+                      <div className="text-2xl font-bold text-primary">
+                        {mirror.score_breakdown.relevance ?? 0}/3
+                      </div>
+                      <p className="text-xs text-muted-foreground">Relevance</p>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-muted-foreground">Realism</div>
-                      <div className="font-semibold">{mirror.score_breakdown.realism ?? 0}/2</div>
+                      <div className="text-2xl font-bold text-primary">
+                        {mirror.score_breakdown.realism ?? 0}/2
+                      </div>
+                      <p className="text-xs text-muted-foreground">Realism</p>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-muted-foreground">Tone</div>
-                      <div className="font-semibold">{mirror.score_breakdown.professional_impression ?? 0}/2</div>
+                      <div className="text-2xl font-bold text-primary">
+                        {mirror.score_breakdown.professional_impression ?? 0}/2
+                      </div>
+                      <p className="text-xs text-muted-foreground">Professional Tone</p>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Recruiter Perspective */}
-              <div className="bg-primary/5 border border-primary/20 p-6 rounded-lg">
-                <h3 className="text-base font-semibold text-foreground mb-3">
-                  🎯 How Recruiters See You:
-                </h3>
-                <p className="text-base md:text-lg text-foreground font-medium leading-relaxed">
-                  {mirror.recruiter_perspective || mirror.mirror_message}
-                </p>
-              </div>
-
-              {/* Contradictions Warning */}
-              {mirror.contradictions && Array.isArray(mirror.contradictions) && mirror.contradictions.length > 0 && (
-                <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 p-4 rounded-lg">
-                  <h4 className="text-sm font-medium text-orange-800 dark:text-orange-300 mb-2">⚠️ Potential Inconsistencies:</h4>
-                  <ul className="text-sm text-orange-700 dark:text-orange-400 space-y-1">
-                    {mirror.contradictions.map((contradiction: string, index: number) => (
-                      <li key={index}>• {contradiction}</li>
-                    ))}
-                  </ul>
-                </div>
+              {/* Recruiter Perspective - Always Open */}
+              {(mirror.recruiter_perspective || mirror.mirror_message) && (
+                <CollapsibleAnalysisCard
+                  title="How Recruiters See You"
+                  icon="👁️"
+                  isDefaultOpen={true}
+                >
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {mirror.recruiter_perspective || mirror.mirror_message}
+                  </p>
+                </CollapsibleAnalysisCard>
               )}
 
               {/* Key Strengths */}
               {mirror.key_strengths && Array.isArray(mirror.key_strengths) && mirror.key_strengths.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-base font-semibold text-foreground">
-                    Your Key Strengths:
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {mirror.key_strengths.map((strength: string, index: number) => (
-                      <Badge key={index} variant="secondary" className="px-3 py-1">
-                        {strength}
-                      </Badge>
+                <CollapsibleAnalysisCard
+                  title="What Makes You Stand Out"
+                  icon="💎"
+                  isDefaultOpen={false}
+                >
+                  <ul className="space-y-2">
+                    {mirror.key_strengths.map((strength: string, idx: number) => (
+                      <li key={idx} className="flex items-start gap-2 text-sm">
+                        <span className="text-green-500 mt-0.5">✓</span>
+                        <span className="text-muted-foreground flex-1">{strength}</span>
+                      </li>
                     ))}
-                  </div>
-                </div>
+                  </ul>
+                </CollapsibleAnalysisCard>
+              )}
+
+              {/* Contradictions/Areas to Watch */}
+              {mirror.contradictions && Array.isArray(mirror.contradictions) && mirror.contradictions.length > 0 && (
+                <CollapsibleAnalysisCard
+                  title="Areas to Watch"
+                  icon="⚠️"
+                  isDefaultOpen={false}
+                >
+                  <ul className="space-y-2">
+                    {mirror.contradictions.map((contradiction: string, idx: number) => (
+                      <li key={idx} className="flex items-start gap-2 text-sm">
+                        <span className="text-yellow-600 dark:text-yellow-500 mt-0.5">•</span>
+                        <span className="text-muted-foreground flex-1">{contradiction}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CollapsibleAnalysisCard>
               )}
 
               {/* Employer Perspective */}
               {mirror.employer_perspective && (
-                <div className="space-y-3">
-                  <h3 className="text-base font-semibold text-foreground">
-                    What Employers See:
-                  </h3>
-                  <div className="bg-muted/10 p-4 rounded-lg">
-                    <p className="text-sm text-foreground italic">
-                      "{mirror.employer_perspective}"
-                    </p>
+                <CollapsibleAnalysisCard
+                  title="Employer's First Impression"
+                  icon="👔"
+                  isDefaultOpen={false}
+                >
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {mirror.employer_perspective}
+                  </p>
+                </CollapsibleAnalysisCard>
+              )}
+
+              {/* Coaching Section */}
+              {(mirror.coaching_nudge || mirror.next_level_hint) && (
+                <CollapsibleAnalysisCard
+                  title="Your Coach's Advice"
+                  icon="💡"
+                  isDefaultOpen={false}
+                >
+                  <div className="space-y-3">
+                    {mirror.coaching_nudge && (
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {mirror.coaching_nudge}
+                      </p>
+                    )}
+                    {mirror.next_level_hint && (
+                      <div className="pt-3 border-t border-border">
+                        <p className="text-sm font-medium text-primary mb-2">🚀 Next Level:</p>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {mirror.next_level_hint}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
-
-              {/* Coaching Nudge */}
-              {mirror.coaching_nudge && (
-                <div className="bg-accent/10 border border-accent/20 p-4 rounded-lg">
-                  <h4 className="text-sm font-medium text-foreground mb-2">💡 Coaching Nudge:</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {mirror.coaching_nudge}
-                  </p>
-                </div>
-              )}
-
-              {/* Next Level Hint */}
-              {mirror.next_level_hint && (
-                <div className="bg-accent/10 border border-accent/20 p-4 rounded-lg">
-                  <h4 className="text-sm font-medium text-foreground mb-2">🚀 Pro Tip:</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {mirror.next_level_hint}
-                  </p>
-                </div>
+                </CollapsibleAnalysisCard>
               )}
             </div>
           )}
