@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { gsap } from "gsap";
 import { 
   saveStudentDemographics, 
   savePowerSkill, 
@@ -28,6 +29,18 @@ export function StudentOnboardingContainer() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Animate step entrance
+  useEffect(() => {
+    if (containerRef.current) {
+      gsap.fromTo(
+        containerRef.current,
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }
+      );
+    }
+  }, [currentStep]);
 
   const totalSteps = 5;
   const getStepNumber = (): number => {
@@ -173,45 +186,53 @@ export function StudentOnboardingContainer() {
         
       case 'demographics':
         return (
-          <StudentDemographicsStep
-            onComplete={handleDemographicsComplete}
-            stepNumber={stepNumber}
-            totalSteps={totalSteps - 1} // Exclude welcome step from count
-            isSubmitting={isSubmitting}
-          />
+          <div ref={containerRef}>
+            <StudentDemographicsStep
+              onComplete={handleDemographicsComplete}
+              stepNumber={stepNumber}
+              totalSteps={totalSteps - 1} // Exclude welcome step from count
+              isSubmitting={isSubmitting}
+            />
+          </div>
         );
         
       case 'skill-reframe':
         return (
-          <SkillReframeStep
-            onComplete={handleSkillComplete}
-            stepNumber={stepNumber}
-            totalSteps={totalSteps - 1}
-            isSubmitting={isSubmitting}
-          />
+          <div ref={containerRef}>
+            <SkillReframeStep
+              onComplete={handleSkillComplete}
+              stepNumber={stepNumber}
+              totalSteps={totalSteps - 1}
+              isSubmitting={isSubmitting}
+            />
+          </div>
         );
         
       case 'ninety-day':
         return (
-          <NinetyDayPromiseStep
-            onComplete={handleGoalComplete}
-            stepNumber={stepNumber}
-            totalSteps={totalSteps - 1}
-            isSubmitting={isSubmitting}
-          />
+          <div ref={containerRef}>
+            <NinetyDayPromiseStep
+              onComplete={handleGoalComplete}
+              stepNumber={stepNumber}
+              totalSteps={totalSteps - 1}
+              isSubmitting={isSubmitting}
+            />
+          </div>
         );
         
       case 'power-mirror':
         return (
-          <PowerMirrorStep
-            skillReframe={skillData?.analysis?.reframed_skill || ''}
-            goalStatement={goalData?.statement || ''}
-            demographics={demographics!}
-            onComplete={handleFinalComplete}
-            stepNumber={stepNumber}
-            totalSteps={totalSteps - 1}
-            isSubmitting={isSubmitting}
-          />
+          <div ref={containerRef}>
+            <PowerMirrorStep
+              skillReframe={skillData?.analysis?.reframed_skill || ''}
+              goalStatement={goalData?.statement || ''}
+              demographics={demographics!}
+              onComplete={handleFinalComplete}
+              stepNumber={stepNumber}
+              totalSteps={totalSteps - 1}
+              isSubmitting={isSubmitting}
+            />
+          </div>
         );
         
       default:

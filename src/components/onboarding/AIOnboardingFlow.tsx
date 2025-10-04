@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { logAICall } from "@/utils/logger";
@@ -22,13 +22,14 @@ import { SkillAnalysisDisplay } from "./SkillAnalysisDisplay";
 import { GoalAnalysisDisplay } from "./GoalAnalysisDisplay";
 import { supabase } from "@/integrations/supabase/client";
 import { useDebounce } from "@/hooks/use-debounce";
+import { gsap } from "gsap";
 
-// Import step images
+// Import step images - realistic professional versions
 import welcomeHeroImage from "@/assets/onboarding/welcome-hero.jpg";
-import demographicsImage from "@/assets/onboarding/demographics.jpg";
-import skillTransformImage from "@/assets/onboarding/skill-transform.jpg";
-import ninetyDayGoalImage from "@/assets/onboarding/90day-goal.jpg";
-import powerMirrorImage from "@/assets/onboarding/power-mirror.jpg";
+import demographicsImage from "@/assets/onboarding/demographics-realistic.jpg";
+import skillTransformImage from "@/assets/onboarding/skill-transform-realistic.jpg";
+import ninetyDayGoalImage from "@/assets/onboarding/90day-goal-realistic.jpg";
+import powerMirrorImage from "@/assets/onboarding/power-mirror-realistic.jpg";
 
 interface AIOnboardingFlowProps {
   initialStep?: string;
@@ -50,9 +51,21 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
   
   const { user } = useAuth();
   const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement>(null);
   
   const debouncedSkillInput = useDebounce(skillInput, 800);
   const debouncedGoalInput = useDebounce(goalInput, 800);
+
+  // Animate step entrance
+  useEffect(() => {
+    if (containerRef.current) {
+      gsap.fromTo(
+        containerRef.current,
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }
+      );
+    }
+  }, [currentStep]);
 
   // Auto-analyze skill input
   useEffect(() => {
@@ -245,7 +258,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
 
   if (currentStep === 'welcome') {
     return (
-      <div className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-primary/5">
+      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-primary/5">
         <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
         
         <StepHeader 
@@ -272,7 +285,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
 
   if (currentStep === 'demographics') {
     return (
-      <div className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-secondary/5">
+      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-secondary/5">
         <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
         
         <StepHeader 
@@ -382,7 +395,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
 
   if (currentStep === 'skill') {
     return (
-      <div className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-primary/5">
+      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-primary/5">
         <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
         
         <StepHeader 
@@ -477,7 +490,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
 
   if (currentStep === 'goal') {
     return (
-      <div className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-secondary/5">
+      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-secondary/5">
         <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
         
         <StepHeader 
@@ -575,7 +588,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
 
   if (currentStep === 'summary') {
     return (
-      <div className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-primary/5">
+      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-primary/5">
         <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
         
         <StepHeader 
