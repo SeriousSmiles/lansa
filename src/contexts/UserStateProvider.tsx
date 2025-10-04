@@ -56,7 +56,7 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
             .maybeSingle(),
           supabase
             .from("user_answers")
-            .select("user_type, career_path")
+            .select("user_type, career_path, career_path_onboarding_completed")
             .eq("user_id", userId)
             .maybeSingle()
         ]);
@@ -68,6 +68,23 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
           .eq("user_id", userId)
           .maybeSingle();
 
+        // BACKWARD COMPATIBILITY: Consider onboarding complete if EITHER flag is true
+        const newOnboardingComplete = !!profileResult.data?.onboarding_completed;
+        const oldOnboardingComplete = !!answersResult.data?.career_path_onboarding_completed;
+        const hasCompletedOnboarding = newOnboardingComplete || oldOnboardingComplete;
+
+        // Auto-migrate if old flag is true but new flag is false
+        if (oldOnboardingComplete && !newOnboardingComplete) {
+          console.log("Auto-migrating onboarding status for user:", userId);
+          supabase
+            .from("user_profiles")
+            .update({ onboarding_completed: true })
+            .eq("user_id", userId)
+            .then(({ error }) => {
+              if (error) console.error("Failed to auto-migrate:", error);
+            });
+        }
+
         if (mounted) {
           setState({
             loading: false,
@@ -75,7 +92,7 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
             userId,
             userType: answersResult.data?.user_type as 'job_seeker' | 'employer' | undefined,
             careerPath: answersResult.data?.career_path as CareerPath | undefined,
-            hasCompletedOnboarding: !!profileResult.data?.onboarding_completed,
+            hasCompletedOnboarding,
             lansaCertified: !!certData?.lansa_certified,
             verified: !!certData?.verified,
           });

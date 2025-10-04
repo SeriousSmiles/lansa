@@ -41,7 +41,11 @@ export function RequireOnboarding({
   if (!FLAGS.routeGuardsV2) return children;
   if (loading) return <LoadingScreen />;
 
+  // If user has completed onboarding, allow access
   if (hasCompletedOnboarding) return children;
+
+  // If user is ON the onboarding page and hasn't completed, allow them to see it
+  if (location.pathname === '/onboarding') return children;
 
   // Soft gate: show teaser with banner
   if (soft && FLAGS.softGateOnboarding) {

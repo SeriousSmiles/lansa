@@ -32,30 +32,11 @@ export default function Onboarding() {
       }
       
       try {
-        // Check if user has completed new AI onboarding
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('onboarding_completed')
-          .eq('user_id', user.id)
-          .single();
-
-        if (profile?.onboarding_completed) {
-          navigate('/dashboard');
-          return;
-        }
-
-        // Fallback to old onboarding data for migration
         const answers = await getUserAnswers(user.id);
         console.log("Loaded existing user answers:", answers);
         
         if (answers) {
           setUserAnswers(answers);
-          
-          // If user has already completed old onboarding, redirect to dashboard
-          if (answers.career_path_onboarding_completed) {
-            navigate('/dashboard');
-            return;
-          }
           
           // Check if user has already selected a type
           if (answers.user_type) {
@@ -81,7 +62,7 @@ export default function Onboarding() {
     }
     
     loadUserAnswers();
-  }, [user]);
+  }, [user, navigate]);
 
   const handleUserTypeSelect = (selectedType: 'job_seeker' | 'employer') => {
     setUserType(selectedType);

@@ -1,10 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserState } from "@/contexts/UserStateProvider";
 import { SEOHead } from "@/components/SEOHead";
 import { scrubTokensFromUrl } from "@/config/demo";
-import { getUserAnswers, hasCompletedOnboarding } from "@/services/question";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function AuthCallback() {
   const { session, loading, user } = useAuth();
@@ -24,33 +23,27 @@ export default function AuthCallback() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Robust session handling with timeout and onboarding checks
+  const userState = useUserState();
+
+  // Simplified auth callback using UserStateProvider
   useEffect(() => {
     if (hasProcessedRef.current) return;
 
     const processAuthentication = async () => {
       try {
-        // Wait for auth state to stabilize
-        if (loading) return;
+        // Wait for UserStateProvider to load
+        if (userState.loading || loading) return;
 
-        // If we have a session, check onboarding status
-        if (session?.user) {
+        // If authenticated, use UserStateProvider's onboarding status
+        if (session?.user && userState.isAuthenticated) {
           hasProcessedRef.current = true;
           setIsProcessing(true);
 
-          try {
-            const userAnswers = await getUserAnswers(session.user.id);
-            const onboardingCompleted = hasCompletedOnboarding(userAnswers);
-
-            if (onboardingCompleted) {
-              navigate('/dashboard', { replace: true });
-            } else {
-              navigate('/onboarding', { replace: true });
-            }
-          } catch (error) {
-            console.error('Error checking onboarding status:', error);
-            // Fallback to dashboard if we can't check onboarding
+          // UserStateProvider already checked both old and new onboarding flags
+          if (userState.hasCompletedOnboarding) {
             navigate('/dashboard', { replace: true });
+          } else {
+            navigate('/onboarding', { replace: true });
           }
           
           setIsProcessing(false);
@@ -58,7 +51,7 @@ export default function AuthCallback() {
         }
 
         // If no session after auth should have completed, redirect back
-        if (!loading && !session) {
+        if (!loading && !session && !userState.loading) {
           redirectAttempts.current++;
           
           // Prevent infinite redirects
@@ -106,7 +99,7 @@ export default function AuthCallback() {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [loading, session, navigate, user]);
+  }, [loading, session, navigate, user, userState]);
 
   return (
     <>
