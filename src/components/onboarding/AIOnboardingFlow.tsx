@@ -684,6 +684,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                   title="How Recruiters See You"
                   icon="👔"
                   isDefaultOpen={true}
+                  variant="neutral"
                 >
                   <div className="space-y-3">
                     <p className="text-base leading-relaxed italic border-l-4 border-primary pl-4 py-2 bg-primary/5 text-foreground/90 rounded-r">
@@ -698,6 +699,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                     title="What Makes You Stand Out"
                     icon="💎"
                     isDefaultOpen={false}
+                    variant="good"
                   >
                     <ul className="space-y-2">
                       {mirrorData.key_strengths.map((strength: string, i: number) => (
@@ -716,6 +718,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                     title="Areas to Watch"
                     icon="⚠️"
                     isDefaultOpen={false}
+                    variant="concerning"
                   >
                     <ul className="space-y-2">
                       {mirrorData.contradictions.map((contradiction: string, i: number) => (
@@ -745,6 +748,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                     title="Your Coach's Advice"
                     icon="💡"
                     isDefaultOpen={false}
+                    variant={mirrorData.score >= 7 ? 'good' : 'concerning'}
                   >
                     <div className="space-y-3">
                       {mirrorData.coaching_nudge && (

@@ -8,18 +8,27 @@ interface CollapsibleAnalysisCardProps {
   icon: string;
   isDefaultOpen?: boolean;
   children: React.ReactNode;
+  variant?: 'good' | 'concerning' | 'bad' | 'neutral';
 }
 
 export function CollapsibleAnalysisCard({ 
   title, 
   icon, 
   isDefaultOpen = false, 
-  children 
+  children,
+  variant = 'neutral'
 }: CollapsibleAnalysisCardProps) {
   const [isOpen, setIsOpen] = useState(isDefaultOpen);
 
+  const variantStyles = {
+    good: 'border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50/50 to-emerald-50/30 dark:from-green-950/20 dark:to-emerald-950/10',
+    concerning: 'border-yellow-200 dark:border-yellow-800 bg-gradient-to-br from-yellow-50/50 to-amber-50/30 dark:from-yellow-950/20 dark:to-amber-950/10',
+    bad: 'border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50/50 to-rose-50/30 dark:from-red-950/20 dark:to-rose-950/10',
+    neutral: 'border-lansa-muted/20 bg-card'
+  };
+
   return (
-    <Card className="w-full border-2 border-lansa-muted/20 bg-card hover:shadow-md transition-shadow duration-200">
+    <Card className={`w-full border-2 hover:shadow-md transition-shadow duration-200 ${variantStyles[variant]}`}>
       <CardHeader className="pb-2">
         <Button
           variant="ghost"
