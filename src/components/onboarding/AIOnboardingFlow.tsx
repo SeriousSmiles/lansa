@@ -638,7 +638,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
             {mirrorData ? (
               <div className="space-y-4">
                 {/* Overall Score Hero */}
-                <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
+                <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 shadow-lg">
                   <CardContent className="p-6">
                     <div className="text-center">
                       <h3 className="text-2xl font-bold mb-2">
@@ -657,19 +657,19 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                       
                       {mirrorData.score_breakdown && (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                          <div className="bg-card p-3 rounded-lg border">
+                          <div className="bg-card/80 backdrop-blur-sm p-3 rounded-lg border border-primary/10 shadow-sm">
                             <div className="font-medium text-muted-foreground mb-1">Clarity</div>
                             <div className="text-lg font-bold">{mirrorData.score_breakdown.clarity || 0}/3</div>
                           </div>
-                          <div className="bg-card p-3 rounded-lg border">
+                          <div className="bg-card/80 backdrop-blur-sm p-3 rounded-lg border border-primary/10 shadow-sm">
                             <div className="font-medium text-muted-foreground mb-1">Relevance</div>
                             <div className="text-lg font-bold">{mirrorData.score_breakdown.relevance || 0}/3</div>
                           </div>
-                          <div className="bg-card p-3 rounded-lg border">
+                          <div className="bg-card/80 backdrop-blur-sm p-3 rounded-lg border border-primary/10 shadow-sm">
                             <div className="font-medium text-muted-foreground mb-1">Realism</div>
                             <div className="text-lg font-bold">{mirrorData.score_breakdown.realism || 0}/2</div>
                           </div>
-                          <div className="bg-card p-3 rounded-lg border">
+                          <div className="bg-card/80 backdrop-blur-sm p-3 rounded-lg border border-primary/10 shadow-sm">
                             <div className="font-medium text-muted-foreground mb-1">Impact</div>
                             <div className="text-lg font-bold">{mirrorData.score_breakdown.professional_impression || 0}/2</div>
                           </div>
@@ -686,7 +686,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                   isDefaultOpen={true}
                 >
                   <div className="space-y-3">
-                    <p className="text-base leading-relaxed italic border-l-4 border-primary pl-4 py-2 bg-muted/30">
+                    <p className="text-base leading-relaxed italic border-l-4 border-primary pl-4 py-2 bg-primary/5 text-foreground/90 rounded-r">
                       "{mirrorData.recruiter_perspective || mirrorData.mirror_message}"
                     </p>
                   </div>
@@ -765,11 +765,11 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
 
                 {/* CTA */}
                 <div className="text-center pt-6 space-y-4">
-                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                  <div className="p-4 bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 border-2 border-primary/20 rounded-lg shadow-md">
                     <p className="text-base font-medium mb-2">
                       🎯 You're ready to showcase your value
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-foreground/80">
                       Use these insights to build a profile that stands out to employers
                     </p>
                   </div>
