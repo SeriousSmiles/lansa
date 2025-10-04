@@ -8,6 +8,8 @@ import { OnboardingLayout } from "../layout/OnboardingLayout";
 import { OnboardingCard } from "../layout/OnboardingCard";
 import { PowerMirrorErrorBoundary, usePowerMirrorErrorHandler } from "../PowerMirrorErrorBoundary";
 import lansaPowerMirrorImage from "@/assets/onboarding/lansa-power-mirror.jpg";
+import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 
 interface PowerMirrorStepProps {
   skillReframe: string;
@@ -30,29 +32,82 @@ export function PowerMirrorStep({
 }: PowerMirrorStepProps) {
   const [mirror, setMirror] = useState<any>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
   const { handleError } = usePowerMirrorErrorHandler();
 
   useEffect(() => {
+    let isCancelled = false;
+    let timeoutId: NodeJS.Timeout;
+    let progressInterval: NodeJS.Timeout;
+
     // Scroll to top when component mounts
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
     const generateMirror = async () => {
       setIsGenerating(true);
+      setError(null);
+      setProgress(10);
+
+      // Simulate progress while loading
+      progressInterval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 90) return prev;
+          return prev + Math.random() * 15;
+        });
+      }, 800);
+
+      // Set timeout for 40 seconds
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error('Request timed out. The AI is taking longer than expected.'));
+        }, 40000);
+      });
+
       try {
-        const mirrorData = await generatePowerMirror(skillReframe, goalStatement, demographics);
-        console.log('Power Mirror Data Received:', mirrorData);
-        setMirror(mirrorData);
-      } catch (error) {
-        console.error('Power Mirror Generation Error:', error);
-        const errorResult = handleError(error, 'generateMirror');
-        setMirror(errorResult.fallbackData);
+        const mirrorPromise = generatePowerMirror(skillReframe, goalStatement, demographics);
+        const mirrorData = await Promise.race([mirrorPromise, timeoutPromise]) as any;
+        
+        if (!isCancelled) {
+          console.log('Power Mirror Data Received:', mirrorData);
+          setProgress(100);
+          setMirror(mirrorData);
+        }
+      } catch (err: any) {
+        if (!isCancelled) {
+          console.error('Power Mirror Generation Error:', err);
+          setError(err.message || "Failed to generate your power mirror");
+          toast.error(err.message || "Failed to generate your power mirror. Please try again.");
+          
+          // Still set fallback data so user can continue
+          const errorResult = handleError(err, 'generateMirror');
+          setMirror(errorResult.fallbackData);
+        }
       } finally {
-        setIsGenerating(false);
+        if (!isCancelled) {
+          setIsGenerating(false);
+          clearInterval(progressInterval);
+          clearTimeout(timeoutId);
+        }
       }
     };
 
     generateMirror();
+
+    return () => {
+      isCancelled = true;
+      clearInterval(progressInterval);
+      clearTimeout(timeoutId);
+    };
   }, [skillReframe, goalStatement, demographics]);
+
+  const handleRetry = () => {
+    setMirror(null);
+    setError(null);
+    setIsGenerating(true);
+    setProgress(0);
+    window.location.reload();
+  };
 
   const handleContinue = () => {
     if (mirror && !isSubmitting) {
@@ -78,11 +133,30 @@ export function PowerMirrorStep({
               </h2>
             </div>
             
-            <div className="flex flex-col items-center space-y-4">
-              <LoadingSpinner />
-              <p className="text-muted-foreground">
-                Analyzing how your responses appear to hiring managers...
-              </p>
+            <div className="flex flex-col items-center justify-center space-y-6">
+              <div className="relative">
+                <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                <div className="absolute -bottom-2 -right-2 bg-primary text-primary-foreground text-xs font-bold rounded-full w-8 h-8 flex items-center justify-center">
+                  {Math.round(progress)}%
+                </div>
+              </div>
+              <div className="text-center space-y-2 max-w-md">
+                <p className="text-lg font-medium text-foreground">
+                  Creating your personalized feedback...
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {progress < 30 && "Analyzing your skill statement..."}
+                  {progress >= 30 && progress < 60 && "Reviewing your 90-day goal..."}
+                  {progress >= 60 && progress < 90 && "Evaluating recruiter perspective..."}
+                  {progress >= 90 && "Finalizing your power mirror..."}
+                </p>
+                <div className="w-full bg-muted rounded-full h-2 mt-4">
+                  <div 
+                    className="bg-primary h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </Card>

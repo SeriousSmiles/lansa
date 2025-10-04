@@ -11,8 +11,18 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const requestId = crypto.randomUUID();
+  const startTime = Date.now();
+
   try {
     const { skillReframe, goalStatement, demographics } = await req.json();
+    
+    console.log(`[${requestId}] Power Mirror Request Started`, {
+      timestamp: new Date().toISOString(),
+      hasSkillReframe: !!skillReframe,
+      hasGoalStatement: !!goalStatement,
+      hasDemographics: !!demographics
+    });
 
     const openAIApiKey = Deno.env.get('ONBOARDING_AI_API_KEY');
     if (!openAIApiKey) {
@@ -81,55 +91,85 @@ Respond with JSON:
           { role: 'system', content: prompt },
           { role: 'user', content: 'Generate the power mirror for this student.' }
         ],
-        max_tokens: 400,
-        temperature: 0.1
+        max_tokens: 1000,
+        temperature: 0.4
       }),
     });
+    
+    console.log(`[${requestId}] OpenAI Response Status:`, response.status);
 
     const data = await response.json();
     
     if (!response.ok) {
-      console.error('OpenAI API error:', data);
+      console.error(`[${requestId}] OpenAI API error:`, data);
       throw new Error(`OpenAI API error: ${data.error?.message || 'Unknown error'}`);
     }
 
+    // Validate response structure
+    if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
+      console.error(`[${requestId}] Invalid OpenAI response structure:`, data);
+      throw new Error('Invalid response structure from OpenAI');
+    }
+
     const content = data.choices[0].message.content;
-    console.log('AI response:', content);
+    const responseLength = content.length;
+    console.log(`[${requestId}] AI response length: ${responseLength} characters`);
+    
+    // Validate response isn't truncated
+    if (responseLength < 100 || !content.trim().endsWith('}')) {
+      console.warn(`[${requestId}] Response may be truncated. Length: ${responseLength}`);
+    }
     
     let mirror;
     try {
       mirror = JSON.parse(content);
+      
+      // Validate required fields
+      const requiredFields = ['recruiter_perspective', 'score', 'score_breakdown', 'mirror_message', 'key_strengths', 'employer_perspective'];
+      const missingFields = requiredFields.filter(field => !mirror[field]);
+      
+      if (missingFields.length > 0) {
+        console.warn(`[${requestId}] Missing fields in response:`, missingFields);
+      }
+      
+      console.log(`[${requestId}] Successfully parsed mirror with score:`, mirror.score);
     } catch (parseError) {
-      console.error('Failed to parse AI response:', content);
-      console.error('Parse error details:', parseError);
+      console.error(`[${requestId}] Failed to parse AI response:`, content?.substring(0, 200));
+      console.error(`[${requestId}] Parse error details:`, parseError);
+      
       // Create a fallback that references their actual input
       const actualSkill = skillReframe || 'your skill input';
       const actualGoal = goalStatement || 'your 90-day goal';
       mirror = {
-        recruiter_perspective: `To a recruiter, looking at all your responses together, this shows someone trying to articulate value.`,
+        recruiter_perspective: `To a recruiter, looking at your responses - particularly "${actualSkill}" and "${actualGoal}" - this shows someone trying to articulate value and plan ahead, which is positive.`,
         score: 6,
         score_breakdown: {
           clarity: 2,
           relevance: 2,
-          realism: 2,
+          realism: 1,
           professional_impression: 1
         },
         coaching_nudge: "Add more specific examples and measurable outcomes to strengthen your overall impression.",
         contradictions: [],
         mirror_message: `Reading what you wrote: "${actualSkill}" and "${actualGoal}" - as a manager, I see someone trying to articulate value, but the language is still quite general.`,
-        key_strengths: ["Shows effort to think about business impact"],
+        key_strengths: ["Shows effort to think about business impact", "Forward-thinking mindset"],
         employer_perspective: `Your responses indicate you're learning to think beyond personal goals, which is positive, but I'd need more specific examples to assess your actual capabilities.`,
         next_level_hint: "I need to see concrete examples and measurable outcomes rather than general statements about helping or contributing."
       };
     }
+
+    const duration = Date.now() - startTime;
+    console.log(`[${requestId}] Request completed in ${duration}ms`);
 
     return new Response(JSON.stringify({ mirror }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error: any) {
-    console.error('Error in generate-power-mirror:', error);
-    // Create error fallback - can't access req.body in catch block
+    const duration = Date.now() - startTime;
+    console.error(`[${requestId}] Error in generate-power-mirror after ${duration}ms:`, error.message);
+    
+    // Create error fallback
     const skillRef = 'your value-focused thinking';
     const goalRef = 'your forward-planning mindset';
     

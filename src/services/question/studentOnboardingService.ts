@@ -227,8 +227,15 @@ export async function analyzeNinetyDayGoal(goalStatement: string) {
   }
 }
 
-export async function generatePowerMirror(skillReframe: string, goalStatement: string, demographics: StudentDemographics) {
+export async function generatePowerMirror(
+  skillReframe: string, 
+  goalStatement: string, 
+  demographics: StudentDemographics,
+  retryCount = 0
+): Promise<any> {
   const startTime = Date.now();
+  const maxRetries = 2;
+  
   try {
     const { data, error } = await supabase.functions.invoke('generate-power-mirror', {
       body: { 
@@ -238,13 +245,31 @@ export async function generatePowerMirror(skillReframe: string, goalStatement: s
       }
     });
 
-    if (error) throw error;
+    if (error) {
+      // Retry on network errors or server errors
+      if (retryCount < maxRetries && (error.message?.includes('fetch') || error.message?.includes('network'))) {
+        console.warn(`Power Mirror attempt ${retryCount + 1} failed, retrying...`);
+        await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1))); // Exponential backoff
+        return generatePowerMirror(skillReframe, goalStatement, demographics, retryCount + 1);
+      }
+      throw error;
+    }
+    
+    // Validate response structure
+    if (!data.mirror || typeof data.mirror !== 'object') {
+      throw new Error('Invalid response structure from edge function');
+    }
+
     logAICall('generate-power-mirror', true, Date.now() - startTime);
     return data.mirror;
   } catch (err) {
-    logAICall('generate-power-mirror', false, Date.now() - startTime);
+    const duration = Date.now() - startTime;
+    console.error(`Power Mirror failed after ${duration}ms (attempt ${retryCount + 1}/${maxRetries + 1}):`, err);
+    logAICall('generate-power-mirror', false, duration);
+    
+    // Return personalized fallback using actual user input
     return {
-      recruiter_perspective: "To a recruiter, looking at all your responses together, this shows you're thinking like someone who wants to create value - that's the foundation of career success!",
+      recruiter_perspective: `To a recruiter, looking at your responses about "${skillReframe?.substring(0, 50) || 'your skills'}" and your goal of "${goalStatement?.substring(0, 50) || 'your 90-day plan'}", this shows you're thinking like someone who wants to create value - that's the foundation of career success!`,
       score: 7,
       score_breakdown: {
         clarity: 2,
@@ -254,7 +279,7 @@ export async function generatePowerMirror(skillReframe: string, goalStatement: s
       },
       coaching_nudge: "Keep building on this foundation - you're on the right track!",
       contradictions: [],
-      mirror_message: "You're thinking like someone who wants to create value - that's the foundation of career success!",
+      mirror_message: `You're thinking about "${skillReframe?.substring(0, 60) || 'creating value'}" and planning "${goalStatement?.substring(0, 60) || 'specific outcomes'}" - that's exactly what employers want to see!`,
       key_strengths: ["Value-focused thinking", "Initiative", "Growth mindset"],
       employer_perspective: "This person understands that work is about creating impact, not just completing tasks.",
       next_level_hint: "Keep building on this foundation - you're on the right track!"
