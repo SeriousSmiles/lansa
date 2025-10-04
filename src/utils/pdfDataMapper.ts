@@ -17,9 +17,13 @@ export function mapProfileToPDFData(profileData: ProfileDataReturn): PDFResumeDa
     education: profileData.educationItems || [],
     skills: profileData.userSkills || [],
     languages: profileData.userLanguages || [],
+    projects: [], // Can be extended later if profile has projects
+    certifications: [], // Can be extended later if profile has certifications
+    awards: [], // Can be extended later if profile has awards
+    volunteer: [], // Can be extended later if profile has volunteer work
     colors: {
       primary: profileData.highlightColor || "#FF6B4A",
-      secondary: profileData.coverColor || "#FFFFFF",
+      secondary: profileData.coverColor || "#F3F4F6",
     },
   };
 }
