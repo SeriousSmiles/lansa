@@ -71,7 +71,11 @@ export function PowerMirrorStep({
         if (!isCancelled) {
           console.log('Power Mirror Data Received:', mirrorData);
           setProgress(100);
-          setMirror(mirrorData);
+          // Accept both { mirror: {...} } and direct {...}
+          const normalized = (mirrorData && typeof mirrorData === 'object' && 'mirror' in mirrorData)
+            ? (mirrorData as any).mirror
+            : mirrorData;
+          setMirror(normalized);
         }
       } catch (err: any) {
         if (!isCancelled) {
