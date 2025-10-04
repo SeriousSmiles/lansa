@@ -61,7 +61,7 @@ export function StrengthBar({ strength, weakestDimension }: StrengthBarProps) {
       </div>
       
       <div className="space-y-2">
-        <div className="w-full bg-muted rounded-full h-2 relative overflow-hidden">
+        <div className="w-full bg-primary/10 rounded-full h-2 relative overflow-hidden">
           <div 
             ref={progressRef}
             className={`h-2 rounded-full transition-all duration-500 ${
