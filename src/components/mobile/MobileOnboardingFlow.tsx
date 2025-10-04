@@ -125,7 +125,7 @@ export function MobileOnboardingFlow({
           </div>
           
           {/* Progress bar container */}
-          <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+          <div className="relative h-2 bg-gray-100 dark:bg-gray-800/30 rounded-full overflow-hidden">
             <div 
               ref={progressRef}
               className="absolute top-0 left-0 h-full lansa-gradient-primary rounded-full origin-left scale-x-0"

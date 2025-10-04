@@ -280,7 +280,7 @@ export function MobileBusinessOnboarding({
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full bg-muted rounded-full h-2">
+          <div className="w-full bg-gray-100 dark:bg-gray-800/30 rounded-full h-2">
             <div 
               ref={progressRef}
               className="h-2 bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-500"
