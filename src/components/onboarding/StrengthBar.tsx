@@ -77,7 +77,7 @@ export function StrengthBar({ strength, weakestDimension }: StrengthBarProps) {
             {thresholdInfo.text}
           </span>
           {weakestDimension && strength < 0.7 && (
-            <span className="text-muted-foreground bg-muted px-2 py-1 rounded">
+            <span className="text-foreground bg-primary/10 border border-primary/20 px-2 py-1 rounded font-medium">
               Focus on: {weakestDimension}
             </span>
           )}

@@ -30,8 +30,8 @@ export function ActionCard({
   const statusConfig = {
     pending: {
       cardClass: "border-muted-foreground/20 bg-muted/5",
-      iconClass: "text-muted-foreground bg-muted",
-      badgeClass: "bg-muted text-muted-foreground"
+      iconClass: "text-foreground bg-muted/30 border border-muted",
+      badgeClass: "bg-muted/30 text-foreground border border-muted"
     },
     active: {
       cardClass: "border-primary/30 bg-primary/5 shadow-lg",
