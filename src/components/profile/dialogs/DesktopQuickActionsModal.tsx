@@ -97,89 +97,103 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-modal"
-            onClick={onClose}
-          />
+    <>
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]"
+              onClick={onClose}
+            />
 
-          {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, y: 100 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 100 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-modal flex justify-center p-4 pb-8 pointer-events-none"
-          >
-            <div className="bg-card rounded-3xl p-8 w-full max-w-2xl mx-auto shadow-xl pointer-events-auto">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h2 className="text-2xl font-urbanist font-semibold text-foreground">Quick Actions</h2>
-                  <p className="text-muted-foreground mt-1">
-                    What would you like to do?
-                  </p>
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed left-1/2 -translate-x-1/2 bottom-8 sm:bottom-16 z-[101] w-full max-w-2xl px-4"
+            >
+              <div className="bg-card rounded-3xl p-8 w-full shadow-xl max-h-[80vh] overflow-auto">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h2 className="text-2xl font-urbanist font-semibold text-foreground">Quick Actions</h2>
+                    <p className="text-muted-foreground mt-1">
+                      What would you like to do?
+                    </p>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={onClose}>
+                    <X className="h-5 w-5" />
+                  </Button>
                 </div>
-                <Button variant="ghost" size="sm" onClick={onClose}>
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
 
-              {/* Actions Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                {quickActions.map((action, index) => {
-                  const Icon = action.icon;
-                  return (
-                    <motion.button
-                      key={action.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      onClick={action.action}
-                      className={`
-                        flex flex-col items-center justify-center p-6 rounded-2xl 
-                        ${action.bgColor} transition-all duration-200
-                        hover:scale-105 transform active:scale-95
-                        min-h-[120px] group
-                      `}
-                    >
-                      <div className={`h-12 w-12 rounded-2xl ${action.bgColor} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                        <Icon className={`h-6 w-6 ${action.iconColor}`} />
-                      </div>
-                      <span className="text-sm font-medium text-center text-foreground">
-                        {action.label}
-                      </span>
-                    </motion.button>
-                  );
-                })}
+                {/* Actions Grid */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                  {quickActions.map((action, index) => {
+                    const Icon = action.icon;
+                    return (
+                      <motion.button
+                        key={action.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        onClick={action.action}
+                        className={`
+                          flex flex-col items-center justify-center p-6 rounded-2xl 
+                          ${action.bgColor} transition-all duration-200
+                          hover:scale-105 transform active:scale-95
+                          min-h-[120px] group
+                        `}
+                      >
+                        <div className={`h-12 w-12 rounded-2xl ${action.bgColor} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                          <Icon className={`h-6 w-6 ${action.iconColor}`} />
+                        </div>
+                        <span className="text-sm font-medium text-center text-foreground">
+                          {action.label}
+                        </span>
+                      </motion.button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          </motion.div>
-        </>
-      )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
       
-      {/* Modals */}
-      <CVUploadModal 
-        open={showCVModal}
-        onOpenChange={setShowCVModal}
-        onComplete={handleCVUploadComplete}
-      />
+      {/* Modals - Wrapped with unique keys */}
+      <AnimatePresence key="cv-modal">
+        {showCVModal && (
+          <CVUploadModal 
+            open={showCVModal}
+            onOpenChange={setShowCVModal}
+            onComplete={handleCVUploadComplete}
+          />
+        )}
+      </AnimatePresence>
       
-      <QRCodeModal 
-        isOpen={showQRModal}
-        onClose={() => setShowQRModal(false)}
-      />
+      <AnimatePresence key="qr-modal">
+        {showQRModal && (
+          <QRCodeModal 
+            isOpen={showQRModal}
+            onClose={() => setShowQRModal(false)}
+          />
+        )}
+      </AnimatePresence>
       
-      <AchievementModal 
-        isOpen={showAchievementModal}
-        onClose={() => setShowAchievementModal(false)}
-      />
-    </AnimatePresence>
+      <AnimatePresence key="achievement-modal">
+        {showAchievementModal && (
+          <AchievementModal 
+            isOpen={showAchievementModal}
+            onClose={() => setShowAchievementModal(false)}
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 }
