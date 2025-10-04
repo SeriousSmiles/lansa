@@ -55,22 +55,25 @@ export function ProfilePage() {
   }, [location.state]);
 
   // Auto-open choice modal when key fields are missing (and choice not made yet)
+  // OR when coming from onboarding completion
   useEffect(() => {
     if (!profile.isLoading && user?.id) {
+      // If coming from onboarding, always show modal
+      if (location.state?.fromOnboarding) {
+        setChoiceModalOpen(true);
+        // Clear the state to prevent reopening on refresh
+        window.history.replaceState({}, document.title);
+        return;
+      }
+      
+      // Otherwise, check if core fields are missing
       const missingCore = !profile.userTitle || !profile.aboutText || (profile.userSkills?.length || 0) === 0;
       const choiceMade = localStorage.getItem(`profileChoiceMade_${user.id}`) === 'true';
       if (missingCore && !choiceMade) {
         setChoiceModalOpen(true);
       }
     }
-  }, [profile.isLoading, profile.userTitle, profile.aboutText, profile.userSkills, user?.id]);
-
-  const handleChooseAIGuide = () => {
-    if (user?.id) {
-      localStorage.setItem(`profileChoiceMade_${user.id}`, 'true');
-    }
-    setChoiceModalOpen(false);
-  };
+  }, [profile.isLoading, profile.userTitle, profile.aboutText, profile.userSkills, user?.id, location.state]);
 
   const handleChooseManual = () => {
     if (user?.id) {
@@ -129,7 +132,6 @@ export function ProfilePage() {
         <PostOnboardingChoice
           open={choiceModalOpen}
           onOpenChange={setChoiceModalOpen}
-          onChooseAIGuide={handleChooseAIGuide}
           onChooseManual={handleChooseManual}
           onChooseCVUpload={handleChooseCVUpload}
         />

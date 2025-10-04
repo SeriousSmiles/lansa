@@ -222,7 +222,11 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
         });
       
       toast.success('Onboarding completed! Ready to build your profile.');
-      navigate('/profile');
+      
+      // Navigate to profile with state indicating completion
+      setTimeout(() => {
+        navigate('/profile', { state: { fromOnboarding: true } });
+      }, 1000);
     } catch (error) {
       console.error('Completion error:', error);
       toast.error('Failed to complete onboarding');

@@ -8,7 +8,6 @@ import { CVUploadModal } from "./cv/CVUploadModal";
 interface PostOnboardingChoiceProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onChooseAIGuide: () => void;
   onChooseManual: () => void;
   onChooseCVUpload?: () => void;
 }
@@ -16,7 +15,6 @@ interface PostOnboardingChoiceProps {
 export function PostOnboardingChoice({ 
   open, 
   onOpenChange, 
-  onChooseAIGuide, 
   onChooseManual,
   onChooseCVUpload 
 }: PostOnboardingChoiceProps) {
@@ -46,7 +44,7 @@ export function PostOnboardingChoice({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6 max-w-4xl mx-auto">
             {/* CV Upload Option - PRIMARY */}
             <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/50 relative">
               <div className="absolute -top-2 -right-2 bg-primary text-white text-xs px-2 py-1 rounded-full font-medium">
@@ -88,48 +86,6 @@ export function PostOnboardingChoice({
                 >
                   <Upload className="w-4 h-4 mr-2" />
                   Upload CV/Resume
-                </Button>
-              </CardContent>
-            </Card>
-            {/* AI Guide Option */}
-            <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/50">
-              <CardHeader className="text-center pb-3">
-                <div className="text-xs text-muted-foreground mb-2 font-medium">8–10 minutes</div>
-                <div className="w-12 h-12 mx-auto rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center mb-3">
-                  <Bot className="w-6 h-6 text-white" />
-                </div>
-                <CardTitle className="text-lg">AI-Powered Guide</CardTitle>
-                <CardDescription className="text-sm">
-                  Get personalized suggestions and guidance
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Chat-based assistance
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Personalized content suggestions
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Step-by-step guidance
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    AI-optimized content
-                  </li>
-                </ul>
-                <Button 
-                  onClick={onChooseAIGuide}
-                  variant="outline"
-                  className="w-full mt-4"
-                  size="lg"
-                >
-                  <Bot className="w-4 h-4 mr-2" />
-                  Use AI Guide
                 </Button>
               </CardContent>
             </Card>
