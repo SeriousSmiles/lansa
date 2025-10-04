@@ -68,6 +68,13 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
     }
   }, [currentStep]);
 
+  // Auto-generate mirror if user lands on summary without data
+  useEffect(() => {
+    if (currentStep === 'summary' && !mirrorData) {
+      generateMirror();
+    }
+  }, [currentStep]);
+
   // Auto-analyze skill input
   useEffect(() => {
     if (debouncedSkillInput && demographicsData.major && currentStep === 'skill') {

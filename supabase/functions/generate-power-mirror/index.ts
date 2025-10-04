@@ -124,13 +124,44 @@ Respond with JSON:
     try {
       mirror = JSON.parse(content);
       
-      // Validate required fields
-      const requiredFields = ['recruiter_perspective', 'score', 'score_breakdown', 'mirror_message', 'key_strengths', 'employer_perspective'];
-      const missingFields = requiredFields.filter(field => !mirror[field]);
+      // Sanitize and ensure required fields are non-empty
+      const nonEmpty = (v: any) => typeof v === 'string' && v.trim().length > 0;
+      const asArray = (v: any) => Array.isArray(v) ? v : [];
+      const sb = mirror?.score_breakdown || {};
+      const safeBreakdown = {
+        clarity: Number.isFinite(sb.clarity) ? sb.clarity : 2,
+        relevance: Number.isFinite(sb.relevance) ? sb.relevance : 2,
+        realism: Number.isFinite(sb.realism) ? sb.realism : 2,
+        professional_impression: Number.isFinite(sb.professional_impression) ? sb.professional_impression : 1,
+      };
+      const computedScore = Math.max(0, Math.min(10, (safeBreakdown.clarity + safeBreakdown.relevance + safeBreakdown.realism + safeBreakdown.professional_impression)));
       
-      if (missingFields.length > 0) {
-        console.warn(`[${requestId}] Missing fields in response:`, missingFields);
-      }
+      const actualSkill = skillReframe || 'your skill input';
+      const actualGoal = goalStatement || 'your 90-day goal';
+      
+      mirror = {
+        recruiter_perspective: nonEmpty(mirror.recruiter_perspective)
+          ? mirror.recruiter_perspective
+          : `To a recruiter, looking at "${actualSkill}" and "${actualGoal}", this shows initiative and value-focused thinking. Add specifics to make it sharper.`,
+        score: Number.isFinite(mirror.score) ? mirror.score : computedScore,
+        score_breakdown: safeBreakdown,
+        coaching_nudge: nonEmpty(mirror.coaching_nudge)
+          ? mirror.coaching_nudge
+          : 'Tighten the language with one concrete example and a measurable outcome.',
+        contradictions: asArray(mirror.contradictions),
+        mirror_message: nonEmpty(mirror.mirror_message)
+          ? mirror.mirror_message
+          : `Reading your responses, as a manager I see potential — make it concrete by naming a specific scenario and result.`,
+        key_strengths: asArray(mirror.key_strengths).length > 0
+          ? mirror.key_strengths
+          : ["Value-focused thinking", "Shows initiative", "Growth mindset"],
+        employer_perspective: nonEmpty(mirror.employer_perspective)
+          ? mirror.employer_perspective
+          : 'Promising early signals; specificity and proof points will increase confidence.',
+        next_level_hint: nonEmpty(mirror.next_level_hint)
+          ? mirror.next_level_hint
+          : 'Add one quantified result or a KPI you will move in 90 days.'
+      };
       
       console.log(`[${requestId}] Successfully parsed mirror with score:`, mirror.score);
     } catch (parseError) {
