@@ -136,19 +136,19 @@ export function PowerMirrorStep({
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div className="space-y-1">
                       <div className="text-muted-foreground">Clarity</div>
-                      <div className="font-semibold">{mirror.score_breakdown.clarity}/3</div>
+                      <div className="font-semibold">{mirror.score_breakdown.clarity ?? 0}/3</div>
                     </div>
                     <div className="space-y-1">
                       <div className="text-muted-foreground">Relevance</div>
-                      <div className="font-semibold">{mirror.score_breakdown.relevance}/3</div>
+                      <div className="font-semibold">{mirror.score_breakdown.relevance ?? 0}/3</div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-lansa-muted-foreground">Realism</div>
-                      <div className="font-semibold">{mirror.score_breakdown.realism}/1</div>
+                      <div className="text-muted-foreground">Realism</div>
+                      <div className="font-semibold">{mirror.score_breakdown.realism ?? 0}/2</div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-lansa-muted-foreground">Tone</div>
-                      <div className="font-semibold">{mirror.score_breakdown.tone || mirror.score_breakdown.professional_impression || 0}/1</div>
+                      <div className="text-muted-foreground">Tone</div>
+                      <div className="font-semibold">{mirror.score_breakdown.professional_impression ?? 0}/2</div>
                     </div>
                   </div>
                 )}
@@ -165,7 +165,7 @@ export function PowerMirrorStep({
               </div>
 
               {/* Contradictions Warning */}
-              {mirror.contradictions && mirror.contradictions.length > 0 && (
+              {mirror.contradictions && Array.isArray(mirror.contradictions) && mirror.contradictions.length > 0 && (
                 <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 p-4 rounded-lg">
                   <h4 className="text-sm font-medium text-orange-800 dark:text-orange-300 mb-2">⚠️ Potential Inconsistencies:</h4>
                   <ul className="text-sm text-orange-700 dark:text-orange-400 space-y-1">
@@ -177,30 +177,34 @@ export function PowerMirrorStep({
               )}
 
               {/* Key Strengths */}
-              <div className="space-y-3">
-                <h3 className="text-base font-semibold text-foreground">
-                  Your Key Strengths:
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {mirror.key_strengths?.map((strength: string, index: number) => (
-                    <Badge key={index} variant="secondary" className="px-3 py-1">
-                      {strength}
-                    </Badge>
-                  ))}
+              {mirror.key_strengths && Array.isArray(mirror.key_strengths) && mirror.key_strengths.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-base font-semibold text-foreground">
+                    Your Key Strengths:
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {mirror.key_strengths.map((strength: string, index: number) => (
+                      <Badge key={index} variant="secondary" className="px-3 py-1">
+                        {strength}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Employer Perspective */}
-              <div className="space-y-3">
-                <h3 className="text-base font-semibold text-foreground">
-                  What Employers See:
-                </h3>
-                <div className="bg-lansa-muted/10 p-4 rounded-lg">
-                  <p className="text-sm text-foreground italic">
-                    "{mirror.employer_perspective}"
-                  </p>
+              {mirror.employer_perspective && (
+                <div className="space-y-3">
+                  <h3 className="text-base font-semibold text-foreground">
+                    What Employers See:
+                  </h3>
+                  <div className="bg-muted/10 p-4 rounded-lg">
+                    <p className="text-sm text-foreground italic">
+                      "{mirror.employer_perspective}"
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Coaching Nudge */}
               {mirror.coaching_nudge && (
