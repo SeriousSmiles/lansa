@@ -40,8 +40,10 @@ export function PowerMirrorStep({
       setIsGenerating(true);
       try {
         const mirrorData = await generatePowerMirror(skillReframe, goalStatement, demographics);
+        console.log('Power Mirror Data Received:', mirrorData);
         setMirror(mirrorData);
       } catch (error) {
+        console.error('Power Mirror Generation Error:', error);
         const errorResult = handleError(error, 'generateMirror');
         setMirror(errorResult.fallbackData);
       } finally {
@@ -103,6 +105,14 @@ export function PowerMirrorStep({
         stepBadge={`Step ${stepNumber} of ${totalSteps} • Power Mirror`}
       >
         <div className="space-y-6">
+
+          {!mirror && !isGenerating && (
+            <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 p-4 rounded-lg">
+              <p className="text-sm text-yellow-800 dark:text-yellow-300">
+                No mirror data available. Please try refreshing the page.
+              </p>
+            </div>
+          )}
 
           {mirror && (
             <div className="space-y-6">
