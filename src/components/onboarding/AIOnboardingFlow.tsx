@@ -20,6 +20,7 @@ import { ExampleShowcase } from "./ExampleShowcase";
 import { HoverInfo } from "./HoverInfo";
 import { SkillAnalysisDisplay } from "./SkillAnalysisDisplay";
 import { GoalAnalysisDisplay } from "./GoalAnalysisDisplay";
+import { CollapsibleAnalysisCard } from "./CollapsibleAnalysisCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useDebounce } from "@/hooks/use-debounce";
 import { gsap } from "gsap";
@@ -140,7 +141,32 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
       
       if (error) throw error;
       logAICall('generate-power-mirror', true, Date.now() - startTime);
-      setMirrorData(data);
+      
+      // Normalize response - extract mirror object if wrapped
+      const normalized = (data && typeof data === 'object' && 'mirror' in data) ? data.mirror : data;
+      setMirrorData(normalized);
+      
+      // Persist power skill
+      if (user && skillInput && skillAnalysis) {
+        await supabase.from('user_power_skills').insert({
+          user_id: user.id,
+          original_skill: skillInput,
+          reframed_skill: skillAnalysis.reframed_skill,
+          business_value_type: skillAnalysis.business_value_type,
+          ai_category: skillAnalysis.ai_category
+        });
+      }
+      
+      // Persist 90-day goal
+      if (user && goalInput && goalAnalysis) {
+        await supabase.from('user_90day_goal').insert({
+          user_id: user.id,
+          goal_statement: goalInput,
+          ai_interpretation: goalAnalysis.interpretation,
+          initiative_type: goalAnalysis.initiative_type,
+          clarity_level: goalAnalysis.clarity_level
+        });
+      }
     } catch (error) {
       logAICall('generate-power-mirror', false, Date.now() - startTime);
     }
@@ -603,91 +629,150 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
         <Card className="shadow-lg border-border max-w-2xl mx-auto">
           <CardContent className="p-4">
             {mirrorData ? (
-              <div className="space-y-6">
-                <ActionCard
-                  title="Manager's First Impression"
-                  description="This is what hiring managers think when they read your profile"
-                  icon={Eye}
-                  status="completed"
-                  tags={["AI Analysis", "Manager Perspective"]}
-                >
-                  <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
-                    <CardContent className="p-5">
-                      <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-3">
-                        💭 Internal manager thoughts:
-                      </h3>
-                      <p className="text-blue-800 dark:text-blue-200 italic text-base leading-relaxed bg-white/50 dark:bg-gray-800/50 p-4 rounded border-l-4 border-blue-500">
-                        "{mirrorData.mirror_message || mirrorData.employer_perspective}"
-                      </p>
-                    </CardContent>
-                  </Card>
-                </ActionCard>
-                
-                <div className="grid md:grid-cols-2 gap-4">
-                  <ActionCard
-                    title="Your Strengths"
-                    description="What managers see as your advantages"
-                    icon={Target}
-                    status="completed"
-                  >
-                    <ul className="space-y-2">
-                      {mirrorData.key_strengths?.map((strength: string, i: number) => (
-                        <li key={i} className="flex items-start gap-2 text-green-800 dark:text-green-200">
-                          <span className="text-green-600 mt-1">✓</span>
-                          <span className="text-sm">{strength}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </ActionCard>
-                  
-                  <ActionCard
-                    title="Potential Concerns"
-                    description="Areas that might need addressing"
-                    icon={Eye}
-                    status="completed"
-                  >
-                    <ul className="space-y-2">
-                      <li className="flex items-start gap-2 text-orange-800 dark:text-orange-200">
-                        <span className="text-orange-600 mt-1">💡</span>
-                        <span className="text-sm">{mirrorData.next_level_hint || "Continue building your profile to strengthen your position"}</span>
-                      </li>
-                    </ul>
-                  </ActionCard>
-                </div>
-
-                <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-800">
+              <div className="space-y-4">
+                {/* Overall Score Hero */}
+                <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
                   <CardContent className="p-6">
-                    <div className="text-center mb-4">
-                      <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 text-lg px-4 py-2">
-                        Recruiter Score: {mirrorData.score || 7}/10
-                      </Badge>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium text-purple-900 dark:text-purple-100">Recruiter Assessment:</span>
-                      <div className="flex-1 bg-purple-200 dark:bg-purple-800 rounded-full h-3 relative overflow-hidden">
-                        <div 
-                          className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-1000 shadow-lg"
-                          style={{ width: `${((mirrorData.score || 7) / 10) * 100}%` }}
-                        />
+                    <div className="text-center">
+                      <h3 className="text-2xl font-bold mb-2">
+                        Overall Impression: {mirrorData.score || 7}/10
+                      </h3>
+                      <div className="flex justify-center gap-1 mb-4">
+                        {Array.from({ length: 10 }, (_, i) => (
+                          <div
+                            key={i}
+                            className={`h-2 w-8 rounded-full transition-all ${
+                              i < (mirrorData.score || 7) ? 'bg-primary' : 'bg-muted'
+                            }`}
+                          />
+                        ))}
                       </div>
+                      
+                      {mirrorData.score_breakdown && (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                          <div className="bg-card p-3 rounded-lg border">
+                            <div className="font-medium text-muted-foreground mb-1">Clarity</div>
+                            <div className="text-lg font-bold">{mirrorData.score_breakdown.clarity || 0}/3</div>
+                          </div>
+                          <div className="bg-card p-3 rounded-lg border">
+                            <div className="font-medium text-muted-foreground mb-1">Relevance</div>
+                            <div className="text-lg font-bold">{mirrorData.score_breakdown.relevance || 0}/3</div>
+                          </div>
+                          <div className="bg-card p-3 rounded-lg border">
+                            <div className="font-medium text-muted-foreground mb-1">Realism</div>
+                            <div className="text-lg font-bold">{mirrorData.score_breakdown.realism || 0}/2</div>
+                          </div>
+                          <div className="bg-card p-3 rounded-lg border">
+                            <div className="font-medium text-muted-foreground mb-1">Impact</div>
+                            <div className="text-lg font-bold">{mirrorData.score_breakdown.professional_impression || 0}/2</div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
 
-                <div className="text-center pt-4">
-                  <h3 className="text-xl font-semibold text-foreground mb-4">
-                    🎉 Ready to build your professional profile?
-                  </h3>
-                  <p className="text-muted-foreground mb-6">
-                    Take these insights and create a resume that showcases your true value.
-                  </p>
+                {/* Recruiter Perspective - Always Open */}
+                <CollapsibleAnalysisCard
+                  title="How Recruiters See You"
+                  icon="👔"
+                  isDefaultOpen={true}
+                >
+                  <div className="space-y-3">
+                    <p className="text-base leading-relaxed italic border-l-4 border-primary pl-4 py-2 bg-muted/30">
+                      "{mirrorData.recruiter_perspective || mirrorData.mirror_message}"
+                    </p>
+                  </div>
+                </CollapsibleAnalysisCard>
+
+                {/* Key Strengths */}
+                {mirrorData.key_strengths && mirrorData.key_strengths.length > 0 && (
+                  <CollapsibleAnalysisCard
+                    title="What Makes You Stand Out"
+                    icon="💎"
+                    isDefaultOpen={false}
+                  >
+                    <ul className="space-y-2">
+                      {mirrorData.key_strengths.map((strength: string, i: number) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="text-green-600 dark:text-green-400 mt-1">✓</span>
+                          <span className="text-sm">{strength}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CollapsibleAnalysisCard>
+                )}
+
+                {/* Contradictions/Areas to Watch */}
+                {mirrorData.contradictions && mirrorData.contradictions.length > 0 && (
+                  <CollapsibleAnalysisCard
+                    title="Areas to Watch"
+                    icon="⚠️"
+                    isDefaultOpen={false}
+                  >
+                    <ul className="space-y-2">
+                      {mirrorData.contradictions.map((contradiction: string, i: number) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="text-orange-600 dark:text-orange-400 mt-1">!</span>
+                          <span className="text-sm">{contradiction}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CollapsibleAnalysisCard>
+                )}
+
+                {/* Employer Perspective */}
+                {mirrorData.employer_perspective && (
+                  <CollapsibleAnalysisCard
+                    title="Employer's First Impression"
+                    icon="👔"
+                    isDefaultOpen={false}
+                  >
+                    <p className="text-sm leading-relaxed">{mirrorData.employer_perspective}</p>
+                  </CollapsibleAnalysisCard>
+                )}
+
+                {/* Coaching Advice */}
+                {(mirrorData.coaching_nudge || mirrorData.next_level_hint) && (
+                  <CollapsibleAnalysisCard
+                    title="Your Coach's Advice"
+                    icon="💡"
+                    isDefaultOpen={false}
+                  >
+                    <div className="space-y-3">
+                      {mirrorData.coaching_nudge && (
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground mb-1">Next Step:</p>
+                          <p className="text-sm">{mirrorData.coaching_nudge}</p>
+                        </div>
+                      )}
+                      {mirrorData.next_level_hint && (
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground mb-1">To Level Up:</p>
+                          <p className="text-sm">{mirrorData.next_level_hint}</p>
+                        </div>
+                      )}
+                    </div>
+                  </CollapsibleAnalysisCard>
+                )}
+
+                {/* CTA */}
+                <div className="text-center pt-6 space-y-4">
+                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                    <p className="text-base font-medium mb-2">
+                      🎯 You're ready to showcase your value
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Use these insights to build a profile that stands out to employers
+                    </p>
+                  </div>
+                  
                   <Button 
                     onClick={handleComplete} 
                     size="lg" 
-                    className="px-12 py-4 text-sm bg-gradient-to-r from-primary via-secondary to-primary hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                    className="w-full py-6 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
                   >
-                    Build Your Resume Now ✨
+                    Build Your Profile Now ✨
                   </Button>
                 </div>
               </div>

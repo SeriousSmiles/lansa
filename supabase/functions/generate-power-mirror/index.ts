@@ -35,7 +35,7 @@ Your job is not to flatter, not to rewrite perfectly, but to give perspective, c
 
 STUDENT'S ACTUAL RESPONSES:
 - Academic Status: ${demographics?.academic_status || 'Not provided'}
-- Field of Study: ${demographics?.field_of_study || 'Not provided'}  
+- Field of Study: ${demographics?.major || 'Not provided'}  
 - Career Goal: ${demographics?.career_goal_type || 'Not provided'}
 - Their Value Skill Statement: "${skillReframe || 'Not provided'}"
 - Their 90-Day Goal: "${goalStatement || 'Not provided'}"
