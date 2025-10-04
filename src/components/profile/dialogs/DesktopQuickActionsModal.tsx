@@ -106,19 +106,20 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]"
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[199]"
               onClick={onClose}
             />
 
-            {/* Modal */}
-            <motion.div
-              initial={{ opacity: 0, y: 100 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 100 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed left-1/2 -translate-x-1/2 bottom-8 sm:bottom-16 z-[101] w-full max-w-2xl px-4"
-            >
-              <div className="bg-card rounded-3xl p-8 w-full shadow-xl max-h-[80vh] overflow-auto">
+            {/* Modal - Fixed wrapper for positioning */}
+            <div className="fixed left-1/2 -translate-x-1/2 bottom-8 sm:bottom-16 z-[200] w-full max-w-2xl px-4 pointer-events-none">
+              <motion.div
+                initial={{ opacity: 0, y: 100 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 100 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="pointer-events-auto"
+              >
+                <div className="bg-card rounded-3xl p-8 w-full shadow-xl max-h-[80vh] overflow-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                   <div>
@@ -161,7 +162,8 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
                   })}
                 </div>
               </div>
-            </motion.div>
+              </motion.div>
+            </div>
           </>
         )}
       </AnimatePresence>
