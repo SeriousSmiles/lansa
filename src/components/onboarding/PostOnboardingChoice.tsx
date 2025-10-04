@@ -33,7 +33,7 @@ export function PostOnboardingChoice({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[1040px] !top-auto !bottom-16 !translate-y-0">
+        <DialogContent position="bottom" className="sm:max-w-[1040px]">
           <DialogHeader className="text-center space-y-3">
             <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
               <Sparkles className="w-8 h-8 text-white" />
