@@ -111,98 +111,96 @@ export function DesktopQuickActionsModal({
 
   return (
     <>
-      <AnimatePresence>
         {isOpen &&
           createPortal(
-            <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className="fixed inset-0 z-[199] bg-black/60 backdrop-blur-md"
-              onClick={onClose}
-            />
-
-            {/* Modal - Always fixed to viewport bottom */}
-            <div 
-              className="
-                fixed inset-x-0 z-[200] flex justify-center
-                bottom-0 md:bottom-8 px-4 pointer-events-none
-              "
-            >
+            <AnimatePresence>
+              {/* Backdrop */}
               <motion.div
-                initial={{ opacity: 0, y: 80 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 80 }}
-                transition={{ type: 'spring', damping: 24, stiffness: 250, mass: 0.6 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="fixed inset-0 z-[199] bg-black/60 backdrop-blur-md"
+                onClick={onClose}
+              />
+
+              {/* Modal - Always fixed to viewport bottom */}
+              <div 
                 className="
-                  pointer-events-auto w-full max-w-2xl 
-                  bg-card rounded-t-3xl md:rounded-3xl p-8 shadow-2xl
-                  max-h-[90vh] overflow-y-auto
+                  fixed inset-x-0 z-[200] flex justify-center
+                  bottom-0 md:bottom-8 px-4 pointer-events-none
                 "
               >
-                {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                  <div>
-                    <h2 className="text-2xl font-urbanist font-semibold text-foreground">
-                      Quick Actions
-                    </h2>
-                    <p className="text-muted-foreground mt-1">
-                      What would you like to do?
-                    </p>
+                <motion.div
+                  initial={{ opacity: 0, y: 80 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 80 }}
+                  transition={{ type: 'spring', damping: 24, stiffness: 250, mass: 0.6 }}
+                  className="
+                    pointer-events-auto w-full max-w-2xl 
+                    bg-card rounded-t-3xl md:rounded-3xl p-8 shadow-2xl
+                    max-h-[90vh] overflow-y-auto
+                  "
+                >
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-8">
+                    <div>
+                      <h2 className="text-2xl font-urbanist font-semibold text-foreground">
+                        Quick Actions
+                      </h2>
+                      <p className="text-muted-foreground mt-1">
+                        What would you like to do?
+                      </p>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={onClose}>
+                      <X className="h-5 w-5" />
+                    </Button>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={onClose}>
-                    <X className="h-5 w-5" />
-                  </Button>
-                </div>
 
-                {/* Actions Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                  {quickActions.map((action, index) => {
-                    const Icon = action.icon;
-                    return (
-                      <motion.button
-                        key={action.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{
-                          delay: index * 0.05,
-                          type: 'spring',
-                          stiffness: 300,
-                        }}
-                        onClick={action.action}
-                        className={`
-                          flex flex-col items-center justify-center p-6 rounded-2xl
-                          ${action.bgColor} transition-all duration-200
-                          hover:scale-105 active:scale-95 transform group
-                          min-h-[120px]
-                        `}
-                      >
-                        <div
+                  {/* Actions Grid */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    {quickActions.map((action, index) => {
+                      const Icon = action.icon;
+                      return (
+                        <motion.button
+                          key={action.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{
+                            delay: index * 0.05,
+                            type: 'spring',
+                            stiffness: 300,
+                          }}
+                          onClick={action.action}
                           className={`
-                            h-12 w-12 rounded-2xl ${action.bgColor}
-                            flex items-center justify-center mb-4
-                            group-hover:scale-110 transition-transform
+                            flex flex-col items-center justify-center p-6 rounded-2xl
+                            ${action.bgColor} transition-all duration-200
+                            hover:scale-105 active:scale-95 transform group
+                            min-h-[120px]
                           `}
                         >
-                          <Icon className={`h-6 w-6 ${action.iconColor}`} />
-                        </div>
-                        <span className="text-sm font-medium text-center text-foreground">
-                          {action.label}
-                        </span>
-                      </motion.button>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            </div>
-          </>,
+                          <div
+                            className={`
+                              h-12 w-12 rounded-2xl ${action.bgColor}
+                              flex items-center justify-center mb-4
+                              group-hover:scale-110 transition-transform
+                            `}
+                          >
+                            <Icon className={`h-6 w-6 ${action.iconColor}`} />
+                          </div>
+                          <span className="text-sm font-medium text-center text-foreground">
+                            {action.label}
+                          </span>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              </div>
+            </AnimatePresence>,
             document.body
           )
         }
-      </AnimatePresence>
 
       {/* Linked Modals */}
       <AnimatePresence>
