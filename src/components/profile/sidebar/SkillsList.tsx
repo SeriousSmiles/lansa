@@ -69,16 +69,25 @@ export function SkillsList({
   };
 
   const handleApplySuggestion = async (suggestion: string) => {
-    // Parse the suggested skills (comma-separated) and add them
+    // Parse the suggested skills (comma-separated)
     const newSkills = suggestion.split(',').map(s => s.trim()).filter(s => s);
     
     try {
+      // First, remove all existing skills
+      for (const oldSkill of skills) {
+        if (onRemoveSkill) {
+          await onRemoveSkill(oldSkill);
+        }
+      }
+      
+      // Then, add the new AI-suggested skills
       for (const skill of newSkills) {
-        if (!skills.includes(skill) && onAddSkill) {
+        if (onAddSkill) {
           await onAddSkill(skill);
         }
       }
-      toast.success("Skills updated with AI suggestions!");
+      
+      toast.success("Skills replaced with AI suggestions!");
     } catch (error) {
       console.error("Error updating skills:", error);
       toast.error("Failed to update skills");

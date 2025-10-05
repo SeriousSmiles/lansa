@@ -1,9 +1,8 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles } from 'lucide-react';
+import { X, Sparkles, CheckCircle, AlertCircle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 
 interface AIModalProps {
   isOpen: boolean;
@@ -103,54 +102,40 @@ export function AIModal({
                       </div>
                     </div>
 
-                    {/* Score Visualization */}
+                    {/* Quality Indicator */}
                     <div className="pt-2">
-                      <h4 className="text-sm font-medium mb-3">Quality Scores</h4>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span className="text-muted-foreground">Clarity</span>
-                            <span className="font-medium">{aiResult.score.clarity}/10</span>
-                          </div>
-                          <Progress 
-                            value={aiResult.score.clarity * 10} 
-                            className="h-2"
-                            indicatorClassName="bg-blue-500"
-                          />
-                        </div>
-                        <div>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span className="text-muted-foreground">Confidence</span>
-                            <span className="font-medium">{aiResult.score.confidence}/10</span>
-                          </div>
-                          <Progress 
-                            value={aiResult.score.confidence * 10} 
-                            className="h-2"
-                            indicatorClassName="bg-green-500"
-                          />
-                        </div>
-                        <div>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span className="text-muted-foreground">Specificity</span>
-                            <span className="font-medium">{aiResult.score.specificity}/10</span>
-                          </div>
-                          <Progress 
-                            value={aiResult.score.specificity * 10} 
-                            className="h-2"
-                            indicatorClassName="bg-purple-500"
-                          />
-                        </div>
-                        <div>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span className="text-muted-foreground">Professional Impact</span>
-                            <span className="font-medium">{aiResult.score.professional_impression}/10</span>
-                          </div>
-                          <Progress 
-                            value={aiResult.score.professional_impression * 10} 
-                            className="h-2"
-                            indicatorClassName="bg-orange-500"
-                          />
-                        </div>
+                      <div className="flex items-center gap-2 text-sm bg-muted/30 rounded-lg p-3">
+                        {(() => {
+                          const avgScore = (
+                            aiResult.score.clarity +
+                            aiResult.score.confidence +
+                            aiResult.score.specificity +
+                            aiResult.score.professional_impression
+                          ) / 4;
+
+                          if (avgScore >= 8) {
+                            return (
+                              <>
+                                <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                <span className="text-muted-foreground">Strong improvement - Ready to apply</span>
+                              </>
+                            );
+                          } else if (avgScore >= 6) {
+                            return (
+                              <>
+                                <Info className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                                <span className="text-muted-foreground">Good enhancement suggested</span>
+                              </>
+                            );
+                          } else {
+                            return (
+                              <>
+                                <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                                <span className="text-muted-foreground">Consider these improvements</span>
+                              </>
+                            );
+                          }
+                        })()}
                       </div>
                     </div>
                   </div>
