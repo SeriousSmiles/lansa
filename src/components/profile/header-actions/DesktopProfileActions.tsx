@@ -110,7 +110,10 @@ export function DesktopProfileActions({
       {/* Quick Actions - Standalone prominent button - Hidden on mobile */}
       {!isMobile && (
         <Button
-          onClick={() => setIsQuickActionsOpen(true)}
+          onClick={() => {
+            console.info('[DesktopProfileActions] Quick Actions clicked');
+            setIsQuickActionsOpen(true);
+          }}
           variant="primary"
           size="sm"
           className="bg-primary text-primary-foreground hover:bg-primary/90"

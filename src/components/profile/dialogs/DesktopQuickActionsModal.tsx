@@ -52,6 +52,11 @@ export function DesktopQuickActionsModal({
     return () => document.removeEventListener('keydown', handleEsc);
   }, [isOpen, onClose]);
 
+  // Debug visibility state
+  useEffect(() => {
+    console.info('[DesktopQuickActionsModal] isOpen:', isOpen);
+  }, [isOpen]);
+
   // ⚡ Quick Actions
   const quickActions: QuickAction[] = [
     {
