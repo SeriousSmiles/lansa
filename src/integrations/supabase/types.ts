@@ -1045,6 +1045,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          created_at: string | null
+          credential_id: string | null
+          credential_url: string | null
+          date_achieved: string | null
+          description: string
+          display_order: number | null
+          id: string
+          is_featured: boolean | null
+          organization: string | null
+          title: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          credential_id?: string | null
+          credential_url?: string | null
+          date_achieved?: string | null
+          description: string
+          display_order?: number | null
+          id?: string
+          is_featured?: boolean | null
+          organization?: string | null
+          title: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          credential_id?: string | null
+          credential_url?: string | null
+          date_achieved?: string | null
+          description?: string
+          display_order?: number | null
+          id?: string
+          is_featured?: boolean | null
+          organization?: string | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_actions: {
         Row: {
           action_type: string
@@ -1584,6 +1632,7 @@ export type Database = {
       user_profiles_public: {
         Row: {
           about_text: string | null
+          achievements: Json | null
           biggest_challenge: string | null
           cover_color: string | null
           created_at: string
@@ -1604,6 +1653,7 @@ export type Database = {
         }
         Insert: {
           about_text?: string | null
+          achievements?: Json | null
           biggest_challenge?: string | null
           cover_color?: string | null
           created_at?: string
@@ -1624,6 +1674,7 @@ export type Database = {
         }
         Update: {
           about_text?: string | null
+          achievements?: Json | null
           biggest_challenge?: string | null
           cover_color?: string | null
           created_at?: string

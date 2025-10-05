@@ -13,6 +13,7 @@ import { toast } from '@/hooks/use-toast';
 interface AchievementModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onAddAchievement?: (achievement: any) => Promise<void>;
 }
 
 interface Achievement {
@@ -33,7 +34,7 @@ const achievementTypes = [
   { value: 'education', label: 'Educational Achievement', icon: GraduationCap, color: 'text-indigo-500 bg-indigo-500/10' }
 ];
 
-export function AchievementModal({ isOpen, onClose }: AchievementModalProps) {
+export function AchievementModal({ isOpen, onClose, onAddAchievement }: AchievementModalProps) {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [achievement, setAchievement] = useState<Achievement>({

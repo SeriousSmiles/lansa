@@ -45,6 +45,19 @@ export interface ProjectItem {
   is_featured?: boolean;
 }
 
+export interface AchievementItem {
+  id?: string;
+  type: 'certification' | 'award' | 'project' | 'skill' | 'work' | 'education';
+  title: string;
+  description: string;
+  dateAchieved?: string;
+  organization?: string;
+  credentialId?: string;
+  credentialUrl?: string;
+  isFeatured?: boolean;
+  displayOrder?: number;
+}
+
 // Define interface for profile data
 export interface UserProfile {
   user_id?: string;
@@ -60,6 +73,7 @@ export interface UserProfile {
   languages?: LanguageItem[];
   certifications?: CertificationItem[];
   projects?: ProjectItem[];
+  achievements?: AchievementItem[];
   experiences?: ExperienceItem[];
   education?: EducationItem[];
   professional_goal?: string;
@@ -90,6 +104,7 @@ export interface ProfileDataReturn {
   userLanguages: LanguageItem[];
   userCertifications: CertificationItem[];
   userProjects: ProjectItem[];
+  userAchievements: AchievementItem[];
   experiences: ExperienceItem[];
   educationItems: EducationItem[];
   userEmail: string;
@@ -129,6 +144,11 @@ export interface ProfileDataReturn {
   addProject: (project: ProjectItem) => Promise<void>;
   editProject: (id: string, updatedProject: ProjectItem) => Promise<void>;
   removeProject: (id: string) => Promise<void>;
+  
+  // Achievement functions
+  addAchievement: (achievement: AchievementItem) => Promise<void>;
+  editAchievement: (id: string, updatedAchievement: AchievementItem) => Promise<void>;
+  removeAchievement: (id: string) => Promise<void>;
   
   // Experience functions
   addExperience: (experience: ExperienceItem) => Promise<void>;

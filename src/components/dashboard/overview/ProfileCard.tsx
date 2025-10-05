@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AnimatedCard } from "@/components/dashboard/AnimatedCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfileData } from "@/hooks/useProfileData";
-import { User, MapPin, Briefcase, GraduationCap, Building2 } from "lucide-react";
+import { User, MapPin, Briefcase, GraduationCap, Building2, Award } from "lucide-react";
 import { PDFDownloadButton } from "@/components/pdf/PDFDownloadButton";
 
 interface ProfileCardProps {
@@ -183,6 +183,31 @@ export function ProfileCard({ role, goal }: ProfileCardProps) {
                 {educationItems.length > 1 && (
                   <p className="text-xs text-muted-foreground mt-1">
                     +{educationItems.length - 1} more
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Featured Achievements */}
+          {profileData.userAchievements && profileData.userAchievements.filter(a => a.isFeatured).length > 0 && (
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Award className="w-4 h-4" style={{ color: highlightColor || '#FF6B4A' }} />
+                <span className="text-sm font-medium">Featured Achievements</span>
+              </div>
+              <div className="pl-6 space-y-2">
+                {profileData.userAchievements.filter(a => a.isFeatured).slice(0, 2).map((achievement, index) => (
+                  <div key={index}>
+                    <p className="text-sm font-medium">{achievement.title}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {achievement.description}
+                    </p>
+                  </div>
+                ))}
+                {profileData.userAchievements.filter(a => a.isFeatured).length > 2 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    +{profileData.userAchievements.filter(a => a.isFeatured).length - 2} more achievements
                   </p>
                 )}
               </div>

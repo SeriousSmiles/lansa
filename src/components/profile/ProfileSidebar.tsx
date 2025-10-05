@@ -4,8 +4,9 @@ import { SidebarPersonalInfo } from "./sidebar/SidebarPersonalInfo";
 import { SkillsList } from "./sidebar/SkillsList";
 import { LanguagesList } from "./sidebar/LanguagesList";
 import { CertificationsList } from "./sidebar/CertificationsList";
+import { AchievementsList } from "./sidebar/AchievementsList";
 import { ProfessionalGoalWithAI } from "./sidebar/ProfessionalGoalWithAI";
-import { LanguageItem, CertificationItem } from "@/hooks/profile/profileTypes";
+import { LanguageItem, CertificationItem, AchievementItem } from "@/hooks/profile/profileTypes";
 
 interface ProfileSidebarProps {
   userName: string;
@@ -15,6 +16,7 @@ interface ProfileSidebarProps {
   skills: string[];
   languages?: LanguageItem[];
   certifications?: CertificationItem[];
+  achievements?: AchievementItem[];
   goal: string;
   phoneNumber?: string;
   coverColor?: string;
@@ -39,6 +41,9 @@ interface ProfileSidebarProps {
   onAddCertification?: (cert: CertificationItem) => Promise<void>;
   onEditCertification?: (id: string, cert: CertificationItem) => Promise<void>;
   onRemoveCertification?: (id: string) => Promise<void>;
+  onAddAchievement?: (achievement: AchievementItem) => Promise<void>;
+  onEditAchievement?: (id: string, achievement: AchievementItem) => Promise<void>;
+  onRemoveAchievement?: (id: string) => Promise<void>;
   onUploadProfileImage?: (file: File) => Promise<string>;
 }
 
@@ -50,6 +55,7 @@ export function ProfileSidebar({
   skills, 
   languages = [],
   certifications = [],
+  achievements = [],
   goal,
   phoneNumber,
   coverColor,
@@ -74,6 +80,9 @@ export function ProfileSidebar({
   onAddCertification,
   onEditCertification,
   onRemoveCertification,
+  onAddAchievement,
+  onEditAchievement,
+  onRemoveAchievement,
   onUploadProfileImage,
 }: ProfileSidebarProps) {
   // Use our custom hook to handle all events
@@ -142,6 +151,15 @@ export function ProfileSidebar({
         onAddCertification={onAddCertification}
         onEditCertification={onEditCertification}
         onRemoveCertification={onRemoveCertification}
+        highlightColor={highlightColor}
+      />
+      
+      {/* Achievements - Featured placement */}
+      <AchievementsList
+        achievements={achievements}
+        onAddAchievement={onAddAchievement}
+        onEditAchievement={onEditAchievement}
+        onRemoveAchievement={onRemoveAchievement}
         highlightColor={highlightColor}
       />
       

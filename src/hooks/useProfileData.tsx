@@ -8,6 +8,7 @@ import { useProfileSkills } from "./profile/useProfileSkills";
 import { useProfileLanguages } from "./profile/useProfileLanguages";
 import { useProfileCertifications } from "./profile/useProfileCertifications";
 import { useProfileProjects } from "./profile/useProfileProjects";
+import { useProfileAchievements } from "./profile/useProfileAchievements";
 import { useProfileExperience } from "./profile/useProfileExperience";
 import { useProfileEducation } from "./profile/useProfileEducation";
 import { useProfileImage } from "./profile/useProfileImage";
@@ -41,6 +42,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
   const profileLanguages = useProfileLanguages({ userId, updateProfileData: profileBasics.updateProfileData });
   const profileCertifications = useProfileCertifications({ userId });
   const profileProjects = useProfileProjects({ userId });
+  const profileAchievements = useProfileAchievements({ userId });
   const profileExperience = useProfileExperience({ userId, updateProfileData: profileBasics.updateProfileData });
   const profileEducation = useProfileEducation({ userId, updateProfileData: profileBasics.updateProfileData });
   const profileImage = useProfileImage({ userId, updateProfileData: profileBasics.updateProfileData });
@@ -63,9 +65,10 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     
     try {
       await loadProfileFromDatabase(answers);
-      // Fetch certifications and projects from database
+      // Fetch certifications, projects, and achievements from database
       await profileCertifications.fetchCertifications();
       await profileProjects.fetchProjects();
+      await profileAchievements.fetchAchievements();
     } catch (error) {
       console.error("Error loading profile data:", error);
       toast({
@@ -172,6 +175,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     userLanguages: profileLanguages.userLanguages,
     userCertifications: profileCertifications.userCertifications,
     userProjects: profileProjects.userProjects,
+    userAchievements: profileAchievements.userAchievements,
     experiences: profileExperience.experiences,
     educationItems: profileEducation.educationItems,
     userEmail: profileBasics.userEmail,
@@ -211,6 +215,11 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     addProject: profileProjects.addProject,
     editProject: profileProjects.editProject,
     removeProject: profileProjects.removeProject,
+    
+    // Achievement functions
+    addAchievement: profileAchievements.addAchievement,
+    editAchievement: profileAchievements.editAchievement,
+    removeAchievement: profileAchievements.removeAchievement,
     
     // Experience functions
     addExperience: profileExperience.addExperience,

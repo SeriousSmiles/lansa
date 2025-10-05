@@ -13,6 +13,12 @@ export interface DiscoveryProfile {
   cover_color?: string;
   highlight_color?: string;
   professional_goal?: string;
+  achievements?: Array<{
+    type: string;
+    title: string;
+    description: string;
+    isFeatured: boolean;
+  }>;
 }
 
 export interface DiscoveryFilters {
@@ -47,7 +53,18 @@ export const discoveryService = {
           skills: profile.skills || [],
           cover_color: profile.cover_color,
           highlight_color: profile.highlight_color || '#FF6B4A',
-          professional_goal: profile.professional_goal
+          professional_goal: profile.professional_goal,
+          achievements: Array.isArray(profile.achievements) 
+            ? profile.achievements
+                .filter((a: any) => a.is_featured)
+                .slice(0, 3)
+                .map((a: any) => ({
+                  type: a.type,
+                  title: a.title,
+                  description: a.description,
+                  isFeatured: a.is_featured,
+                }))
+            : []
         }));
 
         // Apply skill filtering if provided

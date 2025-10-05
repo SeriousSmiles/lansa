@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Briefcase, User } from "lucide-react";
+import { MapPin, Briefcase, User, Award } from "lucide-react";
 import { gsap } from "gsap";
 import { cn } from "@/lib/utils";
 import { DiscoveryProfile } from "@/services/discoveryService";
@@ -226,6 +226,43 @@ export function SwipeCard({ profile, onSwipe, isActive, zIndex }: SwipeCardProps
                     +{profile.skills.length - 8} more
                   </Badge>
                 )}
+              </div>
+            </div>
+          )}
+          {profile.achievements && profile.achievements.filter(a => a.isFeatured).length > 0 && (
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <h4 className="font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
+                <div 
+                  className="w-6 h-6 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: `${profile.highlight_color || '#FF6B4A'}20` }}
+                >
+                  <Award 
+                    className="w-3.5 h-3.5" 
+                    style={{ color: profile.highlight_color || '#FF6B4A' }}
+                  />
+                </div>
+                Key Achievements
+              </h4>
+              <div className="space-y-2">
+                {profile.achievements.filter(a => a.isFeatured).slice(0, 2).map((achievement, index) => (
+                  <div 
+                    key={index} 
+                    className="flex items-start gap-2 p-2 rounded-lg bg-background/50"
+                  >
+                    <div 
+                      className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
+                      style={{ backgroundColor: profile.highlight_color || '#FF6B4A' }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-foreground line-clamp-1">
+                        {achievement.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-1">
+                        {achievement.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
