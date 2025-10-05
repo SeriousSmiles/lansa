@@ -34,6 +34,17 @@ export interface CertificationItem {
   description?: string;
 }
 
+export interface ProjectItem {
+  id?: string;
+  title: string;
+  description?: string;
+  url?: string;
+  technologies?: string[];
+  start_date?: string;
+  end_date?: string;
+  is_featured?: boolean;
+}
+
 // Define interface for profile data
 export interface UserProfile {
   user_id?: string;
@@ -48,6 +59,7 @@ export interface UserProfile {
   skills?: string[];
   languages?: LanguageItem[];
   certifications?: CertificationItem[];
+  projects?: ProjectItem[];
   experiences?: ExperienceItem[];
   education?: EducationItem[];
   professional_goal?: string;
@@ -77,6 +89,7 @@ export interface ProfileDataReturn {
   userSkills: string[];
   userLanguages: LanguageItem[];
   userCertifications: CertificationItem[];
+  userProjects: ProjectItem[];
   experiences: ExperienceItem[];
   educationItems: EducationItem[];
   userEmail: string;
@@ -111,6 +124,11 @@ export interface ProfileDataReturn {
   addCertification: (cert: CertificationItem) => Promise<void>;
   editCertification: (id: string, updatedCert: CertificationItem) => Promise<void>;
   removeCertification: (id: string) => Promise<void>;
+  
+  // Project functions
+  addProject: (project: ProjectItem) => Promise<void>;
+  editProject: (id: string, updatedProject: ProjectItem) => Promise<void>;
+  removeProject: (id: string) => Promise<void>;
   
   // Experience functions
   addExperience: (experience: ExperienceItem) => Promise<void>;

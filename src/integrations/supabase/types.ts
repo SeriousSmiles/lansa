@@ -1644,6 +1644,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_projects: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          is_featured: boolean | null
+          start_date: string | null
+          technologies: string[] | null
+          title: string
+          updated_at: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_featured?: boolean | null
+          start_date?: string | null
+          technologies?: string[] | null
+          title: string
+          updated_at?: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_featured?: boolean | null
+          start_date?: string | null
+          technologies?: string[] | null
+          title?: string
+          updated_at?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_resumes: {
         Row: {
           confidence_scores: Json | null
