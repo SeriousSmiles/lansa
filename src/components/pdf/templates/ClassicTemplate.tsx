@@ -146,13 +146,25 @@ export function ClassicTemplate({ data }: ClassicTemplateProps) {
                 <h3 className="text-base font-bold text-gray-900 mb-3 uppercase tracking-wider border-b border-gray-300 pb-2">
                   Languages
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {languages.map((lang, index) => {
-                    const percentage = (lang.level / 5) * 100;
+                    const levelNames = ['Beginner', 'Elementary', 'Intermediate', 'Advanced', 'Native'];
+                    const levelName = levelNames[lang.level - 1] || 'Unknown';
+                    
                     return (
-                      <div key={index} className="flex justify-between items-center">
-                        <span className="text-sm text-gray-700">{lang.name}</span>
-                        <span className="text-xs text-gray-600 font-medium">{percentage}%</span>
+                      <div key={index}>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-xs font-medium text-gray-800">{lang.name}</span>
+                          <span className="text-xs font-medium px-2 py-0.5 rounded bg-gray-200 text-gray-700">
+                            {levelName}
+                          </span>
+                        </div>
+                        <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full rounded-full transition-all bg-gray-700"
+                            style={{ width: `${(lang.level / 5) * 100}%` }}
+                          ></div>
+                        </div>
                       </div>
                     );
                   })}

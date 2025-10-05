@@ -131,21 +131,28 @@ export function CreativeTemplate({ data }: CreativeTemplateProps) {
                   className="w-12 h-1 mx-auto mb-3"
                   style={{ backgroundColor: colors.secondary }}
                 ></div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {languages.map((lang, index) => {
-                    const percentage = (lang.level / 5) * 100;
+                    const levelNames = ['Beginner', 'Elementary', 'Intermediate', 'Advanced', 'Native'];
+                    const levelName = levelNames[lang.level - 1] || 'Unknown';
+                    
                     return (
-                      <div key={index} className="text-center">
+                      <div key={index}>
                         <div className="flex justify-between items-center mb-1 px-2">
                           <span className="text-xs font-medium text-gray-800">{lang.name}</span>
-                          <span className="text-xs text-gray-600">{percentage}%</span>
+                          <span 
+                            className="text-xs font-medium px-2 py-0.5 rounded text-white"
+                            style={{ backgroundColor: colors.primary }}
+                          >
+                            {levelName}
+                          </span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-1">
+                        <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                           <div 
-                            className="h-1 rounded-full"
+                            className="h-full rounded-full transition-all"
                             style={{ 
-                              backgroundColor: colors.primary,
-                              width: `${percentage}%`
+                              width: `${(lang.level / 5) * 100}%`,
+                              backgroundColor: colors.primary
                             }}
                           ></div>
                         </div>

@@ -70,28 +70,44 @@ export function TimelineTemplate({ data, options }: TimelineTemplateProps) {
               >
                 {labels.languages}
               </h3>
-              <div className="space-y-2">
-                {languages.map((lang, index) => (
-                  <div key={index} className="text-xs">
-                    <span className="font-medium text-gray-800">{lang.name}</span>
-                    <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                      <div 
-                        className="h-1.5 rounded-full"
-                        style={{ 
-                          backgroundColor: atsMode ? '#666' : colors.primary,
-                          width: `${(lang.level / 5) * 100}%` 
-                        }}
-                      ></div>
+              <div className="space-y-3">
+                {languages.map((lang, index) => {
+                  const levelNames = ['Beginner', 'Elementary', 'Intermediate', 'Advanced', 'Native'];
+                  const levelName = levelNames[lang.level - 1] || 'Unknown';
+                  
+                  return (
+                    <div key={index}>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-medium text-gray-800">{lang.name}</span>
+                        <span 
+                          className="text-xs font-medium px-2 py-0.5 rounded"
+                          style={{ 
+                            backgroundColor: atsMode ? '#e0e0e0' : `${colors.primary}15`,
+                            color: atsMode ? '#333' : colors.primary 
+                          }}
+                        >
+                          {levelName}
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full rounded-full transition-all"
+                          style={{ 
+                            width: `${(lang.level / 5) * 100}%`,
+                            backgroundColor: atsMode ? '#666' : colors.primary
+                          }}
+                        ></div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
 
           {/* Professional Goal */}
           {personalInfo.professionalGoal && (
-            <div>
+            <div className="mb-8">
               <h3 
                 className="text-sm font-bold mb-3 uppercase tracking-wider pb-2 border-b"
                 style={{ color: atsMode ? '#1a1a1a' : colors.primary, borderColor: atsMode ? '#e0e0e0' : colors.primary }}
@@ -100,6 +116,21 @@ export function TimelineTemplate({ data, options }: TimelineTemplateProps) {
               </h3>
               <p className="text-xs text-gray-700 leading-relaxed">
                 {personalInfo.professionalGoal}
+              </p>
+            </div>
+          )}
+
+          {/* Biggest Challenge */}
+          {personalInfo.biggestChallenge && (
+            <div>
+              <h3 
+                className="text-sm font-bold mb-3 uppercase tracking-wider pb-2 border-b"
+                style={{ color: atsMode ? '#1a1a1a' : colors.primary, borderColor: atsMode ? '#e0e0e0' : colors.primary }}
+              >
+                Challenge
+              </h3>
+              <p className="text-xs text-gray-700 leading-relaxed">
+                {personalInfo.biggestChallenge}
               </p>
             </div>
           )}

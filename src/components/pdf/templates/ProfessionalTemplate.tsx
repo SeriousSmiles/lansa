@@ -9,16 +9,6 @@ interface ProfessionalTemplateProps {
 export function ProfessionalTemplate({ data }: ProfessionalTemplateProps) {
   const { personalInfo, experience, education, skills, colors, languages } = data;
 
-  // Use actual user languages or fallback to demo data
-  const languageSkills = languages && languages.length > 0 ? languages.map(lang => ({
-    name: lang.name,
-    level: (lang.level / 5) * 100 // Convert 1-5 scale to percentage
-  })) : [
-    { name: 'English', level: 90 },
-    { name: 'Spanish', level: 75 },
-    { name: 'French', level: 60 },
-  ];
-
   return (
     <div 
       id="pdf-resume-template" 
@@ -87,25 +77,32 @@ export function ProfessionalTemplate({ data }: ProfessionalTemplateProps) {
           )}
 
           {/* Languages */}
-          <div className="mb-6">
-            <h3 className="text-lg font-bold mb-3 uppercase tracking-wide">Languages</h3>
-            <div className="space-y-3">
-              {languageSkills.map((lang, index) => (
-                <div key={index}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>{lang.name}</span>
-                    <span>{lang.level}%</span>
-                  </div>
-                  <div className="w-full bg-white/30 rounded-full h-2">
-                    <div 
-                      className="bg-white h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${lang.level}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+          {languages && languages.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-lg font-bold mb-3 uppercase tracking-wide">Languages</h3>
+              <div className="space-y-3">
+                {languages.map((lang, index) => {
+                  const levelNames = ['Beginner', 'Elementary', 'Intermediate', 'Advanced', 'Native'];
+                  const levelName = levelNames[lang.level - 1] || 'Unknown';
+                  
+                  return (
+                    <div key={index}>
+                      <div className="flex justify-between items-center text-sm mb-1">
+                        <span>{lang.name}</span>
+                        <span className="text-xs px-2 py-0.5 rounded bg-white/20">{levelName}</span>
+                      </div>
+                      <div className="w-full bg-white/30 rounded-full h-2">
+                        <div 
+                          className="bg-white h-2 rounded-full transition-all"
+                          style={{ width: `${(lang.level / 5) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Professional Goal */}
           {personalInfo.professionalGoal && (

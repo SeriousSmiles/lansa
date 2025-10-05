@@ -105,6 +105,14 @@ export default function MinimalDoc({ data }: { data: PDFResumeData }) {
           </>
         )}
 
+        {/* Biggest Challenge */}
+        {personalInfo.biggestChallenge && (
+          <>
+            <Text style={styles.sectionHeading}>Challenge</Text>
+            <Text style={styles.text}>{personalInfo.biggestChallenge}</Text>
+          </>
+        )}
+
         {/* Experience */}
         {experience && experience.length > 0 && (
           <>
@@ -157,11 +165,15 @@ export default function MinimalDoc({ data }: { data: PDFResumeData }) {
         {languages && languages.length > 0 && (
           <>
             <Text style={styles.sectionHeading}>Languages</Text>
-            {languages.map((lang, index) => (
-              <Text key={index} style={styles.text}>
-                {lang.name} - {Math.round((lang.level / 5) * 100)}%
-              </Text>
-            ))}
+            {languages.map((lang, index) => {
+              const levelNames = ['Beginner', 'Elementary', 'Intermediate', 'Advanced', 'Native'];
+              const levelName = levelNames[lang.level - 1] || 'Unknown';
+              return (
+                <Text key={index} style={styles.text}>
+                  {lang.name} - {levelName}
+                </Text>
+              );
+            })}
           </>
         )}
       </Page>

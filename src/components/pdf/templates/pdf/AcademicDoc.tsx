@@ -105,6 +105,22 @@ export default function AcademicDoc({ data }: { data: PDFResumeData }) {
           </>
         )}
 
+        {/* Professional Goal */}
+        {personalInfo.professionalGoal && (
+          <>
+            <Text style={styles.sectionHeading}>Professional Objective</Text>
+            <Text style={styles.text}>{personalInfo.professionalGoal}</Text>
+          </>
+        )}
+
+        {/* Biggest Challenge */}
+        {personalInfo.biggestChallenge && (
+          <>
+            <Text style={styles.sectionHeading}>Current Challenge</Text>
+            <Text style={styles.text}>{personalInfo.biggestChallenge}</Text>
+          </>
+        )}
+
         {/* Education */}
         {education && education.length > 0 && (
           <>
@@ -185,11 +201,15 @@ export default function AcademicDoc({ data }: { data: PDFResumeData }) {
         {languages && languages.length > 0 && (
           <>
             <Text style={styles.sectionHeading}>Languages</Text>
-            {languages.map((lang, index) => (
-              <Text key={index} style={styles.listItem}>
-                {lang.name} - {['Basic', 'Conversational', 'Proficient', 'Fluent', 'Native'][Math.min(4, lang.level - 1)]}
-              </Text>
-            ))}
+            {languages.map((lang, index) => {
+              const levelNames = ['Beginner', 'Elementary', 'Intermediate', 'Advanced', 'Native'];
+              const levelName = levelNames[lang.level - 1] || 'Unknown';
+              return (
+                <Text key={index} style={styles.listItem}>
+                  {lang.name} - {levelName}
+                </Text>
+              );
+            })}
           </>
         )}
 
