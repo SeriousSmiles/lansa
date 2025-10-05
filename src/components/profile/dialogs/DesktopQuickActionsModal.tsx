@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Upload, 
-  Award, 
-  FileText, 
-  QrCode,
-  X
-} from 'lucide-react';
+import { Upload, Award, FileText, QrCode, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CVUploadModal } from '@/components/onboarding/cv/CVUploadModal';
@@ -27,13 +21,16 @@ interface DesktopQuickActionsModalProps {
   onClose: () => void;
 }
 
-export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickActionsModalProps) {
+export function DesktopQuickActionsModal({
+  isOpen,
+  onClose,
+}: DesktopQuickActionsModalProps) {
   const navigate = useNavigate();
   const [showCVModal, setShowCVModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [showAchievementModal, setShowAchievementModal] = useState(false);
 
-  // Prevent body scroll when modal is open
+  // 🧭 Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -45,7 +42,7 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
     };
   }, [isOpen]);
 
-  // Add keyboard Escape support
+  // ⌨️ Allow Escape to close
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     if (isOpen) {
@@ -54,6 +51,7 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
     return () => document.removeEventListener('keydown', handleEsc);
   }, [isOpen, onClose]);
 
+  // ⚡ Quick Actions
   const quickActions: QuickAction[] = [
     {
       id: 'update-profile',
@@ -64,7 +62,7 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
       action: () => {
         navigate('/profile');
         onClose();
-      }
+      },
     },
     {
       id: 'upload-resume',
@@ -75,7 +73,7 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
       action: () => {
         setShowCVModal(true);
         onClose();
-      }
+      },
     },
     {
       id: 'add-achievement',
@@ -86,7 +84,7 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
       action: () => {
         setShowAchievementModal(true);
         onClose();
-      }
+      },
     },
     {
       id: 'share-qr',
@@ -97,8 +95,8 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
       action: () => {
         setShowQRModal(true);
         onClose();
-      }
-    }
+      },
+    },
   ];
 
   const handleCVUploadComplete = () => {
@@ -115,23 +113,34 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-md z-[199]"
+              transition={{ duration: 0.25 }}
+              className="fixed inset-0 z-[199] bg-black/60 backdrop-blur-md"
               onClick={onClose}
             />
 
-            {/* Modal - Always fixed to viewport bottom */}
-            <div className="fixed inset-x-0 z-[200] flex justify-center bottom-0 md:bottom-8 px-4 pointer-events-none">
-              <motion.div
-                initial={{ opacity: 0, y: 80 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 80 }}
-                transition={{ type: 'spring', damping: 24, stiffness: 250, mass: 0.6 }}
-                className="pointer-events-auto w-full max-w-2xl bg-card rounded-t-3xl md:rounded-3xl p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
+            {/* 🧱 Modal Wrapper (Fixed viewport-bottom, always visible) */}
+            <motion.div
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="
+                fixed inset-x-0 bottom-0 z-[200] flex justify-center px-4
+                md:bottom-8
+              "
+            >
+              <div
+                className="
+                  w-full max-w-2xl bg-card rounded-t-3xl md:rounded-3xl shadow-2xl
+                  pointer-events-auto p-8 max-h-[90vh] overflow-y-auto
+                "
               >
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h2 className="text-2xl font-urbanist font-semibold text-foreground">Quick Actions</h2>
+                    <h2 className="text-2xl font-urbanist font-semibold text-foreground">
+                      Quick Actions
+                    </h2>
                     <p className="text-muted-foreground mt-1">
                       What would you like to do?
                     </p>
@@ -150,16 +159,26 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
                         key={action.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05, type: 'spring', stiffness: 300 }}
+                        transition={{
+                          delay: index * 0.05,
+                          type: 'spring',
+                          stiffness: 300,
+                        }}
                         onClick={action.action}
                         className={`
-                          flex flex-col items-center justify-center p-6 rounded-2xl 
+                          flex flex-col items-center justify-center p-6 rounded-2xl
                           ${action.bgColor} transition-all duration-200
-                          hover:scale-105 transform active:scale-95
-                          min-h-[120px] group
+                          hover:scale-105 active:scale-95 transform group
+                          min-h-[120px]
                         `}
                       >
-                        <div className={`h-12 w-12 rounded-2xl ${action.bgColor} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                        <div
+                          className={`
+                            h-12 w-12 rounded-2xl ${action.bgColor}
+                            flex items-center justify-center mb-4
+                            group-hover:scale-110 transition-transform
+                          `}
+                        >
                           <Icon className={`h-6 w-6 ${action.iconColor}`} />
                         </div>
                         <span className="text-sm font-medium text-center text-foreground">
@@ -169,35 +188,35 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
                     );
                   })}
                 </div>
-              </motion.div>
-            </div>
+              </div>
+            </motion.div>
           </>
         )}
       </AnimatePresence>
-      
-      {/* Modals - Wrapped with unique keys */}
-      <AnimatePresence key="cv-modal">
+
+      {/* Linked Modals */}
+      <AnimatePresence>
         {showCVModal && (
-          <CVUploadModal 
+          <CVUploadModal
             open={showCVModal}
             onOpenChange={setShowCVModal}
             onComplete={handleCVUploadComplete}
           />
         )}
       </AnimatePresence>
-      
-      <AnimatePresence key="qr-modal">
+
+      <AnimatePresence>
         {showQRModal && (
-          <QRCodeModal 
+          <QRCodeModal
             isOpen={showQRModal}
             onClose={() => setShowQRModal(false)}
           />
         )}
       </AnimatePresence>
-      
-      <AnimatePresence key="achievement-modal">
+
+      <AnimatePresence>
         {showAchievementModal && (
-          <AchievementModal 
+          <AchievementModal
             isOpen={showAchievementModal}
             onClose={() => setShowAchievementModal(false)}
           />
