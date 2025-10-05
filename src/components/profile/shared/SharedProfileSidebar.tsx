@@ -1,6 +1,7 @@
 
 import { Card } from "@/components/ui/card";
-import { Mail, Phone } from "lucide-react";
+import { Mail, Phone, MapPin } from "lucide-react";
+import { LanguageItem } from "@/hooks/profile/profileTypes";
 
 interface SharedProfileSidebarProps {
   userName: string;
@@ -16,6 +17,8 @@ interface SharedProfileSidebarProps {
   highlightColor?: string;
   professionalGoal?: string;
   biggestChallenge?: string;
+  languages?: LanguageItem[];
+  location?: string;
 }
 
 export function SharedProfileSidebar({
@@ -32,6 +35,8 @@ export function SharedProfileSidebar({
   highlightColor = "#FF6B4A",
   professionalGoal,
   biggestChallenge,
+  languages,
+  location,
 }: SharedProfileSidebarProps) {
   return (
     <div className="lg:col-span-4 space-y-4 lg:space-y-6">
@@ -66,26 +71,34 @@ export function SharedProfileSidebar({
               <p className="font-medium text-lg sm:text-xl" style={{ color: highlightColor }}>
                 {userTitle || role}
               </p>
+              {location && (
+                <p className="text-sm text-gray-600 flex items-center justify-center gap-1">
+                  <MapPin className="h-4 w-4" style={{ color: highlightColor }} />
+                  {location}
+                </p>
+              )}
             </div>
           </div>
           
-          {/* Contact information - Separate section with better spacing */}
-          <div className="mt-6 pt-4 border-t border-gray-100">
-            <div className="space-y-2 text-sm text-gray-600">
-              {userEmail && (
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 flex-shrink-0" style={{ color: highlightColor }} />
-                  <span className="truncate">{userEmail}</span>
-                </div>
-              )}
-              {phoneNumber && (
-                <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 flex-shrink-0" style={{ color: highlightColor }} />
-                  <span>{phoneNumber}</span>
-                </div>
-              )}
+          {/* Contact information - Only show if at least one exists */}
+          {(userEmail || phoneNumber) && (
+            <div className="mt-6 pt-4 border-t border-gray-100">
+              <div className="space-y-2 text-sm text-gray-600">
+                {userEmail && (
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 flex-shrink-0" style={{ color: highlightColor }} />
+                    <span className="truncate">{userEmail}</span>
+                  </div>
+                )}
+                {phoneNumber && (
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 flex-shrink-0" style={{ color: highlightColor }} />
+                    <span>{phoneNumber}</span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
           
           {/* Skills */}
           {userSkills.length > 0 && (
@@ -113,6 +126,47 @@ export function SharedProfileSidebar({
             </div>
           )}
           
+          {/* Languages - Read Only */}
+          {languages && languages.length > 0 && (
+            <div className="mt-6">
+              <h3 
+                className="font-semibold text-base sm:text-lg mb-3"
+                style={{ color: coverColor }}
+              >
+                Languages
+              </h3>
+              <div className="space-y-3">
+                {languages.map((language, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg bg-muted/20">
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium">{language.name}</span>
+                        <span 
+                          className="text-xs px-2 py-1 rounded-full"
+                          style={{ 
+                            backgroundColor: `${highlightColor}15`,
+                            color: highlightColor
+                          }}
+                        >
+                          {['Beginner', 'Elementary', 'Intermediate', 'Advanced', 'Native'][language.level - 1]}
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className="h-full rounded-full"
+                          style={{ 
+                            width: `${(language.level / 5) * 100}%`,
+                            backgroundColor: highlightColor
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
           {/* Professional Goal */}
           {professionalGoal && (
             <div className="mt-6">
@@ -126,8 +180,8 @@ export function SharedProfileSidebar({
             </div>
           )}
           
-          {/* Biggest Challenge */}
-          {(biggestChallenge || blocker) && (
+          {/* Biggest Challenge - Now using proper field */}
+          {biggestChallenge && (
             <div className="mt-6">
               <h3 
                 className="font-semibold text-base sm:text-lg mb-3"
@@ -139,7 +193,7 @@ export function SharedProfileSidebar({
                 className="border-l-4 pl-3 sm:pl-4 italic text-sm sm:text-base text-gray-700"
                 style={{ borderColor: highlightColor }}
               >
-                "{biggestChallenge || blocker}"
+                "{biggestChallenge}"
               </blockquote>
             </div>
           )}

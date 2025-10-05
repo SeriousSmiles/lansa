@@ -1539,12 +1539,17 @@ export type Database = {
       user_profiles_public: {
         Row: {
           about_text: string | null
+          biggest_challenge: string | null
           cover_color: string | null
           created_at: string
           education: Json | null
+          email: string | null
           experiences: Json | null
           highlight_color: string | null
+          languages: Json | null
+          location: string | null
           name: string | null
+          phone_number: string | null
           professional_goal: string | null
           profile_image: string | null
           skills: string[] | null
@@ -1554,12 +1559,17 @@ export type Database = {
         }
         Insert: {
           about_text?: string | null
+          biggest_challenge?: string | null
           cover_color?: string | null
           created_at?: string
           education?: Json | null
+          email?: string | null
           experiences?: Json | null
           highlight_color?: string | null
+          languages?: Json | null
+          location?: string | null
           name?: string | null
+          phone_number?: string | null
           professional_goal?: string | null
           profile_image?: string | null
           skills?: string[] | null
@@ -1569,12 +1579,17 @@ export type Database = {
         }
         Update: {
           about_text?: string | null
+          biggest_challenge?: string | null
           cover_color?: string | null
           created_at?: string
           education?: Json | null
+          email?: string | null
           experiences?: Json | null
           highlight_color?: string | null
+          languages?: Json | null
+          location?: string | null
           name?: string | null
+          phone_number?: string | null
           professional_goal?: string | null
           profile_image?: string | null
           skills?: string[] | null

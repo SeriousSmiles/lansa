@@ -43,6 +43,8 @@ export function SharedProfileContainer({ profileData, urlParam }: SharedProfileC
           highlightColor={profileData.highlightColor}
           professionalGoal={profileData.professionalGoal}
           biggestChallenge={profileData.biggestChallenge}
+          languages={profileData.languages}
+          location={profileData.location}
         />
         
         <SharedProfileContent 

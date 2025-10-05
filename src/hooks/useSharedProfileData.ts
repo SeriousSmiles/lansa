@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile } from "@/hooks/profile/profileTypes";
-import { ExperienceItem, EducationItem } from "@/hooks/profile/profileTypes";
+import { ExperienceItem, EducationItem, LanguageItem } from "@/hooks/profile/profileTypes";
 import { processSkillsData, processExperiencesData, processEducationData } from "@/utils/profileDataUtils";
 import { convertJsonToExperienceItems, convertJsonToEducationItems } from "@/utils/profileDataConverters";
 
@@ -23,6 +23,8 @@ export interface SharedProfileData {
   userTitle: string;
   professionalGoal: string;
   biggestChallenge: string;
+  languages: LanguageItem[];
+  location: string;
 }
 
 export function useSharedProfileData(urlParam: string | undefined) {
@@ -120,6 +122,15 @@ export function useSharedProfileData(urlParam: string | undefined) {
         
       const processedSkills = processSkillsData(profileData?.skills, answers);
       
+      // Process languages data
+      const processedLanguages: LanguageItem[] = profileData?.languages 
+        ? (Array.isArray(profileData.languages) ? profileData.languages.map((lang: any) => ({
+            id: lang.id,
+            name: lang.name,
+            level: lang.level
+          })) : [])
+        : [];
+      
       // Determine role and goal from safe sources (avoid sensitive fields)
       const role = profileData?.title || "Professional";
       const goal = profileData?.professional_goal || "Advance my career";
@@ -142,11 +153,13 @@ export function useSharedProfileData(urlParam: string | undefined) {
         coverColor: profileData?.cover_color || "#1A1F71",
         highlightColor: profileData?.highlight_color || "#FF6B4A",
         profileImage: profileData?.profile_image || "",
-        phoneNumber: "",
-        userEmail: "",
+        phoneNumber: profileData?.phone_number || "",
+        userEmail: profileData?.email || "",
         userTitle: profileData?.title || "",
         professionalGoal: profileData?.professional_goal || "",
-        biggestChallenge: ""
+        biggestChallenge: profileData?.biggest_challenge || "",
+        languages: processedLanguages,
+        location: profileData?.location || ""
       };
       
       console.log("Processed profile data:", profile);
