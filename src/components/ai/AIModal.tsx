@@ -62,7 +62,7 @@ export function AIModal({
                 className="pointer-events-auto w-full max-w-3xl max-h-[90vh] overflow-hidden bg-background rounded-2xl shadow-2xl border border-border flex flex-col"
               >
                 {/* Header */}
-                <div className="flex justify-between items-center px-6 py-4 border-b border-border bg-muted/30">
+                <div className="flex justify-between items-center px-6 py-4 border-b border-border">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-primary/10">
                       <Sparkles className="w-5 h-5 text-primary" />
@@ -72,7 +72,7 @@ export function AIModal({
                       <p className="text-xs text-muted-foreground">{section}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-muted">
+                  <Button variant="ghost" size="icon" onClick={onClose}>
                     <X className="w-5 h-5" />
                   </Button>
                 </div>
@@ -80,7 +80,7 @@ export function AIModal({
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
                   {/* Original Content - Compact */}
-                  <div className="bg-muted/50 rounded-xl p-4 border border-border/50">
+                  <div className="bg-muted/20 rounded-xl p-4 border border-border">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Current</span>
                     </div>
@@ -130,12 +130,12 @@ export function AIModal({
                       </div>
 
                       {/* AI Analysis - Compact Card */}
-                      <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+                      <div className="bg-accent/30 rounded-xl p-4 border border-border">
                         <div className="flex items-start gap-3">
                           <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                           <div className="flex-1 min-w-0">
                             <h4 className="text-sm font-semibold mb-1.5">Why This Helps</h4>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
+                            <p className="text-sm text-foreground/80 leading-relaxed">
                               {aiResult.reasoning}
                             </p>
                           </div>
@@ -143,7 +143,7 @@ export function AIModal({
                       </div>
 
                       {/* Suggestion - Highlighted */}
-                      <div className="bg-primary/5 rounded-xl p-4 border-2 border-primary/20">
+                      <div className="bg-primary/10 rounded-xl p-4 border-2 border-primary/30">
                         <div className="flex items-center gap-2 mb-3">
                           <span className="text-xs font-medium text-primary uppercase tracking-wide">Enhanced Version</span>
                         </div>
@@ -156,7 +156,7 @@ export function AIModal({
                 </div>
 
                 {/* Footer Actions */}
-                <div className="flex justify-end gap-3 px-6 py-4 border-t border-border bg-muted/20">
+                <div className="flex justify-end gap-3 px-6 py-4 border-t border-border">
                   <Button variant="outline" onClick={onClose}>Cancel</Button>
                   {aiResult && (
                     <Button onClick={handleApply} className="gap-2">
