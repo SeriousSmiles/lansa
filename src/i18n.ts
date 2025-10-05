@@ -8,7 +8,7 @@ const resources = {
     common: {
       navbar: {
         search: 'Search',
-        resumeBuilder: 'Resume Builder',
+        resumeBuilder: 'Profile Editor',
       },
       language: {
         english: 'English',
@@ -28,7 +28,7 @@ const resources = {
     common: {
       navbar: {
         search: 'Buska',
-        resumeBuilder: 'Crea Résumé',
+        resumeBuilder: 'Editor di Profil',
       },
       language: {
         english: 'Inglés',
