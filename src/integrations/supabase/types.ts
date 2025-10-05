@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_feedback_log: {
+        Row: {
+          ai_suggestion: string
+          created_at: string
+          id: string
+          input_text: string
+          reasoning: string
+          score: Json
+          section: string
+          user_id: string
+        }
+        Insert: {
+          ai_suggestion: string
+          created_at?: string
+          id?: string
+          input_text: string
+          reasoning: string
+          score?: Json
+          section: string
+          user_id: string
+        }
+        Update: {
+          ai_suggestion?: string
+          created_at?: string
+          id?: string
+          input_text?: string
+          reasoning?: string
+          score?: Json
+          section?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_insights: {
         Row: {
           action_link: string | null
