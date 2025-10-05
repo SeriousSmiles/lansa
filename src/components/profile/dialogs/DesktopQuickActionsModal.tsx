@@ -45,6 +45,15 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
     };
   }, [isOpen]);
 
+  // Add keyboard Escape support
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    if (isOpen) {
+      document.addEventListener('keydown', handleEsc);
+    }
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [isOpen, onClose]);
+
   const quickActions: QuickAction[] = [
     {
       id: 'update-profile',
@@ -106,20 +115,19 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[199]"
+              className="fixed inset-0 bg-black/60 backdrop-blur-md z-[199]"
               onClick={onClose}
             />
 
-            {/* Modal - Fixed wrapper for positioning */}
-            <div className="fixed left-1/2 -translate-x-1/2 bottom-8 sm:bottom-16 z-[200] w-full max-w-2xl px-4 pointer-events-none">
+            {/* Modal - Always fixed to viewport bottom */}
+            <div className="fixed inset-x-0 z-[200] flex justify-center bottom-0 md:bottom-8 px-4 pointer-events-none">
               <motion.div
-                initial={{ opacity: 0, y: 100 }}
+                initial={{ opacity: 0, y: 80 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 100 }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="pointer-events-auto"
+                exit={{ opacity: 0, y: 80 }}
+                transition={{ type: 'spring', damping: 24, stiffness: 250, mass: 0.6 }}
+                className="pointer-events-auto w-full max-w-2xl bg-card rounded-t-3xl md:rounded-3xl p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
               >
-                <div className="bg-card rounded-3xl p-8 w-full shadow-xl max-h-[80vh] overflow-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                   <div>
@@ -142,7 +150,7 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
                         key={action.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
+                        transition={{ delay: index * 0.05, type: 'spring', stiffness: 300 }}
                         onClick={action.action}
                         className={`
                           flex flex-col items-center justify-center p-6 rounded-2xl 
@@ -161,7 +169,6 @@ export function DesktopQuickActionsModal({ isOpen, onClose }: DesktopQuickAction
                     );
                   })}
                 </div>
-              </div>
               </motion.div>
             </div>
           </>
