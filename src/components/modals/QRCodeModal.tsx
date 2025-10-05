@@ -10,14 +10,19 @@ import { toast } from '@/hooks/use-toast';
 interface QRCodeModalProps {
   isOpen: boolean;
   onClose: () => void;
+  userName?: string;
 }
 
-export function QRCodeModal({ isOpen, onClose }: QRCodeModalProps) {
+export function QRCodeModal({ isOpen, onClose, userName }: QRCodeModalProps) {
   const { user } = useAuth();
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const profileUrl = `${window.location.origin}/profile/share/${user?.id}`;
+  // Generate URL with name slug (same format as ShareProfileDialog)
+  const urlFriendlyName = userName 
+    ? userName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') 
+    : 'user';
+  const profileUrl = `${window.location.origin}/profile/share/${urlFriendlyName}-${user?.id}`;
 
   useEffect(() => {
     if (isOpen && user?.id) {

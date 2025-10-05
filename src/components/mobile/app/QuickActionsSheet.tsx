@@ -30,9 +30,10 @@ interface QuickAction {
 interface QuickActionsSheetProps {
   isOpen: boolean;
   onClose: () => void;
+  userName?: string;
 }
 
-export function QuickActionsSheet({ isOpen, onClose }: QuickActionsSheetProps) {
+export function QuickActionsSheet({ isOpen, onClose, userName }: QuickActionsSheetProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showCVModal, setShowCVModal] = useState(false);
@@ -181,6 +182,7 @@ export function QuickActionsSheet({ isOpen, onClose }: QuickActionsSheetProps) {
       <QRCodeModal 
         isOpen={showQRModal}
         onClose={() => setShowQRModal(false)}
+        userName={userName}
       />
       
       <AchievementModal 

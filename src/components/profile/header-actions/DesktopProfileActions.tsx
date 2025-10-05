@@ -252,6 +252,7 @@ export function DesktopProfileActions({
       <DesktopQuickActionsModal
         isOpen={isQuickActionsOpen}
         onClose={() => setIsQuickActionsOpen(false)}
+        userName={userName}
       />
 
       <ShareProfileDialog

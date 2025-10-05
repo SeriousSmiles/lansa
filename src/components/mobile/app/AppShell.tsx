@@ -22,12 +22,13 @@ export function AppShell({ children }: AppShellProps) {
   const { isQuickActionsOpen, isSearchOpen } = useUIStore();
   const isMobile = useIsMobile();
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = React.useState(false);
+  const [userName, setUserName] = React.useState<string>();
   
   const isAuthRoute = AUTH_ROUTES.includes(location.pathname);
   const isOnboardingRoute = ONBOARDING_ROUTES.includes(location.pathname);
   const isSharedProfile = location.pathname.startsWith('/profile/share/');
   
-  // Check onboarding completion status
+  // Check onboarding completion status and fetch user name
   React.useEffect(() => {
     async function checkOnboardingStatus() {
       if (!user?.id) return;
@@ -35,12 +36,13 @@ export function AppShell({ children }: AppShellProps) {
       try {
         const { data } = await supabase
           .from('user_profiles')
-          .select('onboarding_completed')
+          .select('onboarding_completed, name')
           .eq('user_id', user.id)
           .single();
           
         console.log('Onboarding status check:', { data, onboarding_completed: data?.onboarding_completed });
         setHasCompletedOnboarding(data?.onboarding_completed || false);
+        setUserName(data?.name || undefined);
       } catch (error) {
         console.error('Error checking onboarding status:', error);
         // If there's an error, assume onboarding is completed to show navigation
@@ -126,6 +128,7 @@ export function AppShell({ children }: AppShellProps) {
       <QuickActionsSheet 
         isOpen={isQuickActionsOpen}
         onClose={() => useUIStore.getState().setQuickActionsOpen(false)}
+        userName={userName}
       />
 
       {/* Search Overlay */}

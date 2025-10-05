@@ -20,11 +20,13 @@ interface QuickAction {
 interface DesktopQuickActionsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  userName?: string;
 }
 
 export function DesktopQuickActionsModal({
   isOpen,
   onClose,
+  userName,
 }: DesktopQuickActionsModalProps) {
   const navigate = useNavigate();
   const [showCVModal, setShowCVModal] = useState(false);
@@ -207,6 +209,7 @@ export function DesktopQuickActionsModal({
           <QRCodeModal
             isOpen={showQRModal}
             onClose={() => setShowQRModal(false)}
+            userName={userName}
           />
         )}
       </AnimatePresence>
