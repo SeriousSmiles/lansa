@@ -4,9 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, X } from "lucide-react";
-import { AIEnhanceButton } from "../shared/AIEnhanceButton";
-import { supabase } from "@/integrations/supabase/client";
+import { Plus, X, Sparkles } from "lucide-react";
+import { AIModal } from "@/components/ai/AIModal";
+import { fetchAISuggestion } from "@/lib/aiHelpers";
 import { toast } from "sonner";
 
 interface SkillsListProps {
@@ -26,8 +26,9 @@ export function SkillsList({
 }: SkillsListProps) {
   const [newSkill, setNewSkill] = useState("");
   const [isAdding, setIsAdding] = useState(false);
-  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showAI, setShowAI] = useState(false);
+  const [aiResult, setAiResult] = useState<any>(null);
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
 
   const handleAddSkill = async () => {
     if (newSkill.trim() && onAddSkill) {
@@ -41,48 +42,47 @@ export function SkillsList({
   };
 
   const handleAIEnhance = async () => {
-    if (!userId) {
-      toast.error("User not found");
+    if (!userId || skills.length === 0) {
+      toast.error("Add some skills first to get AI suggestions");
       return;
     }
 
+    setIsLoadingAI(true);
+    setShowAI(true);
+    setAiResult(null);
+
     try {
-      const { data, error } = await supabase.functions.invoke('generate-skills-recommendations', {
-        body: { 
-          userId,
-          currentSkills: skills 
-        }
+      const result = await fetchAISuggestion({
+        user_id: userId,
+        section: 'Skills',
+        content: skills.join(', '),
       });
-
-      if (error) throw error;
-
-      if (data?.suggestions) {
-        setAiSuggestions(data.suggestions);
-        setShowSuggestions(true);
-        toast.success("AI skill suggestions generated!");
-      }
+      setAiResult(result);
+      toast.success("AI suggestion generated!");
     } catch (error) {
-      console.error("Error generating skill suggestions:", error);
-      toast.error("Failed to generate skill suggestions");
+      console.error("Error generating AI suggestion:", error);
+      toast.error("Failed to generate AI suggestion");
+      setShowAI(false);
+    } finally {
+      setIsLoadingAI(false);
     }
   };
 
-  const handleAcceptSuggestion = async (suggestion: string) => {
-    if (onAddSkill) {
-      try {
-        await onAddSkill(suggestion);
-        setAiSuggestions(prev => prev.filter(s => s !== suggestion));
-        toast.success(`Added "${suggestion}" to your skills`);
-      } catch (error) {
-        console.error("Error adding suggested skill:", error);
-        toast.error("Failed to add skill");
+  const handleApplySuggestion = async (suggestion: string) => {
+    // Parse the suggested skills (comma-separated) and add them
+    const newSkills = suggestion.split(',').map(s => s.trim()).filter(s => s);
+    
+    try {
+      for (const skill of newSkills) {
+        if (!skills.includes(skill) && onAddSkill) {
+          await onAddSkill(skill);
+        }
       }
+      toast.success("Skills updated with AI suggestions!");
+    } catch (error) {
+      console.error("Error updating skills:", error);
+      toast.error("Failed to update skills");
     }
-  };
-
-  const handleRejectSuggestions = () => {
-    setShowSuggestions(false);
-    setAiSuggestions([]);
   };
 
   return (
@@ -91,12 +91,17 @@ export function SkillsList({
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold" style={{ color: highlightColor }}>Skills</h3>
           <div className="flex gap-2">
-            {userId && !showSuggestions && (
-              <AIEnhanceButton 
-                onEnhance={handleAIEnhance}
-                highlightColor={highlightColor}
-                variant="small"
-              />
+            {userId && skills.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleAIEnhance}
+                className="gap-1.5 text-muted-foreground hover:text-primary"
+                title="Enhance with AI"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>AI</span>
+              </Button>
             )}
             {onAddSkill && !isAdding && (
               <Button 
@@ -154,42 +159,6 @@ export function SkillsList({
             </Button>
           </div>
         )}
-
-        {showSuggestions && aiSuggestions.length > 0 && (
-          <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: `${highlightColor}10`, borderColor: `${highlightColor}30` }}>
-            <div className="flex justify-between items-center mb-2">
-              <h4 className="text-sm font-medium" style={{ color: highlightColor }}>
-                AI Skill Suggestions
-              </h4>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleRejectSuggestions}
-                className="h-6 px-2 text-xs"
-              >
-                ✕ Dismiss
-              </Button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {aiSuggestions.map((suggestion, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleAcceptSuggestion(suggestion)}
-                  className="h-7 px-2 text-xs transition-all hover:shadow-sm"
-                  style={{ 
-                    borderColor: `${highlightColor}40`,
-                    color: highlightColor,
-                    backgroundColor: "white"
-                  }}
-                >
-                  + {suggestion}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
         
         <div className="flex flex-wrap gap-2">
           {skills.map((skill, index) => (
@@ -216,6 +185,16 @@ export function SkillsList({
           ))}
         </div>
       </CardContent>
+
+      <AIModal
+        isOpen={showAI}
+        onClose={() => setShowAI(false)}
+        section="Skills"
+        data={skills.join(', ')}
+        aiResult={aiResult}
+        isLoading={isLoadingAI}
+        onEnhance={handleApplySuggestion}
+      />
     </Card>
   );
 }

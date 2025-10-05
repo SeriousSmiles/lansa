@@ -13,6 +13,7 @@ interface AboutContainerProps {
   onUpdateBiggestChallenge?: (challenge: string) => Promise<void>;
   themeColor?: string;
   highlightColor?: string;
+  userId?: string;
 }
 
 export function AboutContainer({ 
@@ -24,7 +25,8 @@ export function AboutContainer({
   onUpdateAbout,
   onUpdateBiggestChallenge,
   themeColor,
-  highlightColor = "#FF6B4A"
+  highlightColor = "#FF6B4A",
+  userId
 }: AboutContainerProps) {
   return (
     <Card>
@@ -35,12 +37,14 @@ export function AboutContainer({
           aboutText={aboutText}
           onUpdateAbout={onUpdateAbout}
           highlightColor={highlightColor}
+          userId={userId}
         />
         
         <BiggestChallengeSection
           blocker={blocker}
           onUpdate={onUpdateBiggestChallenge}
           highlightColor={highlightColor}
+          userId={userId}
         />
       </CardContent>
     </Card>

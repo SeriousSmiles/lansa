@@ -117,6 +117,7 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
               onUpdateBiggestChallenge={profile.updateBiggestChallenge}
               themeColor={profile.coverColor}
               highlightColor={profile.highlightColor}
+              userId={profile.user?.id}
             />
           </div>
           

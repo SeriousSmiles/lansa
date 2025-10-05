@@ -11,6 +11,7 @@ interface AboutSectionProps {
   onUpdateBiggestChallenge?: (challenge: string) => Promise<void>;
   themeColor?: string;
   highlightColor?: string;
+  userId?: string;
 }
 
 export function AboutSection(props: AboutSectionProps) {

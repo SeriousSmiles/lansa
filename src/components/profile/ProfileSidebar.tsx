@@ -3,7 +3,7 @@ import { useSidebarHandlers } from "@/hooks/useSidebarHandlers";
 import { SidebarPersonalInfo } from "./sidebar/SidebarPersonalInfo";
 import { SkillsList } from "./sidebar/SkillsList";
 import { LanguagesList } from "./sidebar/LanguagesList";
-import { ProfessionalGoal } from "./sidebar/ProfessionalGoal";
+import { ProfessionalGoalWithAI } from "./sidebar/ProfessionalGoalWithAI";
 import { LanguageItem } from "@/hooks/profile/profileTypes";
 
 interface ProfileSidebarProps {
@@ -122,10 +122,11 @@ export function ProfileSidebar({
       />
       
       {/* Professional Goal */}
-      <ProfessionalGoal
+      <ProfessionalGoalWithAI
         goal={professionalGoal}
         onUpdate={onUpdateProfessionalGoal}
         highlightColor={highlightColor}
+        userId={userId}
       />
     </div>
   );
