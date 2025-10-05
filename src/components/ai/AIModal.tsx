@@ -149,7 +149,7 @@ export function AIModal({
                                     {skill}
                                   </Badge>)}
                               </div>
-                              <p className="text-xs text-red-600/80">Too generic or not ATS-optimized</p>
+                              <p className="text-xs text-red-600/80">Too generic or not optimized for ATS (Applicant Tracking Systems used by recruiters)</p>
                             </div>}
 
                           {changes.added.length > 0 && <div className="bg-green-500/5 rounded-lg p-3 border border-green-500/20">
@@ -162,7 +162,7 @@ export function AIModal({
                                     {skill}
                                   </Badge>)}
                               </div>
-                              <p className="text-xs text-green-600/80">More specific and recruiter-friendly</p>
+                              <p className="text-xs text-green-600/80">More specific and easier for recruiters to match with job requirements</p>
                             </div>}
                         </div>}
 
