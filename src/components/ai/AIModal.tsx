@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, CheckCircle, AlertCircle, Info } from 'lucide-react';
+import { X, Sparkles, CheckCircle, AlertCircle, Info, ChevronDown, ChevronUp, Minus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface AIModalProps {
   isOpen: boolean;
@@ -32,12 +34,30 @@ export function AIModal({
   aiResult,
   isLoading = false
 }: AIModalProps) {
+  const [isReasoningOpen, setIsReasoningOpen] = useState(false);
+
   const handleApply = () => {
     if (aiResult?.suggested_rewrite) {
       onEnhance(aiResult.suggested_rewrite);
       onClose();
     }
   };
+
+  // Parse the original and suggested data for skills to find differences
+  const parseChanges = () => {
+    if (!aiResult || section !== 'Skills') return null;
+    
+    const original = data.split(',').map(s => s.trim()).filter(s => s);
+    const suggested = aiResult.suggested_rewrite.split(',').map(s => s.trim()).filter(s => s);
+    
+    const removed = original.filter(skill => !suggested.includes(skill));
+    const added = suggested.filter(skill => !original.includes(skill));
+    const kept = original.filter(skill => suggested.includes(skill));
+    
+    return { removed, added, kept };
+  };
+
+  const changes = parseChanges();
 
   return createPortal(
     <AnimatePresence>
@@ -129,27 +149,97 @@ export function AIModal({
                         })()}
                       </div>
 
-                      {/* AI Analysis - Compact Card */}
-                      <div className="bg-accent/30 rounded-xl p-4 border border-border">
-                        <div className="flex items-start gap-3">
-                          <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-semibold mb-1.5">Why This Helps</h4>
+                      {/* Action Blocks - Show what changed */}
+                      {changes && (
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-semibold">Changes Made</h4>
+                          
+                          {changes.removed.length > 0 && (
+                            <div className="bg-red-500/5 rounded-lg p-3 border border-red-500/20">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Minus className="w-4 h-4 text-red-600" />
+                                <span className="text-xs font-medium text-red-700 uppercase tracking-wide">Removed</span>
+                              </div>
+                              <div className="flex flex-wrap gap-2 mb-2">
+                                {changes.removed.map((skill, idx) => (
+                                  <Badge key={idx} variant="outline" className="bg-red-50 border-red-200 text-red-700">
+                                    {skill}
+                                  </Badge>
+                                ))}
+                              </div>
+                              <p className="text-xs text-red-600/80">Too generic or not ATS-optimized</p>
+                            </div>
+                          )}
+
+                          {changes.added.length > 0 && (
+                            <div className="bg-green-500/5 rounded-lg p-3 border border-green-500/20">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Plus className="w-4 h-4 text-green-600" />
+                                <span className="text-xs font-medium text-green-700 uppercase tracking-wide">Enhanced/Added</span>
+                              </div>
+                              <div className="flex flex-wrap gap-2 mb-2">
+                                {changes.added.map((skill, idx) => (
+                                  <Badge key={idx} variant="outline" className="bg-green-50 border-green-200 text-green-700">
+                                    {skill}
+                                  </Badge>
+                                ))}
+                              </div>
+                              <p className="text-xs text-green-600/80">More specific and recruiter-friendly</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Expandable Reasoning */}
+                      <Collapsible open={isReasoningOpen} onOpenChange={setIsReasoningOpen}>
+                        <CollapsibleTrigger asChild>
+                          <button className="w-full flex items-center justify-between p-3 rounded-lg bg-accent/20 hover:bg-accent/30 transition-colors border border-border">
+                            <div className="flex items-center gap-2">
+                              <Info className="w-4 h-4 text-primary" />
+                              <span className="text-sm font-medium">Why This Helps</span>
+                            </div>
+                            {isReasoningOpen ? (
+                              <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            )}
+                          </button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="mt-2 p-4 rounded-lg bg-accent/20 border border-border">
                             <p className="text-sm text-foreground/80 leading-relaxed">
                               {aiResult.reasoning}
                             </p>
                           </div>
-                        </div>
-                      </div>
+                        </CollapsibleContent>
+                      </Collapsible>
 
-                      {/* Suggestion - Highlighted */}
+                      {/* Enhanced Version Display */}
                       <div className="bg-primary/10 rounded-xl p-4 border-2 border-primary/30">
                         <div className="flex items-center gap-2 mb-3">
                           <span className="text-xs font-medium text-primary uppercase tracking-wide">Enhanced Version</span>
                         </div>
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                          {aiResult.suggested_rewrite}
-                        </p>
+                        {section === 'Skills' ? (
+                          <div className="flex flex-wrap gap-2">
+                            {aiResult.suggested_rewrite.split(',').map((skill: string, idx: number) => {
+                              const trimmedSkill = skill.trim();
+                              if (!trimmedSkill) return null;
+                              return (
+                                <Badge 
+                                  key={idx} 
+                                  variant="outline"
+                                  className="bg-primary/5 border-primary/30 text-primary font-medium"
+                                >
+                                  {trimmedSkill}
+                                </Badge>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium">
+                            {aiResult.suggested_rewrite}
+                          </p>
+                        )}
                       </div>
                     </>
                   ) : null}
