@@ -72,7 +72,7 @@ export function ProfileHeader({
       <img
         src="https://cdn.builder.io/api/v1/image/assets/TEMP/41285a6d1f6906d8349429ceb652f953bf730d06?placeholderIfAbsent=true"
         alt="Lansa Logo"
-        className={`aspect-[2.7] object-contain w-[80px] sm:w-[92px] flex-shrink-0 ${!hideBackButton ? "" : "ml-0"}`}
+        className={`aspect-[2.7] object-contain w-[80px] sm:w-[92px] flex-shrink-0 ${hideBackButton && readOnly ? "mx-auto" : ""}`}
       />
       
       {!readOnly && (
