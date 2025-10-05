@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, Award, FileText, QrCode, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -106,8 +107,9 @@ export function DesktopQuickActionsModal({
   return (
     <>
       <AnimatePresence>
-        {isOpen && (
-          <>
+        {isOpen &&
+          createPortal(
+            <>
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -118,21 +120,22 @@ export function DesktopQuickActionsModal({
               onClick={onClose}
             />
 
-            {/* 🧱 Modal Wrapper (Fixed viewport-bottom, always visible) */}
-            <motion.div
-              initial={{ opacity: 0, y: 100 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 100 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            {/* Modal - Always fixed to viewport bottom */}
+            <div 
               className="
-                fixed inset-x-0 bottom-0 z-[200] flex justify-center px-4
-                md:bottom-8
+                fixed inset-x-0 z-[200] flex justify-center
+                bottom-0 md:bottom-8 px-4 pointer-events-none
               "
             >
-              <div
+              <motion.div
+                initial={{ opacity: 0, y: 80 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 80 }}
+                transition={{ type: 'spring', damping: 24, stiffness: 250, mass: 0.6 }}
                 className="
-                  w-full max-w-2xl bg-card rounded-t-3xl md:rounded-3xl shadow-2xl
-                  pointer-events-auto p-8 max-h-[90vh] overflow-y-auto
+                  pointer-events-auto w-full max-w-2xl 
+                  bg-card rounded-t-3xl md:rounded-3xl p-8 shadow-2xl
+                  max-h-[90vh] overflow-y-auto
                 "
               >
                 {/* Header */}
@@ -188,10 +191,12 @@ export function DesktopQuickActionsModal({
                     );
                   })}
                 </div>
-              </div>
-            </motion.div>
-          </>
-        )}
+              </motion.div>
+            </div>
+          </>,
+            document.body
+          )
+        }
       </AnimatePresence>
 
       {/* Linked Modals */}
