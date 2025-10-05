@@ -2,9 +2,14 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile } from "@/hooks/profile/profileTypes";
 import { ExperienceItem, EducationItem, LanguageItem } from "@/hooks/profile/profileTypes";
+import { PublicProfileFields } from "@/types/sharedProfileTypes";
 import { processSkillsData, processExperiencesData, processEducationData } from "@/utils/profileDataUtils";
 import { convertJsonToExperienceItems, convertJsonToEducationItems } from "@/utils/profileDataConverters";
 
+/**
+ * Processed profile data for public shareable profiles
+ * This is the data structure used by the SharedProfileContainer component
+ */
 export interface SharedProfileData {
   userProfile: UserProfile | null;
   userName: string;
@@ -26,6 +31,23 @@ export interface SharedProfileData {
   languages: LanguageItem[];
   location: string;
 }
+
+/**
+ * Custom hook to load and subscribe to public shareable profile data
+ * 
+ * @param urlParam - URL parameter containing the user ID (can be formatted as "name-uuid")
+ * @returns Object containing loading state and processed profile data
+ * 
+ * @example
+ * ```tsx
+ * const { isLoading, profileData } = useSharedProfileData(urlParam);
+ * 
+ * if (isLoading) return <div>Loading...</div>;
+ * if (!profileData) return <div>Profile not found</div>;
+ * 
+ * return <SharedProfileContainer profileData={profileData} />;
+ * ```
+ */
 
 export function useSharedProfileData(urlParam: string | undefined) {
   const [isLoading, setIsLoading] = useState(true);
@@ -77,7 +99,12 @@ export function useSharedProfileData(urlParam: string | undefined) {
     };
   }, [userId]);
 
-  // Primary function to load profile data
+  /**
+   * Loads profile data from user_profiles_public table
+   * Processes and transforms the data for display in the shareable profile
+   * 
+   * @param userId - The user's unique identifier
+   */
   const loadProfile = async (userId: string) => {
     if (!userId) {
       setIsLoading(false);
@@ -87,12 +114,12 @@ export function useSharedProfileData(urlParam: string | undefined) {
     console.log("Loading profile for userId:", userId);
     
     try {
-      // Fetch the user profile first
+      // Fetch the public profile data
       const { data: profileData, error: profileError } = await supabase
         .from('user_profiles_public')
         .select('*')
         .eq('user_id', userId)
-        .maybeSingle();
+        .maybeSingle() as { data: PublicProfileFields | null; error: any };
         
       if (profileError) {
         console.error("Error fetching profile:", profileError);
