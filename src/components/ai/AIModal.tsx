@@ -5,7 +5,6 @@ import { X, Sparkles, CheckCircle, AlertCircle, Info, ChevronDown, ChevronUp, Mi
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-
 interface AIModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -24,18 +23,16 @@ interface AIModalProps {
   } | null;
   isLoading?: boolean;
 }
-
-export function AIModal({ 
-  isOpen, 
-  onClose, 
-  section, 
-  data, 
-  onEnhance, 
+export function AIModal({
+  isOpen,
+  onClose,
+  section,
+  data,
+  onEnhance,
   aiResult,
   isLoading = false
 }: AIModalProps) {
   const [isReasoningOpen, setIsReasoningOpen] = useState(false);
-
   const handleApply = () => {
     if (aiResult?.suggested_rewrite) {
       onEnhance(aiResult.suggested_rewrite);
@@ -46,41 +43,45 @@ export function AIModal({
   // Parse the original and suggested data for skills to find differences
   const parseChanges = () => {
     if (!aiResult || section !== 'Skills') return null;
-    
     const original = data.split(',').map(s => s.trim()).filter(s => s);
     const suggested = aiResult.suggested_rewrite.split(',').map(s => s.trim()).filter(s => s);
-    
     const removed = original.filter(skill => !suggested.includes(skill));
     const added = suggested.filter(skill => !original.includes(skill));
     const kept = original.filter(skill => suggested.includes(skill));
-    
-    return { removed, added, kept };
+    return {
+      removed,
+      added,
+      kept
+    };
   };
-
   const changes = parseChanges();
-
-  return createPortal(
-    <AnimatePresence>
-      {isOpen && (
-        <>
+  return createPortal(<AnimatePresence>
+      {isOpen && <>
           {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
-            onClick={onClose}
-          />
+          <motion.div initial={{
+        opacity: 0
+      }} animate={{
+        opacity: 1
+      }} exit={{
+        opacity: 0
+      }} className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
             {/* Modal */}
             <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center p-4">
-              <motion.div
-                initial={{ y: 80, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 80, opacity: 0 }}
-                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                className="pointer-events-auto w-full max-w-3xl max-h-[90vh] overflow-hidden bg-background rounded-2xl shadow-2xl border border-border flex flex-col"
-              >
+              <motion.div initial={{
+          y: 80,
+          opacity: 0
+        }} animate={{
+          y: 0,
+          opacity: 1
+        }} exit={{
+          y: 80,
+          opacity: 0
+        }} transition={{
+          type: 'spring',
+          damping: 25,
+          stiffness: 300
+        }} className="pointer-events-auto w-full max-w-3xl max-h-[90vh] overflow-hidden bg-background rounded-2xl shadow-2xl border border-border flex flex-col">
                 {/* Header */}
                 <div className="flex justify-between items-center px-6 py-4 border-b border-border">
                   <div className="flex items-center gap-3">
@@ -107,88 +108,63 @@ export function AIModal({
                     <p className="text-sm leading-relaxed">{data}</p>
                   </div>
 
-                  {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                  {isLoading ? <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                       <Sparkles className="w-8 h-8 animate-pulse mb-3 text-primary" />
                       <p className="text-sm font-medium">Analyzing and optimizing...</p>
-                    </div>
-                  ) : aiResult ? (
-                    <>
+                    </div> : aiResult ? <>
                       {/* Quality Badge */}
                       <div className="flex items-center justify-center">
                         {(() => {
-                          const avgScore = (
-                            aiResult.score.clarity +
-                            aiResult.score.confidence +
-                            aiResult.score.specificity +
-                            aiResult.score.professional_impression
-                          ) / 4;
-
-                          if (avgScore >= 8) {
-                            return (
-                              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
+                  const avgScore = (aiResult.score.clarity + aiResult.score.confidence + aiResult.score.specificity + aiResult.score.professional_impression) / 4;
+                  if (avgScore >= 8) {
+                    return <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
                                 <CheckCircle className="w-4 h-4 text-green-600" />
                                 <span className="text-xs font-medium text-green-700">Strong Enhancement</span>
-                              </div>
-                            );
-                          } else if (avgScore >= 6) {
-                            return (
-                              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+                              </div>;
+                  } else if (avgScore >= 6) {
+                    return <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">
                                 <Info className="w-4 h-4 text-blue-600" />
                                 <span className="text-xs font-medium text-blue-700">Good Improvement</span>
-                              </div>
-                            );
-                          } else {
-                            return (
-                              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20">
+                              </div>;
+                  } else {
+                    return <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20">
                                 <AlertCircle className="w-4 h-4 text-orange-600" />
                                 <span className="text-xs font-medium text-orange-700">Review Suggested</span>
-                              </div>
-                            );
-                          }
-                        })()}
+                              </div>;
+                  }
+                })()}
                       </div>
 
                       {/* Action Blocks - Show what changed */}
-                      {changes && (
-                        <div className="space-y-3">
+                      {changes && <div className="space-y-3">
                           <h4 className="text-sm font-semibold">Changes Made</h4>
                           
-                          {changes.removed.length > 0 && (
-                            <div className="bg-red-500/5 rounded-lg p-3 border border-red-500/20">
+                          {changes.removed.length > 0 && <div className="bg-red-500/5 rounded-lg p-3 border border-red-500/20">
                               <div className="flex items-center gap-2 mb-2">
                                 <Minus className="w-4 h-4 text-red-600" />
                                 <span className="text-xs font-medium text-red-700 uppercase tracking-wide">Removed</span>
                               </div>
                               <div className="flex flex-wrap gap-2 mb-2">
-                                {changes.removed.map((skill, idx) => (
-                                  <Badge key={idx} variant="outline" className="bg-red-50 border-red-200 text-red-700">
+                                {changes.removed.map((skill, idx) => <Badge key={idx} variant="outline" className="bg-red-50 border-red-200 text-red-700">
                                     {skill}
-                                  </Badge>
-                                ))}
+                                  </Badge>)}
                               </div>
                               <p className="text-xs text-red-600/80">Too generic or not ATS-optimized</p>
-                            </div>
-                          )}
+                            </div>}
 
-                          {changes.added.length > 0 && (
-                            <div className="bg-green-500/5 rounded-lg p-3 border border-green-500/20">
+                          {changes.added.length > 0 && <div className="bg-green-500/5 rounded-lg p-3 border border-green-500/20">
                               <div className="flex items-center gap-2 mb-2">
                                 <Plus className="w-4 h-4 text-green-600" />
                                 <span className="text-xs font-medium text-green-700 uppercase tracking-wide">Enhanced/Added</span>
                               </div>
                               <div className="flex flex-wrap gap-2 mb-2">
-                                {changes.added.map((skill, idx) => (
-                                  <Badge key={idx} variant="outline" className="bg-green-50 border-green-200 text-green-700">
+                                {changes.added.map((skill, idx) => <Badge key={idx} variant="outline" className="bg-green-50 border-green-200 text-green-700">
                                     {skill}
-                                  </Badge>
-                                ))}
+                                  </Badge>)}
                               </div>
                               <p className="text-xs text-green-600/80">More specific and recruiter-friendly</p>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                            </div>}
+                        </div>}
 
                       {/* Expandable Reasoning */}
                       <Collapsible open={isReasoningOpen} onOpenChange={setIsReasoningOpen}>
@@ -198,11 +174,7 @@ export function AIModal({
                               <Info className="w-4 h-4 text-primary" />
                               <span className="text-sm font-medium">Why This Helps</span>
                             </div>
-                            {isReasoningOpen ? (
-                              <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                            )}
+                            {isReasoningOpen ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                           </button>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
@@ -215,51 +187,20 @@ export function AIModal({
                       </Collapsible>
 
                       {/* Enhanced Version Display */}
-                      <div className="bg-primary/10 rounded-xl p-4 border-2 border-primary/30">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-xs font-medium text-primary uppercase tracking-wide">Enhanced Version</span>
-                        </div>
-                        {section === 'Skills' ? (
-                          <div className="flex flex-wrap gap-2">
-                            {aiResult.suggested_rewrite.split(',').map((skill: string, idx: number) => {
-                              const trimmedSkill = skill.trim();
-                              if (!trimmedSkill) return null;
-                              return (
-                                <Badge 
-                                  key={idx} 
-                                  variant="outline"
-                                  className="bg-primary/5 border-primary/30 text-primary font-medium"
-                                >
-                                  {trimmedSkill}
-                                </Badge>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                            {aiResult.suggested_rewrite}
-                          </p>
-                        )}
-                      </div>
-                    </>
-                  ) : null}
+                      
+                    </> : null}
                 </div>
 
                 {/* Footer Actions */}
                 <div className="flex justify-end gap-3 px-6 py-4 border-t border-border">
                   <Button variant="outline" onClick={onClose}>Cancel</Button>
-                  {aiResult && (
-                    <Button onClick={handleApply} className="gap-2">
+                  {aiResult && <Button onClick={handleApply} className="gap-2">
                       <Sparkles className="w-4 h-4" />
                       Apply Enhancement
-                    </Button>
-                  )}
+                    </Button>}
                 </div>
               </motion.div>
             </div>
-        </>
-      )}
-    </AnimatePresence>,
-    document.body
-  );
+        </>}
+    </AnimatePresence>, document.body);
 }
