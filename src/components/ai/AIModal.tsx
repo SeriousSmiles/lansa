@@ -113,7 +113,7 @@ export function AIModal({
                       <p className="text-sm font-medium">Analyzing and optimizing...</p>
                     </div> : aiResult ? <>
                       {/* Quality Badge */}
-                      <div className="flex items-center justify-center">
+                      <div className="flex items-center justify-start">
                         {(() => {
                   const avgScore = (aiResult.score.clarity + aiResult.score.confidence + aiResult.score.specificity + aiResult.score.professional_impression) / 4;
                   if (avgScore >= 8) {
