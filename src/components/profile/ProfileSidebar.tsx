@@ -3,8 +3,9 @@ import { useSidebarHandlers } from "@/hooks/useSidebarHandlers";
 import { SidebarPersonalInfo } from "./sidebar/SidebarPersonalInfo";
 import { SkillsList } from "./sidebar/SkillsList";
 import { LanguagesList } from "./sidebar/LanguagesList";
+import { CertificationsList } from "./sidebar/CertificationsList";
 import { ProfessionalGoalWithAI } from "./sidebar/ProfessionalGoalWithAI";
-import { LanguageItem } from "@/hooks/profile/profileTypes";
+import { LanguageItem, CertificationItem } from "@/hooks/profile/profileTypes";
 
 interface ProfileSidebarProps {
   userName: string;
@@ -13,6 +14,7 @@ interface ProfileSidebarProps {
   title?: string;
   skills: string[];
   languages?: LanguageItem[];
+  certifications?: CertificationItem[];
   goal: string;
   phoneNumber?: string;
   coverColor?: string;
@@ -34,6 +36,9 @@ interface ProfileSidebarProps {
   onAddLanguage?: (language: LanguageItem) => Promise<void>;
   onEditLanguage?: (id: string, language: LanguageItem) => Promise<void>;
   onRemoveLanguage?: (id: string) => Promise<void>;
+  onAddCertification?: (cert: CertificationItem) => Promise<void>;
+  onEditCertification?: (id: string, cert: CertificationItem) => Promise<void>;
+  onRemoveCertification?: (id: string) => Promise<void>;
   onUploadProfileImage?: (file: File) => Promise<string>;
 }
 
@@ -44,6 +49,7 @@ export function ProfileSidebar({
   title = "",
   skills, 
   languages = [],
+  certifications = [],
   goal,
   phoneNumber,
   coverColor,
@@ -65,6 +71,9 @@ export function ProfileSidebar({
   onAddLanguage,
   onEditLanguage,
   onRemoveLanguage,
+  onAddCertification,
+  onEditCertification,
+  onRemoveCertification,
   onUploadProfileImage,
 }: ProfileSidebarProps) {
   // Use our custom hook to handle all events
@@ -124,6 +133,15 @@ export function ProfileSidebar({
         onAddLanguage={onAddLanguage}
         onEditLanguage={onEditLanguage}
         onRemoveLanguage={onRemoveLanguage}
+        highlightColor={highlightColor}
+      />
+      
+      {/* Certifications */}
+      <CertificationsList
+        certifications={certifications}
+        onAddCertification={onAddCertification}
+        onEditCertification={onEditCertification}
+        onRemoveCertification={onRemoveCertification}
         highlightColor={highlightColor}
       />
       

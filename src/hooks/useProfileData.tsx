@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useProfileBasics } from "./profile/useProfileBasics";
 import { useProfileSkills } from "./profile/useProfileSkills";
 import { useProfileLanguages } from "./profile/useProfileLanguages";
+import { useProfileCertifications } from "./profile/useProfileCertifications";
 import { useProfileExperience } from "./profile/useProfileExperience";
 import { useProfileEducation } from "./profile/useProfileEducation";
 import { useProfileImage } from "./profile/useProfileImage";
@@ -37,6 +38,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
   const profileBasics = useProfileBasics(userId);
   const profileSkills = useProfileSkills({ userId, updateProfileData: profileBasics.updateProfileData });
   const profileLanguages = useProfileLanguages({ userId, updateProfileData: profileBasics.updateProfileData });
+  const profileCertifications = useProfileCertifications({ userId });
   const profileExperience = useProfileExperience({ userId, updateProfileData: profileBasics.updateProfileData });
   const profileEducation = useProfileEducation({ userId, updateProfileData: profileBasics.updateProfileData });
   const profileImage = useProfileImage({ userId, updateProfileData: profileBasics.updateProfileData });
@@ -59,6 +61,8 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     
     try {
       await loadProfileFromDatabase(answers);
+      // Fetch certifications from database
+      await profileCertifications.fetchCertifications();
     } catch (error) {
       console.error("Error loading profile data:", error);
       toast({
@@ -163,6 +167,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     profileImage: profileImage.profileImage,
     userSkills: profileSkills.userSkills,
     userLanguages: profileLanguages.userLanguages,
+    userCertifications: profileCertifications.userCertifications,
     experiences: profileExperience.experiences,
     educationItems: profileEducation.educationItems,
     userEmail: profileBasics.userEmail,
@@ -192,6 +197,11 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     addLanguage: profileLanguages.addLanguage,
     editLanguage: profileLanguages.editLanguage,
     removeLanguage: profileLanguages.removeLanguage,
+    
+    // Certification functions
+    addCertification: profileCertifications.addCertification,
+    editCertification: profileCertifications.editCertification,
+    removeCertification: profileCertifications.removeCertification,
     
     // Experience functions
     addExperience: profileExperience.addExperience,

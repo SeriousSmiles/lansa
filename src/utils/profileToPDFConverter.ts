@@ -18,7 +18,11 @@ export const convertProfileToPDFData = (profileData: ProfileDataReturn): PDFResu
     skills: profileData.userSkills || [],
     languages: profileData.userLanguages || [],
     projects: [],
-    certifications: [],
+    certifications: (profileData.userCertifications || []).map(cert => ({
+      title: cert.title,
+      issuer: cert.issuer,
+      date: cert.issue_date
+    })),
     awards: [],
     volunteer: [],
     colors: {

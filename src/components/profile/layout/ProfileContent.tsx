@@ -76,6 +76,7 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
           title={profile.userTitle}
           skills={profile.userSkills}
           languages={profile.userLanguages}
+          certifications={profile.userCertifications}
           goal={profile.goal}
           phoneNumber={profile.phoneNumber}
           coverColor={profile.coverColor}
@@ -94,6 +95,9 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
           onAddLanguage={profile.addLanguage}
           onEditLanguage={profile.editLanguage}
           onRemoveLanguage={profile.removeLanguage}
+          onAddCertification={profile.addCertification}
+          onEditCertification={profile.editCertification}
+          onRemoveCertification={profile.removeCertification}
           onUploadProfileImage={profile.uploadProfileImage}
           userId={profile.user?.id}
         />

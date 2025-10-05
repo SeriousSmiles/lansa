@@ -23,6 +23,17 @@ export interface LanguageItem {
   level: number; // 1-5 scale (1=Beginner, 2=Elementary, 3=Intermediate, 4=Advanced, 5=Native)
 }
 
+export interface CertificationItem {
+  id?: string;
+  title: string;
+  issuer: string;
+  issue_date?: string;
+  expiry_date?: string;
+  credential_id?: string;
+  credential_url?: string;
+  description?: string;
+}
+
 // Define interface for profile data
 export interface UserProfile {
   user_id?: string;
@@ -36,6 +47,7 @@ export interface UserProfile {
   profile_image?: string;
   skills?: string[];
   languages?: LanguageItem[];
+  certifications?: CertificationItem[];
   experiences?: ExperienceItem[];
   education?: EducationItem[];
   professional_goal?: string;
@@ -64,6 +76,7 @@ export interface ProfileDataReturn {
   profileImage: string;
   userSkills: string[];
   userLanguages: LanguageItem[];
+  userCertifications: CertificationItem[];
   experiences: ExperienceItem[];
   educationItems: EducationItem[];
   userEmail: string;
@@ -93,6 +106,11 @@ export interface ProfileDataReturn {
   addLanguage: (language: LanguageItem) => Promise<void>;
   editLanguage: (id: string, updatedLanguage: LanguageItem) => Promise<void>;
   removeLanguage: (id: string) => Promise<void>;
+  
+  // Certification functions
+  addCertification: (cert: CertificationItem) => Promise<void>;
+  editCertification: (id: string, updatedCert: CertificationItem) => Promise<void>;
+  removeCertification: (id: string) => Promise<void>;
   
   // Experience functions
   addExperience: (experience: ExperienceItem) => Promise<void>;
