@@ -227,7 +227,7 @@ export function LanguagesList({
                       </Badge>
                     </div>
                     <div className="space-y-1">
-                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-muted/30 rounded-full overflow-hidden">
                         <div 
                           className="h-full rounded-full transition-all duration-300"
                           style={{ 
