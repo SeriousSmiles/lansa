@@ -59,52 +59,43 @@ export function AIModal({
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 80, opacity: 0 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                className="pointer-events-auto w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-card rounded-2xl p-6 shadow-2xl border border-border"
+                className="pointer-events-auto w-full max-w-3xl max-h-[90vh] overflow-hidden bg-background rounded-2xl shadow-2xl border border-border flex flex-col"
               >
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-primary" />
-                    <h3 className="text-lg font-semibold">AI Enhancement: {section}</h3>
+                {/* Header */}
+                <div className="flex justify-between items-center px-6 py-4 border-b border-border bg-muted/30">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Sparkles className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-semibold">AI Enhancement</h3>
+                      <p className="text-xs text-muted-foreground">{section}</p>
+                    </div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={onClose}>
+                  <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-muted">
                     <X className="w-5 h-5" />
                   </Button>
                 </div>
 
-                {/* Original Content */}
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium mb-2 text-muted-foreground">Current Content</h4>
-                  <div className="bg-muted p-4 rounded-lg text-sm max-h-32 overflow-y-auto">
-                    <p className="whitespace-pre-wrap">{data}</p>
-                  </div>
-                </div>
-
-                {isLoading ? (
-                  <div className="text-center py-8 text-sm text-muted-foreground">
-                    <Sparkles className="w-6 h-6 animate-pulse mx-auto mb-2" />
-                    Generating AI feedback...
-                  </div>
-                ) : aiResult ? (
-                  <div className="space-y-4">
-                    {/* AI Reasoning */}
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">AI Analysis</h4>
-                      <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
-                        {aiResult.reasoning}
-                      </p>
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                  {/* Original Content - Compact */}
+                  <div className="bg-muted/50 rounded-xl p-4 border border-border/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Current</span>
                     </div>
+                    <p className="text-sm leading-relaxed">{data}</p>
+                  </div>
 
-                    {/* AI Suggestion */}
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">Suggested Improvement</h4>
-                      <div className="bg-primary/5 border-l-4 border-primary p-4 rounded-lg text-sm max-h-40 overflow-y-auto">
-                        <p className="whitespace-pre-wrap">{aiResult.suggested_rewrite}</p>
-                      </div>
+                  {isLoading ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                      <Sparkles className="w-8 h-8 animate-pulse mb-3 text-primary" />
+                      <p className="text-sm font-medium">Analyzing and optimizing...</p>
                     </div>
-
-                    {/* Quality Indicator */}
-                    <div className="pt-2">
-                      <div className="flex items-center gap-2 text-sm bg-muted/30 rounded-lg p-3">
+                  ) : aiResult ? (
+                    <>
+                      {/* Quality Badge */}
+                      <div className="flex items-center justify-center">
                         {(() => {
                           const avgScore = (
                             aiResult.score.clarity +
@@ -115,38 +106,62 @@ export function AIModal({
 
                           if (avgScore >= 8) {
                             return (
-                              <>
-                                <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                                <span className="text-muted-foreground">Strong improvement - Ready to apply</span>
-                              </>
+                              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
+                                <CheckCircle className="w-4 h-4 text-green-600" />
+                                <span className="text-xs font-medium text-green-700">Strong Enhancement</span>
+                              </div>
                             );
                           } else if (avgScore >= 6) {
                             return (
-                              <>
-                                <Info className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                                <span className="text-muted-foreground">Good enhancement suggested</span>
-                              </>
+                              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+                                <Info className="w-4 h-4 text-blue-600" />
+                                <span className="text-xs font-medium text-blue-700">Good Improvement</span>
+                              </div>
                             );
                           } else {
                             return (
-                              <>
-                                <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />
-                                <span className="text-muted-foreground">Consider these improvements</span>
-                              </>
+                              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20">
+                                <AlertCircle className="w-4 h-4 text-orange-600" />
+                                <span className="text-xs font-medium text-orange-700">Review Suggested</span>
+                              </div>
                             );
                           }
                         })()}
                       </div>
-                    </div>
-                  </div>
-                ) : null}
 
-                <div className="flex justify-end mt-6 gap-2">
-                  <Button variant="outline" onClick={onClose}>Close</Button>
+                      {/* AI Analysis - Compact Card */}
+                      <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+                        <div className="flex items-start gap-3">
+                          <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-semibold mb-1.5">Why This Helps</h4>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                              {aiResult.reasoning}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Suggestion - Highlighted */}
+                      <div className="bg-primary/5 rounded-xl p-4 border-2 border-primary/20">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-xs font-medium text-primary uppercase tracking-wide">Enhanced Version</span>
+                        </div>
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium">
+                          {aiResult.suggested_rewrite}
+                        </p>
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+
+                {/* Footer Actions */}
+                <div className="flex justify-end gap-3 px-6 py-4 border-t border-border bg-muted/20">
+                  <Button variant="outline" onClick={onClose}>Cancel</Button>
                   {aiResult && (
                     <Button onClick={handleApply} className="gap-2">
                       <Sparkles className="w-4 h-4" />
-                      Apply Suggestion
+                      Apply Enhancement
                     </Button>
                   )}
                 </div>
