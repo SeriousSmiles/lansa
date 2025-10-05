@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ProfileSidebar } from "../ProfileSidebar";
 import { AboutSection } from "../AboutSection";
 import { ExperienceSection } from "../ExperienceSection";
+import { AchievementsSection } from "../AchievementsSection";
 import { EducationSection } from "../EducationSection";
 import { OpenMarketButton } from "../buttons/OpenMarketButton";
 import { gsap } from "gsap";
@@ -134,6 +135,18 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
               onAddExperience={profile.addExperience}
               onEditExperience={profile.editExperience}
               onRemoveExperience={profile.removeExperience}
+              themeColor={profile.coverColor}
+              highlightColor={profile.highlightColor}
+            />
+          </div>
+          
+          {/* Achievements & Awards */}
+          <div className="content-section hover-lift">
+            <AchievementsSection 
+              achievements={profile.userAchievements}
+              onAddAchievement={profile.addAchievement}
+              onEditAchievement={profile.editAchievement}
+              onRemoveAchievement={profile.removeAchievement}
               themeColor={profile.coverColor}
               highlightColor={profile.highlightColor}
             />
