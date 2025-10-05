@@ -15,6 +15,7 @@ export function useProfileText({ userId, updateProfileData }: UseProfileTextProp
   const [userTitle, setUserTitle] = useState<string>("");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [aboutText, setAboutText] = useState<string>("");
+  const [location, setLocation] = useState<string>("");
   const { toast } = useToast();
   const { session } = useAuth();
 
@@ -120,6 +121,27 @@ export function useProfileText({ userId, updateProfileData }: UseProfileTextProp
     }
   };
 
+  // Function to update location
+  const updateLocation = async (loc: string) => {
+    try {
+      await updateProfileData({ location: loc });
+      setLocation(loc);
+      
+      toast({
+        title: "Location updated",
+        description: "Your location has been updated successfully.",
+      });
+    } catch (error) {
+      console.error("Error updating location:", error);
+      toast({
+        title: "Error updating location",
+        description: "There was an error updating your location. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   return {
     userName,
     setUserName,
@@ -131,10 +153,13 @@ export function useProfileText({ userId, updateProfileData }: UseProfileTextProp
     setPhoneNumber,
     aboutText,
     setAboutText,
+    location,
+    setLocation,
     updateUserName,
     updateUserEmail,
     updateUserTitle,
     updatePhoneNumber,
-    updateAboutText
+    updateAboutText,
+    updateLocation
   };
 }

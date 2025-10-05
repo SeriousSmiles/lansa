@@ -20,11 +20,13 @@ interface ProfileSidebarProps {
   profileImage?: string;
   professionalGoal?: string;
   biggestChallenge?: string;
+  location?: string;
   userId?: string;
   onUpdate?: (field: string, value: string) => Promise<void>;
   onUpdateUserName?: (name: string) => Promise<void>;
   onUpdateTitle?: (title: string) => Promise<void>;
   onUpdatePhoneNumber?: (phone: string) => Promise<void>;
+  onUpdateLocation?: (location: string) => Promise<void>;
   onUpdateProfessionalGoal?: (goal: string) => Promise<void>;
   onUpdateBiggestChallenge?: (challenge: string) => Promise<void>;
   onAddSkill?: (skill: string) => Promise<void>;
@@ -49,11 +51,13 @@ export function ProfileSidebar({
   profileImage,
   professionalGoal = "",
   biggestChallenge = "",
+  location,
   userId,
   onUpdate,
   onUpdateUserName,
   onUpdateTitle,
   onUpdatePhoneNumber,
+  onUpdateLocation,
   onUpdateProfessionalGoal,
   onUpdateBiggestChallenge,
   onAddSkill,
@@ -97,9 +101,11 @@ export function ProfileSidebar({
         phoneNumber={phoneNumber}
         profileImage={profileImage}
         highlightColor={highlightColor}
+        location={location}
         onUpdateUserName={handleUpdateUserName}
         onUpdateTitle={handleUpdateTitle}
         onUpdatePhoneNumber={handleUpdatePhoneNumber}
+        onUpdateLocation={onUpdateLocation}
         onUploadProfileImage={handleUploadProfileImage}
       />
 

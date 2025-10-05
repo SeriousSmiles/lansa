@@ -1438,6 +1438,7 @@ export type Database = {
           onboarding_completed: boolean | null
           organization_id: string | null
           phone_number: string | null
+          privacy_settings: Json | null
           professional_goal: string | null
           profile_image: string | null
           score_breakdown: Json | null
@@ -1478,6 +1479,7 @@ export type Database = {
           onboarding_completed?: boolean | null
           organization_id?: string | null
           phone_number?: string | null
+          privacy_settings?: Json | null
           professional_goal?: string | null
           profile_image?: string | null
           score_breakdown?: Json | null
@@ -1518,6 +1520,7 @@ export type Database = {
           onboarding_completed?: boolean | null
           organization_id?: string | null
           phone_number?: string | null
+          privacy_settings?: Json | null
           professional_goal?: string | null
           profile_image?: string | null
           score_breakdown?: Json | null

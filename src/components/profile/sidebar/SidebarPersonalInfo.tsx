@@ -4,6 +4,7 @@ import { ProfileAvatar } from "./ProfileAvatar";
 import { EditableUserName } from "./EditableUserName";
 import { EditableTitle } from "./EditableTitle";
 import { ContactInfo } from "./ContactInfo";
+import { EditableLocation } from "./EditableLocation";
 
 interface SidebarPersonalInfoProps {
   userName: string;
@@ -13,9 +14,11 @@ interface SidebarPersonalInfoProps {
   phoneNumber?: string;
   profileImage?: string;
   highlightColor?: string;
+  location?: string;
   onUpdateUserName?: (name: string) => Promise<void>;
   onUpdateTitle?: (title: string) => Promise<void>;
   onUpdatePhoneNumber?: (phone: string) => Promise<void>;
+  onUpdateLocation?: (location: string) => Promise<void>;
   onUploadProfileImage?: (file: File) => Promise<string>;
 }
 
@@ -27,9 +30,11 @@ export function SidebarPersonalInfo({
   phoneNumber,
   profileImage,
   highlightColor = "#FF6B4A",
+  location,
   onUpdateUserName,
   onUpdateTitle,
   onUpdatePhoneNumber,
+  onUpdateLocation,
   onUploadProfileImage
 }: SidebarPersonalInfoProps) {
   return (
@@ -63,6 +68,12 @@ export function SidebarPersonalInfo({
             <EditableTitle
               title={title}
               onUpdateTitle={onUpdateTitle}
+              highlightColor={highlightColor}
+            />
+            
+            <EditableLocation
+              location={location}
+              onUpdateLocation={onUpdateLocation}
               highlightColor={highlightColor}
             />
           </div>

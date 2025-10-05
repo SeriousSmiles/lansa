@@ -82,10 +82,12 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
           highlightColor={profile.highlightColor}
           profileImage={profile.profileImage}
           professionalGoal={profile.professionalGoal}
+          location={profile.location}
           onUpdate={profile.updateUserAnswer}
           onUpdateUserName={profile.updateUserName}
           onUpdateTitle={profile.updateUserTitle}
           onUpdatePhoneNumber={profile.updatePhoneNumber}
+          onUpdateLocation={profile.updateLocation}
           onUpdateProfessionalGoal={profile.updateProfessionalGoal}
           onAddSkill={profile.addSkill}
           onRemoveSkill={profile.removeSkill}

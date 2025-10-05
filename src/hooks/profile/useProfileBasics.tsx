@@ -23,6 +23,8 @@ export function useProfileBasics(userId: string | undefined) {
     setPhoneNumber: profileText.setPhoneNumber,
     aboutText: profileText.aboutText, 
     setAboutText: profileText.setAboutText,
+    location: profileText.location,
+    setLocation: profileText.setLocation,
     
     // Color data
     coverColor: profileColors.coverColor,
@@ -36,6 +38,7 @@ export function useProfileBasics(userId: string | undefined) {
     updateUserTitle: profileText.updateUserTitle,
     updatePhoneNumber: profileText.updatePhoneNumber,
     updateAboutText: profileText.updateAboutText,
+    updateLocation: profileText.updateLocation,
     updateCoverColor: profileColors.updateCoverColor,
     updateHighlightColor: profileColors.updateHighlightColor,
     

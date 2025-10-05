@@ -169,6 +169,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     userTitle: profileBasics.userTitle,
     professionalGoal,
     biggestChallenge,
+    location: profileBasics.location,
     
     // Update functions
     updateUserName: profileBasics.updateUserName,
@@ -181,6 +182,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     updateUserTitle: profileBasics.updateUserTitle,
     updateProfessionalGoal,
     updateBiggestChallenge,
+    updateLocation: profileBasics.updateLocation,
     
     // Skills functions
     addSkill: profileSkills.addSkill,
