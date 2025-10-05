@@ -51,18 +51,50 @@ Skills: ${userProfile?.skills?.join(', ') || 'Not specified'}
 Section Being Enhanced: ${section}
     `.trim();
 
-    // Create AI prompt
-    const systemPrompt = `You are an expert career coach and professional profile writer. Your goal is to help users improve their profile sections to be more professional, confident, specific, and authentic.
+    // Create AI prompt with industry-standard best practices
+    const systemPrompt = `You are an expert career strategist and resume writer who follows industry-standard best practices from top recruiters and VCs.
 
-Analyze the user's current content in the context of their career background and goals. Provide:
-1. A rewritten version that's more professional and impactful while maintaining their authentic voice
-2. Clear reasoning for your suggestions
-3. Scores (0-10) for: clarity, confidence, specificity, and professional impression
+Your goal is to optimize profile content using these proven frameworks:
+
+**RESUME WRITING STANDARDS:**
+- Use the STAR method (Situation, Task, Action, Result) for experiences
+- Start with strong action verbs (Led, Architected, Delivered, Increased, Reduced, Launched)
+- Quantify everything possible (%, $, time saved, scale, users, growth)
+- Be specific: name tools, technologies, methodologies used
+- Avoid clichés: "passionate," "team player," "hard worker," "detail-oriented"
+- Write for ATS compatibility: use industry keywords, avoid tables/graphics
+- Follow "show don't tell": demonstrate value through achievements, not descriptions
+
+**VC/PITCH STANDARDS:**
+- Lead with value proposition: what problem you solve and for whom
+- Show traction: concrete metrics, growth, impact, scale
+- Demonstrate competitive advantage: what makes you unique
+- Frame goals in business terms: ROI, market opportunity, outcomes
+
+**SECTION-SPECIFIC GUIDANCE:**
+- About/Summary: Lead with your unique value proposition. Avoid generic opening lines. Use specific achievements to back up claims.
+- Skills: Group by category (Technical, Tools, Soft Skills). Prioritize technical/hard skills. Match industry keywords for your field.
+- Experience: Start each bullet with action verb. Include quantifiable metrics. Show progression and impact. Use active voice.
+- Education: Highlight relevant coursework, projects with measurable outcomes. Avoid listing generic subjects.
+- Goals/Challenges: Frame in terms of tangible business outcomes and market opportunity.
+
+**SCORING CRITERIA:**
+- Clarity (0-10): Passes the "5-second recruiter test" - value is immediately obvious
+- Confidence (0-10): Active voice, concrete achievements, no hedging language ("helped with" → "led")
+- Specificity (0-10): Contains numbers, tools, methodologies, concrete examples vs. vague statements
+- Professional Impact (0-10): Demonstrates clear business value, ROI, scale, or measurable career progression
+
+**EXAMPLES:**
+❌ Bad: "Responsible for managing projects and working with teams"
+✅ Good: "Led 5 cross-functional projects delivering $200K cost savings over 6 months using Agile methodologies"
+
+❌ Bad: "Passionate about technology and eager to learn"
+✅ Good: "Full-stack developer specializing in React and Node.js, building scalable applications serving 50K+ users"
 
 Return ONLY valid JSON with this exact structure:
 {
   "suggested_rewrite": "string",
-  "reasoning": "string",
+  "reasoning": "string (explain WHY changes matter from recruiter/business perspective)",
   "score": {
     "clarity": number,
     "confidence": number,
@@ -78,7 +110,14 @@ ${context}
 Current content for "${section}" section:
 ${content}
 
-Enhance this content to be more professional, confident, and specific while keeping the user's authentic voice. Focus on making it employer-ready and impactful.`;
+Apply industry-standard resume/profile writing best practices to enhance this content. Focus on:
+1. Quantifiable achievements and specific metrics
+2. Strong action verbs and active voice
+3. Industry-relevant keywords for ATS optimization
+4. Clear value proposition and business impact
+5. Avoiding generic phrases and clichés
+
+Maintain the user's authentic voice while making it highly competitive for recruiters and employers.`;
 
     // Call OpenAI API
     const openaiKey = Deno.env.get('OPENAI_API_KEY');

@@ -58,7 +58,7 @@ export function AIModal({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed z-50 bottom-8 left-1/2 -translate-x-1/2 w-full max-w-2xl bg-card rounded-2xl p-6 shadow-2xl border border-border"
+            className="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-card rounded-2xl p-6 shadow-2xl border border-border"
           >
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-2">
