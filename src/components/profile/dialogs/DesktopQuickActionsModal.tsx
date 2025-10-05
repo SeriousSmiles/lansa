@@ -60,17 +60,6 @@ export function DesktopQuickActionsModal({
   // ⚡ Quick Actions
   const quickActions: QuickAction[] = [
     {
-      id: 'update-profile',
-      label: 'Update Profile',
-      icon: FileText,
-      bgColor: 'bg-blue-500/10 hover:bg-blue-500/20',
-      iconColor: 'text-blue-500',
-      action: () => {
-        navigate('/profile');
-        onClose();
-      },
-    },
-    {
       id: 'upload-resume',
       label: 'Upload Resume',
       icon: Upload,
@@ -158,7 +147,7 @@ export function DesktopQuickActionsModal({
                   </div>
 
                   {/* Actions Grid */}
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     {quickActions.map((action, index) => {
                       const Icon = action.icon;
                       return (
