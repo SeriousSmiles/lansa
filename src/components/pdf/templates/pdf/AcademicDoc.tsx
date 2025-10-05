@@ -1,4 +1,4 @@
-import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
 import type { PDFResumeData } from '@/types/pdf';
 
 const styles = StyleSheet.create({
@@ -7,6 +7,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     fontFamily: 'Times-Roman',
     fontSize: 11,
+  },
+  badge: {
+    position: 'absolute',
+    bottom: 15,
+    right: 15,
+    width: 90,
+    opacity: 0.9,
   },
   header: {
     textAlign: 'center',
@@ -212,6 +219,9 @@ export default function AcademicDoc({ data }: { data: PDFResumeData }) {
             })}
           </>
         )}
+
+        {/* Powered by Lansa Badge */}
+        <Image style={styles.badge} src="/powered-by-lansa-badge.png" />
 
         <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => (
           `${pageNumber} / ${totalPages}`

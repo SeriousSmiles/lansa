@@ -1,4 +1,4 @@
-import { Page, Text, View, Document, StyleSheet, Font } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Font, Image } from '@react-pdf/renderer';
 import type { PDFResumeData } from '@/types/pdf';
 
 // Register Public Sans and Urbanist fonts (you'll need to add these font files to your public folder)
@@ -11,6 +11,13 @@ const styles = StyleSheet.create({
     padding: 40, 
     backgroundColor: '#FFFFFF',
     fontFamily: 'Helvetica',
+  },
+  badge: {
+    position: 'absolute',
+    bottom: 15,
+    right: 15,
+    width: 90,
+    opacity: 0.9,
   },
   name: { 
     fontSize: 24, 
@@ -176,6 +183,9 @@ export default function MinimalDoc({ data }: { data: PDFResumeData }) {
             })}
           </>
         )}
+
+        {/* Powered by Lansa Badge */}
+        <Image style={styles.badge} src="/powered-by-lansa-badge.png" />
       </Page>
     </Document>
   );

@@ -2,6 +2,7 @@ import React from 'react';
 import { PDFResumeData } from '@/types/pdf';
 import { PDFGenerationOptions } from '@/types/pdf';
 import { getLabels } from '../i18n';
+import lansaBadge from '@/assets/powered-by-lansa-badge.png';
 
 interface LogosTemplateProps {
   data: PDFResumeData;
@@ -17,13 +18,19 @@ export function LogosTemplate({ data, options }: LogosTemplateProps) {
   return (
     <div 
       id="pdf-resume-template" 
-      className="w-[210mm] h-[297mm] mx-auto bg-white shadow-lg overflow-hidden"
+      className="w-[210mm] h-[297mm] mx-auto bg-white shadow-lg overflow-hidden relative"
       style={{
         fontFamily: atsMode ? 'ui-sans-serif, system-ui, sans-serif' : 'Urbanist, Public Sans, sans-serif',
         fontSize: '11px',
         lineHeight: '1.5',
       }}
     >
+      {/* Powered by Lansa Badge */}
+      <img 
+        src={lansaBadge} 
+        alt="Powered by Lansa" 
+        className="absolute bottom-4 right-4 w-24 opacity-90 z-10"
+      />
       {/* Header */}
       <div className="flex items-start justify-between p-8 pb-6 border-b-2" style={{ borderColor: atsMode ? '#e0e0e0' : colors.primary }}>
         <div className="flex-1">

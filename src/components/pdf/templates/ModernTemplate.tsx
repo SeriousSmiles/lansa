@@ -1,5 +1,6 @@
 import React from 'react';
 import { PDFResumeData } from '@/types/pdf';
+import lansaBadge from '@/assets/powered-by-lansa-badge.png';
 
 interface ModernTemplateProps {
   data: PDFResumeData;
@@ -18,6 +19,12 @@ export function ModernTemplate({ data }: ModernTemplateProps) {
         lineHeight: '1.5',
       }}
     >
+      {/* Powered by Lansa Badge */}
+      <img 
+        src={lansaBadge} 
+        alt="Powered by Lansa" 
+        className="absolute bottom-4 right-4 w-24 opacity-90"
+      />
       {/* Header */}
       <div 
         className="h-32 relative overflow-hidden"

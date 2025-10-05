@@ -1,5 +1,6 @@
 import React from 'react';
 import { PDFResumeData } from '@/types/pdf';
+import lansaBadge from '@/assets/powered-by-lansa-badge.png';
 
 interface CreativeTemplateProps {
   data: PDFResumeData;
@@ -18,6 +19,12 @@ export function CreativeTemplate({ data }: CreativeTemplateProps) {
         lineHeight: '1.5',
       }}
     >
+      {/* Powered by Lansa Badge */}
+      <img 
+        src={lansaBadge} 
+        alt="Powered by Lansa" 
+        className="absolute bottom-4 right-4 w-24 opacity-90 z-10"
+      />
       {/* Decorative Header */}
       <div className="relative">
         <div 
