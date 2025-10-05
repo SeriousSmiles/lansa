@@ -6,6 +6,7 @@ import { SharedProfileSidebar } from "@/components/profile/shared/SharedProfileS
 import { ProfileFooter } from "@/components/profile/layout/ProfileFooter";
 import { useElementAnimation } from "@/utils/animationHelpers";
 import { SharedProfileData } from "@/hooks/useSharedProfileData";
+import { MadeOnLansaBadge } from "@/components/profile/shared/MadeOnLansaBadge";
 
 interface SharedProfileContainerProps {
   profileData: SharedProfileData;
@@ -53,6 +54,8 @@ export function SharedProfileContainer({ profileData, urlParam }: SharedProfileC
       </ProfileLayout>
       
       <ProfileFooter coverColor={profileData.coverColor} />
+      
+      <MadeOnLansaBadge />
     </div>
   );
 }
