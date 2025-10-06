@@ -7,7 +7,7 @@ interface ModernTemplateProps {
 }
 
 export function ModernTemplate({ data }: ModernTemplateProps) {
-  const { personalInfo, experience, education, skills, languages, colors } = data;
+  const { personalInfo, experience, education, skills, languages, colors, certifications } = data;
 
   return (
     <div 
@@ -227,7 +227,7 @@ export function ModernTemplate({ data }: ModernTemplateProps) {
 
           {/* Education */}
           {education.length > 0 && (
-            <div>
+            <div className="mb-6">
               <h3 
                 className="text-sm font-bold mb-4 uppercase tracking-wider pb-2 border-b-2"
                 style={{ color: colors.primary, borderColor: colors.primary }}
@@ -255,6 +255,42 @@ export function ModernTemplate({ data }: ModernTemplateProps) {
                       <p className="text-xs text-gray-700 leading-relaxed">
                         {edu.description}
                       </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Certifications */}
+          {certifications && certifications.length > 0 && (
+            <div>
+              <h3 
+                className="text-sm font-bold mb-4 uppercase tracking-wider pb-2 border-b-2"
+                style={{ color: colors.primary, borderColor: colors.primary }}
+              >
+                Certifications
+              </h3>
+              <div className="space-y-3">
+                {certifications.map((cert, index) => (
+                  <div 
+                    key={index} 
+                    className="p-2 border rounded"
+                    style={{ borderColor: colors.primary + '30' }}
+                  >
+                    <div className="flex justify-between items-start mb-1">
+                      <h4 className="text-xs font-semibold text-gray-900">
+                        {cert.title}
+                      </h4>
+                      {cert.date && (
+                        <span className="text-xs text-gray-600 ml-2">
+                          {new Date(cert.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-700">{cert.issuer}</p>
+                    {cert.credentialId && (
+                      <p className="text-xs text-gray-600 mt-1">ID: {cert.credentialId}</p>
                     )}
                   </div>
                 ))}

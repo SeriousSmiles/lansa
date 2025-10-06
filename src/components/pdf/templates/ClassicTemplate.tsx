@@ -7,7 +7,7 @@ interface ClassicTemplateProps {
 }
 
 export function ClassicTemplate({ data }: ClassicTemplateProps) {
-  const { personalInfo, experience, education, skills, languages, colors } = data;
+  const { personalInfo, experience, education, skills, languages, colors, certifications } = data;
 
   return (
     <div 
@@ -87,7 +87,7 @@ export function ClassicTemplate({ data }: ClassicTemplateProps) {
 
             {/* Education */}
             {education.length > 0 && (
-              <div>
+              <div className="mb-8">
                 <h3 className="text-lg font-bold text-gray-900 mb-4 uppercase tracking-wider border-b border-gray-300 pb-2">
                   Education
                 </h3>
@@ -108,6 +108,35 @@ export function ClassicTemplate({ data }: ClassicTemplateProps) {
                         <p className="text-gray-700 leading-relaxed">
                           {edu.description}
                         </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Certifications */}
+            {certifications && certifications.length > 0 && (
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 mb-4 uppercase tracking-wider border-b border-gray-300 pb-2">
+                  Certifications
+                </h3>
+                <div className="space-y-3">
+                  {certifications.map((cert, index) => (
+                    <div key={index} className="p-3 border border-gray-300 rounded">
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className="text-sm font-semibold text-gray-900">
+                          {cert.title}
+                        </h4>
+                        {cert.date && (
+                          <span className="text-xs text-gray-600 font-medium">
+                            {new Date(cert.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-700">{cert.issuer}</p>
+                      {cert.credentialId && (
+                        <p className="text-xs text-gray-600 mt-1">ID: {cert.credentialId}</p>
                       )}
                     </div>
                   ))}

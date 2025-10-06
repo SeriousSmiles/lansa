@@ -7,7 +7,7 @@ interface CreativeTemplateProps {
 }
 
 export function CreativeTemplate({ data }: CreativeTemplateProps) {
-  const { personalInfo, experience, education, skills, languages, colors } = data;
+  const { personalInfo, experience, education, skills, languages, colors, certifications } = data;
 
   return (
     <div 
@@ -261,7 +261,7 @@ export function CreativeTemplate({ data }: CreativeTemplateProps) {
 
             {/* Education */}
             {education.length > 0 && (
-              <div>
+              <div className="mb-6">
                 <h3 
                   className="text-lg font-bold mb-3"
                   style={{ color: colors.primary }}
@@ -301,6 +301,49 @@ export function CreativeTemplate({ data }: CreativeTemplateProps) {
                           )}
                         </div>
                       </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Certifications */}
+            {certifications && certifications.length > 0 && (
+              <div>
+                <h3 
+                  className="text-lg font-bold mb-3"
+                  style={{ color: colors.primary }}
+                >
+                  Certifications
+                </h3>
+                <div 
+                  className="w-16 h-1 mb-4"
+                  style={{ backgroundColor: colors.secondary }}
+                ></div>
+                <div className="space-y-3">
+                  {certifications.map((cert, index) => (
+                    <div 
+                      key={index} 
+                      className="p-3 border rounded-lg"
+                      style={{ borderColor: colors.primary + '30' }}
+                    >
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className="text-xs font-semibold text-gray-900">
+                          {cert.title}
+                        </h4>
+                        {cert.date && (
+                          <span 
+                            className="text-xs px-2 py-1 rounded text-white"
+                            style={{ backgroundColor: colors.secondary }}
+                          >
+                            {new Date(cert.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-700">{cert.issuer}</p>
+                      {cert.credentialId && (
+                        <p className="text-xs text-gray-600 mt-1">ID: {cert.credentialId}</p>
+                      )}
                     </div>
                   ))}
                 </div>

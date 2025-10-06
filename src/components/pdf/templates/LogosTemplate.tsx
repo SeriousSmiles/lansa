@@ -10,7 +10,7 @@ interface LogosTemplateProps {
 }
 
 export function LogosTemplate({ data, options }: LogosTemplateProps) {
-  const { personalInfo, experience, education, skills, languages, colors } = data;
+  const { personalInfo, experience, education, skills, languages, colors, certifications } = data;
   const labels = getLabels(options?.locale);
   const atsMode = options?.atsSafe || false;
   const showPhoto = options?.includePhoto !== false && !atsMode;
@@ -212,7 +212,7 @@ export function LogosTemplate({ data, options }: LogosTemplateProps) {
 
           {/* Education */}
           {education.length > 0 && (
-            <div>
+            <div className="mb-6">
               <h3 
                 className="text-sm font-bold mb-4 uppercase tracking-wider pb-2 border-b-2"
                 style={{ color: atsMode ? '#1a1a1a' : colors.primary, borderColor: atsMode ? '#e0e0e0' : colors.primary }}
@@ -236,6 +236,42 @@ export function LogosTemplate({ data, options }: LogosTemplateProps) {
                       <p className="text-xs text-gray-700 leading-relaxed">
                         {edu.description}
                       </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Certifications */}
+          {certifications && certifications.length > 0 && (
+            <div>
+              <h3 
+                className="text-sm font-bold mb-4 uppercase tracking-wider pb-2 border-b-2"
+                style={{ color: atsMode ? '#1a1a1a' : colors.primary, borderColor: atsMode ? '#e0e0e0' : colors.primary }}
+              >
+                Certifications
+              </h3>
+              <div className="space-y-3">
+                {certifications.map((cert, index) => (
+                  <div 
+                    key={index} 
+                    className="p-2 border rounded"
+                    style={{ borderColor: atsMode ? '#e0e0e0' : colors.primary + '30' }}
+                  >
+                    <div className="flex justify-between items-start mb-1">
+                      <h4 className="text-xs font-semibold text-gray-900">
+                        {cert.title}
+                      </h4>
+                      {cert.date && (
+                        <span className="text-xs text-gray-600">
+                          {new Date(cert.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-700">{cert.issuer}</p>
+                    {cert.credentialId && (
+                      <p className="text-xs text-gray-600 mt-1">ID: {cert.credentialId}</p>
                     )}
                   </div>
                 ))}

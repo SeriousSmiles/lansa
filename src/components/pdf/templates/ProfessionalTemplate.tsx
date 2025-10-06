@@ -8,7 +8,7 @@ interface ProfessionalTemplateProps {
 }
 
 export function ProfessionalTemplate({ data }: ProfessionalTemplateProps) {
-  const { personalInfo, experience, education, skills, colors, languages } = data;
+  const { personalInfo, experience, education, skills, colors, languages, certifications } = data;
 
   return (
     <div 
@@ -212,6 +212,42 @@ export function ProfessionalTemplate({ data }: ProfessionalTemplateProps) {
                       <p className="text-gray-700 leading-relaxed">
                         {edu.description}
                       </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Certifications */}
+          {certifications && certifications.length > 0 && (
+            <div>
+              <h3 
+                className="text-xl font-bold mb-4 uppercase tracking-wide border-b-2 pb-2"
+                style={{ borderColor: colors.primary, color: colors.primary }}
+              >
+                Certifications
+              </h3>
+              <div className="space-y-3">
+                {certifications.map((cert, index) => (
+                  <div 
+                    key={index} 
+                    className="p-3 border rounded-lg"
+                    style={{ borderColor: colors.primary + '30' }}
+                  >
+                    <div className="flex justify-between items-start mb-1">
+                      <h4 className="text-base font-semibold text-gray-900">
+                        {cert.title}
+                      </h4>
+                      {cert.date && (
+                        <span className="text-xs text-gray-600 ml-2">
+                          {new Date(cert.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-700">{cert.issuer}</p>
+                    {cert.credentialId && (
+                      <p className="text-xs text-gray-600 mt-1">ID: {cert.credentialId}</p>
                     )}
                   </div>
                 ))}

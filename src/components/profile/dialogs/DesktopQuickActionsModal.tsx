@@ -21,12 +21,14 @@ interface DesktopQuickActionsModalProps {
   isOpen: boolean;
   onClose: () => void;
   userName?: string;
+  onAddAchievement?: (achievement: any) => Promise<void>;
 }
 
 export function DesktopQuickActionsModal({
   isOpen,
   onClose,
   userName,
+  onAddAchievement,
 }: DesktopQuickActionsModalProps) {
   const navigate = useNavigate();
   const [showCVModal, setShowCVModal] = useState(false);
@@ -219,6 +221,7 @@ export function DesktopQuickActionsModal({
           <AchievementModal
             isOpen={showAchievementModal}
             onClose={() => setShowAchievementModal(false)}
+            onAddAchievement={onAddAchievement}
           />
         )}
       </AnimatePresence>

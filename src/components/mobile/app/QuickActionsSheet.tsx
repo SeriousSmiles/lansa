@@ -31,9 +31,10 @@ interface QuickActionsSheetProps {
   isOpen: boolean;
   onClose: () => void;
   userName?: string;
+  onAddAchievement?: (achievement: any) => Promise<void>;
 }
 
-export function QuickActionsSheet({ isOpen, onClose, userName }: QuickActionsSheetProps) {
+export function QuickActionsSheet({ isOpen, onClose, userName, onAddAchievement }: QuickActionsSheetProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showCVModal, setShowCVModal] = useState(false);
@@ -188,6 +189,7 @@ export function QuickActionsSheet({ isOpen, onClose, userName }: QuickActionsShe
       <AchievementModal 
         isOpen={showAchievementModal}
         onClose={() => setShowAchievementModal(false)}
+        onAddAchievement={onAddAchievement}
       />
     </AnimatePresence>
   );

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { AchievementItem } from "@/hooks/profile/profileTypes";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { AchievementModal } from "@/components/modals/AchievementModal";
 
 interface AchievementsSectionProps {
   achievements: AchievementItem[];
@@ -42,6 +43,8 @@ export function AchievementsSection({
   highlightColor = "#FF6B4A"
 }: AchievementsSectionProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingAchievement, setEditingAchievement] = useState<AchievementItem | undefined>(undefined);
 
   const handleToggleFeatured = async (achievement: AchievementItem) => {
     if (!onEditAchievement || !achievement.id) return;
@@ -64,6 +67,15 @@ export function AchievementsSection({
     } catch (error) {
       console.error("Error deleting achievement:", error);
     }
+  };
+
+  const handleEdit = (achievement: AchievementItem) => {
+    setEditingAchievement(achievement);
+  };
+
+  const handleCloseModal = () => {
+    setShowAddModal(false);
+    setEditingAchievement(undefined);
   };
 
   // Sort achievements: featured first, then by date
@@ -90,7 +102,7 @@ export function AchievementsSection({
             <h2 className="text-xl font-bold text-foreground">Achievements & Awards</h2>
           </div>
           <Button
-            onClick={() => toast.info("Add achievement feature coming soon")}
+            onClick={() => setShowAddModal(true)}
             size="sm"
             variant="outline"
             className="gap-2"
@@ -207,7 +219,7 @@ export function AchievementsSection({
                           {achievement.isFeatured ? "Unfeature" : "Feature"}
                         </Button>
                         <Button
-                          onClick={() => toast.info("Edit feature coming soon")}
+                          onClick={() => handleEdit(achievement)}
                           variant="ghost"
                           size="sm"
                           className="h-7 text-xs"
@@ -231,6 +243,15 @@ export function AchievementsSection({
           </div>
         )}
       </CardContent>
+      
+      {/* Achievement Modal */}
+      <AchievementModal
+        isOpen={showAddModal || !!editingAchievement}
+        onClose={handleCloseModal}
+        onAddAchievement={onAddAchievement}
+        achievement={editingAchievement}
+        onEditAchievement={onEditAchievement}
+      />
     </Card>
   );
 }

@@ -21,7 +21,9 @@ export const convertProfileToPDFData = (profileData: ProfileDataReturn): PDFResu
     certifications: (profileData.userCertifications || []).map(cert => ({
       title: cert.title,
       issuer: cert.issuer,
-      date: cert.issue_date
+      date: cert.issue_date,
+      credentialId: cert.credential_id || undefined,
+      credentialUrl: cert.credential_url || undefined
     })),
     awards: [],
     volunteer: [],

@@ -24,6 +24,8 @@ export interface PDFResumeData {
     title: string;
     issuer: string;
     date?: string;
+    credentialId?: string;
+    credentialUrl?: string;
   }>;
   achievements?: Array<{
     type: string;

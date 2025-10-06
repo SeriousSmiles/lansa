@@ -8,21 +8,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
+import { AchievementItem } from '@/hooks/profile/profileTypes';
 
 interface AchievementModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddAchievement?: (achievement: any) => Promise<void>;
-}
-
-interface Achievement {
-  type: string;
-  title: string;
-  description: string;
-  dateAchieved: string;
-  organization?: string;
-  credentialId?: string;
+  onAddAchievement?: (achievement: AchievementItem) => Promise<void>;
+  achievement?: AchievementItem;
+  onEditAchievement?: (id: string, achievement: AchievementItem) => Promise<void>;
 }
 
 const achievementTypes = [
@@ -34,63 +28,86 @@ const achievementTypes = [
   { value: 'education', label: 'Educational Achievement', icon: GraduationCap, color: 'text-indigo-500 bg-indigo-500/10' }
 ];
 
-export function AchievementModal({ isOpen, onClose, onAddAchievement }: AchievementModalProps) {
+export function AchievementModal({ isOpen, onClose, onAddAchievement, achievement: editAchievement, onEditAchievement }: AchievementModalProps) {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [achievement, setAchievement] = useState<Achievement>({
-    type: '',
-    title: '',
-    description: '',
-    dateAchieved: '',
-    organization: '',
-    credentialId: ''
+  const isEditing = !!editAchievement;
+  
+  const [formData, setFormData] = useState({
+    type: editAchievement?.type || '' as 'certification' | 'award' | 'project' | 'skill' | 'work' | 'education' | '',
+    title: editAchievement?.title || '',
+    description: editAchievement?.description || '',
+    dateAchieved: editAchievement?.dateAchieved || '',
+    organization: editAchievement?.organization || '',
+    credentialId: editAchievement?.credentialId || '',
+    credentialUrl: editAchievement?.credentialUrl || ''
   });
+
+  // Reset form when modal opens with different data
+  React.useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        type: editAchievement?.type || '' as 'certification' | 'award' | 'project' | 'skill' | 'work' | 'education' | '',
+        title: editAchievement?.title || '',
+        description: editAchievement?.description || '',
+        dateAchieved: editAchievement?.dateAchieved || '',
+        organization: editAchievement?.organization || '',
+        credentialId: editAchievement?.credentialId || '',
+        credentialUrl: editAchievement?.credentialUrl || ''
+      });
+    }
+  }, [isOpen, editAchievement]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!achievement.type || !achievement.title || !achievement.description) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
-      });
+    if (!formData.type || !formData.title || !formData.description) {
+      toast.error("Please fill in all required fields");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      // Here you would save the achievement to the user's profile
-      // For now, we'll just simulate a successful save
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Success",
-        description: "Achievement added to your profile!",
-      });
+      const achievementData: AchievementItem = {
+        type: formData.type as 'certification' | 'award' | 'project' | 'skill' | 'work' | 'education',
+        title: formData.title,
+        description: formData.description,
+        dateAchieved: formData.dateAchieved || undefined,
+        organization: formData.organization || undefined,
+        credentialId: formData.credentialId || undefined,
+        credentialUrl: formData.credentialUrl || undefined,
+        isFeatured: editAchievement?.isFeatured || false,
+        displayOrder: editAchievement?.displayOrder || 0
+      };
+
+      if (isEditing && editAchievement?.id && onEditAchievement) {
+        await onEditAchievement(editAchievement.id, achievementData);
+        toast.success("Achievement updated successfully!");
+      } else if (onAddAchievement) {
+        await onAddAchievement(achievementData);
+        toast.success("Achievement added to your profile!");
+      }
       
       // Reset form
-      setAchievement({
-        type: '',
+      setFormData({
+        type: '' as 'certification' | 'award' | 'project' | 'skill' | 'work' | 'education' | '',
         title: '',
         description: '',
         dateAchieved: '',
         organization: '',
-        credentialId: ''
+        credentialId: '',
+        credentialUrl: ''
       });
       
       onClose();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add achievement",
-        variant: "destructive"
-      });
+      console.error("Error saving achievement:", error);
+      toast.error("Failed to save achievement. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const selectedType = achievementTypes.find(type => type.value === achievement.type);
+  const selectedType = achievementTypes.find(type => type.value === formData.type);
 
   return (
     <>
@@ -125,7 +142,9 @@ export function AchievementModal({ isOpen, onClose, onAddAchievement }: Achievem
                       )}
                     </div>
                     <div>
-                      <h2 className="text-lg font-urbanist font-semibold">Add Achievement</h2>
+                      <h2 className="text-lg font-urbanist font-semibold">
+                        {isEditing ? 'Edit Achievement' : 'Add Achievement'}
+                      </h2>
                       <p className="text-sm text-muted-foreground">Showcase your accomplishments</p>
                     </div>
                   </div>
@@ -138,7 +157,7 @@ export function AchievementModal({ isOpen, onClose, onAddAchievement }: Achievem
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <Label htmlFor="type">Achievement Type *</Label>
-                    <Select value={achievement.type} onValueChange={(value) => setAchievement(prev => ({ ...prev, type: value }))}>
+                    <Select value={formData.type} onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as any }))}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select achievement type" />
                       </SelectTrigger>
@@ -162,8 +181,8 @@ export function AchievementModal({ isOpen, onClose, onAddAchievement }: Achievem
                     <Label htmlFor="title">Achievement Title *</Label>
                     <Input
                       id="title"
-                      value={achievement.title}
-                      onChange={(e) => setAchievement(prev => ({ ...prev, title: e.target.value }))}
+                      value={formData.title}
+                      onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                       placeholder="e.g., AWS Certified Developer, Employee of the Month"
                     />
                   </div>
@@ -172,8 +191,8 @@ export function AchievementModal({ isOpen, onClose, onAddAchievement }: Achievem
                     <Label htmlFor="description">Description *</Label>
                     <Textarea
                       id="description"
-                      value={achievement.description}
-                      onChange={(e) => setAchievement(prev => ({ ...prev, description: e.target.value }))}
+                      value={formData.description}
+                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                       placeholder="Describe your achievement and its impact..."
                       rows={3}
                     />
@@ -185,16 +204,16 @@ export function AchievementModal({ isOpen, onClose, onAddAchievement }: Achievem
                       <Input
                         id="dateAchieved"
                         type="date"
-                        value={achievement.dateAchieved}
-                        onChange={(e) => setAchievement(prev => ({ ...prev, dateAchieved: e.target.value }))}
+                        value={formData.dateAchieved}
+                        onChange={(e) => setFormData(prev => ({ ...prev, dateAchieved: e.target.value }))}
                       />
                     </div>
                     <div>
                       <Label htmlFor="organization">Organization</Label>
                       <Input
                         id="organization"
-                        value={achievement.organization}
-                        onChange={(e) => setAchievement(prev => ({ ...prev, organization: e.target.value }))}
+                        value={formData.organization || ''}
+                        onChange={(e) => setFormData(prev => ({ ...prev, organization: e.target.value }))}
                         placeholder="e.g., Amazon, Google, University"
                       />
                     </div>
@@ -204,9 +223,20 @@ export function AchievementModal({ isOpen, onClose, onAddAchievement }: Achievem
                     <Label htmlFor="credentialId">Credential ID (Optional)</Label>
                     <Input
                       id="credentialId"
-                      value={achievement.credentialId}
-                      onChange={(e) => setAchievement(prev => ({ ...prev, credentialId: e.target.value }))}
+                      value={formData.credentialId || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, credentialId: e.target.value }))}
                       placeholder="Certificate or credential number"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="credentialUrl">Credential URL (Optional)</Label>
+                    <Input
+                      id="credentialUrl"
+                      value={formData.credentialUrl || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, credentialUrl: e.target.value }))}
+                      placeholder="https://example.com/credential"
+                      type="url"
                     />
                   </div>
 
@@ -225,7 +255,7 @@ export function AchievementModal({ isOpen, onClose, onAddAchievement }: Achievem
                       disabled={isSubmitting}
                       className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white"
                     >
-                      {isSubmitting ? 'Adding...' : 'Add Achievement'}
+                      {isSubmitting ? (isEditing ? 'Updating...' : 'Adding...') : (isEditing ? 'Update Achievement' : 'Add Achievement')}
                     </Button>
                   </div>
                 </form>
