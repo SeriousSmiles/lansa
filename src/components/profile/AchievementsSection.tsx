@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Award, Plus, Star, Trophy, Sparkles, Target, Briefcase, GraduationCap } from "lucide-react";
+import { Award, Plus, Star, Trophy, Sparkles, Target, Briefcase, GraduationCap, BookOpen, Lightbulb, Users, Heart, Code, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AchievementItem } from "@/hooks/profile/profileTypes";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,13 @@ const achievementTypeIcons = {
   skill: Target,
   work: Briefcase,
   education: GraduationCap,
+  publication: BookOpen,
+  patent: Lightbulb,
+  leadership: Users,
+  volunteer: Heart,
+  competition: Trophy,
+  speaking: Mic,
+  hackathon: Code,
 };
 
 const achievementTypeColors = {
@@ -32,6 +39,13 @@ const achievementTypeColors = {
   skill: "text-green-500",
   work: "text-orange-500",
   education: "text-indigo-500",
+  publication: "text-cyan-500",
+  patent: "text-amber-500",
+  leadership: "text-rose-500",
+  volunteer: "text-pink-500",
+  competition: "text-red-500",
+  speaking: "text-violet-500",
+  hackathon: "text-emerald-500",
 };
 
 export function AchievementsSection({ 

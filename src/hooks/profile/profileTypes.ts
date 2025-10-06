@@ -47,7 +47,7 @@ export interface ProjectItem {
 
 export interface AchievementItem {
   id?: string;
-  type: 'certification' | 'award' | 'project' | 'skill' | 'work' | 'education';
+  type: 'certification' | 'award' | 'project' | 'skill' | 'work' | 'education' | 'publication' | 'patent' | 'leadership' | 'volunteer' | 'competition' | 'speaking' | 'hackathon';
   title: string;
   description: string;
   dateAchieved?: string;

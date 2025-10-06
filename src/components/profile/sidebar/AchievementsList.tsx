@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, X, Edit2, Award, Trophy, Briefcase, Zap, ExternalLink, Star } from "lucide-react";
+import { Plus, X, Edit2, Award, Trophy, Briefcase, Zap, ExternalLink, Star, BookOpen, Lightbulb, Users, Heart, Target, Mic, Code } from "lucide-react";
 import { AchievementItem } from "@/hooks/profile/profileTypes";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +23,13 @@ const achievementTypes = [
   { value: 'skill', label: 'Skill Achievement', icon: Zap, color: '#F59E0B' },
   { value: 'work', label: 'Work Achievement', icon: Briefcase, color: '#8B5CF6' },
   { value: 'education', label: 'Academic Achievement', icon: Award, color: '#EF4444' },
+  { value: 'publication', label: 'Publication', icon: BookOpen, color: '#06B6D4' },
+  { value: 'patent', label: 'Patent', icon: Lightbulb, color: '#F59E0B' },
+  { value: 'leadership', label: 'Leadership', icon: Users, color: '#F43F5E' },
+  { value: 'volunteer', label: 'Volunteer Work', icon: Heart, color: '#EC4899' },
+  { value: 'competition', label: 'Competition', icon: Target, color: '#DC2626' },
+  { value: 'speaking', label: 'Speaking Engagement', icon: Mic, color: '#8B5CF6' },
+  { value: 'hackathon', label: 'Hackathon', icon: Code, color: '#10B981' },
 ];
 
 export function AchievementsList({ 

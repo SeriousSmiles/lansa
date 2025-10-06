@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Award, Trophy, Medal, Star, Briefcase, GraduationCap } from 'lucide-react';
+import { X, Award, Trophy, Medal, Star, Briefcase, GraduationCap, BookOpen, Lightbulb, Users, Heart, Target, Mic, Code } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,7 +25,14 @@ const achievementTypes = [
   { value: 'project', label: 'Project Milestone', icon: Star, color: 'text-green-500 bg-green-500/10' },
   { value: 'skill', label: 'Skill Achievement', icon: Award, color: 'text-purple-500 bg-purple-500/10' },
   { value: 'work', label: 'Work Achievement', icon: Briefcase, color: 'text-orange-500 bg-orange-500/10' },
-  { value: 'education', label: 'Educational Achievement', icon: GraduationCap, color: 'text-indigo-500 bg-indigo-500/10' }
+  { value: 'education', label: 'Educational Achievement', icon: GraduationCap, color: 'text-indigo-500 bg-indigo-500/10' },
+  { value: 'publication', label: 'Publication', icon: BookOpen, color: 'text-cyan-500 bg-cyan-500/10' },
+  { value: 'patent', label: 'Patent', icon: Lightbulb, color: 'text-amber-500 bg-amber-500/10' },
+  { value: 'leadership', label: 'Leadership', icon: Users, color: 'text-rose-500 bg-rose-500/10' },
+  { value: 'volunteer', label: 'Volunteer Work', icon: Heart, color: 'text-pink-500 bg-pink-500/10' },
+  { value: 'competition', label: 'Competition', icon: Target, color: 'text-red-500 bg-red-500/10' },
+  { value: 'speaking', label: 'Speaking Engagement', icon: Mic, color: 'text-violet-500 bg-violet-500/10' },
+  { value: 'hackathon', label: 'Hackathon', icon: Code, color: 'text-emerald-500 bg-emerald-500/10' }
 ];
 
 export function AchievementModal({ isOpen, onClose, onAddAchievement, achievement: editAchievement, onEditAchievement }: AchievementModalProps) {
@@ -34,7 +41,7 @@ export function AchievementModal({ isOpen, onClose, onAddAchievement, achievemen
   const isEditing = !!editAchievement;
   
   const [formData, setFormData] = useState({
-    type: editAchievement?.type || '' as 'certification' | 'award' | 'project' | 'skill' | 'work' | 'education' | '',
+    type: editAchievement?.type || '' as 'certification' | 'award' | 'project' | 'skill' | 'work' | 'education' | 'publication' | 'patent' | 'leadership' | 'volunteer' | 'competition' | 'speaking' | 'hackathon' | '',
     title: editAchievement?.title || '',
     description: editAchievement?.description || '',
     dateAchieved: editAchievement?.dateAchieved || '',
@@ -47,7 +54,7 @@ export function AchievementModal({ isOpen, onClose, onAddAchievement, achievemen
   React.useEffect(() => {
     if (isOpen) {
       setFormData({
-        type: editAchievement?.type || '' as 'certification' | 'award' | 'project' | 'skill' | 'work' | 'education' | '',
+        type: editAchievement?.type || '' as 'certification' | 'award' | 'project' | 'skill' | 'work' | 'education' | 'publication' | 'patent' | 'leadership' | 'volunteer' | 'competition' | 'speaking' | 'hackathon' | '',
         title: editAchievement?.title || '',
         description: editAchievement?.description || '',
         dateAchieved: editAchievement?.dateAchieved || '',
@@ -68,7 +75,7 @@ export function AchievementModal({ isOpen, onClose, onAddAchievement, achievemen
     setIsSubmitting(true);
     try {
       const achievementData: AchievementItem = {
-        type: formData.type as 'certification' | 'award' | 'project' | 'skill' | 'work' | 'education',
+        type: formData.type as 'certification' | 'award' | 'project' | 'skill' | 'work' | 'education' | 'publication' | 'patent' | 'leadership' | 'volunteer' | 'competition' | 'speaking' | 'hackathon',
         title: formData.title,
         description: formData.description,
         dateAchieved: formData.dateAchieved || undefined,
@@ -89,7 +96,7 @@ export function AchievementModal({ isOpen, onClose, onAddAchievement, achievemen
       
       // Reset form
       setFormData({
-        type: '' as 'certification' | 'award' | 'project' | 'skill' | 'work' | 'education' | '',
+        type: '' as 'certification' | 'award' | 'project' | 'skill' | 'work' | 'education' | 'publication' | 'patent' | 'leadership' | 'volunteer' | 'competition' | 'speaking' | 'hackathon' | '',
         title: '',
         description: '',
         dateAchieved: '',
