@@ -165,14 +165,14 @@ export function AchievementModal({ isOpen, onClose, onAddAchievement, achievemen
                   <div>
                     <Label htmlFor="type">Achievement Type *</Label>
                     <Select value={formData.type} onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as any }))}>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-background">
                         <SelectValue placeholder="Select achievement type" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-background border border-border z-[220] max-h-[300px] overflow-y-auto">
                         {achievementTypes.map((type) => {
                           const Icon = type.icon;
                           return (
-                            <SelectItem key={type.value} value={type.value}>
+                            <SelectItem key={type.value} value={type.value} className="cursor-pointer">
                               <div className="flex items-center gap-2">
                                 <Icon className="h-4 w-4" />
                                 {type.label}
