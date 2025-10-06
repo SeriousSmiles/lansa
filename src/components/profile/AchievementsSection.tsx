@@ -17,7 +17,6 @@ interface AchievementsSectionProps {
 }
 
 const achievementTypeIcons = {
-  certification: Star,
   award: Trophy,
   project: Sparkles,
   skill: Target,
@@ -33,7 +32,6 @@ const achievementTypeIcons = {
 };
 
 const achievementTypeColors = {
-  certification: "text-blue-500",
   award: "text-yellow-500",
   project: "text-purple-500",
   skill: "text-green-500",

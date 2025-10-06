@@ -18,7 +18,6 @@ interface AchievementsListProps {
 
 const achievementTypes = [
   { value: 'award', label: 'Award', icon: Trophy, color: '#FFD700' },
-  { value: 'certification', label: 'Certification', icon: Award, color: '#4F46E5' },
   { value: 'project', label: 'Project', icon: Briefcase, color: '#10B981' },
   { value: 'skill', label: 'Skill Achievement', icon: Zap, color: '#F59E0B' },
   { value: 'work', label: 'Work Achievement', icon: Briefcase, color: '#8B5CF6' },

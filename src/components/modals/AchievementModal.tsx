@@ -20,7 +20,6 @@ interface AchievementModalProps {
 }
 
 const achievementTypes = [
-  { value: 'certification', label: 'Certification', icon: Medal, color: 'text-blue-500 bg-blue-500/10' },
   { value: 'award', label: 'Award', icon: Trophy, color: 'text-yellow-500 bg-yellow-500/10' },
   { value: 'project', label: 'Project Milestone', icon: Star, color: 'text-green-500 bg-green-500/10' },
   { value: 'skill', label: 'Skill Achievement', icon: Award, color: 'text-purple-500 bg-purple-500/10' },
