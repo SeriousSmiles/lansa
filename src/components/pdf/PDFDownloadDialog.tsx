@@ -447,31 +447,26 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
         </div>
       </DialogContent>
 
-      {/* Hidden templates for generation */}
-      {!showPreview && (
-        <>
-          {/* Preview template for screen viewing */}
-          {selectedTemplateData?.engine === 'html' && (
-            <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
-              <HTMLPDFPreview 
-                data={pdfData} 
-                template={selectedTemplate}
-                forExport={false}
-              />
-            </div>
-          )}
-          
-          {/* Export template for JPEG generation (pixel-perfect) */}
-          {exportFormat === 'jpeg' && selectedTemplate === 'professional' && (
-            <div style={{ position: 'absolute', left: '-9999px', top: '0' }}>
-              <HTMLPDFPreview 
-                data={pdfData} 
-                template={selectedTemplate}
-                forExport={true}
-              />
-            </div>
-          )}
-        </>
+      {/* Hidden preview template for HTML engine when preview not shown */}
+      {selectedTemplateData?.engine === 'html' && !showPreview && (
+        <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+          <HTMLPDFPreview 
+            data={pdfData} 
+            template={selectedTemplate}
+            forExport={false}
+          />
+        </div>
+      )}
+
+      {/* Always mount export template for JPEG generation (pixel-perfect) */}
+      {exportFormat === 'jpeg' && selectedTemplate === 'professional' && (
+        <div style={{ position: 'absolute', left: '-9999px', top: '0' }}>
+          <HTMLPDFPreview 
+            data={pdfData} 
+            template={selectedTemplate}
+            forExport={true}
+          />
+        </div>
       )}
     </Dialog>
   );
