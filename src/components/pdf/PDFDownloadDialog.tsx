@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ChevronDown } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Dialog,
@@ -36,6 +37,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
   const [htmlPreviewReady, setHtmlPreviewReady] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [exportFormat, setExportFormat] = useState<'pdf' | 'jpeg'>('jpeg');
+  const [optionsExpanded, setOptionsExpanded] = useState(false);
   const isMobile = useIsMobile();
 
   // Options state
@@ -294,103 +296,119 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
             </CardContent>
           </Card>
 
-          {/* Options Panel */}
+          {/* Customization Options - Collapsible */}
           <Card>
-            <CardContent className="p-4 space-y-4">
+            <button
+              onClick={() => setOptionsExpanded(!optionsExpanded)}
+              className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+            >
               <h4 className="font-medium">Customization Options</h4>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* ATS Mode */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="ats-mode"
-                    checked={options.atsSafe}
-                    onCheckedChange={(checked) =>
-                      setOptions(prev => ({ ...prev, atsSafe: checked as boolean }))
-                    }
-                  />
-                  <Label htmlFor="ats-mode" className="text-sm cursor-pointer">
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-4 h-4" />
-                      ATS-Safe Mode
-                    </div>
-                    <span className="text-xs text-muted-foreground">Optimized for applicant tracking systems</span>
-                  </Label>
+              <ChevronDown 
+                className={`w-5 h-5 transition-transform duration-300 ${
+                  optionsExpanded ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+            
+            <div 
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                optionsExpanded ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
+              }`}
+            >
+              <CardContent className="p-4 pt-0 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* ATS Mode */}
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="ats-mode"
+                      checked={options.atsSafe}
+                      onCheckedChange={(checked) =>
+                        setOptions(prev => ({ ...prev, atsSafe: checked as boolean }))
+                      }
+                    />
+                    <Label htmlFor="ats-mode" className="text-sm cursor-pointer">
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-4 h-4" />
+                        ATS-Safe Mode
+                      </div>
+                      <span className="text-xs text-muted-foreground">Optimized for applicant tracking systems</span>
+                    </Label>
+                  </div>
+
+                  {/* Include Photo */}
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="include-photo"
+                      checked={options.includePhoto && !options.atsSafe}
+                      disabled={options.atsSafe}
+                      onCheckedChange={(checked) =>
+                        setOptions(prev => ({ ...prev, includePhoto: checked as boolean }))
+                      }
+                    />
+                    <Label htmlFor="include-photo" className="text-sm cursor-pointer">
+                      Include Photo
+                    </Label>
+                  </div>
+
+                  {/* Language */}
+                  <div className="space-y-2">
+                    <Label htmlFor="language" className="text-sm">Language</Label>
+                    <Select
+                      value={options.locale}
+                      onValueChange={(value: 'en' | 'nl' | 'pap') =>
+                        setOptions(prev => ({ ...prev, locale: value }))
+                      }
+                    >
+                      <SelectTrigger id="language" className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="nl">Nederlands</SelectItem>
+                        <SelectItem value="pap">Papiamento</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
-                {/* Include Photo */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="include-photo"
-                    checked={options.includePhoto && !options.atsSafe}
-                    disabled={options.atsSafe}
-                    onCheckedChange={(checked) =>
-                      setOptions(prev => ({ ...prev, includePhoto: checked as boolean }))
-                    }
-                  />
-                  <Label htmlFor="include-photo" className="text-sm cursor-pointer">
-                    Include Photo
-                  </Label>
+                {/* Section Toggles */}
+                <div>
+                  <Label className="text-sm font-medium mb-2 block">Include Sections</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {Object.entries(options.sections).map(([key, value]) => (
+                      <div key={key} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`section-${key}`}
+                          checked={value}
+                          onCheckedChange={(checked) =>
+                            setOptions(prev => ({
+                              ...prev,
+                              sections: { ...prev.sections, [key]: checked as boolean }
+                            }))
+                          }
+                        />
+                        <Label htmlFor={`section-${key}`} className="text-xs cursor-pointer capitalize">
+                          {key}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-
-                {/* Language */}
-                <div className="space-y-2">
-                  <Label htmlFor="language" className="text-sm">Language</Label>
-                  <Select
-                    value={options.locale}
-                    onValueChange={(value: 'en' | 'nl' | 'pap') =>
-                      setOptions(prev => ({ ...prev, locale: value }))
-                    }
-                  >
-                    <SelectTrigger id="language" className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="nl">Nederlands</SelectItem>
-                      <SelectItem value="pap">Papiamento</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Preview Toggle */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="show-preview"
-                    checked={showPreview}
-                    onCheckedChange={(checked) => setShowPreview(checked as boolean)}
-                  />
-                  <Label htmlFor="show-preview" className="text-sm cursor-pointer">
-                    Show Live Preview
-                  </Label>
-                </div>
-              </div>
-
-              {/* Section Toggles */}
-              <div>
-                <Label className="text-sm font-medium mb-2 block">Include Sections</Label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {Object.entries(options.sections).map(([key, value]) => (
-                    <div key={key} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`section-${key}`}
-                        checked={value}
-                        onCheckedChange={(checked) =>
-                          setOptions(prev => ({
-                            ...prev,
-                            sections: { ...prev.sections, [key]: checked as boolean }
-                          }))
-                        }
-                      />
-                      <Label htmlFor={`section-${key}`} className="text-xs cursor-pointer capitalize">
-                        {key}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
+              </CardContent>
+            </div>
           </Card>
+
+          {/* Show Live Preview Toggle - Outside Card */}
+          <div className="flex items-center space-x-2 px-1">
+            <Checkbox
+              id="show-preview"
+              checked={showPreview}
+              onCheckedChange={(checked) => setShowPreview(checked as boolean)}
+            />
+            <Label htmlFor="show-preview" className="text-sm cursor-pointer">
+              Show Live Preview
+            </Label>
+          </div>
 
           {/* Preview Section */}
           {showPreview && selectedTemplateData?.engine === 'html' && (
