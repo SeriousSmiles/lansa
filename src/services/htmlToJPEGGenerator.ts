@@ -10,11 +10,32 @@ export class HTMLToJPEGGenerator {
   private static readonly A4_WIDTH_PX = 2480; // 210mm at 300 DPI
   private static readonly A4_HEIGHT_PX = 3508; // 297mm at 300 DPI
 
+  // Wait for all fonts and images to load
+  private static async waitForResources(): Promise<void> {
+    // Wait for fonts
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
+
+    // Wait for images
+    const images = Array.from(document.images);
+    const imagePromises = images.map(img => {
+      if (img.complete) return Promise.resolve();
+      return new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = resolve; // Resolve anyway to not block
+        setTimeout(resolve, 5000); // Timeout after 5s
+      });
+    });
+
+    await Promise.all(imagePromises);
+  }
+
   static async generateJPEG(
     elementId: string,
     options: HTMLToJPEGOptions = {}
   ): Promise<Blob> {
-    const { quality = 0.9, dpi = 300 } = options;
+    const { quality = 0.9 } = options;
 
     // Get the element to convert
     const element = document.getElementById(elementId);
@@ -23,62 +44,27 @@ export class HTMLToJPEGGenerator {
     }
 
     try {
-      // Calculate scale based on DPI (300 DPI is ~2.5x of typical 96 DPI screen)
-      const scale = dpi / 96;
+      // Wait for all resources to load
+      await this.waitForResources();
 
-      // Configure html2canvas for high-quality image capture
+      // Element should already be 2480x3508px
+      // Capture at scale 1 for pixel-perfect rendering
       const canvas = await html2canvas(element, {
-        scale: scale,
+        scale: 1,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        width: element.offsetWidth,
-        height: element.offsetHeight,
+        width: this.A4_WIDTH_PX,
+        height: this.A4_HEIGHT_PX,
         scrollX: 0,
         scrollY: 0,
-        windowWidth: element.offsetWidth,
-        windowHeight: element.offsetHeight,
+        windowWidth: this.A4_WIDTH_PX,
+        windowHeight: this.A4_HEIGHT_PX,
       });
 
-      // Create a new canvas with exact A4 dimensions
-      const a4Canvas = document.createElement('canvas');
-      a4Canvas.width = this.A4_WIDTH_PX;
-      a4Canvas.height = this.A4_HEIGHT_PX;
-      const ctx = a4Canvas.getContext('2d');
-
-      if (!ctx) {
-        throw new Error('Failed to get canvas context');
-      }
-
-      // Fill with white background
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, a4Canvas.width, a4Canvas.height);
-
-      // Calculate scaling to fit A4 while maintaining aspect ratio
-      const canvasAspectRatio = canvas.height / canvas.width;
-      const a4AspectRatio = this.A4_HEIGHT_PX / this.A4_WIDTH_PX;
-
-      let finalWidth = this.A4_WIDTH_PX;
-      let finalHeight = this.A4_HEIGHT_PX;
-
-      if (canvasAspectRatio > a4AspectRatio) {
-        // Canvas is taller, fit to height
-        finalWidth = this.A4_HEIGHT_PX / canvasAspectRatio;
-      } else {
-        // Canvas is wider, fit to width
-        finalHeight = this.A4_WIDTH_PX * canvasAspectRatio;
-      }
-
-      // Center the image on A4 canvas
-      const xOffset = (this.A4_WIDTH_PX - finalWidth) / 2;
-      const yOffset = (this.A4_HEIGHT_PX - finalHeight) / 2;
-
-      // Draw the captured content onto A4 canvas
-      ctx.drawImage(canvas, xOffset, yOffset, finalWidth, finalHeight);
-
-      // Convert to JPEG blob
+      // Direct conversion to JPEG - no rescaling needed
       return new Promise((resolve, reject) => {
-        a4Canvas.toBlob(
+        canvas.toBlob(
           (blob) => {
             if (blob) {
               resolve(blob);

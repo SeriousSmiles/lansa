@@ -22,8 +22,9 @@ export const useJPEGGeneration = () => {
       const defaultFilename = `${data.personalInfo.name.replace(/\s+/g, '_')}_Resume.jpg`;
       const finalFilename = filename || defaultFilename;
       
+      // Use the export template ID (pixel-perfect version)
       await HTMLToJPEGGenerator.downloadJPEG(
-        'pdf-resume-template',
+        'pdf-resume-export-container',
         finalFilename,
         { quality: 0.9, dpi: 300 }
       );
@@ -48,7 +49,8 @@ export const useJPEGGeneration = () => {
 
   const previewJPEG = async () => {
     try {
-      await HTMLToJPEGGenerator.previewJPEG('pdf-resume-template', {
+      // Use the export template ID (pixel-perfect version)
+      await HTMLToJPEGGenerator.previewJPEG('pdf-resume-export-container', {
         quality: 0.9,
         dpi: 300
       });

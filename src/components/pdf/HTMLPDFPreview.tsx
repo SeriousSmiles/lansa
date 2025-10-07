@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { PDFResumeData, ResumeTemplate } from '@/types/pdf';
 import { ProfessionalTemplate } from './templates/ProfessionalTemplate';
+import { ProfessionalTemplateExport } from './templates/ProfessionalTemplateExport';
 import { ModernTemplate } from './templates/ModernTemplate';
 import { CreativeTemplate } from './templates/CreativeTemplate';
 import { ClassicTemplate } from './templates/ClassicTemplate';
@@ -11,12 +12,14 @@ interface HTMLPDFPreviewProps {
   data: PDFResumeData;
   template?: ResumeTemplate;
   onReady?: () => void;
+  forExport?: boolean;
 }
 
 export function HTMLPDFPreview({ 
   data, 
   template = 'professional',
-  onReady 
+  onReady,
+  forExport = false
 }: HTMLPDFPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -30,6 +33,12 @@ export function HTMLPDFPreview({
   }, [data, template, onReady]);
 
   const renderTemplate = () => {
+    // Use export template for JPEG generation (pixel-perfect)
+    if (forExport && template === 'professional') {
+      return <ProfessionalTemplateExport data={data} />;
+    }
+
+    // Use preview templates for screen viewing
     switch (template) {
       case 'professional':
         return <ProfessionalTemplate data={data} />;
@@ -51,9 +60,10 @@ export function HTMLPDFPreview({
   return (
     <div 
       ref={containerRef}
-      className="w-full h-full overflow-auto bg-gray-100 p-4"
+      className={forExport ? "" : "w-full h-full overflow-auto bg-gray-100 p-4"}
+      style={forExport ? { position: 'absolute', left: '-9999px', top: '0' } : undefined}
     >
-      <div className="flex justify-center">
+      <div className={forExport ? "" : "flex justify-center"}>
         {renderTemplate()}
       </div>
     </div>

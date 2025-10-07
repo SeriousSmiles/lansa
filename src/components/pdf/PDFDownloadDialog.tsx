@@ -447,14 +447,31 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
         </div>
       </DialogContent>
 
-      {/* Hidden template for JPEG/PDF generation */}
-      {(selectedTemplateData?.engine === 'html' || exportFormat === 'jpeg') && !showPreview && (
-        <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
-          <HTMLPDFPreview 
-            data={pdfData} 
-            template={selectedTemplate}
-          />
-        </div>
+      {/* Hidden templates for generation */}
+      {!showPreview && (
+        <>
+          {/* Preview template for screen viewing */}
+          {selectedTemplateData?.engine === 'html' && (
+            <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+              <HTMLPDFPreview 
+                data={pdfData} 
+                template={selectedTemplate}
+                forExport={false}
+              />
+            </div>
+          )}
+          
+          {/* Export template for JPEG generation (pixel-perfect) */}
+          {exportFormat === 'jpeg' && selectedTemplate === 'professional' && (
+            <div id="pdf-resume-export-container" style={{ position: 'absolute', left: '-9999px', top: '0' }}>
+              <HTMLPDFPreview 
+                data={pdfData} 
+                template={selectedTemplate}
+                forExport={true}
+              />
+            </div>
+          )}
+        </>
       )}
     </Dialog>
   );
