@@ -202,7 +202,10 @@ export function ProfessionalTemplateExport({ data }: ProfessionalTemplateExportP
   };
 
   return (
-    <div style={styles.container}>
+    <div 
+      id="pdf-resume-export-container"
+      style={styles.container}
+    >
       {/* Powered by Lansa Badge */}
       <img 
         src={lansaBadge} 

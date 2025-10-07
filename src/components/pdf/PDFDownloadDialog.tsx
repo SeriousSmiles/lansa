@@ -463,7 +463,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
           
           {/* Export template for JPEG generation (pixel-perfect) */}
           {exportFormat === 'jpeg' && selectedTemplate === 'professional' && (
-            <div id="pdf-resume-export-container" style={{ position: 'absolute', left: '-9999px', top: '0' }}>
+            <div style={{ position: 'absolute', left: '-9999px', top: '0' }}>
               <HTMLPDFPreview 
                 data={pdfData} 
                 template={selectedTemplate}
