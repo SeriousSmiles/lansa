@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Dialog,
   DialogContent,
@@ -12,10 +13,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, Eye, Shield } from "lucide-react";
+import { Download, Eye, Shield, ImageIcon, FileText } from "lucide-react";
 import { usePDFGeneration } from "@/hooks/usePDFGeneration";
 import { useHTMLPDFGeneration } from "@/hooks/useHTMLPDFGeneration";
 import { useReactPDFGeneration } from "@/hooks/useReactPDFGeneration";
+import { useJPEGGeneration } from "@/hooks/useJPEGGeneration";
 import { HTMLPDFPreview } from "./HTMLPDFPreview";
 import { convertProfileToPDFData, validatePDFData } from "@/utils/profileToPDFConverter";
 import { ProfileDataReturn } from "@/hooks/profile/profileTypes";
@@ -33,6 +35,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
   const [isOpen, setIsOpen] = useState(false);
   const [htmlPreviewReady, setHtmlPreviewReady] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'pdf' | 'jpeg'>('jpeg');
   const isMobile = useIsMobile();
 
   // Options state
@@ -57,6 +60,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
   const { generatePDF, previewPDF, isGenerating } = usePDFGeneration();
   const { generatePDF: generateHTMLPDF, previewPDF: previewHTMLPDF, isGenerating: isGeneratingHTML } = useHTMLPDFGeneration();
   const { generatePDF: generateReactPDF, previewPDF: previewReactPDF, isGenerating: isGeneratingReact } = useReactPDFGeneration();
+  const { generateJPEG, previewJPEG, isGenerating: isGeneratingJPEG } = useJPEGGeneration();
 
   const pdfData = convertProfileToPDFData(profileData);
   const validation = validatePDFData(pdfData);
@@ -71,12 +75,18 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
     try {
       const currentOptions = { ...options, template: selectedTemplate };
       
-      if (selectedTemplateData?.engine === 'html') {
-        await generateHTMLPDF(pdfData);
-      } else if (selectedTemplateData?.engine === 'react-pdf') {
-        await generateReactPDF(pdfData, selectedTemplate);
+      if (exportFormat === 'jpeg') {
+        // JPEG export - only works with HTML engine templates
+        await generateJPEG(pdfData);
       } else {
-        await generatePDF(pdfData, selectedTemplate);
+        // PDF export
+        if (selectedTemplateData?.engine === 'html') {
+          await generateHTMLPDF(pdfData);
+        } else if (selectedTemplateData?.engine === 'react-pdf') {
+          await generateReactPDF(pdfData, selectedTemplate);
+        } else {
+          await generatePDF(pdfData, selectedTemplate);
+        }
       }
       setIsOpen(false);
     } catch (error) {
@@ -86,19 +96,25 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
 
   const handlePreview = async () => {
     try {
-      if (selectedTemplateData?.engine === 'html') {
-        await previewHTMLPDF();
-      } else if (selectedTemplateData?.engine === 'react-pdf') {
-        await previewReactPDF(pdfData, selectedTemplate);
+      if (exportFormat === 'jpeg') {
+        // JPEG preview
+        await previewJPEG();
       } else {
-        await previewPDF(pdfData, selectedTemplate);
+        // PDF preview
+        if (selectedTemplateData?.engine === 'html') {
+          await previewHTMLPDF();
+        } else if (selectedTemplateData?.engine === 'react-pdf') {
+          await previewReactPDF(pdfData, selectedTemplate);
+        } else {
+          await previewPDF(pdfData, selectedTemplate);
+        }
       }
     } catch (error) {
       console.error('Failed to preview resume:', error);
     }
   };
 
-  const currentlyGenerating = isGenerating || isGeneratingHTML || isGeneratingReact;
+  const currentlyGenerating = isGenerating || isGeneratingHTML || isGeneratingReact || isGeneratingJPEG;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -209,6 +225,74 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
               })}
             </div>
           </div>
+
+          {/* Export Format Selection */}
+          <Card>
+            <CardContent className="p-4 space-y-4">
+              <h4 className="font-medium">Export Format</h4>
+              
+              <RadioGroup value={exportFormat} onValueChange={(value: 'pdf' | 'jpeg') => setExportFormat(value)}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* JPEG Option - Free */}
+                  <div className="relative">
+                    <Label
+                      htmlFor="format-jpeg"
+                      className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                        exportFormat === 'jpeg'
+                          ? 'border-primary bg-primary/5'
+                          : 'border-muted hover:border-primary/50'
+                      }`}
+                    >
+                      <RadioGroupItem value="jpeg" id="format-jpeg" className="mt-1" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <ImageIcon className="w-4 h-4" />
+                          <span className="font-medium">JPEG Image</span>
+                          <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">Free</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Print-ready A4 image at 300 DPI. Perfect quality, smaller file size.
+                        </p>
+                      </div>
+                    </Label>
+                  </div>
+
+                  {/* PDF Option - Premium */}
+                  <div className="relative">
+                    <Label
+                      htmlFor="format-pdf"
+                      className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                        exportFormat === 'pdf'
+                          ? 'border-primary bg-primary/5'
+                          : 'border-muted hover:border-primary/50'
+                      }`}
+                    >
+                      <RadioGroupItem value="pdf" id="format-pdf" className="mt-1" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <FileText className="w-4 h-4" />
+                          <span className="font-medium">PDF Document</span>
+                          <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">Premium</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Searchable PDF with advanced templates. Best for ATS systems.
+                        </p>
+                      </div>
+                    </Label>
+                  </div>
+                </div>
+              </RadioGroup>
+
+              {exportFormat === 'jpeg' && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-xs text-blue-800">
+                    <strong>💡 Why JPEG?</strong> Pixel-perfect rendering, consistent across all devices, 
+                    smaller file sizes, and universal compatibility. Perfect for sharing and printing!
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Options Panel */}
           <Card>
@@ -337,14 +421,14 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
             <Button
               onClick={handleDownload}
               className="flex-1 w-full sm:w-auto"
-              disabled={currentlyGenerating || (selectedTemplateData?.engine === 'html' && showPreview && !htmlPreviewReady)}
+              disabled={currentlyGenerating || (exportFormat === 'jpeg' && showPreview && !htmlPreviewReady) || (selectedTemplateData?.engine === 'html' && showPreview && !htmlPreviewReady)}
               style={{
                 backgroundColor: profileData.highlightColor || '#FF6B4A',
                 borderColor: profileData.highlightColor || '#FF6B4A',
               }}
             >
               <Download className="w-4 h-4 mr-2" />
-              {currentlyGenerating ? 'Generating...' : 'Download PDF'}
+              {currentlyGenerating ? 'Generating...' : `Download ${exportFormat === 'jpeg' ? 'Image' : 'PDF'}`}
             </Button>
           </div>
 
@@ -363,8 +447,8 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
         </div>
       </DialogContent>
 
-      {/* Hidden template for PDF generation */}
-      {selectedTemplateData?.engine === 'html' && !showPreview && (
+      {/* Hidden template for JPEG/PDF generation */}
+      {(selectedTemplateData?.engine === 'html' || exportFormat === 'jpeg') && !showPreview && (
         <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
           <HTMLPDFPreview 
             data={pdfData} 
