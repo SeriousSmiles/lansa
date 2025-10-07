@@ -48,6 +48,7 @@ const styles = StyleSheet.create({
   },
   sidebarHeading: {
     fontSize: 14,
+    lineHeight: 14,
     fontWeight: 'bold',
     marginBottom: 12,
     textTransform: 'uppercase',
@@ -55,30 +56,33 @@ const styles = StyleSheet.create({
   },
   contactItem: {
     fontSize: 10,
+    lineHeight: 14,
     marginBottom: 8,
-    lineHeight: 1.4,
   },
   skillItem: {
     fontSize: 10,
+    lineHeight: 12,
     marginBottom: 6,
-    lineHeight: 1.3,
   },
   languageItem: {
-    marginBottom: 12,
+    marginBottom: 10,
   },
   languageHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 4,
   },
   languageName: {
     fontSize: 10,
+    lineHeight: 10,
   },
   languageBadge: {
     fontSize: 8,
+    lineHeight: 8,
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingTop: 1,
+    paddingBottom: 1,
     borderRadius: 3,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
@@ -94,7 +98,9 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   certificationCard: {
-    padding: 8,
+    paddingHorizontal: 8,
+    paddingTop: 6,
+    paddingBottom: 6,
     marginBottom: 12,
     border: '1px solid rgba(255, 255, 255, 0.2)',
     borderRadius: 6,
@@ -102,21 +108,24 @@ const styles = StyleSheet.create({
   },
   certificationTitle: {
     fontSize: 10,
+    lineHeight: 10,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   certificationIssuer: {
     fontSize: 8,
+    lineHeight: 8,
     opacity: 0.8,
     marginBottom: 2,
   },
   certificationDate: {
     fontSize: 8,
+    lineHeight: 8,
     opacity: 0.7,
   },
   goalText: {
     fontSize: 10,
-    lineHeight: 1.5,
+    lineHeight: 15,
     opacity: 0.9,
   },
   
@@ -130,25 +139,28 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 32,
+    lineHeight: 32,
     fontWeight: 'bold',
     color: '#1F2937',
     marginBottom: 8,
   },
   title: {
     fontSize: 16,
+    lineHeight: 16,
     color: '#6B7280',
     marginBottom: 16,
   },
   summary: {
     fontSize: 11,
+    lineHeight: 17,
     color: '#374151',
-    lineHeight: 1.6,
   },
   section: {
     marginBottom: 32,
   },
   sectionHeading: {
     fontSize: 16,
+    lineHeight: 16,
     fontWeight: 'bold',
     marginBottom: 16,
     textTransform: 'uppercase',
@@ -166,6 +178,7 @@ const styles = StyleSheet.create({
   },
   experienceTitle: {
     fontSize: 13,
+    lineHeight: 13,
     fontWeight: 'bold',
     color: '#1F2937',
     flex: 1,
@@ -173,14 +186,15 @@ const styles = StyleSheet.create({
   },
   experienceDate: {
     fontSize: 10,
+    lineHeight: 10,
     color: '#6B7280',
     width: 100,
     textAlign: 'right',
   },
   experienceDescription: {
     fontSize: 11,
+    lineHeight: 16,
     color: '#374151',
-    lineHeight: 1.5,
   },
   educationItem: {
     marginBottom: 16,
@@ -192,6 +206,7 @@ const styles = StyleSheet.create({
   },
   educationTitle: {
     fontSize: 13,
+    lineHeight: 13,
     fontWeight: 'bold',
     color: '#1F2937',
     flex: 1,
@@ -199,14 +214,15 @@ const styles = StyleSheet.create({
   },
   educationDate: {
     fontSize: 10,
+    lineHeight: 10,
     color: '#6B7280',
     width: 100,
     textAlign: 'right',
   },
   educationDescription: {
     fontSize: 11,
+    lineHeight: 16,
     color: '#374151',
-    lineHeight: 1.5,
   },
 });
 
