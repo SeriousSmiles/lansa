@@ -300,7 +300,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
           <Card>
             <button
               onClick={() => setOptionsExpanded(!optionsExpanded)}
-              className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+              className="w-full p-4 flex items-center justify-between border-b border-transparent hover:border-primary/30 transition-colors"
             >
               <h4 className="font-medium">Customization Options</h4>
               <ChevronDown 
