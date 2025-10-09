@@ -81,8 +81,8 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
         // JPEG export - only works with HTML engine templates
         await generateJPEG(pdfData);
       } else {
-        // PDF export
-        if (selectedTemplateData?.engine === 'html') {
+        // PDF export - professional template uses HTML engine
+        if (selectedTemplate === 'professional' || selectedTemplateData?.engine === 'html') {
           await generateHTMLPDF(pdfData);
         } else if (selectedTemplateData?.engine === 'react-pdf') {
           await generateReactPDF(pdfData, selectedTemplate);
@@ -102,8 +102,8 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
         // JPEG preview
         await previewJPEG();
       } else {
-        // PDF preview
-        if (selectedTemplateData?.engine === 'html') {
+        // PDF preview - professional template uses HTML engine
+        if (selectedTemplate === 'professional' || selectedTemplateData?.engine === 'html') {
           await previewHTMLPDF();
         } else if (selectedTemplateData?.engine === 'react-pdf') {
           await previewReactPDF(pdfData, selectedTemplate);
@@ -426,15 +426,17 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
-            <Button
-              onClick={handlePreview}
-              variant="outline"
-              className="flex-1 w-full sm:w-auto"
-              disabled={currentlyGenerating || (selectedTemplateData?.engine === 'html' && showPreview && !htmlPreviewReady)}
-            >
-              <Eye className="w-4 h-4 mr-2" />
-              {selectedTemplateData?.engine === 'react-pdf' ? 'Preview in New Tab' : 'Preview'}
-            </Button>
+            {!isMobile && (
+              <Button
+                onClick={handlePreview}
+                variant="outline"
+                className="flex-1 w-full sm:w-auto"
+                disabled={currentlyGenerating || (selectedTemplateData?.engine === 'html' && showPreview && !htmlPreviewReady)}
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                {selectedTemplateData?.engine === 'react-pdf' ? 'Preview in New Tab' : 'Preview'}
+              </Button>
+            )}
             
             <Button
               onClick={handleDownload}
@@ -465,8 +467,8 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
         </div>
       </DialogContent>
 
-      {/* Hidden preview template for HTML engine when preview not shown */}
-      {selectedTemplateData?.engine === 'html' && !showPreview && (
+      {/* Hidden preview template for HTML engine (PDF) */}
+      {(selectedTemplate === 'professional' || selectedTemplateData?.engine === 'html') && exportFormat === 'pdf' && !showPreview && (
         <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
           <HTMLPDFPreview 
             data={pdfData} 
@@ -477,7 +479,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
       )}
 
       {/* Always mount export template for JPEG generation (pixel-perfect) */}
-      {exportFormat === 'jpeg' && selectedTemplate === 'professional' && (
+      {exportFormat === 'jpeg' && (selectedTemplate === 'professional' || selectedTemplateData?.engine === 'html') && (
         <div style={{ position: 'absolute', left: '-9999px', top: '0' }}>
           <HTMLPDFPreview 
             data={pdfData} 
