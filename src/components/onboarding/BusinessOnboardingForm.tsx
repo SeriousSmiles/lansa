@@ -8,8 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DragDropImageUpload } from "@/components/upload/DragDropImageUpload";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserState } from "@/contexts/UserStateProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { markOnboardingComplete } from "@/services/onboarding/unifiedOnboardingService";
+import { getPostOnboardingDestination } from "@/services/navigation/onboardingNavigationService";
 
 interface BusinessOnboardingFormProps {
   onComplete: () => void;
@@ -17,6 +20,7 @@ interface BusinessOnboardingFormProps {
 
 export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormProps) {
   const { user } = useAuth();
+  const { refreshUserState } = useUserState();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -148,34 +152,19 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
         throw roleError;
       }
 
-      // Update user_answers with user_type
-      const { error: userError } = await supabase
-        .from('user_answers')
-        .upsert({
-          user_id: user.id,
-          user_type: 'employer',
-          career_path_onboarding_completed: true
-        }, {
-          onConflict: 'user_id'
-        });
+      // Mark onboarding complete using unified service
+      await markOnboardingComplete(user.id, 'employer');
 
-      if (userError) throw userError;
-
-      // Update user profile to mark onboarding as completed
-      const { error: userProfileError } = await supabase
-        .from('user_profiles')
-        .upsert({
-          user_id: user.id,
-          onboarding_completed: true,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id'
-        });
-
-      if (userProfileError) throw userProfileError;
+      // Refresh user state to update context
+      if (refreshUserState) {
+        await refreshUserState();
+      }
 
       toast.success("Business profile created successfully!");
-      onComplete();
+      
+      // Navigate to correct destination
+      const destination = getPostOnboardingDestination('employer');
+      navigate(destination, { replace: true });
     } catch (error) {
       console.error('Error saving business data:', error);
       toast.error("Failed to save business information. Please try again.");

@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserState } from "@/contexts/UserStateProvider";
 import { toast } from "sonner";
 import { 
   getUserAnswers, 
@@ -12,6 +12,8 @@ import { BusinessOnboardingForm } from "@/components/onboarding/BusinessOnboardi
 import { StudentOnboardingContainer } from "@/components/onboarding/student/StudentOnboardingContainer";
 import { CareerPathSegmentation, type CareerPath } from "@/components/onboarding/CareerPathSegmentation";
 import { AIOnboardingFlow } from "@/components/onboarding/AIOnboardingFlow";
+import { OnboardingErrorBoundary } from "@/components/onboarding/OnboardingErrorBoundary";
+import { getPostOnboardingDestination } from "@/services/navigation/onboardingNavigationService";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Onboarding() {
@@ -22,7 +24,17 @@ export default function Onboarding() {
   const [showTypeSelection, setShowTypeSelection] = useState(true);
   const [showCareerSegmentation, setShowCareerSegmentation] = useState(false);
   const { user } = useAuth();
+  const { hasCompletedOnboarding, loading: userStateLoading, userType: contextUserType } = useUserState();
   const navigate = useNavigate();
+
+  // CRITICAL: Redirect returning users who have already completed onboarding
+  useEffect(() => {
+    if (!userStateLoading && hasCompletedOnboarding && contextUserType) {
+      const destination = getPostOnboardingDestination(contextUserType as any);
+      console.log(`User has completed onboarding, redirecting to ${destination}`);
+      navigate(destination, { replace: true });
+    }
+  }, [userStateLoading, hasCompletedOnboarding, contextUserType, navigate]);
 
   useEffect(() => {
     async function loadUserAnswers() {
@@ -124,39 +136,41 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-[rgba(253,248,242,1)] flex flex-col">
-      {/* Centered Logo for non-user-type-selection steps */}
-      {!showTypeSelection && (
-        <header className="flex w-full px-4 md:px-6 py-4 items-center justify-center">
-          <img
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/41285a6d1f6906d8349429ceb652f953bf730d06?placeholderIfAbsent=true"
-            alt="Lansa Logo"
-            className="aspect-[2.7] object-contain w-[92px]"
-          />
-        </header>
-      )}
-
-      <main className="flex-1">
-        {showTypeSelection ? (
-          <UserTypeSelection onSelect={handleUserTypeSelect} />
-        ) : showCareerSegmentation ? (
-          <CareerPathSegmentation onSelect={handleCareerPathSelect} />
-        ) : userType === 'employer' ? (
-          <div className="flex flex-col items-center justify-center px-4 py-8">
-            <BusinessOnboardingForm onComplete={() => navigate('/dashboard')} />
-          </div>
-        ) : userType === 'job_seeker' && careerPath ? (
-          <AIOnboardingFlow />
-        ) : (
-          <div className="flex flex-col items-center justify-center px-4 py-8">
-            <StudentOnboardingContainer />
-          </div>
+    <OnboardingErrorBoundary>
+      <div className="min-h-screen bg-[rgba(253,248,242,1)] flex flex-col">
+        {/* Centered Logo for non-user-type-selection steps */}
+        {!showTypeSelection && (
+          <header className="flex w-full px-4 md:px-6 py-4 items-center justify-center">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets/TEMP/41285a6d1f6906d8349429ceb652f953bf730d06?placeholderIfAbsent=true"
+              alt="Lansa Logo"
+              className="aspect-[2.7] object-contain w-[92px]"
+            />
+          </header>
         )}
-      </main>
 
-      <footer className="text-center py-6 text-sm text-[#1A1F71]">
-        © 2025 Lansa
-      </footer>
-    </div>
+        <main className="flex-1">
+          {showTypeSelection ? (
+            <UserTypeSelection onSelect={handleUserTypeSelect} />
+          ) : showCareerSegmentation ? (
+            <CareerPathSegmentation onSelect={handleCareerPathSelect} />
+          ) : userType === 'employer' ? (
+            <div className="flex flex-col items-center justify-center px-4 py-8">
+              <BusinessOnboardingForm onComplete={() => {}} />
+            </div>
+          ) : userType === 'job_seeker' && careerPath ? (
+            <AIOnboardingFlow />
+          ) : (
+            <div className="flex flex-col items-center justify-center px-4 py-8">
+              <StudentOnboardingContainer />
+            </div>
+          )}
+        </main>
+
+        <footer className="text-center py-6 text-sm text-[#1A1F71]">
+          © 2025 Lansa
+        </footer>
+      </div>
+    </OnboardingErrorBoundary>
   );
 }

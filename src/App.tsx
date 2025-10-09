@@ -100,7 +100,7 @@ const App: React.FC = () => {
                     } />
                     
                     <Route path="/profile" element={
-                      <RequireOnboarding soft={false}>
+                      <RequireOnboarding soft={true}>
                         <RequireUserType allowedTypes={['job_seeker']}>
                           <Profile />
                         </RequireUserType>

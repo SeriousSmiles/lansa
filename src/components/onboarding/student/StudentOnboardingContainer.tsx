@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserState } from "@/contexts/UserStateProvider";
 import { useToast } from "@/hooks/use-toast";
 import { gsap } from "gsap";
 import { 
@@ -10,6 +11,7 @@ import {
   markStudentOnboardingComplete,
   StudentDemographics 
 } from "@/services/question/studentOnboardingService";
+import { getPostOnboardingDestination } from "@/services/navigation/onboardingNavigationService";
 
 import { StudentWelcomeCard } from "./StudentWelcomeCard";
 import { StudentDemographicsStep } from "./StudentDemographicsStep";
@@ -27,6 +29,7 @@ export function StudentOnboardingContainer() {
   const [goalData, setGoalData] = useState<{ statement: string; analysis: any } | null>(null);
   
   const { user } = useAuth();
+  const { refreshUserState } = useUserState();
   const navigate = useNavigate();
   const { toast } = useToast();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -158,13 +161,19 @@ export function StudentOnboardingContainer() {
     try {
       await markStudentOnboardingComplete(user.id);
       
+      // Refresh user state to update context
+      if (refreshUserState) {
+        await refreshUserState();
+      }
+      
       toast({
         title: "🎉 Onboarding Complete!",
         description: "You're ready to build your profile and show your value!",
       });
       
-      // Navigate to profile page
-      navigate('/profile');
+      // Navigate to correct destination
+      const destination = getPostOnboardingDestination('job_seeker');
+      navigate(destination, { replace: true });
     } catch (error) {
       console.error('Error completing onboarding:', error);
       toast({

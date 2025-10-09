@@ -75,58 +75,27 @@ export async function saveNinetyDayGoal(goal: NinetyDayGoal): Promise<string> {
 
 export async function markStudentOnboardingComplete(userId: string): Promise<void> {
   try {
-    // Get user's auth metadata for name extraction
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Use unified onboarding service for consistency
+    const { markOnboardingComplete } = await import('@/services/onboarding/unifiedOnboardingService');
     
-    // Mark onboarding as complete with unified flag
-    const { error } = await supabase
+    // Save student career path before marking complete
+    const { error: careerPathError } = await supabase
       .from('user_answers')
       .upsert({
         user_id: userId,
         career_path: 'student',
-        career_path_onboarding_completed: true,
         updated_at: new Date().toISOString()
       }, {
         onConflict: 'user_id'
       });
 
-    if (error) {
-      logError('Error marking student onboarding complete');
-      throw error;
+    if (careerPathError) {
+      logError('Error saving student career path');
+      throw careerPathError;
     }
 
-    // Update or create user profile with real name from auth metadata
-    if (user) {
-      const firstName = user.user_metadata?.first_name;
-      const lastName = user.user_metadata?.last_name;
-      const fullName = user.user_metadata?.full_name;
-      
-      let displayName = 'Lansa User';
-      if (firstName && lastName) {
-        displayName = `${firstName} ${lastName}`;
-      } else if (fullName) {
-        displayName = fullName;
-      } else if (firstName) {
-        displayName = firstName;
-      }
-
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .upsert({
-          user_id: userId,
-          name: displayName,
-          first_name: firstName,
-          last_name: lastName,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id'
-        });
-
-      if (profileError) {
-        logError('Error updating user profile');
-        // Don't throw here as the main onboarding completion succeeded
-      }
-    }
+    // Mark onboarding complete using unified service
+    await markOnboardingComplete(userId, 'job_seeker');
   } catch (err) {
     logError('Error marking student onboarding complete');
     throw err;
