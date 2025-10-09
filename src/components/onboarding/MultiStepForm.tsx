@@ -69,29 +69,16 @@ export function MultiStepForm({
   };
 
   // Handle completion of the outcome step - go directly to the card page
-  const handleOutcomeComplete = () => {
-    // Mark onboarding as completed in the final step
+  const handleOutcomeComplete = async () => {
+    // Mark onboarding as completed using unified service
     if (user?.id) {
-      const updatedAnswers = { 
-        ...answers, 
-        onboarding_completed: true 
-      };
+      const { markOnboardingComplete } = await import('@/services/onboarding/unifiedOnboardingService');
+      const { getPostOnboardingDestination } = await import('@/services/navigation/onboardingNavigationService');
       
-      onSaveAnswers(user.id, updatedAnswers).then(() => {
-        navigate('/card', { 
-          state: { 
-            identity: answers.identity,
-            desiredOutcome: answers.desired_outcome
-          } 
-        });
-      });
-    } else {
-      navigate('/card', { 
-        state: { 
-          identity: answers.identity,
-          desiredOutcome: answers.desired_outcome
-        } 
-      });
+      await markOnboardingComplete(user.id, 'job_seeker');
+      
+      const destination = getPostOnboardingDestination('job_seeker');
+      navigate(destination, { replace: true });
     }
   };
 

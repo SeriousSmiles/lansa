@@ -204,32 +204,24 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
     if (!user) return;
     
     try {
-      // Update both tables to ensure proper completion tracking
-      await supabase
-        .from('user_profiles')
-        .update({ onboarding_completed: true })
-        .eq('user_id', user.id);
+      setIsLoading(true);
       
-      // Also update user_answers to mark onboarding as complete
-      await supabase
-        .from('user_answers')
-        .upsert({
-          user_id: user.id,
-          career_path_onboarding_completed: true,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id'
-        });
+      // Use unified onboarding service
+      const { markOnboardingComplete } = await import('@/services/onboarding/unifiedOnboardingService');
+      const { getPostOnboardingDestination } = await import('@/services/navigation/onboardingNavigationService');
       
-      toast.success('Onboarding completed! Ready to build your profile.');
+      await markOnboardingComplete(user.id, 'job_seeker');
       
-      // Navigate to profile with state indicating completion
-      setTimeout(() => {
-        navigate('/profile', { state: { fromOnboarding: true } });
-      }, 1000);
+      toast.success('Onboarding completed! Setting up your profile...');
+      
+      // Navigate to correct destination
+      const destination = getPostOnboardingDestination('job_seeker');
+      navigate(destination, { replace: true });
     } catch (error) {
       console.error('Completion error:', error);
       toast.error('Failed to complete onboarding');
+    } finally {
+      setIsLoading(false);
     }
   };
 

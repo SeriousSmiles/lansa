@@ -33,7 +33,7 @@ export async function getAuthenticatedUser(
   const [answersResult, profileResult] = await Promise.all([
     supabase
       .from('user_answers')
-      .select('user_type, career_path')
+      .select('user_type, career_path, career_path_onboarding_completed')
       .eq('user_id', user.id)
       .maybeSingle(),
     supabase
@@ -43,11 +43,15 @@ export async function getAuthenticatedUser(
       .maybeSingle()
   ]);
 
+  // BACKWARD COMPATIBILITY: Check both flags during migration period
+  const newFlag = !!profileResult.data?.onboarding_completed;
+  const oldFlag = !!answersResult.data?.career_path_onboarding_completed;
+
   return {
     userId: user.id,
     userType: answersResult.data?.user_type as 'job_seeker' | 'employer' | undefined,
     careerPath: answersResult.data?.career_path,
-    onboardingCompleted: !!profileResult.data?.onboarding_completed,
+    onboardingCompleted: newFlag || oldFlag, // Consider complete if EITHER flag is true
   };
 }
 

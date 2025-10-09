@@ -23,29 +23,19 @@ export const useOnboardingCompletion = () => {
 
     try {
       setError(null);
-      // Load current user answers
-      const userAnswers = await getUserAnswers(user.id);
       
-      if (userAnswers) {
-        // Add onboarding_completed flag
-        const updatedAnswers = {
-          ...userAnswers,
-          career_path_onboarding_completed: true
-        };
-        
-        // Save the updated answers
-        const result = await saveUserAnswers(user.id, updatedAnswers);
-        
-        if (result.success) {
-          console.log("Onboarding marked as completed");
-          setOnboardingMarked(true);
-          return true;
-        } else {
-          setError("Failed to update your profile. Please try again.");
-          return false;
-        }
-      }
-      return false;
+      // Use unified onboarding service
+      const { markOnboardingComplete } = await import('@/services/onboarding/unifiedOnboardingService');
+      
+      // Get user answers to determine user type
+      const userAnswers = await getUserAnswers(user.id);
+      const userType = userAnswers?.user_type || 'job_seeker';
+      
+      await markOnboardingComplete(user.id, userType);
+      
+      console.log("Onboarding marked as completed");
+      setOnboardingMarked(true);
+      return true;
     } catch (error) {
       console.error("Failed to mark onboarding as completed:", error);
       setError("Failed to update your profile. Please try again.");

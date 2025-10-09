@@ -59,11 +59,18 @@ const EnhancedOnboardingForm: React.FC<EnhancedOnboardingFormProps> = ({ initial
   };
 
   const handleExpectations = async (value: string) => {
-    await persist({ career_path_onboarding_completed: true }, { expectations_text: value });
-    // After last step, go to card page
-    navigate('/card', {
-      state: { identity: answers.identity, desiredOutcome: answers.desired_outcome }
-    });
+    await persist({}, { expectations_text: value });
+    
+    // Use unified onboarding service
+    if (user?.id) {
+      const { markOnboardingComplete } = await import('@/services/onboarding/unifiedOnboardingService');
+      const { getPostOnboardingDestination } = await import('@/services/navigation/onboardingNavigationService');
+      
+      await markOnboardingComplete(user.id, 'job_seeker');
+      
+      const destination = getPostOnboardingDestination('job_seeker');
+      navigate(destination, { replace: true });
+    }
   };
 
   const identity = identityQuestions[0];

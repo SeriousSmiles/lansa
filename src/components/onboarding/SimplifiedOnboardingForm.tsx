@@ -49,19 +49,14 @@ export function SimplifiedOnboardingForm({
       if (currentQuestionIndex < totalQuestions - 1) {
         moveToNextQuestion();
       } else {
-        // Mark onboarding as completed and redirect to profile-starter
-        const finalAnswers = { 
-          ...updatedAnswers, 
-          onboarding_completed: true 
-        };
+        // Mark onboarding as completed using unified service
+        const { markOnboardingComplete } = await import('@/services/onboarding/unifiedOnboardingService');
+        const { getPostOnboardingDestination } = await import('@/services/navigation/onboardingNavigationService');
         
-        await onSaveAnswers(user.id, finalAnswers);
-        navigate('/profile-starter', { 
-          state: { 
-            identity: finalAnswers.identity,
-            desiredOutcome: finalAnswers.desired_outcome
-          } 
-        });
+        await markOnboardingComplete(user.id, 'job_seeker');
+        
+        const destination = getPostOnboardingDestination('job_seeker');
+        navigate(destination, { replace: true });
       }
     } catch (error) {
       console.error("Failed to save answer:", error);
