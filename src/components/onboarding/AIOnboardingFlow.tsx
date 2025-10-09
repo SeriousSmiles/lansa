@@ -22,6 +22,7 @@ import { SkillAnalysisDisplay } from "./SkillAnalysisDisplay";
 import { GoalAnalysisDisplay } from "./GoalAnalysisDisplay";
 import { CollapsibleAnalysisCard } from "./CollapsibleAnalysisCard";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserState } from "@/contexts/UserStateProvider";
 import { useDebounce } from "@/hooks/use-debounce";
 import { gsap } from "gsap";
 
@@ -52,6 +53,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
   
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { refreshUserState } = useUserState();
   const containerRef = useRef<HTMLDivElement>(null);
   
   const debouncedSkillInput = useDebounce(skillInput, 800);
@@ -211,6 +213,11 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
       const { getPostOnboardingDestination } = await import('@/services/navigation/onboardingNavigationService');
       
       await markOnboardingComplete(user.id, 'job_seeker');
+      
+      // Ensure app state reflects completion before routing
+      if (refreshUserState) {
+        await refreshUserState();
+      }
       
       toast.success('Onboarding completed! Setting up your profile...');
       

@@ -23,13 +23,10 @@ export function useOnboardingNavigation() {
       setIsNavigating(true);
       
       try {
-        // Refresh user state before navigation
+        // Refresh user state before navigation and wait for it to complete
         if (refreshUserState) {
           await refreshUserState();
         }
-        
-        // Small delay to ensure state is updated
-        await new Promise(resolve => setTimeout(resolve, 300));
         
         const destination = getPostOnboardingDestination(userType, careerPath);
         const label = getDestinationLabel(userType);

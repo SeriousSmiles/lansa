@@ -128,12 +128,14 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
     setState(s => ({ ...s, isRefreshing: true }));
 
     // Debounce to prevent excessive DB calls (300ms)
-    const timer = setTimeout(async () => {
-      console.log("🔄 Refreshing user state...");
-      await fetchUserState();
-    }, 300);
-
-    setRefreshDebounceTimer(timer);
+    await new Promise<void>((resolve) => {
+      const timer = setTimeout(async () => {
+        console.log("🔄 Refreshing user state...");
+        await fetchUserState();
+        resolve();
+      }, 300);
+      setRefreshDebounceTimer(timer);
+    });
   }, [refreshDebounceTimer, fetchUserState]);
 
   // Initial load
