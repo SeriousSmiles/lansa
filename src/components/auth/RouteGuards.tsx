@@ -30,12 +30,12 @@ export function RequireAuth({ children }: { children: JSX.Element }) {
 
 export function RequireOnboarding({ 
   children, 
-  soft = true 
+  soft = false  // CHANGED: Default to false (hard gate) for security
 }: { 
   children: JSX.Element; 
-  soft?: boolean;
+  soft?: boolean;  // DEPRECATED: Soft gates should only be used for premium features, not onboarding
 }) {
-  const { loading, hasCompletedOnboarding } = useUserState();
+  const { loading, hasCompletedOnboarding, userType } = useUserState();
   const location = useLocation();
 
   if (!FLAGS.routeGuardsV2) return children;
@@ -47,8 +47,16 @@ export function RequireOnboarding({
   // If user is ON the onboarding page and hasn't completed, allow them to see it
   if (location.pathname === '/onboarding') return children;
 
-  // Soft gate: show teaser with banner
+  // CRITICAL: If user has no user_type, they MUST complete onboarding regardless of soft gate
+  // This prevents users from bypassing onboarding
+  if (!userType) {
+    console.warn("⚠️ Blocking access - user has no user_type");
+    return <Navigate to="/onboarding" state={{ from: location }} replace />;
+  }
+
+  // Soft gate: show teaser with banner (DEPRECATED - only for premium features)
   if (soft && FLAGS.softGateOnboarding) {
+    console.warn("⚠️ DEPRECATED: Soft onboarding gate used. This should only be used for premium features, not core onboarding.");
     return (
       <div className="min-h-screen bg-background">
         <div className="sticky top-0 z-50 border-b bg-card shadow-sm">

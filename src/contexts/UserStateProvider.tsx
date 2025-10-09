@@ -76,9 +76,11 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       // BACKWARD COMPATIBILITY: Consider onboarding complete if EITHER flag is true
+      // CRITICAL: Also require user_type to be set to prevent incomplete onboarding
       const newOnboardingComplete = !!profileResult.data?.onboarding_completed;
       const oldOnboardingComplete = !!answersResult.data?.career_path_onboarding_completed;
-      const hasCompletedOnboarding = newOnboardingComplete || oldOnboardingComplete;
+      const hasUserType = !!answersResult.data?.user_type;
+      const hasCompletedOnboarding = (newOnboardingComplete || oldOnboardingComplete) && hasUserType;
 
       // Auto-migrate if old flag is true but new flag is false
       if (oldOnboardingComplete && !newOnboardingComplete) {

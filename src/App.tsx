@@ -84,7 +84,7 @@ const App: React.FC = () => {
                     } />
                     
                     <Route path="/jobs" element={
-                      <RequireOnboarding soft={true}>
+                      <RequireOnboarding soft={false}>
                         <RequireUserType allowedTypes={['job_seeker']}>
                           <LearningJobFeed />
                         </RequireUserType>
@@ -92,7 +92,7 @@ const App: React.FC = () => {
                     } />
                     
                     <Route path="/jobs/legacy" element={
-                      <RequireOnboarding soft={true}>
+                      <RequireOnboarding soft={false}>
                         <RequireUserType allowedTypes={['job_seeker']}>
                           <JobFeed />
                         </RequireUserType>
@@ -100,7 +100,7 @@ const App: React.FC = () => {
                     } />
                     
                     <Route path="/profile" element={
-                      <RequireOnboarding soft={true}>
+                      <RequireOnboarding soft={false}>
                         <RequireUserType allowedTypes={['job_seeker']}>
                           <Profile />
                         </RequireUserType>
@@ -108,7 +108,7 @@ const App: React.FC = () => {
                     } />
                     
                     <Route path="/discovery" element={
-                      <RequireOnboarding soft={true}>
+                      <RequireOnboarding soft={false}>
                         <RequireUserType allowedTypes={['job_seeker']}>
                           <OpportunityDiscovery />
                         </RequireUserType>
@@ -116,7 +116,7 @@ const App: React.FC = () => {
                     } />
                     
                     <Route path="/opportunity-discovery" element={
-                      <RequireOnboarding soft={true}>
+                      <RequireOnboarding soft={false}>
                         <RequireUserType allowedTypes={['job_seeker']}>
                           <OpportunityDiscovery />
                         </RequireUserType>
