@@ -115,7 +115,8 @@ export async function getLastIncompleteStep(userId: string): Promise<string | nu
       .limit(1)
       .maybeSingle();
 
-    return data?.metadata?.last_step || null;
+    const metadata = data?.metadata as Record<string, any> | null;
+    return metadata?.last_step || null;
   } catch (error) {
     console.error("Failed to get last incomplete step:", error);
     return null;
