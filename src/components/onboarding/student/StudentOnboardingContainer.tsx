@@ -29,7 +29,7 @@ export function StudentOnboardingContainer() {
   const [goalData, setGoalData] = useState<{ statement: string; analysis: any } | null>(null);
   
   const { user } = useAuth();
-  const { refreshUserState, setOnboardingCompleted } = useUserState();
+  const { refreshUserState } = useUserState();
   const navigate = useNavigate();
   const { toast } = useToast();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -159,22 +159,12 @@ export function StudentOnboardingContainer() {
 
     setIsSubmitting(true);
     try {
-      console.log("📝 Marking student onboarding complete...");
       await markStudentOnboardingComplete(user.id);
       
-      // Optimistically update state to prevent redirect loop
-      if (setOnboardingCompleted) {
-        setOnboardingCompleted('job_seeker', 'student');
-      }
-      
       // Refresh user state to update context
-      console.log("🔄 Refreshing user state...");
       if (refreshUserState) {
         await refreshUserState();
       }
-      
-      // Small timing cushion for state propagation
-      await new Promise(r => requestAnimationFrame(r));
       
       toast({
         title: "🎉 Onboarding Complete!",
@@ -183,7 +173,6 @@ export function StudentOnboardingContainer() {
       
       // Navigate to correct destination
       const destination = getPostOnboardingDestination('job_seeker');
-      console.log(`✈️ Navigating to ${destination} after student onboarding completion`);
       navigate(destination, { replace: true });
     } catch (error) {
       console.error('Error completing onboarding:', error);

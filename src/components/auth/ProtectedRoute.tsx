@@ -5,10 +5,10 @@ import { LoadingSpinner } from '@/components/loading/LoadingSpinner';
 
 export default function ProtectedRoute() {
   const { session, loading: authLoading } = useAuth();
-  const { userType, loading: stateLoading, isRefreshing } = useUserState();
+  const { userType, loading: stateLoading } = useUserState();
   const location = useLocation();
 
-  const loading = authLoading || stateLoading || isRefreshing;
+  const loading = authLoading || stateLoading;
 
   if (loading) {
     return (

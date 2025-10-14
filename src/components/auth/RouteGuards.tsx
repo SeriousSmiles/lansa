@@ -35,11 +35,11 @@ export function RequireOnboarding({
   children: JSX.Element; 
   soft?: boolean;  // DEPRECATED: Soft gates should only be used for premium features, not onboarding
 }) {
-  const { loading, isRefreshing, hasCompletedOnboarding, userType } = useUserState();
+  const { loading, hasCompletedOnboarding, userType } = useUserState();
   const location = useLocation();
 
   if (!FLAGS.routeGuardsV2) return children;
-  if (loading || isRefreshing) return <LoadingScreen />;
+  if (loading) return <LoadingScreen />;
 
   // If user has completed onboarding, allow access
   if (hasCompletedOnboarding) return children;

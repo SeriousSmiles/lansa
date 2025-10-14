@@ -159,10 +159,12 @@ export default function Onboarding() {
               <BusinessOnboardingForm onComplete={() => {}} />
             </div>
           ) : userType === 'job_seeker' && careerPath ? (
+            <AIOnboardingFlow />
+          ) : (
             <div className="flex flex-col items-center justify-center px-4 py-8">
               <StudentOnboardingContainer />
             </div>
-          ) : null}
+          )}
         </main>
 
         <footer className="text-center py-6 text-sm text-[#1A1F71]">
