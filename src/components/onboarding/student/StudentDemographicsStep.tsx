@@ -77,13 +77,13 @@ export function StudentDemographicsStep({
         subtitle="This helps us give you personalized guidance tailored to your unique situation."
         stepBadge={`Step ${stepNumber} of ${totalSteps} • Getting to Know You`}
       >
-            <div className="space-y-6 lg:space-y-8">
+            <div className="space-y-5">
 
             {/* Academic Status */}
-            <div className="space-y-4">
-              <Label className="text-lg font-semibold text-foreground">What's your current academic status?</Label>
-              <RadioGroup value={academicStatus} onValueChange={setAcademicStatus} className="grid sm:grid-cols-2 gap-3">
-                {academicOptions.map(option => <Label key={option.value} htmlFor={`academic_${option.value}`} className={`flex items-center justify-center p-4 border rounded-lg cursor-pointer transition-all font-medium ${academicStatus === option.value ? 'bg-primary/10 border-primary text-primary' : 'bg-muted/30 hover:bg-muted/50 border-border hover:border-primary/50'}`}>
+            <div className="space-y-3">
+              <Label className="text-base font-semibold text-foreground">What's your current academic status?</Label>
+              <RadioGroup value={academicStatus} onValueChange={setAcademicStatus} className="grid grid-cols-2 gap-2">
+                {academicOptions.map(option => <Label key={option.value} htmlFor={`academic_${option.value}`} className={`flex items-center justify-center px-3 py-2.5 border-2 rounded-lg cursor-pointer transition-all text-sm font-medium ${academicStatus === option.value ? 'bg-primary/10 border-primary text-primary shadow-md' : 'bg-card hover:bg-muted/50 border-border hover:border-primary/50'}`}>
                     <RadioGroupItem value={option.value} id={`academic_${option.value}`} className="sr-only" />
                     {option.label}
                   </Label>)}
@@ -91,39 +91,39 @@ export function StudentDemographicsStep({
             </div>
 
             {/* Field of Study */}
-            <div className="space-y-3">
-              <Label htmlFor="field_of_study" className="text-lg font-semibold text-foreground">
+            <div className="space-y-2">
+              <Label htmlFor="field_of_study" className="text-base font-semibold text-foreground">
                 What are you studying (or did you study)?
               </Label>
-              <Input id="field_of_study" value={fieldOfStudy} onChange={e => setFieldOfStudy(e.target.value)} placeholder="e.g., Business Administration, Computer Science, Psychology..." className="text-base p-4 bg-background border-2 border-border focus:border-primary transition-colors" />
+              <Input id="field_of_study" value={fieldOfStudy} onChange={e => setFieldOfStudy(e.target.value)} placeholder="e.g., Business Administration, Computer Science..." className="text-sm p-3 bg-background border-2 border-border focus:border-primary transition-colors" />
             </div>
 
             {/* Career Goal */}
-            <div className="space-y-4">
-              <Label className="text-lg font-semibold text-foreground">
+            <div className="space-y-3">
+              <Label className="text-base font-semibold text-foreground">
                 Which of these best describes your career goal right now?
               </Label>
-              <RadioGroup value={careerGoal} onValueChange={setCareerGoal} className="grid sm:grid-cols-2 gap-3">
-                {careerOptions.map(option => <Label key={option.value} htmlFor={`career_${option.value}`} className={`flex items-center justify-center p-4 border rounded-lg cursor-pointer transition-all font-medium text-center ${careerGoal === option.value ? 'bg-primary/10 border-primary text-primary' : 'bg-muted/30 hover:bg-muted/50 border-border hover:border-primary/50'}`}>
+              <RadioGroup value={careerGoal} onValueChange={setCareerGoal} className="grid grid-cols-2 gap-2">
+                {careerOptions.map(option => <Label key={option.value} htmlFor={`career_${option.value}`} className={`flex items-center justify-center px-3 py-2.5 border-2 rounded-lg cursor-pointer transition-all text-sm font-medium text-center ${careerGoal === option.value ? 'bg-primary/10 border-primary text-primary shadow-md' : 'bg-card hover:bg-muted/50 border-border hover:border-primary/50'}`}>
                     <RadioGroupItem value={option.value} id={`career_${option.value}`} className="sr-only" />
                     {option.label}
                   </Label>)}
               </RadioGroup>
             </div>
 
-          <div className="pt-8">
+          <div className="pt-6">
             <Button 
               onClick={handleSubmit} 
               disabled={!canProceed || isSubmitting} 
-              className="w-full py-3 lg:py-4 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200" 
+              className="w-full py-3 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200" 
               size="lg"
             >
               {isSubmitting ? "Saving..." : "Continue"}
             </Button>
           </div>
 
-          <div className="text-center pt-4">
-            <p className="text-sm text-muted-foreground">
+          <div className="text-center pt-3">
+            <p className="text-xs text-muted-foreground">
               ✨ You're doing great — this helps us personalize your experience.
             </p>
           </div>
