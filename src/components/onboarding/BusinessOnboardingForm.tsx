@@ -20,7 +20,7 @@ interface BusinessOnboardingFormProps {
 
 export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormProps) {
   const { user } = useAuth();
-  const { refreshUserState, setOnboardingCompleted } = useUserState();
+  const { refreshUserState } = useUserState();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -155,18 +155,10 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
       // Mark onboarding complete using unified service
       await markOnboardingComplete(user.id, 'employer');
 
-      // Optimistically update state to prevent redirect loops
-      if (setOnboardingCompleted) {
-        setOnboardingCompleted('employer');
-      }
-
       // Refresh user state to update context
       if (refreshUserState) {
         await refreshUserState();
       }
-
-      // Add small delay for state propagation
-      await new Promise(resolve => requestAnimationFrame(() => resolve(null)));
 
       toast.success("Business profile created successfully!");
       
