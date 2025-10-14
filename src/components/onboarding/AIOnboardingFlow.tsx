@@ -13,24 +13,22 @@ import { Badge } from "@/components/ui/badge";
 import { User, Target, Trophy, Eye, Sparkles } from "lucide-react";
 import { StrengthBar } from "./StrengthBar";
 import { WhyItMatters } from "./WhyItMatters";
-import { StepHeader } from "./StepHeader";
-import { ProgressBar } from "./ProgressBar";
-import { ActionCard } from "./ActionCard";
-import { ExampleShowcase } from "./ExampleShowcase";
-import { HoverInfo } from "./HoverInfo";
 import { SkillAnalysisDisplay } from "./SkillAnalysisDisplay";
 import { GoalAnalysisDisplay } from "./GoalAnalysisDisplay";
 import { CollapsibleAnalysisCard } from "./CollapsibleAnalysisCard";
+import { OnboardingLayout } from "./layout/OnboardingLayout";
+import { OnboardingCard } from "./layout/OnboardingCard";
+import { LoadingSpinner } from "@/components/loading";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserState } from "@/contexts/UserStateProvider";
 import { useDebounce } from "@/hooks/use-debounce";
 import { gsap } from "gsap";
 
-// Import step images - realistic professional versions
-import welcomeHeroImage from "@/assets/onboarding/welcome-hero.jpg";
-import demographicsImage from "@/assets/onboarding/demographics-realistic.jpg";
-import skillTransformImage from "@/assets/onboarding/skill-transform-realistic.jpg";
-import ninetyDayGoalImage from "@/assets/onboarding/90day-goal-realistic.jpg";
+// Import step images
+import lansaWelcomeHero from "@/assets/onboarding/lansa-welcome-hero.jpg";
+import lansaDemographicsImage from "@/assets/onboarding/lansa-demographics.jpg";
+import lansaSkillTransformImage from "@/assets/onboarding/lansa-skill-transform.jpg";
+import lansaGoalImage from "@/assets/onboarding/lansa-90day-goal.jpg";
 import powerMirrorImage from "@/assets/onboarding/power-mirror-realistic.jpg";
 
 interface AIOnboardingFlowProps {
