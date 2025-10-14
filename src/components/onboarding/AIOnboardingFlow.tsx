@@ -38,6 +38,8 @@ interface AIOnboardingFlowProps {
 export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowProps) {
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAnalyzingSkill, setIsAnalyzingSkill] = useState(false);
+  const [isAnalyzingGoal, setIsAnalyzingGoal] = useState(false);
   const [demographicsData, setDemographicsData] = useState({
     academic_status: '',
     major: '',
@@ -90,11 +92,11 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
   }, [debouncedGoalInput, demographicsData.major, currentStep]);
 
   const analyzeSkill = async (skill: string) => {
-    if (!user) return;
+    if (!user || isAnalyzingSkill) return;
     
     const startTime = Date.now();
     try {
-      setIsLoading(true);
+      setIsAnalyzingSkill(true);
       
       const { data, error } = await supabase.functions.invoke('analyze-skill-reframe', {
         body: { skill }
@@ -107,16 +109,16 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
     } catch (error) {
       logAICall('analyze-skill-reframe', false, Date.now() - startTime);
     } finally {
-      setIsLoading(false);
+      setIsAnalyzingSkill(false);
     }
   };
 
   const analyzeGoal = async (goal: string) => {
-    if (!user) return;
+    if (!user || isAnalyzingGoal) return;
     
     const startTime = Date.now();
     try {
-      setIsLoading(true);
+      setIsAnalyzingGoal(true);
       
       const { data, error } = await supabase.functions.invoke('analyze-90day-goal', {
         body: { goalStatement: goal }
@@ -129,7 +131,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
     } catch (error) {
       logAICall('analyze-90day-goal', false, Date.now() - startTime);
     } finally {
-      setIsLoading(false);
+      setIsAnalyzingGoal(false);
     }
   };
 
@@ -601,7 +603,14 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                 </div>
               </div>
 
-              {skillAnalysis && (
+              {isAnalyzingSkill && (
+                <div className="flex items-center justify-center py-8 space-x-2">
+                  <LoadingSpinner />
+                  <span className="text-muted-foreground">AI is analyzing your skill...</span>
+                </div>
+              )}
+              
+              {!isAnalyzingSkill && skillAnalysis && (
                 <SkillAnalysisDisplay analysis={skillAnalysis} />
               )}
 
@@ -730,7 +739,14 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                 </div>
               </div>
 
-              {goalAnalysis && (
+              {isAnalyzingGoal && (
+                <div className="flex items-center justify-center py-8 space-x-2">
+                  <LoadingSpinner />
+                  <span className="text-muted-foreground">AI is analyzing your goal...</span>
+                </div>
+              )}
+              
+              {!isAnalyzingGoal && goalAnalysis && (
                 <GoalAnalysisDisplay analysis={goalAnalysis} />
               )}
 
