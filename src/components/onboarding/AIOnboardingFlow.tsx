@@ -14,7 +14,6 @@ import { User, Target, Trophy, Eye, Sparkles } from "lucide-react";
 import { StrengthBar } from "./StrengthBar";
 import { WhyItMatters } from "./WhyItMatters";
 import { StepHeader } from "./StepHeader";
-import { ProgressBar } from "./ProgressBar";
 import { ActionCard } from "./ActionCard";
 import { ExampleShowcase } from "./ExampleShowcase";
 import { HoverInfo } from "./HoverInfo";
@@ -237,22 +236,25 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
     return steps.indexOf(currentStep) + 1;
   };
 
-  const renderProgressBar = () => (
-    <div className="flex justify-center mb-8">
-      <div className="flex gap-2">
-        {Array.from({ length: 5 }, (_, i) => (
-          <div
-            key={i}
-            className={`h-2 w-8 rounded-full transition-all duration-300 ${
-              i < getStepNumber() 
-                ? 'bg-primary' 
-                : 'bg-gray-200'
-            }`}
+  const renderProgressBar = () => {
+    const progress = (getStepNumber() / 5) * 100;
+    return (
+      <div className="sticky top-0 z-50 w-full">
+        <div className="h-2 bg-muted/30 backdrop-blur-sm">
+          <div 
+            className="h-full bg-gradient-to-r from-primary via-primary to-primary/80 shadow-lg shadow-primary/20 transition-all duration-700 ease-out"
+            style={{ width: `${progress}%` }}
           />
-        ))}
+        </div>
+        <div className="bg-background/80 backdrop-blur-lg border-b border-border/30 py-2 px-4">
+          <div className="lansa-container-narrow flex justify-between items-center">
+            <span className="text-xs font-medium text-muted-foreground">Step {getStepNumber()} of 5</span>
+            <span className="text-xs font-medium text-primary">{Math.round(progress)}% Complete</span>
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Skill examples for the showcase
   const skillExamples = [
@@ -294,154 +296,155 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
 
   if (currentStep === 'welcome') {
     return (
-      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-primary/5">
-        <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
+      <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-background to-primary/5">
+        {renderProgressBar()}
         
-        <StepHeader 
-          stepNumber={getStepNumber()}
-          totalSteps={5}
-          title="This isn't a test"
-          subtitle="It's your first step toward showing how you deliver value"
-          image={welcomeHeroImage}
-        />
+        <div className="lansa-container-narrow pt-6">
+          <StepHeader 
+            stepNumber={getStepNumber()}
+            totalSteps={5}
+            title="This isn't a test"
+            subtitle="It's your first step toward showing how you deliver value"
+            image={welcomeHeroImage}
+          />
 
-        <ActionCard
-          title="Ready to transform how you present yourself?"
-          description="In the next few minutes, we'll help you translate your student experience into language that employers understand and value."
-          icon={Sparkles}
-          status="active"
-          tags={["AI-Powered", "5 Minutes", "Career-Focused"]}
-          onAction={() => setCurrentStep('demographics')}
-          actionLabel="Let's start ✨"
-          className="max-w-2xl mx-auto"
-        />
+          <ActionCard
+            title="Ready to transform how you present yourself?"
+            description="In the next few minutes, we'll help you translate your student experience into language that employers understand and value."
+            icon={Sparkles}
+            status="active"
+            tags={["AI-Powered", "5 Minutes", "Career-Focused"]}
+            onAction={() => setCurrentStep('demographics')}
+            actionLabel="Let's start ✨"
+            className="max-w-2xl mx-auto"
+          />
+        </div>
       </div>
     );
   }
 
   if (currentStep === 'demographics') {
     return (
-      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-secondary/5">
-        <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
+      <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-background to-secondary/5">
+        {renderProgressBar()}
         
-        <StepHeader 
-          stepNumber={getStepNumber()}
-          totalSteps={5}
-          title="Tell us about yourself"
-          subtitle="Help us customize the experience for your academic background and career goals"
-          image={demographicsImage}
-        />
+        <div className="lansa-container-narrow pt-6">
+          <StepHeader 
+            stepNumber={getStepNumber()}
+            totalSteps={5}
+            title="Tell us about yourself"
+            subtitle="Help us customize the experience for your academic background and career goals"
+            image={demographicsImage}
+          />
 
-        <Card className="shadow-lg border-border max-w-2xl mx-auto">
-          <CardContent className="p-4">
-            <div className="space-y-8">
-              <ActionCard
-                title="Academic Status"
-                description="Where are you in your academic journey?"
-                icon={User}
-                status="active"
-              >
-                <RadioGroup 
-                  value={demographicsData.academic_status}
-                  onValueChange={(value) => 
-                    setDemographicsData(prev => ({ ...prev, academic_status: value }))
-                  }
-                  className="space-y-3"
-                >
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <RadioGroupItem value="final_year" id="final_year" />
-                    <Label htmlFor="final_year" className="cursor-pointer flex-1">Final year student</Label>
+          <Card className="shadow-lg border-border max-w-2xl mx-auto">
+            <CardContent className="p-6">
+              <div className="space-y-6">
+                {/* Academic Status - Grid Selection */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <User className="h-5 w-5 text-primary" />
+                    <Label className="text-base font-semibold text-foreground">Academic Status</Label>
                   </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <RadioGroupItem value="recent_grad" id="recent_grad" />
-                    <Label htmlFor="recent_grad" className="cursor-pointer flex-1">Recent graduate</Label>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <RadioGroupItem value="studying" id="studying" />
-                    <Label htmlFor="studying" className="cursor-pointer flex-1">Currently studying</Label>
-                  </div>
-                </RadioGroup>
-              </ActionCard>
+                  <p className="text-sm text-muted-foreground mb-3">Where are you in your academic journey?</p>
+                  <RadioGroup 
+                    value={demographicsData.academic_status}
+                    onValueChange={(value) => 
+                      setDemographicsData(prev => ({ ...prev, academic_status: value }))
+                    }
+                    className="grid grid-cols-2 gap-2"
+                  >
+                    <Label htmlFor="final_year" className={`flex items-center justify-center px-3 py-2.5 border-2 rounded-lg cursor-pointer transition-all text-sm font-medium ${demographicsData.academic_status === 'final_year' ? 'bg-primary/10 border-primary text-primary shadow-md' : 'bg-card hover:bg-muted/50 border-border hover:border-primary/50'}`}>
+                      <RadioGroupItem value="final_year" id="final_year" className="sr-only" />
+                      Final year student
+                    </Label>
+                    <Label htmlFor="recent_grad" className={`flex items-center justify-center px-3 py-2.5 border-2 rounded-lg cursor-pointer transition-all text-sm font-medium ${demographicsData.academic_status === 'recent_grad' ? 'bg-primary/10 border-primary text-primary shadow-md' : 'bg-card hover:bg-muted/50 border-border hover:border-primary/50'}`}>
+                      <RadioGroupItem value="recent_grad" id="recent_grad" className="sr-only" />
+                      Recent graduate
+                    </Label>
+                    <Label htmlFor="studying" className={`flex items-center justify-center px-3 py-2.5 border-2 rounded-lg cursor-pointer transition-all text-sm font-medium col-span-2 ${demographicsData.academic_status === 'studying' ? 'bg-primary/10 border-primary text-primary shadow-md' : 'bg-card hover:bg-muted/50 border-border hover:border-primary/50'}`}>
+                      <RadioGroupItem value="studying" id="studying" className="sr-only" />
+                      Currently studying
+                    </Label>
+                  </RadioGroup>
+                </div>
 
-              <ActionCard
-                title="Field of Study"
-                description="What's your major or area of specialization?"
-                icon={Target}
-                status="active"
-              >
-                <div className="flex items-center gap-2">
+                {/* Field of Study */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target className="h-5 w-5 text-primary" />
+                    <Label htmlFor="major" className="text-base font-semibold text-foreground">Field of Study</Label>
+                  </div>
                   <Input
+                    id="major"
                     value={demographicsData.major}
                     onChange={(e) => 
                       setDemographicsData(prev => ({ ...prev, major: e.target.value }))
                     }
-                    placeholder="e.g., Business Administration, Computer Science, Marketing..."
-                    className="flex-1"
-                  />
-                  <HoverInfo 
-                    title="Why do we ask this?"
-                    content="We use your major to give you field-specific examples and recommendations that are relevant to your career path."
-                    variant="help"
+                    placeholder="e.g., Business Administration, Computer Science..."
+                    className="text-sm p-3 bg-background border-2 border-border focus:border-primary transition-colors"
                   />
                 </div>
-              </ActionCard>
 
-              <ActionCard
-                title="Career Intention"
-                description="What's your primary career goal right now?"
-                icon={Trophy}
-                status="active"
-              >
-                <RadioGroup 
-                  value={demographicsData.career_goal_type}
-                  onValueChange={(value) => 
-                    setDemographicsData(prev => ({ ...prev, career_goal_type: value }))
-                  }
-                  className="space-y-3"
+                {/* Career Intention - Grid Selection */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Trophy className="h-5 w-5 text-primary" />
+                    <Label className="text-base font-semibold text-foreground">Career Intention</Label>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">What's your primary career goal right now?</p>
+                  <RadioGroup 
+                    value={demographicsData.career_goal_type}
+                    onValueChange={(value) => 
+                      setDemographicsData(prev => ({ ...prev, career_goal_type: value }))
+                    }
+                    className="grid grid-cols-2 gap-2"
+                  >
+                    <Label htmlFor="first_job" className={`flex items-center justify-center px-3 py-2.5 border-2 rounded-lg cursor-pointer transition-all text-sm font-medium ${demographicsData.career_goal_type === 'first_job' ? 'bg-primary/10 border-primary text-primary shadow-md' : 'bg-card hover:bg-muted/50 border-border hover:border-primary/50'}`}>
+                      <RadioGroupItem value="first_job" id="first_job" className="sr-only" />
+                      Get my first job
+                    </Label>
+                    <Label htmlFor="paid_internship" className={`flex items-center justify-center px-3 py-2.5 border-2 rounded-lg cursor-pointer transition-all text-sm font-medium ${demographicsData.career_goal_type === 'paid_internship' ? 'bg-primary/10 border-primary text-primary shadow-md' : 'bg-card hover:bg-muted/50 border-border hover:border-primary/50'}`}>
+                      <RadioGroupItem value="paid_internship" id="paid_internship" className="sr-only" />
+                      Find a paid internship
+                    </Label>
+                    <Label htmlFor="grow_in_company" className={`flex items-center justify-center px-3 py-2.5 border-2 rounded-lg cursor-pointer transition-all text-sm font-medium col-span-2 ${demographicsData.career_goal_type === 'grow_in_company' ? 'bg-primary/10 border-primary text-primary shadow-md' : 'bg-card hover:bg-muted/50 border-border hover:border-primary/50'}`}>
+                      <RadioGroupItem value="grow_in_company" id="grow_in_company" className="sr-only" />
+                      Grow within a company
+                    </Label>
+                  </RadioGroup>
+                </div>
+
+                <Button 
+                  onClick={handleDemographicsSave}
+                  disabled={!demographicsData.academic_status || !demographicsData.major || !demographicsData.career_goal_type}
+                  className="w-full py-3 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 mt-2"
+                  size="lg"
                 >
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <RadioGroupItem value="first_job" id="first_job" />
-                    <Label htmlFor="first_job" className="cursor-pointer flex-1">Get my first job</Label>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <RadioGroupItem value="paid_internship" id="paid_internship" />
-                    <Label htmlFor="paid_internship" className="cursor-pointer flex-1">Find a paid internship</Label>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <RadioGroupItem value="grow_in_company" id="grow_in_company" />
-                    <Label htmlFor="grow_in_company" className="cursor-pointer flex-1">Grow within a company</Label>
-                  </div>
-                </RadioGroup>
-              </ActionCard>
-
-              <Button 
-                onClick={handleDemographicsSave}
-                disabled={!demographicsData.academic_status || !demographicsData.major || !demographicsData.career_goal_type}
-                className="w-full py-4 text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
-                size="lg"
-              >
-                Continue to Power Moments ✨
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+                  Continue to Power Moments ✨
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
   if (currentStep === 'skill') {
     return (
-      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-primary/5">
-        <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
+      <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-background to-primary/5">
+        {renderProgressBar()}
         
-        <StepHeader 
-          stepNumber={getStepNumber()}
-          totalSteps={5}
-          title="Transform Your Skills"
-          subtitle="Turn your academic abilities into business value that recruiters like"
-          image={skillTransformImage}
-          powerMoment="Power Moment #1"
-        />
+        <div className="lansa-container-narrow pt-6">
+          <StepHeader 
+            stepNumber={getStepNumber()}
+            totalSteps={5}
+            title="Transform Your Skills"
+            subtitle="Turn your academic abilities into business value that recruiters like"
+            image={skillTransformImage}
+            powerMoment="Power Moment #1"
+          />
 
         <Card className="shadow-lg border-border max-w-2xl mx-auto">
           <CardContent className="p-4">
@@ -521,22 +524,24 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
           </CardContent>
         </Card>
       </div>
+    </div>
     );
   }
 
   if (currentStep === 'goal') {
     return (
-      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-secondary/5">
-        <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
+      <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-background to-secondary/5">
+        {renderProgressBar()}
         
-        <StepHeader 
-          stepNumber={getStepNumber()}
-          totalSteps={5}
-          title="Your 90-Day Promise"
-          subtitle="What specific, outcome can you deliver in your first 90 days?"
-          image={ninetyDayGoalImage}
-          powerMoment="Power Moment #2"
-        />
+        <div className="lansa-container-narrow pt-6">
+          <StepHeader 
+            stepNumber={getStepNumber()}
+            totalSteps={5}
+            title="Your 90-Day Promise"
+            subtitle="What specific, outcome can you deliver in your first 90 days?"
+            image={ninetyDayGoalImage}
+            powerMoment="Power Moment #2"
+          />
 
         <Card className="shadow-lg border-border max-w-2xl mx-auto">
           <CardContent className="p-4">
@@ -619,22 +624,24 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
           </CardContent>
         </Card>
       </div>
+    </div>
     );
   }
 
   if (currentStep === 'summary') {
     return (
-      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-primary/5">
-        <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
+      <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-background to-primary/5">
+        {renderProgressBar()}
         
-        <StepHeader 
-          stepNumber={getStepNumber()}
-          totalSteps={5}
-          title="The Manager's View"
-          subtitle="See how a hiring manager reads your profile based on what you've shared"
-          image={powerMirrorImage}
-          powerMoment="Your Mirror Moment"
-        />
+        <div className="lansa-container-narrow pt-6">
+          <StepHeader 
+            stepNumber={getStepNumber()}
+            totalSteps={5}
+            title="The Manager's View"
+            subtitle="See how a hiring manager reads your profile based on what you've shared"
+            image={powerMirrorImage}
+            powerMoment="Your Mirror Moment"
+          />
 
         <Card className="shadow-lg border-border max-w-2xl mx-auto">
           <CardContent className="p-4">
@@ -799,6 +806,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
           </CardContent>
         </Card>
       </div>
+    </div>
     );
   }
 
