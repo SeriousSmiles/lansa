@@ -4,9 +4,23 @@ interface ProgressBarProps {
   currentStep: number;
   totalSteps: number;
   className?: string;
+  variant?: 'dots' | 'fill';
 }
 
-export function ProgressBar({ currentStep, totalSteps, className }: ProgressBarProps) {
+export function ProgressBar({ currentStep, totalSteps, className, variant = 'fill' }: ProgressBarProps) {
+  const progress = (currentStep / totalSteps) * 100;
+  
+  if (variant === 'fill') {
+    return (
+      <div className={cn("w-full bg-gray-200 dark:bg-gray-700 h-1", className)}>
+        <div 
+          className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 ease-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className={cn("flex justify-center mb-8", className)}>
       <div className="flex items-center gap-2">
