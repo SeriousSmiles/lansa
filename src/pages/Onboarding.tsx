@@ -158,13 +158,13 @@ export default function Onboarding() {
             <div className="flex flex-col items-center justify-center px-4 py-8">
               <BusinessOnboardingForm onComplete={() => {}} />
             </div>
-          ) : userType === 'job_seeker' && careerPath ? (
-            <AIOnboardingFlow />
-          ) : (
+          ) : userType === 'job_seeker' && careerPath === 'student' ? (
             <div className="flex flex-col items-center justify-center px-4 py-8">
               <StudentOnboardingContainer />
             </div>
-          )}
+          ) : userType === 'job_seeker' && careerPath ? (
+            <AIOnboardingFlow />
+          ) : null}
         </main>
 
         <footer className="text-center py-6 text-sm text-[#1A1F71]">

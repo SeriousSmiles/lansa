@@ -53,7 +53,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
   
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { refreshUserState } = useUserState();
+  const { refreshUserState, setOnboardingCompleted } = useUserState();
   const containerRef = useRef<HTMLDivElement>(null);
   
   const debouncedSkillInput = useDebounce(skillInput, 800);

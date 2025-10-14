@@ -14,6 +14,7 @@ type UserState = {
   verified: boolean;
   refreshUserState?: () => Promise<void>;
   isRefreshing?: boolean;
+  setOnboardingCompleted?: (userType: 'job_seeker' | 'employer', careerPath?: CareerPath) => void;
 };
 
 const UserStateContext = createContext<UserState>({ 
@@ -138,6 +139,17 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
     });
   }, [refreshDebounceTimer, fetchUserState]);
 
+  // Optimistic state update for onboarding completion
+  const setOnboardingCompleted = useCallback((userType: 'job_seeker' | 'employer', careerPath?: CareerPath) => {
+    console.log("✅ Optimistically setting onboarding complete:", { userType, careerPath });
+    setState(s => ({
+      ...s,
+      hasCompletedOnboarding: true,
+      userType,
+      careerPath: careerPath || s.careerPath
+    }));
+  }, []);
+
   // Initial load
   useEffect(() => {
     let mounted = true;
@@ -159,7 +171,8 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(() => ({
     ...state,
     refreshUserState,
-  }), [state, refreshUserState]);
+    setOnboardingCompleted,
+  }), [state, refreshUserState, setOnboardingCompleted]);
   
   return (
     <UserStateContext.Provider value={value}>
