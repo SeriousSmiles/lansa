@@ -235,22 +235,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
     return steps.indexOf(currentStep) + 1;
   };
 
-  const renderProgressBar = () => (
-    <div className="flex justify-center mb-8">
-      <div className="flex gap-2">
-        {Array.from({ length: 5 }, (_, i) => (
-          <div
-            key={i}
-            className={`h-2 w-8 rounded-full transition-all duration-300 ${
-              i < getStepNumber() 
-                ? 'bg-primary' 
-                : 'bg-gray-200'
-            }`}
-          />
-        ))}
-      </div>
-    </div>
-  );
+  const totalSteps = 5;
 
   // Skill examples for the showcase
   const skillExamples = [
@@ -292,526 +277,567 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
 
   if (currentStep === 'welcome') {
     return (
-      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-primary/5">
-        <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
-        
-        <StepHeader 
-          stepNumber={getStepNumber()}
-          totalSteps={5}
-          title="This isn't a test"
-          subtitle="It's your first step toward showing how you deliver value"
-          image={welcomeHeroImage}
-        />
+      <div ref={containerRef} className="w-full max-w-4xl mx-auto space-y-8">
+        {/* Hero Section */}
+        <div className="relative overflow-hidden rounded-xl">
+          <img 
+            src={lansaWelcomeHero} 
+            alt="Welcome to Lansa - Transform your future"
+            className="w-full h-64 lg:h-80 object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary/70 flex items-center justify-center">
+            <div className="text-center text-white px-6 space-y-4">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-inter animate-fade-in">
+                This isn't a test
+              </h1>
+              <p className="text-lg md:text-xl lg:text-2xl opacity-90 animate-fade-in [animation-delay:200ms]">
+                It's your first step toward showing how you deliver value
+              </p>
+            </div>
+          </div>
+        </div>
 
-        <ActionCard
-          title="Ready to transform how you present yourself?"
-          description="In the next few minutes, we'll help you translate your student experience into language that employers understand and value."
-          icon={Sparkles}
-          status="active"
-          tags={["AI-Powered", "5 Minutes", "Career-Focused"]}
-          onAction={() => setCurrentStep('demographics')}
-          actionLabel="Let's start ✨"
-          className="max-w-2xl mx-auto"
-        />
+        {/* Main Content Card */}
+        <Card className="bg-card border-border shadow-lg">
+          <div className="p-6 lg:p-8 text-center space-y-8">
+            <div className="space-y-4">
+              <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+                In the next few minutes, we'll help you translate your student experience into language that employers understand and value.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4 lg:gap-6">
+              <div className="text-center p-4 lg:p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/20 hover:border-primary/30 transition-colors">
+                <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2 text-sm lg:text-base">AI-Powered</h3>
+                <p className="text-xs lg:text-sm text-muted-foreground">Get personalized insights and recommendations</p>
+              </div>
+              
+              <div className="text-center p-4 lg:p-6 bg-gradient-to-br from-accent/5 to-accent/10 rounded-xl border border-accent/20 hover:border-accent/30 transition-colors">
+                <div className="w-10 h-10 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Target className="w-5 h-5 text-accent" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2 text-sm lg:text-base">5 Minutes</h3>
+                <p className="text-xs lg:text-sm text-muted-foreground">Quick and easy to complete</p>
+              </div>
+              
+              <div className="text-center p-4 lg:p-6 bg-gradient-to-br from-secondary/5 to-secondary/10 rounded-xl border border-secondary/20 hover:border-secondary/30 transition-colors">
+                <div className="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Trophy className="w-5 h-5 text-secondary" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2 text-sm lg:text-base">Career-Focused</h3>
+                <p className="text-xs lg:text-sm text-muted-foreground">Tailored to your career goals</p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <Button 
+                onClick={() => setCurrentStep('demographics')}
+                size="lg"
+                className="px-8 lg:px-12 py-3 lg:py-4 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              >
+                Let's start ✨
+              </Button>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <span>⏱️</span>
+                  <span>5 minutes</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span>🔒</span>
+                  <span>Private & secure</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span>✨</span>
+                  <span>AI-powered</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
       </div>
     );
   }
 
   if (currentStep === 'demographics') {
     return (
-      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-secondary/5">
-        <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
-        
-        <StepHeader 
-          stepNumber={getStepNumber()}
-          totalSteps={5}
-          title="Tell us about yourself"
-          subtitle="Help us customize the experience for your academic background and career goals"
-          image={demographicsImage}
-        />
-
-        <Card className="shadow-lg border-border max-w-2xl mx-auto">
-          <CardContent className="p-4">
-            <div className="space-y-8">
-              <ActionCard
-                title="Academic Status"
-                description="Where are you in your academic journey?"
-                icon={User}
-                status="active"
-              >
+      <div ref={containerRef}>
+        <OnboardingLayout 
+          currentStep={getStepNumber()} 
+          totalSteps={totalSteps}
+          title="Getting Started"
+        >
+          <OnboardingCard
+            image={lansaDemographicsImage}
+            imageAlt="Tell us about yourself"
+            title="Tell us about yourself"
+            subtitle="Help us customize the experience for your academic background and career goals"
+            stepBadge={`Step ${getStepNumber()} of ${totalSteps} • Getting to Know You`}
+          >
+            <div className="space-y-6 lg:space-y-8">
+              {/* Academic Status */}
+              <div className="space-y-4">
+                <Label className="text-lg font-semibold text-foreground">Where are you in your academic journey?</Label>
                 <RadioGroup 
                   value={demographicsData.academic_status}
                   onValueChange={(value) => 
                     setDemographicsData(prev => ({ ...prev, academic_status: value }))
                   }
-                  className="space-y-3"
+                  className="grid sm:grid-cols-2 gap-3"
                 >
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <RadioGroupItem value="final_year" id="final_year" />
-                    <Label htmlFor="final_year" className="cursor-pointer flex-1">Final year student</Label>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <RadioGroupItem value="recent_grad" id="recent_grad" />
-                    <Label htmlFor="recent_grad" className="cursor-pointer flex-1">Recent graduate</Label>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <RadioGroupItem value="studying" id="studying" />
-                    <Label htmlFor="studying" className="cursor-pointer flex-1">Currently studying</Label>
-                  </div>
+                  <Label 
+                    htmlFor="final_year" 
+                    className={`flex items-center justify-center p-4 border rounded-lg cursor-pointer transition-all font-medium ${
+                      demographicsData.academic_status === 'final_year' 
+                        ? 'bg-primary/10 border-primary text-primary' 
+                        : 'bg-muted/30 hover:bg-muted/50 border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <RadioGroupItem value="final_year" id="final_year" className="sr-only" />
+                    Final year student
+                  </Label>
+                  <Label 
+                    htmlFor="recent_grad" 
+                    className={`flex items-center justify-center p-4 border rounded-lg cursor-pointer transition-all font-medium ${
+                      demographicsData.academic_status === 'recent_grad' 
+                        ? 'bg-primary/10 border-primary text-primary' 
+                        : 'bg-muted/30 hover:bg-muted/50 border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <RadioGroupItem value="recent_grad" id="recent_grad" className="sr-only" />
+                    Recent graduate
+                  </Label>
+                  <Label 
+                    htmlFor="studying" 
+                    className={`flex items-center justify-center p-4 border rounded-lg cursor-pointer transition-all font-medium ${
+                      demographicsData.academic_status === 'studying' 
+                        ? 'bg-primary/10 border-primary text-primary' 
+                        : 'bg-muted/30 hover:bg-muted/50 border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <RadioGroupItem value="studying" id="studying" className="sr-only" />
+                    Currently studying
+                  </Label>
                 </RadioGroup>
-              </ActionCard>
+              </div>
 
-              <ActionCard
-                title="Field of Study"
-                description="What's your major or area of specialization?"
-                icon={Target}
-                status="active"
-              >
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={demographicsData.major}
-                    onChange={(e) => 
-                      setDemographicsData(prev => ({ ...prev, major: e.target.value }))
-                    }
-                    placeholder="e.g., Business Administration, Computer Science, Marketing..."
-                    className="flex-1"
-                  />
-                  <HoverInfo 
-                    title="Why do we ask this?"
-                    content="We use your major to give you field-specific examples and recommendations that are relevant to your career path."
-                    variant="help"
-                  />
-                </div>
-              </ActionCard>
+              {/* Field of Study */}
+              <div className="space-y-3">
+                <Label htmlFor="major" className="text-lg font-semibold text-foreground">
+                  What's your major or area of specialization?
+                </Label>
+                <Input
+                  id="major"
+                  value={demographicsData.major}
+                  onChange={(e) => 
+                    setDemographicsData(prev => ({ ...prev, major: e.target.value }))
+                  }
+                  placeholder="e.g., Business Administration, Computer Science, Marketing..."
+                  className="text-base p-4 bg-background border-2 border-border focus:border-primary transition-colors"
+                />
+              </div>
 
-              <ActionCard
-                title="Career Intention"
-                description="What's your primary career goal right now?"
-                icon={Trophy}
-                status="active"
-              >
+              {/* Career Goal */}
+              <div className="space-y-4">
+                <Label className="text-lg font-semibold text-foreground">
+                  What's your primary career goal right now?
+                </Label>
                 <RadioGroup 
                   value={demographicsData.career_goal_type}
                   onValueChange={(value) => 
                     setDemographicsData(prev => ({ ...prev, career_goal_type: value }))
                   }
-                  className="space-y-3"
+                  className="grid sm:grid-cols-2 gap-3"
                 >
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <RadioGroupItem value="first_job" id="first_job" />
-                    <Label htmlFor="first_job" className="cursor-pointer flex-1">Get my first job</Label>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <RadioGroupItem value="paid_internship" id="paid_internship" />
-                    <Label htmlFor="paid_internship" className="cursor-pointer flex-1">Find a paid internship</Label>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <RadioGroupItem value="grow_in_company" id="grow_in_company" />
-                    <Label htmlFor="grow_in_company" className="cursor-pointer flex-1">Grow within a company</Label>
-                  </div>
+                  <Label 
+                    htmlFor="first_job" 
+                    className={`flex items-center justify-center p-4 border rounded-lg cursor-pointer transition-all font-medium text-center ${
+                      demographicsData.career_goal_type === 'first_job' 
+                        ? 'bg-primary/10 border-primary text-primary' 
+                        : 'bg-muted/30 hover:bg-muted/50 border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <RadioGroupItem value="first_job" id="first_job" className="sr-only" />
+                    Get my first job
+                  </Label>
+                  <Label 
+                    htmlFor="paid_internship" 
+                    className={`flex items-center justify-center p-4 border rounded-lg cursor-pointer transition-all font-medium text-center ${
+                      demographicsData.career_goal_type === 'paid_internship' 
+                        ? 'bg-primary/10 border-primary text-primary' 
+                        : 'bg-muted/30 hover:bg-muted/50 border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <RadioGroupItem value="paid_internship" id="paid_internship" className="sr-only" />
+                    Find a paid internship
+                  </Label>
+                  <Label 
+                    htmlFor="grow_in_company" 
+                    className={`flex items-center justify-center p-4 border rounded-lg cursor-pointer transition-all font-medium text-center ${
+                      demographicsData.career_goal_type === 'grow_in_company' 
+                        ? 'bg-primary/10 border-primary text-primary' 
+                        : 'bg-muted/30 hover:bg-muted/50 border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <RadioGroupItem value="grow_in_company" id="grow_in_company" className="sr-only" />
+                    Grow within a company
+                  </Label>
                 </RadioGroup>
-              </ActionCard>
+              </div>
 
-              <Button 
-                onClick={handleDemographicsSave}
-                disabled={!demographicsData.academic_status || !demographicsData.major || !demographicsData.career_goal_type}
-                className="w-full py-4 text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
-                size="lg"
-              >
-                Continue to Power Moments ✨
-              </Button>
+              <div className="pt-8">
+                <Button 
+                  onClick={handleDemographicsSave}
+                  disabled={!demographicsData.academic_status || !demographicsData.major || !demographicsData.career_goal_type}
+                  className="w-full py-3 lg:py-4 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+                  size="lg"
+                >
+                  Continue to Power Moments ✨
+                </Button>
+              </div>
+
+              <div className="text-center pt-4">
+                <p className="text-sm text-muted-foreground">
+                  ✨ You're doing great — this helps us personalize your experience.
+                </p>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </OnboardingCard>
+        </OnboardingLayout>
       </div>
     );
   }
 
   if (currentStep === 'skill') {
-    return (
-      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-primary/5">
-        <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
-        
-        <StepHeader 
-          stepNumber={getStepNumber()}
-          totalSteps={5}
-          title="Transform Your Skills"
-          subtitle="Turn your academic abilities into business value that recruiters like"
-          image={skillTransformImage}
-          powerMoment="Power Moment #1"
-        />
+    const [showExamples, setShowExamples] = useState(false);
 
-        <Card className="shadow-lg border-border max-w-2xl mx-auto">
-          <CardContent className="p-4">
+    return (
+      <div ref={containerRef}>
+        <OnboardingLayout 
+          currentStep={getStepNumber()} 
+          totalSteps={totalSteps}
+          title="Getting Started"
+        >
+          <OnboardingCard
+            image={lansaSkillTransformImage}
+            imageAlt="Transform your skills"
+            title="Transform Your Skills"
+            subtitle="Turn your academic abilities into business value that recruiters like"
+            stepBadge={`Step ${getStepNumber()} of ${totalSteps} • Power Moment #1`}
+          >
             <div className="space-y-6">
-              <ActionCard
-                title="What's your strongest skill?"
-                description="Focus on specific problems you could solve or value you could create"
-                icon={Target}
-                status="active"
-              >
-                <div className="space-y-4">
-                  <ExampleShowcase 
-                    examples={skillExamples}
-                    title="Transform your skills"
-                    description="See how students turn generic skills into business value"
-                  />
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="skill" className="text-base font-medium">
-                      I could help a project by...
-                    </Label>
-                    <Textarea
-                      id="skill"
-                      value={skillInput}
-                      onChange={(e) => setSkillInput(e.target.value)}
-                      placeholder="Think about specific problems you could solve or outcomes you could create... Be specific about the business impact!"
-                      className="min-h-[120px] text-base bg-background border-2 border-border focus:border-primary transition-colors resize-none"
-                      maxLength={500}
-                    />
-                    <div className="flex justify-between items-center text-xs text-muted-foreground">
-                      <span>💡 Focus on outcomes, not just tools or skills</span>
-                      <span>{skillInput.length}/500</span>
-                    </div>
+              <div className="bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-950/20 dark:to-yellow-950/20 p-6 rounded-xl border border-orange-200 dark:border-orange-800 space-y-4">
+                <div className="flex flex-col md:flex-row md:items-start space-y-3 md:space-y-0 md:space-x-3">
+                  <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <span className="text-orange-600 dark:text-orange-400 text-sm">💡</span>
+                  </div>
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Focus on specific problems you could solve or value you could create
+                    </p>
+                    <p className="text-base md:text-lg font-semibold text-foreground bg-white/50 dark:bg-gray-800/50 p-4 rounded-lg border-l-4 border-primary text-left">
+                      "What's something you learned that could actually solve a problem for a company today?"
+                    </p>
                   </div>
                 </div>
-              </ActionCard>
+              </div>
 
-              {skillAnalysis && (
-                <div className="space-y-4">
-                  <StrengthBar 
-                    strength={skillAnalysis.score / 10} 
-                    weakestDimension={getWeakestDimension(skillAnalysis)}
-                  />
-                  
-                  {skillAnalysis.score < 7 && (
-                    <WhyItMatters
-                      explanation="Managers fund outcomes, not tools. They need to see the specific result you deliver."
-                      suggestion={skillAnalysis.coaching_nudge}
-                    />
-                  )}
-
-                  <SkillAnalysisDisplay analysis={skillAnalysis} />
-                </div>
-              )}
-
-              <div className="flex gap-3 pt-4">
-                <Button 
-                  onClick={() => setCurrentStep('goal')}
-                  disabled={!skillAnalysis || skillAnalysis.score < 5}
-                  className="flex-1 py-4 text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
-                  size="lg"
+              {/* Examples */}
+              <div className="space-y-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowExamples(!showExamples)}
+                  className="border-primary/20 text-primary hover:bg-primary/5"
                 >
-                  Continue to 90-Day Goal ✨
+                  {showExamples ? "Hide examples" : "💡 Want help? See examples"}
                 </Button>
-                {skillAnalysis && skillAnalysis.score >= 5 && (
-                  <Button 
-                    variant="outline" 
-                    onClick={() => analyzeSkill(skillInput)}
-                    disabled={isLoading}
-                    className="px-6"
-                  >
-                    {isLoading ? "Analyzing..." : "Improve"}
-                  </Button>
+
+                {showExamples && (
+                  <div className="space-y-4 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                    <h4 className="font-semibold text-foreground mb-3">Here's how to transform generic skills:</h4>
+                    {skillExamples.map((example, index) => (
+                      <div key={index} className="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg border">
+                        <div className="space-y-2">
+                          <div className="flex items-start space-x-2">
+                            <span className="text-red-500 font-medium text-sm">❌</span>
+                            <span className="text-muted-foreground text-sm">"{example.before}"</span>
+                          </div>
+                          <div className="flex items-start space-x-2">
+                            <span className="text-green-500 font-medium text-sm">✅</span>
+                            <span className="text-foreground font-medium text-sm">"{example.after}"</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
+
+              <div className="space-y-4">
+                <Label htmlFor="skill" className="text-lg font-semibold text-foreground">
+                  What's your strongest skill?
+                </Label>
+                <Textarea
+                  id="skill"
+                  value={skillInput}
+                  onChange={(e) => setSkillInput(e.target.value)}
+                  placeholder="Think about specific problems you could solve or value you could create... Be specific about the outcome!"
+                  className="min-h-[140px] text-base p-4 bg-background border-2 border-border focus:border-primary transition-colors resize-none"
+                  maxLength={500}
+                />
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-2 md:space-y-0">
+                  <div className="text-xs text-muted-foreground">
+                    💡 Tip: Focus on problems you can solve, not just skills you have
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {skillInput.length}/500 characters
+                  </div>
+                </div>
+              </div>
+
+              {skillAnalysis && (
+                <SkillAnalysisDisplay analysis={skillAnalysis} />
+              )}
+
+              <div className="pt-8">
+                <Button 
+                  onClick={() => setCurrentStep('goal')}
+                  disabled={!skillInput.trim() || skillInput.length < 10}
+                  className="w-full py-3 lg:py-4 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+                  size="lg"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center space-x-2">
+                      <LoadingSpinner />
+                      <span>Analyzing...</span>
+                    </div>
+                  ) : (
+                    "Continue to 90-Day Goal ✨"
+                  )}
+                </Button>
+              </div>
+
+              <div className="text-center pt-4">
+                <p className="text-sm text-muted-foreground">
+                  🚀 This one's important — take your time and be specific.
+                </p>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </OnboardingCard>
+        </OnboardingLayout>
       </div>
     );
   }
 
   if (currentStep === 'goal') {
-    return (
-      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-secondary/5">
-        <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
-        
-        <StepHeader 
-          stepNumber={getStepNumber()}
-          totalSteps={5}
-          title="Your 90-Day Promise"
-          subtitle="What specific, outcome can you deliver in your first 90 days?"
-          image={ninetyDayGoalImage}
-          powerMoment="Power Moment #2"
-        />
+    const [showExamples, setShowExamples] = useState(false);
 
-        <Card className="shadow-lg border-border max-w-2xl mx-auto">
-          <CardContent className="p-4">
+    return (
+      <div ref={containerRef}>
+        <OnboardingLayout 
+          currentStep={getStepNumber()} 
+          totalSteps={totalSteps}
+          title="Getting Started"
+        >
+          <OnboardingCard
+            image={lansaGoalImage}
+            imageAlt="Set your 90-day goal"
+            title="Your 90-Day Promise"
+            subtitle="Show employers what you can deliver in your first three months"
+            stepBadge={`Step ${getStepNumber()} of ${totalSteps} • Power Moment #2`}
+          >
             <div className="space-y-6">
-              <ActionCard
-                title="What will you achieve in 90 days?"
-                description="Be specific about results that you can prove."
-                icon={Trophy}
-                status="active"
-              >
-                <div className="space-y-4">
-                  <ExampleShowcase 
-                    examples={goalExamples}
-                    title="90-day goal examples"
-                    description="See how students create compelling 90-day promises"
-                  />
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="goal" className="text-base font-medium">
-                      In my first 90 days, I will...
-                    </Label>
-                    <Textarea
-                      id="goal"
-                      value={goalInput}
-                      onChange={(e) => setGoalInput(e.target.value)}
-                      placeholder="e.g., I'll increase customer satisfaction by 15% by implementing a feedback system that reduces response time from 24 hours to 4 hours..."
-                      className="min-h-[120px] text-base bg-background border-2 border-border focus:border-primary transition-colors resize-none"
-                      maxLength={500}
-                    />
-                    <div className="flex justify-between items-center text-xs text-muted-foreground">
-                      <span>💡 Include numbers, timelines, and specific outcomes</span>
-                      <span>{goalInput.length}/500</span>
-                    </div>
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-xl border border-purple-200 dark:border-purple-800 space-y-4">
+                <div className="flex flex-col md:flex-row md:items-start space-y-3 md:space-y-0 md:space-x-3">
+                  <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <span className="text-purple-600 dark:text-purple-400 text-sm">🎯</span>
+                  </div>
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Think about a specific, measurable outcome you could deliver
+                    </p>
+                    <p className="text-base md:text-lg font-semibold text-foreground bg-white/50 dark:bg-gray-800/50 p-4 rounded-lg border-l-4 border-primary text-left">
+                      "In my first 90 days, I will..."
+                    </p>
                   </div>
                 </div>
-              </ActionCard>
+              </div>
 
-              {goalAnalysis && (
-                <div className="space-y-4">
-                  <StrengthBar 
-                    strength={goalAnalysis.score / 10} 
-                    weakestDimension={getWeakestDimension(goalAnalysis)}
-                  />
-                  
-                  {goalAnalysis.score < 7 && (
-                    <WhyItMatters
-                      explanation="Managers need to see a clear, measurable outcome they can track in 90 days."
-                      suggestion={goalAnalysis.coaching_nudge}
-                    />
-                  )}
-
-                  <GoalAnalysisDisplay analysis={goalAnalysis} />
-                </div>
-              )}
-
-              <div className="flex gap-3 pt-4">
-                <Button 
-                  onClick={async () => {
-                    await generateMirror();
-                    setCurrentStep('summary');
-                  }}
-                  disabled={!goalAnalysis || goalAnalysis.score < 5}
-                  className="flex-1 py-4 text-sm bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
-                  size="lg"
+              {/* Examples */}
+              <div className="space-y-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowExamples(!showExamples)}
+                  className="border-primary/20 text-primary hover:bg-primary/5"
                 >
-                  See Manager's View 👁️
+                  {showExamples ? "Hide examples" : "💡 Want help? See examples"}
                 </Button>
-                {goalAnalysis && goalAnalysis.score >= 5 && (
-                  <Button 
-                    variant="outline" 
-                    onClick={() => analyzeGoal(goalInput)}
-                    disabled={isLoading}
-                    className="px-6"
-                  >
-                    {isLoading ? "Analyzing..." : "Improve"}
-                  </Button>
+
+                {showExamples && (
+                  <div className="space-y-4 p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-xl border border-green-200 dark:border-green-800">
+                    <h4 className="font-semibold text-foreground mb-3">Examples of strong 90-day goals:</h4>
+                    {goalExamples.map((example, index) => (
+                      <div key={index} className="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg border">
+                        <div className="space-y-2">
+                          <div className="flex items-start space-x-2">
+                            <span className="text-red-500 font-medium text-sm">❌</span>
+                            <span className="text-muted-foreground text-sm">"{example.before}"</span>
+                          </div>
+                          <div className="flex items-start space-x-2">
+                            <span className="text-green-500 font-medium text-sm">✅</span>
+                            <span className="text-foreground font-medium text-sm">"{example.after}"</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
+
+              <div className="space-y-4">
+                <Label htmlFor="goal" className="text-lg font-semibold text-foreground">
+                  In my first 90 days, I will...
+                </Label>
+                <Textarea
+                  id="goal"
+                  value={goalInput}
+                  onChange={(e) => setGoalInput(e.target.value)}
+                  placeholder="Be specific! Include numbers, timelines, or outcomes that show your impact..."
+                  className="min-h-[140px] text-base p-4 bg-background border-2 border-border focus:border-primary transition-colors resize-none"
+                  maxLength={500}
+                />
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-2 md:space-y-0">
+                  <div className="text-xs text-muted-foreground">
+                    🎯 Tip: Use numbers and specific outcomes to show your initiative
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {goalInput.length}/500 characters
+                  </div>
+                </div>
+              </div>
+
+              {goalAnalysis && (
+                <GoalAnalysisDisplay analysis={goalAnalysis} />
+              )}
+
+              <div className="pt-8">
+                <Button 
+                  onClick={() => setCurrentStep('summary')}
+                  disabled={!goalInput.trim() || goalInput.length < 10}
+                  className="w-full py-3 lg:py-4 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+                  size="lg"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center space-x-2">
+                      <LoadingSpinner />
+                      <span>Analyzing...</span>
+                    </div>
+                  ) : (
+                    "See Your Power Mirror ✨"
+                  )}
+                </Button>
+              </div>
+
+              <div className="text-center pt-4">
+                <p className="text-sm text-muted-foreground">
+                  💪 Almost there — make it bold and specific!
+                </p>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </OnboardingCard>
+        </OnboardingLayout>
       </div>
     );
   }
 
   if (currentStep === 'summary') {
     return (
-      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-primary/5">
-        <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
-        
-        <StepHeader 
-          stepNumber={getStepNumber()}
-          totalSteps={5}
-          title="The Manager's View"
-          subtitle="See how a hiring manager reads your profile based on what you've shared"
-          image={powerMirrorImage}
-          powerMoment="Your Mirror Moment"
-        />
-
-        <Card className="shadow-lg border-border max-w-2xl mx-auto">
-          <CardContent className="p-4">
-            {mirrorData ? (
-              <div className="space-y-4">
-                {/* Overall Score Hero */}
-                <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="text-center">
-                      <h3 className="text-2xl font-bold mb-2">
-                        Overall Impression: {mirrorData.score || 7}/10
-                      </h3>
-                      <div className="flex justify-center gap-1 mb-4">
-                        {Array.from({ length: 10 }, (_, i) => (
-                          <div
-                            key={i}
-                            className={`h-2 w-8 rounded-full transition-all ${
-                              i < (mirrorData.score || 7) ? 'bg-primary' : 'bg-muted'
-                            }`}
-                          />
-                        ))}
+      <div ref={containerRef}>
+        <OnboardingLayout 
+          currentStep={getStepNumber()} 
+          totalSteps={totalSteps}
+          title="Getting Started"
+        >
+          <OnboardingCard
+            image={powerMirrorImage}
+            imageAlt="Your power mirror"
+            title="Your Power Mirror"
+            subtitle="See how hiring managers will see you"
+            stepBadge={`Step ${getStepNumber()} of ${totalSteps} • The Big Reveal`}
+          >
+            <div className="space-y-6">
+              {mirrorData ? (
+                <div className="space-y-6">
+                  <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
+                    <CardContent className="p-6 space-y-4">
+                      <div className="flex items-start gap-3">
+                        <Eye className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
+                        <div>
+                          <h3 className="font-semibold text-foreground mb-2">How You're Perceived</h3>
+                          <p className="text-muted-foreground">{mirrorData.perception || mirrorData.how_youre_perceived}</p>
+                        </div>
                       </div>
-                      
-                      {mirrorData.score_breakdown && (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                          <div className="bg-card/80 backdrop-blur-sm p-3 rounded-lg border border-primary/10 shadow-sm">
-                            <div className="font-medium text-muted-foreground mb-1">Clarity</div>
-                            <div className="text-lg font-bold">{mirrorData.score_breakdown.clarity || 0}/3</div>
-                          </div>
-                          <div className="bg-card/80 backdrop-blur-sm p-3 rounded-lg border border-primary/10 shadow-sm">
-                            <div className="font-medium text-muted-foreground mb-1">Relevance</div>
-                            <div className="text-lg font-bold">{mirrorData.score_breakdown.relevance || 0}/3</div>
-                          </div>
-                          <div className="bg-card/80 backdrop-blur-sm p-3 rounded-lg border border-primary/10 shadow-sm">
-                            <div className="font-medium text-muted-foreground mb-1">Realism</div>
-                            <div className="text-lg font-bold">{mirrorData.score_breakdown.realism || 0}/2</div>
-                          </div>
-                          <div className="bg-card/80 backdrop-blur-sm p-3 rounded-lg border border-primary/10 shadow-sm">
-                            <div className="font-medium text-muted-foreground mb-1">Impact</div>
-                            <div className="text-lg font-bold">{mirrorData.score_breakdown.professional_impression || 0}/2</div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
 
-                {/* Recruiter Perspective - Always Open */}
-                <CollapsibleAnalysisCard
-                  title="How Recruiters See You"
-                  icon="👔"
-                  isDefaultOpen={true}
-                  variant="neutral"
-                >
-                  <div className="space-y-3">
-                    <p className="text-base leading-relaxed italic border-l-4 border-primary pl-4 py-2 bg-primary/5 text-foreground/90 rounded-r">
-                      "{mirrorData.recruiter_perspective || mirrorData.mirror_message}"
-                    </p>
-                  </div>
-                </CollapsibleAnalysisCard>
-
-                {/* Key Strengths */}
-                {mirrorData.key_strengths && mirrorData.key_strengths.length > 0 && (
-                  <CollapsibleAnalysisCard
-                    title="What Makes You Stand Out"
-                    icon="💎"
-                    isDefaultOpen={false}
-                    variant="good"
-                  >
-                    <ul className="space-y-2">
-                      {mirrorData.key_strengths.map((strength: string, i: number) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <span className="text-green-600 dark:text-green-400 mt-1">✓</span>
-                          <span className="text-sm">{strength}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CollapsibleAnalysisCard>
-                )}
-
-                {/* Contradictions/Areas to Watch */}
-                {mirrorData.contradictions && mirrorData.contradictions.length > 0 && (
-                  <CollapsibleAnalysisCard
-                    title="Areas to Watch"
-                    icon="⚠️"
-                    isDefaultOpen={false}
-                    variant="concerning"
-                  >
-                    <ul className="space-y-2">
-                      {mirrorData.contradictions.map((contradiction: string, i: number) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <span className="text-orange-600 dark:text-orange-400 mt-1">!</span>
-                          <span className="text-sm">{contradiction}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CollapsibleAnalysisCard>
-                )}
-
-                {/* Employer Perspective */}
-                {mirrorData.employer_perspective && (
-                  <CollapsibleAnalysisCard
-                    title="Employer's First Impression"
-                    icon="👔"
-                    isDefaultOpen={false}
-                  >
-                    <p className="text-sm leading-relaxed">{mirrorData.employer_perspective}</p>
-                  </CollapsibleAnalysisCard>
-                )}
-
-                {/* Coaching Advice */}
-                {(mirrorData.coaching_nudge || mirrorData.next_level_hint) && (
-                  <CollapsibleAnalysisCard
-                    title="Your Coach's Advice"
-                    icon="💡"
-                    isDefaultOpen={false}
-                    variant={mirrorData.score >= 7 ? 'good' : 'concerning'}
-                  >
-                    <div className="space-y-3">
-                      {mirrorData.coaching_nudge && (
+                  <Card className="bg-gradient-to-br from-accent/5 to-secondary/5 border-accent/20">
+                    <CardContent className="p-6 space-y-4">
+                      <div className="flex items-start gap-3">
+                        <Trophy className="w-6 h-6 text-accent flex-shrink-0 mt-1" />
                         <div>
-                          <p className="text-sm font-medium text-muted-foreground mb-1">Next Step:</p>
-                          <p className="text-sm">{mirrorData.coaching_nudge}</p>
+                          <h3 className="font-semibold text-foreground mb-2">Your Unique Edge</h3>
+                          <p className="text-muted-foreground">{mirrorData.edge || mirrorData.your_edge}</p>
                         </div>
-                      )}
-                      {mirrorData.next_level_hint && (
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground mb-1">To Level Up:</p>
-                          <p className="text-sm">{mirrorData.next_level_hint}</p>
-                        </div>
-                      )}
-                    </div>
-                  </CollapsibleAnalysisCard>
-                )}
+                      </div>
+                    </CardContent>
+                  </Card>
 
-                {/* CTA */}
-                <div className="text-center pt-6 space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 border-2 border-primary/20 rounded-lg shadow-md">
-                    <p className="text-base font-medium mb-2">
-                      🎯 You're ready to showcase your value
-                    </p>
-                    <p className="text-sm text-foreground/80">
-                      Use these insights to build a profile that stands out to employers
-                    </p>
-                  </div>
-                  
-                  <Button 
-                    onClick={handleComplete} 
-                    size="lg" 
-                    className="w-full py-6 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
-                  >
-                    Build Your Profile Now ✨
-                  </Button>
+                  <Card className="bg-gradient-to-br from-secondary/5 to-primary/5 border-secondary/20">
+                    <CardContent className="p-6 space-y-4">
+                      <div className="flex items-start gap-3">
+                        <Target className="w-6 h-6 text-secondary flex-shrink-0 mt-1" />
+                        <div>
+                          <h3 className="font-semibold text-foreground mb-2">Next Power Move</h3>
+                          <p className="text-muted-foreground">{mirrorData.next_move || mirrorData.next_power_move}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
+              ) : (
+                <div className="text-center py-12">
+                  <LoadingSpinner />
+                  <p className="mt-4 text-muted-foreground">Generating your power mirror...</p>
+                </div>
+              )}
+
+              <div className="pt-8">
+                <Button 
+                  onClick={handleComplete}
+                  disabled={isLoading || !mirrorData}
+                  className="w-full py-3 lg:py-4 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+                  size="lg"
+                >
+                  {isLoading ? "Completing..." : "Start Building My Profile 🚀"}
+                </Button>
               </div>
-            ) : (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Generating your manager's perspective...</p>
+
+              <div className="text-center pt-4">
+                <p className="text-sm text-muted-foreground">
+                  🎉 You're ready to show the world your value!
+                </p>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </div>
+          </OnboardingCard>
+        </OnboardingLayout>
       </div>
     );
   }
 
   return null;
-}
-
-function getWeakestDimension(analysis: any): 'clarity' | 'specificity' | 'relevance' {
-  if (!analysis?.score_breakdown) return 'clarity';
-  
-  const { score_breakdown } = analysis;
-  const scores = {
-    clarity: score_breakdown.clarity || 0,
-    specificity: score_breakdown.realism || 0,  // Map realism to specificity
-    relevance: score_breakdown.relevance || 0
-  };
-  
-  return Object.entries(scores).reduce((a, b) => scores[a[0]] < scores[b[0]] ? a : b)[0] as 'clarity' | 'specificity' | 'relevance';
 }
