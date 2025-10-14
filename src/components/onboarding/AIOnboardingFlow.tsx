@@ -214,10 +214,18 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
       
       await markOnboardingComplete(user.id, 'job_seeker');
       
+      // Optimistically update state to prevent redirect loops
+      if (setOnboardingCompleted) {
+        setOnboardingCompleted('job_seeker');
+      }
+      
       // Ensure app state reflects completion before routing
       if (refreshUserState) {
         await refreshUserState();
       }
+      
+      // Add small delay for state propagation
+      await new Promise(resolve => requestAnimationFrame(() => resolve(null)));
       
       toast.success('Onboarding completed! Setting up your profile...');
       
@@ -294,27 +302,109 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
 
   if (currentStep === 'welcome') {
     return (
-      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-primary/5">
-        <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
-        
-        <StepHeader 
-          stepNumber={getStepNumber()}
-          totalSteps={5}
-          title="This isn't a test"
-          subtitle="It's your first step toward showing how you deliver value"
-          image={welcomeHeroImage}
-        />
+      <div ref={containerRef} className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
+        {/* Hero Section */}
+        <div className="relative h-[40vh] min-h-[300px] overflow-hidden">
+          <img 
+            src={welcomeHeroImage} 
+            alt="Welcome to Lansa" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-background" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center text-white px-4">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 animate-fade-in">
+                Welcome to Lansa
+              </h1>
+              <p className="text-lg md:text-xl text-white/90 animate-fade-in animation-delay-200">
+                Your journey to career transformation starts here
+              </p>
+            </div>
+          </div>
+        </div>
 
-        <ActionCard
-          title="Ready to transform how you present yourself?"
-          description="In the next few minutes, we'll help you translate your student experience into language that employers understand and value."
-          icon={Sparkles}
-          status="active"
-          tags={["AI-Powered", "5 Minutes", "Career-Focused"]}
-          onAction={() => setCurrentStep('demographics')}
-          actionLabel="Let's start ✨"
-          className="max-w-2xl mx-auto"
-        />
+        {/* Main Content Card */}
+        <div className="lansa-container-narrow py-8 px-4">
+          <Card className="max-w-2xl mx-auto shadow-2xl border-border/50 backdrop-blur">
+            <CardContent className="p-8 md:p-12">
+              <div className="space-y-8">
+                {/* Introduction */}
+                <div className="text-center space-y-4">
+                  <h2 className="text-3xl font-bold text-foreground">
+                    Transform Your Future in 5 Minutes
+                  </h2>
+                  <p className="text-lg text-muted-foreground">
+                    We'll help you translate your experience into language that employers understand and value — using AI-powered insights.
+                  </p>
+                </div>
+
+                {/* Key Benefits */}
+                <div className="grid gap-6 py-6">
+                  <div className="flex items-start gap-4 p-4 rounded-lg bg-primary/5 border border-primary/10">
+                    <div className="rounded-full bg-primary/10 p-3">
+                      <Sparkles className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">Transform Skills</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Turn your academic abilities into business value that recruiters love
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4 p-4 rounded-lg bg-primary/5 border border-primary/10">
+                    <div className="rounded-full bg-primary/10 p-3">
+                      <Target className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">90-Day Promise</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Create a clear, achievable goal that shows you're ready to deliver value
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4 p-4 rounded-lg bg-primary/5 border border-primary/10">
+                    <div className="rounded-full bg-primary/10 p-3">
+                      <Eye className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">Power Mirror</h3>
+                      <p className="text-sm text-muted-foreground">
+                        See yourself through an employer's eyes and stand out from the crowd
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CTA Button */}
+                <Button 
+                  onClick={() => setCurrentStep('demographics')}
+                  className="w-full py-6 text-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+                  size="lg"
+                >
+                  Let's Transform Your Future ✨
+                </Button>
+
+                {/* Footer Info */}
+                <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground pt-4 border-t border-border">
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    ~5 minutes
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    100% private
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    AI-powered
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
