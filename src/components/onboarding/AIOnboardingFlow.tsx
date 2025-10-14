@@ -194,6 +194,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
       
       if (error) throw error;
       setCurrentStep('skill');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error('Demographics save error:', error);
       toast.error('Failed to save demographics');
@@ -277,87 +278,80 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
 
   if (currentStep === 'welcome') {
     return (
-      <div ref={containerRef} className="w-full max-w-4xl mx-auto space-y-8">
-        {/* Hero Section */}
-        <div className="relative overflow-hidden rounded-xl">
-          <img 
-            src={lansaWelcomeHero} 
-            alt="Welcome to Lansa - Transform your future"
-            className="w-full h-64 lg:h-80 object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary/70 flex items-center justify-center">
-            <div className="text-center text-white px-6 space-y-4">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-inter animate-fade-in">
-                This isn't a test
-              </h1>
-              <p className="text-lg md:text-xl lg:text-2xl opacity-90 animate-fade-in [animation-delay:200ms]">
-                It's your first step toward showing how you deliver value
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content Card */}
-        <Card className="bg-card border-border shadow-lg">
-          <div className="p-6 lg:p-8 text-center space-y-8">
-            <div className="space-y-4">
-              <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+      <div ref={containerRef}>
+        <OnboardingLayout
+          title="AI-Powered Onboarding"
+          currentStep={getStepNumber()}
+          totalSteps={totalSteps}
+        >
+          <OnboardingCard
+            image={lansaWelcomeHero}
+            imageAlt="Welcome to Lansa - Transform your future"
+            title="This isn't a test"
+            subtitle="It's your first step toward showing how you deliver value"
+            stepBadge="Getting Started"
+          >
+            <div className="space-y-8">
+              <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto text-center">
                 In the next few minutes, we'll help you translate your student experience into language that employers understand and value.
               </p>
-            </div>
 
-            <div className="grid md:grid-cols-3 gap-4 lg:gap-6">
-              <div className="text-center p-4 lg:p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/20 hover:border-primary/30 transition-colors">
-                <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Sparkles className="w-5 h-5 text-primary" />
+              <div className="grid md:grid-cols-3 gap-4 lg:gap-6">
+                <div className="text-center p-4 lg:p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/20 hover:border-primary/30 transition-colors">
+                  <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Sparkles className="w-5 h-5 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-2 text-sm lg:text-base">AI-Powered</h3>
+                  <p className="text-xs lg:text-sm text-muted-foreground">Get personalized insights and recommendations</p>
                 </div>
-                <h3 className="font-semibold text-foreground mb-2 text-sm lg:text-base">AI-Powered</h3>
-                <p className="text-xs lg:text-sm text-muted-foreground">Get personalized insights and recommendations</p>
+                
+                <div className="text-center p-4 lg:p-6 bg-gradient-to-br from-accent/5 to-accent/10 rounded-xl border border-accent/20 hover:border-accent/30 transition-colors">
+                  <div className="w-10 h-10 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Target className="w-5 h-5 text-accent" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-2 text-sm lg:text-base">5 Minutes</h3>
+                  <p className="text-xs lg:text-sm text-muted-foreground">Quick and easy to complete</p>
+                </div>
+                
+                <div className="text-center p-4 lg:p-6 bg-gradient-to-br from-secondary/5 to-secondary/10 rounded-xl border border-secondary/20 hover:border-secondary/30 transition-colors">
+                  <div className="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Trophy className="w-5 h-5 text-secondary" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-2 text-sm lg:text-base">Career-Focused</h3>
+                  <p className="text-xs lg:text-sm text-muted-foreground">Tailored to your career goals</p>
+                </div>
               </div>
-              
-              <div className="text-center p-4 lg:p-6 bg-gradient-to-br from-accent/5 to-accent/10 rounded-xl border border-accent/20 hover:border-accent/30 transition-colors">
-                <div className="w-10 h-10 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Target className="w-5 h-5 text-accent" />
+
+              <div className="text-center space-y-6">
+                <Button 
+                  onClick={() => {
+                    setCurrentStep('demographics');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  size="lg"
+                  className="px-8 lg:px-12 py-3 lg:py-4 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                >
+                  Let's start ✨
+                </Button>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <span>⏱️</span>
+                    <span>5 minutes</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span>🔒</span>
+                    <span>Private & secure</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span>✨</span>
+                    <span>AI-powered</span>
+                  </div>
                 </div>
-                <h3 className="font-semibold text-foreground mb-2 text-sm lg:text-base">5 Minutes</h3>
-                <p className="text-xs lg:text-sm text-muted-foreground">Quick and easy to complete</p>
-              </div>
-              
-              <div className="text-center p-4 lg:p-6 bg-gradient-to-br from-secondary/5 to-secondary/10 rounded-xl border border-secondary/20 hover:border-secondary/30 transition-colors">
-                <div className="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Trophy className="w-5 h-5 text-secondary" />
-                </div>
-                <h3 className="font-semibold text-foreground mb-2 text-sm lg:text-base">Career-Focused</h3>
-                <p className="text-xs lg:text-sm text-muted-foreground">Tailored to your career goals</p>
               </div>
             </div>
-
-            <div className="space-y-6">
-              <Button 
-                onClick={() => setCurrentStep('demographics')}
-                size="lg"
-                className="px-8 lg:px-12 py-3 lg:py-4 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-              >
-                Let's start ✨
-              </Button>
-
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <span>⏱️</span>
-                  <span>5 minutes</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span>🔒</span>
-                  <span>Private & secure</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span>✨</span>
-                  <span>AI-powered</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
+          </OnboardingCard>
+        </OnboardingLayout>
       </div>
     );
   }
@@ -369,6 +363,10 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
           currentStep={getStepNumber()} 
           totalSteps={totalSteps}
           title="Getting Started"
+          onBack={() => {
+            setCurrentStep('welcome');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
         >
           <OnboardingCard
             image={lansaDemographicsImage}
@@ -520,6 +518,10 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
           currentStep={getStepNumber()} 
           totalSteps={totalSteps}
           title="Getting Started"
+          onBack={() => {
+            setCurrentStep('demographics');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
         >
           <OnboardingCard
             image={lansaSkillTransformImage}
@@ -605,7 +607,10 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
 
               <div className="pt-8">
                 <Button 
-                  onClick={() => setCurrentStep('goal')}
+                  onClick={() => {
+                    setCurrentStep('goal');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
                   disabled={!skillInput.trim() || skillInput.length < 10}
                   className="w-full py-3 lg:py-4 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
                   size="lg"
@@ -642,6 +647,10 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
           currentStep={getStepNumber()} 
           totalSteps={totalSteps}
           title="Getting Started"
+          onBack={() => {
+            setCurrentStep('skill');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
         >
           <OnboardingCard
             image={lansaGoalImage}
@@ -727,7 +736,10 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
 
               <div className="pt-8">
                 <Button 
-                  onClick={() => setCurrentStep('summary')}
+                  onClick={() => {
+                    setCurrentStep('summary');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
                   disabled={!goalInput.trim() || goalInput.length < 10}
                   className="w-full py-3 lg:py-4 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
                   size="lg"
@@ -762,6 +774,10 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
           currentStep={getStepNumber()} 
           totalSteps={totalSteps}
           title="Getting Started"
+          onBack={() => {
+            setCurrentStep('goal');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
         >
           <OnboardingCard
             image={powerMirrorImage}
