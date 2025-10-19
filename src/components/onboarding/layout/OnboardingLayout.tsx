@@ -25,21 +25,9 @@ export function OnboardingLayout({
 
   return (
     <div className={`min-h-screen bg-background ${className}`}>
-      {/* Sticky Progress Bar */}
-      {progress > 0 && (
-        <div className="sticky top-0 z-50 w-full">
-          <div className="h-2 bg-muted/30 backdrop-blur-sm">
-            <div 
-              className="h-full bg-gradient-to-r from-primary via-primary to-primary/80 shadow-lg shadow-primary/20 transition-all duration-700 ease-out"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
-      )}
-
       {/* Header */}
-      <div className="sticky top-2 z-40 bg-background/80 backdrop-blur-lg border-b border-border/30">
-        <div className="container mx-auto px-4 py-3">
+      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border/50">
+        <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Left: Back button and title */}
             <div className="flex items-center gap-4">
@@ -54,7 +42,7 @@ export function OnboardingLayout({
                 </Button>
               )}
               {title && (
-                <h1 className="text-base font-semibold text-foreground font-inter">
+                <h1 className="text-lg font-semibold text-foreground font-inter">
                   {title}
                 </h1>
               )}
@@ -62,11 +50,23 @@ export function OnboardingLayout({
 
             {/* Right: Step counter */}
             {currentStep && totalSteps && (
-              <div className="text-xs font-medium text-muted-foreground bg-muted/50 px-3 py-1 rounded-full">
-                {currentStep} / {totalSteps}
+              <div className="text-sm text-muted-foreground">
+                {currentStep} of {totalSteps}
               </div>
             )}
           </div>
+
+          {/* Progress bar */}
+          {progress > 0 && (
+            <div className="mt-4">
+              <div className="h-1 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

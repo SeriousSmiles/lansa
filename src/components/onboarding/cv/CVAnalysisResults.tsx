@@ -66,29 +66,6 @@ interface CVAnalysisResultsProps {
       extractionConfidence: number;
       sectionsFound: string[];
     };
-    matchAnalysis?: {
-      alignmentScore: number;
-      skillAlignment?: {
-        score: number;
-        matches: string[];
-        missing: string[];
-        insight: string;
-      };
-      goalAlignment?: {
-        score: number;
-        supports: string[];
-        gaps: string[];
-        insight: string;
-      };
-      experienceAlignment?: {
-        score: number;
-        relevant: string[];
-        stretches: string[];
-        insight: string;
-      };
-      recommendations: string[];
-      summary: string;
-    };
   };
   onApply: (selectedData: any) => void;
   onSkip: () => void;
@@ -296,21 +273,6 @@ export function CVAnalysisResults({
                 </div>
               )}
 
-              {/* Professional Summary/Bio */}
-              {data.extractedData.summary && (
-                <div>
-                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Professional Summary
-                  </h4>
-                  <div className="bg-green-50/50 rounded-lg p-4">
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      {data.extractedData.summary}
-                    </p>
-                  </div>
-                </div>
-              )}
-
               {/* Skills */}
               {skillsCount > 0 && (
                 <div>
@@ -415,94 +377,6 @@ export function CVAnalysisResults({
             </CollapsibleContent>
           </Card>
         </Collapsible>
-      )}
-
-      {/* Match Analysis with Onboarding */}
-      {data.matchAnalysis && (
-        <Card className="border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-50/50 to-transparent">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
-                  <Target className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg">
-                    CV Alignment with Your Goals
-                  </CardTitle>
-                  <CardDescription>
-                    How well your CV matches what you told us during onboarding
-                  </CardDescription>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-purple-600">
-                  {data.matchAnalysis.alignmentScore}%
-                </div>
-                <div className="text-xs text-muted-foreground">Overall Match</div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-gray-700 bg-purple-50/50 p-3 rounded-lg">
-              {data.matchAnalysis.summary}
-            </p>
-
-            {/* Skill Alignment */}
-            {data.matchAnalysis.skillAlignment && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-sm flex items-center gap-2">
-                    <Wrench className="h-4 w-4 text-purple-600" />
-                    Skill Alignment
-                  </h4>
-                  <Badge variant="secondary">{data.matchAnalysis.skillAlignment.score}%</Badge>
-                </div>
-                <p className="text-xs text-muted-foreground">{data.matchAnalysis.skillAlignment.insight}</p>
-                {data.matchAnalysis.skillAlignment.matches.length > 0 && (
-                  <div>
-                    <span className="text-xs font-medium text-green-700">Matching: </span>
-                    <span className="text-xs text-gray-600">
-                      {data.matchAnalysis.skillAlignment.matches.join(', ')}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Goal Alignment */}
-            {data.matchAnalysis.goalAlignment && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-sm flex items-center gap-2">
-                    <Target className="h-4 w-4 text-purple-600" />
-                    Goal Alignment
-                  </h4>
-                  <Badge variant="secondary">{data.matchAnalysis.goalAlignment.score}%</Badge>
-                </div>
-                <p className="text-xs text-muted-foreground">{data.matchAnalysis.goalAlignment.insight}</p>
-              </div>
-            )}
-
-            {/* Recommendations */}
-            {data.matchAnalysis.recommendations.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="font-medium text-sm flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-purple-600" />
-                  Recommendations
-                </h4>
-                <div className="space-y-2">
-                  {data.matchAnalysis.recommendations.map((rec, index) => (
-                    <div key={index} className="flex items-start gap-2 text-xs bg-purple-50/50 p-2 rounded">
-                      <span className="text-purple-600 font-semibold">{index + 1}.</span>
-                      <span className="text-gray-700">{rec}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
       )}
 
       {/* Improvements */}
