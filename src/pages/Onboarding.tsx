@@ -138,8 +138,8 @@ export default function Onboarding() {
   return (
     <OnboardingErrorBoundary>
       <div className="min-h-screen bg-[rgba(253,248,242,1)] flex flex-col">
-        {/* Centered Logo for non-user-type-selection steps */}
-        {!showTypeSelection && (
+        {/* Centered Logo for non-user-type-selection steps (except AIOnboardingFlow which has its own navbar) */}
+        {!showTypeSelection && !(userType === 'job_seeker' && careerPath) && (
           <header className="flex w-full px-4 md:px-6 py-4 items-center justify-center">
             <img
               src="https://cdn.builder.io/api/v1/image/assets/TEMP/41285a6d1f6906d8349429ceb652f953bf730d06?placeholderIfAbsent=true"

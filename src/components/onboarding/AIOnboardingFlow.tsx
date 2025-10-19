@@ -21,6 +21,7 @@ import { HoverInfo } from "./HoverInfo";
 import { SkillAnalysisDisplay } from "./SkillAnalysisDisplay";
 import { GoalAnalysisDisplay } from "./GoalAnalysisDisplay";
 import { CollapsibleAnalysisCard } from "./CollapsibleAnalysisCard";
+import { OnboardingNavbar } from "./OnboardingNavbar";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserState } from "@/contexts/UserStateProvider";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -294,8 +295,10 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
 
   if (currentStep === 'welcome') {
     return (
-      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-primary/5">
-        <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
+      <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-background to-primary/5">
+        <OnboardingNavbar currentStep={getStepNumber()} totalSteps={5} />
+        <div className="lansa-container-narrow">
+          <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
         
         <StepHeader 
           stepNumber={getStepNumber()}
@@ -305,24 +308,27 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
           image={welcomeHeroImage}
         />
 
-        <ActionCard
-          title="Ready to transform how you present yourself?"
-          description="In the next few minutes, we'll help you translate your student experience into language that employers understand and value."
-          icon={Sparkles}
-          status="active"
-          tags={["AI-Powered", "5 Minutes", "Career-Focused"]}
-          onAction={() => setCurrentStep('demographics')}
-          actionLabel="Let's start ✨"
-          className="max-w-2xl mx-auto"
-        />
+          <ActionCard
+            title="Ready to transform how you present yourself?"
+            description="In the next few minutes, we'll help you translate your student experience into language that employers understand and value."
+            icon={Sparkles}
+            status="active"
+            tags={["AI-Powered", "5 Minutes", "Career-Focused"]}
+            onAction={() => setCurrentStep('demographics')}
+            actionLabel="Let's start ✨"
+            className="max-w-2xl mx-auto"
+          />
+        </div>
       </div>
     );
   }
 
   if (currentStep === 'demographics') {
     return (
-      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-secondary/5">
-        <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
+      <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-background to-secondary/5">
+        <OnboardingNavbar currentStep={getStepNumber()} totalSteps={5} />
+        <div className="lansa-container-narrow">
+          <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
         
         <StepHeader 
           stepNumber={getStepNumber()}
@@ -425,14 +431,17 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     );
   }
 
   if (currentStep === 'skill') {
     return (
-      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-primary/5">
-        <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
+      <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-background to-primary/5">
+        <OnboardingNavbar currentStep={getStepNumber()} totalSteps={5} />
+        <div className="lansa-container-narrow">
+          <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
         
         <StepHeader 
           stepNumber={getStepNumber()}
@@ -508,26 +517,29 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                 </Button>
                 {skillAnalysis && skillAnalysis.score >= 5 && (
                   <Button 
-                    variant="outline" 
-                    onClick={() => analyzeSkill(skillInput)}
-                    disabled={isLoading}
-                    className="px-6"
-                  >
-                    {isLoading ? "Analyzing..." : "Improve"}
-                  </Button>
-                )}
-              </div>
+                  variant="outline" 
+                  onClick={() => analyzeSkill(skillInput)}
+                  disabled={isLoading}
+                  className="px-6"
+                >
+                  {isLoading ? "Analyzing..." : "Improve"}
+                </Button>
+              )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </CardContent>
+      </Card>
+        </div>
       </div>
     );
   }
 
   if (currentStep === 'goal') {
     return (
-      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-secondary/5">
-        <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
+      <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-background to-secondary/5">
+        <OnboardingNavbar currentStep={getStepNumber()} totalSteps={5} />
+        <div className="lansa-container-narrow">
+          <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
         
         <StepHeader 
           stepNumber={getStepNumber()}
@@ -618,14 +630,17 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     );
   }
 
   if (currentStep === 'summary') {
     return (
-      <div ref={containerRef} className="lansa-container-narrow min-h-screen bg-gradient-to-br from-background to-primary/5">
-        <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
+      <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-background to-primary/5">
+        <OnboardingNavbar currentStep={getStepNumber()} totalSteps={5} />
+        <div className="lansa-container-narrow">
+          <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
         
         <StepHeader 
           stepNumber={getStepNumber()}
@@ -798,6 +813,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
             )}
           </CardContent>
         </Card>
+        </div>
       </div>
     );
   }
