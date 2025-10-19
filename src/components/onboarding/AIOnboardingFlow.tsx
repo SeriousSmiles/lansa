@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
-import { User, Target, Trophy, Eye, Sparkles } from "lucide-react";
+import { User, Target, Trophy, Eye, Sparkles, FileUp } from "lucide-react";
 import { StrengthBar } from "./StrengthBar";
 import { WhyItMatters } from "./WhyItMatters";
 import { StepHeader } from "./StepHeader";
@@ -20,9 +20,12 @@ import { HoverInfo } from "./HoverInfo";
 import { SkillAnalysisDisplay } from "./SkillAnalysisDisplay";
 import { GoalAnalysisDisplay } from "./GoalAnalysisDisplay";
 import { CollapsibleAnalysisCard } from "./CollapsibleAnalysisCard";
+import { AITypingFeedback } from "./AITypingFeedback";
+import { EnhancedProgressBar } from "./EnhancedProgressBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserState } from "@/contexts/UserStateProvider";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useCVSmartFill } from "@/hooks/useCVSmartFill";
 import { gsap } from "gsap";
 
 // Import step images - realistic professional versions
@@ -39,6 +42,8 @@ interface AIOnboardingFlowProps {
 export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowProps) {
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAnalyzingTyping, setIsAnalyzingTyping] = useState(false);
+  const [liveFeedback, setLiveFeedback] = useState<any>(null);
   const [demographicsData, setDemographicsData] = useState({
     academic_status: '',
     major: '',
@@ -54,6 +59,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
   const navigate = useNavigate();
   const { refreshUserState } = useUserState();
   const containerRef = useRef<HTMLDivElement>(null);
+  const { cvFillData, processCVForSmartFill } = useCVSmartFill();
   
   const debouncedSkillInput = useDebounce(skillInput, 800);
   const debouncedGoalInput = useDebounce(goalInput, 800);
@@ -76,19 +82,69 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
     }
   }, [currentStep]);
 
-  // Auto-analyze skill input
+  // Auto-analyze skill input for live feedback
   useEffect(() => {
-    if (debouncedSkillInput && demographicsData.major && currentStep === 'skill') {
-      analyzeSkill(debouncedSkillInput);
+    if (debouncedSkillInput && debouncedSkillInput.length > 15 && currentStep === 'skill') {
+      fetchLiveSkillFeedback(debouncedSkillInput);
+    } else {
+      setLiveFeedback(null);
     }
-  }, [debouncedSkillInput, demographicsData.major, currentStep]);
+  }, [debouncedSkillInput, currentStep]);
 
-  // Auto-analyze goal input
+  // Auto-analyze goal input for live feedback
   useEffect(() => {
-    if (debouncedGoalInput && demographicsData.major && currentStep === 'goal') {
-      analyzeGoal(debouncedGoalInput);
+    if (debouncedGoalInput && debouncedGoalInput.length > 15 && currentStep === 'goal') {
+      fetchLiveGoalFeedback(debouncedGoalInput);
+    } else if (currentStep !== 'goal') {
+      setLiveFeedback(null);
     }
-  }, [debouncedGoalInput, demographicsData.major, currentStep]);
+  }, [debouncedGoalInput, currentStep]);
+
+  const fetchLiveSkillFeedback = async (text: string) => {
+    if (!user) return;
+    
+    setIsAnalyzingTyping(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-profile-section', {
+        body: {
+          user_id: user.id,
+          section: 'Skills',
+          content: text
+        }
+      });
+      
+      if (!error && data) {
+        setLiveFeedback(data);
+      }
+    } catch (error) {
+      console.error('Live feedback error:', error);
+    } finally {
+      setIsAnalyzingTyping(false);
+    }
+  };
+
+  const fetchLiveGoalFeedback = async (text: string) => {
+    if (!user) return;
+    
+    setIsAnalyzingTyping(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-profile-section', {
+        body: {
+          user_id: user.id,
+          section: 'Goal',
+          content: text
+        }
+      });
+      
+      if (!error && data) {
+        setLiveFeedback(data);
+      }
+    } catch (error) {
+      console.error('Live feedback error:', error);
+    } finally {
+      setIsAnalyzingTyping(false);
+    }
+  };
 
   const analyzeSkill = async (skill: string) => {
     if (!user) return;
@@ -237,22 +293,20 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
   };
 
   const renderProgressBar = () => {
-    const progress = (getStepNumber() / 5) * 100;
+    const steps = [
+      { label: 'Start', completed: getStepNumber() > 1, current: currentStep === 'welcome' },
+      { label: 'About', completed: getStepNumber() > 2, current: currentStep === 'demographics' },
+      { label: 'Skill', completed: getStepNumber() > 3, current: currentStep === 'skill' },
+      { label: 'Goal', completed: getStepNumber() > 4, current: currentStep === 'goal' },
+      { label: 'Mirror', completed: getStepNumber() > 5, current: currentStep === 'summary' }
+    ];
+
     return (
-      <div className="sticky top-0 z-50 w-full">
-        <div className="h-2 bg-muted/30 backdrop-blur-sm">
-          <div 
-            className="h-full bg-gradient-to-r from-primary via-primary to-primary/80 shadow-lg shadow-primary/20 transition-all duration-700 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <div className="bg-background/80 backdrop-blur-lg border-b border-border/30 py-2 px-4">
-          <div className="lansa-container-narrow flex justify-between items-center">
-            <span className="text-xs font-medium text-muted-foreground">Step {getStepNumber()} of 5</span>
-            <span className="text-xs font-medium text-primary">{Math.round(progress)}% Complete</span>
-          </div>
-        </div>
-      </div>
+      <EnhancedProgressBar
+        steps={steps}
+        currentStepNumber={getStepNumber()}
+        totalSteps={5}
+      />
     );
   };
 
@@ -466,20 +520,28 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                     <Label htmlFor="skill" className="text-base font-medium">
                       I could help a project by...
                     </Label>
-                    <Textarea
-                      id="skill"
-                      value={skillInput}
-                      onChange={(e) => setSkillInput(e.target.value)}
-                      placeholder="Think about specific problems you could solve or outcomes you could create... Be specific about the business impact!"
-                      className="min-h-[120px] text-base bg-background border-2 border-border focus:border-primary transition-colors resize-none"
-                      maxLength={500}
-                    />
-                    <div className="flex justify-between items-center text-xs text-muted-foreground">
-                      <span>💡 Focus on outcomes, not just tools or skills</span>
-                      <span>{skillInput.length}/500</span>
-                    </div>
+                  <Textarea
+                    id="skill"
+                    value={skillInput}
+                    onChange={(e) => setSkillInput(e.target.value)}
+                    placeholder="Think about specific problems you could solve or outcomes you could create... Be specific about the business impact!"
+                    className="min-h-[120px] text-base bg-background border-2 border-border focus:border-primary transition-colors resize-none"
+                    maxLength={500}
+                  />
+                  <div className="flex justify-between items-center text-xs text-muted-foreground">
+                    <span>💡 Focus on outcomes, not just tools or skills</span>
+                    <span>{skillInput.length}/500</span>
                   </div>
                 </div>
+
+                {/* Live AI Typing Feedback */}
+                <AITypingFeedback
+                  isAnalyzing={isAnalyzingTyping}
+                  analysis={liveFeedback}
+                  inputLength={skillInput.length}
+                  onApplySuggestion={(text) => setSkillInput(text)}
+                />
+              </div>
               </ActionCard>
 
               {skillAnalysis && (
@@ -576,6 +638,14 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
                       <span>{goalInput.length}/500</span>
                     </div>
                   </div>
+
+                  {/* Live AI Typing Feedback for Goal */}
+                  <AITypingFeedback
+                    isAnalyzing={isAnalyzingTyping}
+                    analysis={liveFeedback}
+                    inputLength={goalInput.length}
+                    onApplySuggestion={(text) => setGoalInput(text)}
+                  />
                 </div>
               </ActionCard>
 

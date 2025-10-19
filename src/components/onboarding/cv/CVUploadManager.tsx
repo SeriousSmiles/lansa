@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { CVDataService } from '@/services/cvDataService';
 import { CVUploadArea } from './CVUploadArea';
 import { CVProcessingStages } from './CVProcessingStages';
@@ -56,6 +57,14 @@ interface CVAnalysisData {
     extractionConfidence: number;
     sectionsFound: string[];
   };
+  matchAnalysis?: {
+    alignmentScore: number;
+    skillAlignment?: any;
+    goalAlignment?: any;
+    experienceAlignment?: any;
+    recommendations: string[];
+    summary: string;
+  };
 }
 
 export function CVUploadManager({ 
@@ -103,6 +112,27 @@ export function CVUploadManager({
       setCurrentStage('analyzing');
       
       const result = await CVDataService.uploadAndParseCV(file, user.id);
+      
+      // Call match analysis edge function
+      try {
+        const { data: matchData, error: matchError } = await supabase.functions.invoke(
+          'analyze-cv-onboarding-match',
+          {
+            body: {
+              cvData: result.extractedData,
+              onboardingData: {},
+              userId: user.id
+            }
+          }
+        );
+        
+        if (!matchError && matchData) {
+          (result as any).matchAnalysis = matchData;
+        }
+      } catch (matchError) {
+        console.error('Match analysis failed:', matchError);
+        // Continue without match analysis - not critical
+      }
       
       // Check if we got valid data
       if (!result.extractedData || Object.keys(result.extractedData).length === 0) {
