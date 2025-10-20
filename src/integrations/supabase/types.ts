@@ -271,6 +271,211 @@ export type Database = {
         }
         Relationships: []
       }
+      cert_answers: {
+        Row: {
+          ai_mirror_text: string | null
+          created_at: string
+          id: string
+          points_awarded: number
+          question_id: string
+          selected_option_id: string
+          session_id: string
+        }
+        Insert: {
+          ai_mirror_text?: string | null
+          created_at?: string
+          id?: string
+          points_awarded: number
+          question_id: string
+          selected_option_id: string
+          session_id: string
+        }
+        Update: {
+          ai_mirror_text?: string | null
+          created_at?: string
+          id?: string
+          points_awarded?: number
+          question_id?: string
+          selected_option_id?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cert_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "cert_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cert_answers_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "cert_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cert_certifications: {
+        Row: {
+          created_at: string
+          date_issued: string
+          id: string
+          level: Database["public"]["Enums"]["certification_level"]
+          result_id: string
+          sector: Database["public"]["Enums"]["exam_sector"]
+          user_id: string
+          verification_code: string
+        }
+        Insert: {
+          created_at?: string
+          date_issued?: string
+          id?: string
+          level?: Database["public"]["Enums"]["certification_level"]
+          result_id: string
+          sector: Database["public"]["Enums"]["exam_sector"]
+          user_id: string
+          verification_code: string
+        }
+        Update: {
+          created_at?: string
+          date_issued?: string
+          id?: string
+          level?: Database["public"]["Enums"]["certification_level"]
+          result_id?: string
+          sector?: Database["public"]["Enums"]["exam_sector"]
+          user_id?: string
+          verification_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cert_certifications_result_id_fkey"
+            columns: ["result_id"]
+            isOneToOne: false
+            referencedRelation: "cert_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cert_questions: {
+        Row: {
+          category: Database["public"]["Enums"]["exam_category"]
+          choices: Json
+          created_at: string
+          id: string
+          mirror_context: string
+          mirror_role: string
+          randomize_order: boolean
+          scenario: string
+          sector: Database["public"]["Enums"]["exam_sector"]
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["exam_category"]
+          choices: Json
+          created_at?: string
+          id?: string
+          mirror_context: string
+          mirror_role: string
+          randomize_order?: boolean
+          scenario: string
+          sector: Database["public"]["Enums"]["exam_sector"]
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["exam_category"]
+          choices?: Json
+          created_at?: string
+          id?: string
+          mirror_context?: string
+          mirror_role?: string
+          randomize_order?: boolean
+          scenario?: string
+          sector?: Database["public"]["Enums"]["exam_sector"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cert_results: {
+        Row: {
+          ai_summary_text: string | null
+          category_scores: Json
+          created_at: string
+          id: string
+          pass_fail: boolean
+          sector: Database["public"]["Enums"]["exam_sector"]
+          session_id: string
+          total_score: number
+          user_id: string
+        }
+        Insert: {
+          ai_summary_text?: string | null
+          category_scores: Json
+          created_at?: string
+          id?: string
+          pass_fail: boolean
+          sector: Database["public"]["Enums"]["exam_sector"]
+          session_id: string
+          total_score: number
+          user_id: string
+        }
+        Update: {
+          ai_summary_text?: string | null
+          category_scores?: Json
+          created_at?: string
+          id?: string
+          pass_fail?: boolean
+          sector?: Database["public"]["Enums"]["exam_sector"]
+          session_id?: string
+          total_score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cert_results_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "cert_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cert_sessions: {
+        Row: {
+          created_at: string
+          end_time: string | null
+          id: string
+          sector: Database["public"]["Enums"]["exam_sector"]
+          selected_questions: Json
+          start_time: string
+          status: Database["public"]["Enums"]["exam_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          sector: Database["public"]["Enums"]["exam_sector"]
+          selected_questions: Json
+          start_time?: string
+          status?: Database["public"]["Enums"]["exam_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          sector?: Database["public"]["Enums"]["exam_sector"]
+          selected_questions?: Json
+          start_time?: string
+          status?: Database["public"]["Enums"]["exam_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           body: string
@@ -1882,6 +2087,10 @@ export type Database = {
       }
     }
     Functions: {
+      generate_cert_verification_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       has_org_role: {
         Args: { _org_id: string; _role: string; _user_id: string }
         Returns: boolean
@@ -1918,6 +2127,14 @@ export type Database = {
         | "entrepreneur"
         | "freelancer"
         | "business"
+      certification_level: "standard" | "high_performer"
+      exam_category:
+        | "mindset"
+        | "workplace_intelligence"
+        | "performance_habits"
+        | "applied_thinking"
+      exam_sector: "office" | "service" | "technical" | "digital"
+      exam_status: "in_progress" | "completed" | "abandoned"
       interaction_type: "view" | "save" | "apply" | "ignore" | "share"
       job_type: "full_time" | "part_time" | "contract" | "internship"
       match_context: "employee" | "internship"
@@ -2066,6 +2283,15 @@ export const Constants = {
         "freelancer",
         "business",
       ],
+      certification_level: ["standard", "high_performer"],
+      exam_category: [
+        "mindset",
+        "workplace_intelligence",
+        "performance_habits",
+        "applied_thinking",
+      ],
+      exam_sector: ["office", "service", "technical", "digital"],
+      exam_status: ["in_progress", "completed", "abandoned"],
       interaction_type: ["view", "save", "apply", "ignore", "share"],
       job_type: ["full_time", "part_time", "contract", "internship"],
       match_context: ["employee", "internship"],
