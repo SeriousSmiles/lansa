@@ -3,6 +3,7 @@ import { RecommendedActions } from "./RecommendedActions";
 import { GrowthCardSection } from "./GrowthCardSection";
 import { StudentAnalyticsCard } from "./StudentAnalyticsCard";
 import { HireRateProgress } from "../HireRateProgress";
+import { CertificationCard } from "./CertificationCard";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface OverviewTabProps {
@@ -24,8 +25,9 @@ export function OverviewTab({ userName, role, goal, insight, highlightActions, i
         <div className="lg:col-span-2">
           <StudentAnalyticsCard />
         </div>
-        <div>
+        <div className="space-y-4">
           <HireRateProgress />
+          <CertificationCard />
         </div>
       </div>
       
