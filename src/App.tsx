@@ -32,6 +32,8 @@ import Card from "./pages/Card";
 import JobFeed from "./pages/JobFeed";
 import LearningJobFeed from "./pages/LearningJobFeed";
 import DevTools from "./pages/DevTools";
+import Certification from "./pages/Certification";
+import VerifyCertification from "./pages/VerifyCertification";
 import { AuthProvider } from "./contexts/AuthContext";
 import { UserStateProvider } from "./contexts/UserStateProvider";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -65,6 +67,7 @@ const App: React.FC = () => {
                   <Route path="/terms" element={<Terms />} />
                   <Route path="/profile/share/:userId" element={<SharedProfile />} />
                   <Route path="/not-allowed" element={<NotAllowed />} />
+                  <Route path="/verify/:code" element={<VerifyCertification />} />
                   
                   {/* Protected routes */}
                   <Route element={<ProtectedRoute />}>
@@ -133,6 +136,31 @@ const App: React.FC = () => {
                       <RequireUserType allowedTypes={['job_seeker']}>
                         <ContentLibrary />
                       </RequireUserType>
+                    } />
+                    
+                    {/* Certification Routes - Protected by user type */}
+                    <Route path="/certification" element={
+                      <RequireOnboarding soft={false}>
+                        <RequireUserType allowedTypes={['job_seeker']}>
+                          <Certification />
+                        </RequireUserType>
+                      </RequireOnboarding>
+                    } />
+                    
+                    <Route path="/certification/:sector" element={
+                      <RequireOnboarding soft={false}>
+                        <RequireUserType allowedTypes={['job_seeker']}>
+                          <Certification />
+                        </RequireUserType>
+                      </RequireOnboarding>
+                    } />
+                    
+                    <Route path="/certification/result/:resultId" element={
+                      <RequireOnboarding soft={false}>
+                        <RequireUserType allowedTypes={['job_seeker']}>
+                          <Certification />
+                        </RequireUserType>
+                      </RequireOnboarding>
                     } />
                     
                     {/* Employer Routes - Protected by user type */}
