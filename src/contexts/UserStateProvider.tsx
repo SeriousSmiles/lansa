@@ -138,23 +138,33 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
     });
   }, [refreshDebounceTimer, fetchUserState]);
 
-  // Initial load
+  // Listen to auth state changes and refetch user state
   useEffect(() => {
     let mounted = true;
 
+    // Initial load
     (async () => {
       if (mounted) {
         await fetchUserState();
       }
     })();
 
+    // Set up auth state listener to refetch when user logs in/out
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (mounted && (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED')) {
+        console.log("🔄 Auth state changed, refreshing user state...", event);
+        await fetchUserState();
+      }
+    });
+
     return () => {
       mounted = false;
+      subscription.unsubscribe();
       if (refreshDebounceTimer) {
         clearTimeout(refreshDebounceTimer);
       }
     };
-  }, [fetchUserState]);
+  }, [fetchUserState, refreshDebounceTimer]);
 
   const value = useMemo(() => ({
     ...state,
