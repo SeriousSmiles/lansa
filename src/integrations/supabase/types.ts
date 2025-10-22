@@ -849,7 +849,7 @@ export type Database = {
           location: string | null
           posted_at: string
           salary_range: string | null
-          search_tsv: unknown | null
+          search_tsv: unknown
           skills_required: Json | null
           target_user_types: Json | null
           title: string
@@ -868,7 +868,7 @@ export type Database = {
           location?: string | null
           posted_at?: string
           salary_range?: string | null
-          search_tsv?: unknown | null
+          search_tsv?: unknown
           skills_required?: Json | null
           target_user_types?: Json | null
           title: string
@@ -887,7 +887,7 @@ export type Database = {
           location?: string | null
           posted_at?: string
           salary_range?: string | null
-          search_tsv?: unknown | null
+          search_tsv?: unknown
           skills_required?: Json | null
           target_user_types?: Json | null
           title?: string
@@ -2087,10 +2087,7 @@ export type Database = {
       }
     }
     Functions: {
-      generate_cert_verification_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_cert_verification_code: { Args: never; Returns: string }
       has_org_role: {
         Args: { _org_id: string; _role: string; _user_id: string }
         Returns: boolean
