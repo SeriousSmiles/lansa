@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DragDropImageUpload } from "@/components/upload/DragDropImageUpload";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { mobileAnimations } from "@/utils/mobileAnimations";
 import { gsap } from "gsap";
@@ -13,8 +12,6 @@ interface BusinessOnboardingData {
   businessSize: string;
   roleFunction: string;
   businessServices: string;
-  companyLogo: File | null;
-  companyLogoUrl: string;
 }
 
 interface MobileBusinessOnboardingProps {
@@ -41,9 +38,7 @@ export function MobileBusinessOnboarding({
     companyName: initialData.companyName || "",
     businessSize: initialData.businessSize || "",
     roleFunction: initialData.roleFunction || "",
-    businessServices: initialData.businessServices || "",
-    companyLogo: initialData.companyLogo || null,
-    companyLogoUrl: initialData.companyLogoUrl || ""
+    businessServices: initialData.businessServices || ""
   });
 
   const contentRef = useRef<HTMLDivElement>(null);
@@ -133,35 +128,6 @@ export function MobileBusinessOnboarding({
               ))}
             </SelectContent>
           </Select>
-        </div>
-      )
-    },
-    {
-      id: "logo",
-      title: "Add your company logo",
-      description: "Optional - you can add this later",
-      validation: () => true, // Logo is optional
-      component: (
-        <div className="space-y-4">
-          <Label className="text-base font-medium">
-            Company Logo (Optional)
-          </Label>
-          <div className="bg-muted/30 rounded-2xl p-6">
-            <DragDropImageUpload
-              onImageSelect={(file) => updateFormData('companyLogo', file)}
-              onImageRemove={() => {
-                updateFormData('companyLogo', null);
-                updateFormData('companyLogoUrl', "");
-              }}
-              currentImageUrl={formData.companyLogoUrl}
-              acceptedSize="400x400"
-              maxFileSizeKB={1024}
-              aspectRatio="square"
-            />
-          </div>
-          <p className="text-sm text-muted-foreground text-center">
-            Square format works best. Tap to upload or drag & drop.
-          </p>
         </div>
       )
     },
