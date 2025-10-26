@@ -84,26 +84,45 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
     if (!user?.id) return;
     
     setIsSubmitting(true);
+    let logoUrl = formData.companyLogoUrl;
+    
     try {
-      let logoUrl = formData.companyLogoUrl;
-      
-      // Upload company logo if selected
+      // Upload company logo if selected (with better error handling)
       if (formData.companyLogo) {
         const fileExt = formData.companyLogo.name.split('.').pop();
         const fileName = `${user.id}-company-logo-${Date.now()}.${fileExt}`;
         const filePath = `company-logos/${fileName}`;
         
-        const { error: uploadError } = await supabase.storage
-          .from('user-uploads')
-          .upload(filePath, formData.companyLogo);
-          
-        if (uploadError) throw uploadError;
-        
-        const { data } = supabase.storage
-          .from('user-uploads')
-          .getPublicUrl(filePath);
-          
-        logoUrl = data.publicUrl;
+        try {
+          const { error: uploadError } = await supabase.storage
+            .from('user-uploads')
+            .upload(filePath, formData.companyLogo);
+            
+          if (uploadError) {
+            console.error('Logo upload error:', uploadError);
+            
+            // Specific error messages for different scenarios
+            if (uploadError.message?.includes('row-level security') || 
+                uploadError.message?.includes('policy')) {
+              toast.error("Storage permissions need to be configured. Continuing without logo.");
+            } else {
+              toast.error("Failed to upload logo. Continuing without logo.");
+            }
+            
+            // Continue without logo instead of blocking
+            logoUrl = '';
+          } else {
+            const { data } = supabase.storage
+              .from('user-uploads')
+              .getPublicUrl(filePath);
+              
+            logoUrl = data.publicUrl;
+          }
+        } catch (storageError) {
+          console.error('Storage error:', storageError);
+          toast.error("Logo upload failed. Continuing without logo.");
+          logoUrl = '';
+        }
       }
 
       // Save business onboarding data
@@ -165,9 +184,19 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
       // Navigate to correct destination
       const destination = getPostOnboardingDestination('employer');
       navigate(destination, { replace: true });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving business data:', error);
-      toast.error("Failed to save business information. Please try again.");
+      
+      // More specific error messages
+      if (error.message?.includes('duplicate')) {
+        toast.error("You've already completed onboarding. Redirecting...");
+        const destination = getPostOnboardingDestination('employer');
+        navigate(destination, { replace: true });
+      } else if (error.message?.includes('foreign key')) {
+        toast.error("Account setup issue. Please try logging out and back in.");
+      } else {
+        toast.error(`Failed to save business information: ${error.message || 'Please try again'}`);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -244,7 +273,7 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="w-full">
-                <Label>Company Logo</Label>
+                <Label>Company Logo (Optional)</Label>
                 <div className="mt-2">
                   <DragDropImageUpload
                     onImageSelect={(file) => {
@@ -260,8 +289,19 @@ export function BusinessOnboardingForm({ onComplete }: BusinessOnboardingFormPro
                   />
                 </div>
                 <p className="text-xs text-[#666666] mt-2">
-                  Square format works best. You can skip this and add it later.
+                  Square format works best. You can skip this and add it later from your profile.
                 </p>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="mt-2 w-full"
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, companyLogo: null, companyLogoUrl: "" }));
+                    handleNext();
+                  }}
+                >
+                  Skip logo for now
+                </Button>
               </div>
             </CardContent>
           </Card>
