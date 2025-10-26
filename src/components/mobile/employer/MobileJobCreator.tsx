@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, ArrowRight, X, Plus, Eye, Briefcase } from "lucide-react";
 import { mobileAnimations } from "@/utils/mobileAnimations";
 import { MobileCardLayout } from "@/components/mobile/MobileCardLayout";
+import { DragDropImageUpload } from "@/components/upload/DragDropImageUpload";
 import { gsap } from "gsap";
 import { jobPostingService, JobFormData } from "@/services/jobPostingService";
 import { toast } from "sonner";
@@ -55,7 +56,9 @@ export function MobileJobCreator({
     isActive: initialData.isActive !== undefined ? initialData.isActive : true,
     targetUserTypes: initialData.targetUserTypes || [],
     category: initialData.category || "",
-    expiresAt: initialData.expiresAt || undefined
+    expiresAt: initialData.expiresAt || undefined,
+    jobImage: null,
+    jobImageUrl: initialData.jobImageUrl || ""
   });
 
   const [newRequirement, setNewRequirement] = useState("");
@@ -292,6 +295,35 @@ export function MobileJobCreator({
       )
     },
     {
+      id: "job_image",
+      title: "Job Image",
+      description: "Add a visual to attract candidates (optional)",
+      validation: () => true, // Image is optional
+      component: (
+        <div className="space-y-4">
+          <div>
+            <Label className="text-base font-medium">Job Vacancy Image (Optional)</Label>
+            <p className="text-sm text-muted-foreground mb-4">
+              Upload a 1:1 image (1080x1080px) to make your job listing stand out
+            </p>
+            <DragDropImageUpload
+              onImageSelect={(file) => {
+                updateJobData('jobImage', file);
+              }}
+              onImageRemove={() => {
+                updateJobData('jobImage', null);
+                updateJobData('jobImageUrl', '');
+              }}
+              currentImageUrl={jobData.jobImageUrl}
+              acceptedSize="1080x1080"
+              maxFileSizeKB={2048}
+              aspectRatio="square"
+            />
+          </div>
+        </div>
+      )
+    },
+    {
       id: "requirements",
       title: "Requirements & Skills",
       description: "What skills and experience are needed?",
@@ -501,6 +533,17 @@ export function MobileJobCreator({
         <div className="p-4">
           <MobileCardLayout className="p-6">
             <div className="space-y-6">
+              {/* Job Image Preview */}
+              {(jobData.jobImage || jobData.jobImageUrl) && (
+                <div className="w-full aspect-square rounded-lg overflow-hidden bg-muted">
+                  <img
+                    src={jobData.jobImage ? URL.createObjectURL(jobData.jobImage) : jobData.jobImageUrl}
+                    alt="Job vacancy"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+
               <div>
                 <h2 className="text-2xl font-bold text-foreground">{jobData.title}</h2>
                 <p className="text-muted-foreground mt-1">{companyName || 'Your Company'}</p>

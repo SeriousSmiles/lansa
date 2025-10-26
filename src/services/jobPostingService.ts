@@ -34,6 +34,8 @@ export interface JobFormData {
   targetUserTypes: string[];
   category: string;
   expiresAt?: string;
+  jobImage?: File | null;
+  jobImageUrl?: string;
 }
 
 export const jobPostingService = {
@@ -80,29 +82,98 @@ export const jobPostingService = {
         }
       }
 
-      // Convert JobFormData to JobListing format
+      // Handle image upload if provided
+      let imageUrl = jobData.jobImageUrl || null;
+      if (jobData.jobImage) {
+        const fileExt = jobData.jobImage.name.split('.').pop();
+        const fileName = `${userId}-job-${Date.now()}.${fileExt}`;
+        const filePath = `job-images/${fileName}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('user-uploads')
+          .upload(filePath, jobData.jobImage);
+          
+        if (uploadError) {
+          console.error('Error uploading job image:', uploadError);
+          toast.error("Failed to upload job image");
+        } else {
+          const { data: urlData } = supabase.storage
+            .from('user-uploads')
+            .getPublicUrl(filePath);
+          imageUrl = urlData.publicUrl;
+        }
+      }
+
+      // Get or create company entry
+      let companyId = businessProfile.id; // Fallback to business_id
+      
+      // Check if company exists for this business profile
+      const { data: existingCompany } = await supabase
+        .from('companies')
+        .select('id')
+        .eq('name', businessProfile.company_name)
+        .single();
+
+      if (existingCompany) {
+        companyId = existingCompany.id;
+      } else {
+        // Create company entry
+        const { data: newCompany, error: companyError } = await supabase
+          .from('companies')
+          .insert({
+            name: businessProfile.company_name,
+            industry: businessProfile.industry || 'Technology',
+            size: businessProfile.company_size || 'startup',
+            location: businessProfile.location || null
+          })
+          .select('id')
+          .single();
+
+        if (!companyError && newCompany) {
+          companyId = newCompany.id;
+        }
+      }
+
+      // Normalize job type to match enum values
+      const normalizeJobType = (type: string): 'full_time' | 'part_time' | 'contract' | 'internship' => {
+        const normalized = type.toLowerCase().replace(/\s+/g, '_');
+        const validTypeMap: { [key: string]: 'full_time' | 'part_time' | 'contract' | 'internship' } = {
+          'full_time': 'full_time',
+          'full-time': 'full_time',
+          'part_time': 'part_time',
+          'part-time': 'part_time',
+          'contract': 'contract',
+          'temporary': 'contract',
+          'internship': 'internship'
+        };
+        return validTypeMap[normalized] || 'full_time';
+      };
+
+      // Format salary range
       const salaryRange = (jobData.salaryMin || jobData.salaryMax) 
         ? `${jobData.currency} ${jobData.salaryMin || '0'} - ${jobData.salaryMax || 'Competitive'}`
         : null;
 
+      // Insert into job_listings_v2 (the table used by job seekers)
       const jobListingData = {
-        business_id: businessProfile.id,
+        company_id: companyId,
+        created_by: userId,
         title: jobData.title,
         description: this.formatJobDescription(jobData),
         location: jobData.location,
-        top_skills: jobData.skills,
-        mode: 'employee' as const,
+        category: jobData.category,
+        job_type: normalizeJobType(jobData.jobType),
         is_active: jobData.isActive,
         target_user_types: jobData.targetUserTypes,
-        category: jobData.category,
-        job_type: jobData.jobType.toLowerCase().replace(/\s+/g, '_'),
+        skills_required: jobData.skills,
         is_remote: jobData.isRemote || jobData.workType === 'Remote',
         salary_range: salaryRange,
-        expires_at: jobData.expiresAt || null
+        expires_at: jobData.expiresAt || null,
+        image_url: imageUrl
       };
 
       const { data, error } = await supabase
-        .from('job_listings')
+        .from('job_listings_v2')
         .insert([jobListingData])
         .select()
         .single();
@@ -110,7 +181,7 @@ export const jobPostingService = {
       if (error) throw error;
       
       toast.success("Job posted successfully!");
-      return data;
+      return data as any; // Type compatibility
     } catch (error) {
       console.error('Error creating job listing:', error);
       toast.error("Failed to create job listing");
