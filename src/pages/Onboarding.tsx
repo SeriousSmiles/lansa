@@ -14,6 +14,7 @@ import { CareerPathSegmentation, type CareerPath } from "@/components/onboarding
 import { AIOnboardingFlow } from "@/components/onboarding/AIOnboardingFlow";
 import { OnboardingErrorBoundary } from "@/components/onboarding/OnboardingErrorBoundary";
 import { getPostOnboardingDestination } from "@/services/navigation/onboardingNavigationService";
+import { useOnboardingNavigation } from "@/hooks/useOnboardingNavigation";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Onboarding() {
@@ -26,6 +27,7 @@ export default function Onboarding() {
   const { user } = useAuth();
   const { hasCompletedOnboarding, loading: userStateLoading, userType: contextUserType } = useUserState();
   const navigate = useNavigate();
+  const { navigateAfterOnboarding, isNavigating } = useOnboardingNavigation();
 
   // CRITICAL: Redirect returning users who have already completed onboarding
   useEffect(() => {
@@ -127,10 +129,17 @@ export default function Onboarding() {
     }
   };
 
-  if (isLoading) {
+  const handleBusinessOnboardingComplete = async () => {
+    console.log("🎯 Business onboarding completed, navigating to dashboard...");
+    await navigateAfterOnboarding('employer');
+  };
+
+  if (isLoading || isNavigating) {
     return (
       <div className="min-h-screen bg-[rgba(253,248,242,1)] flex items-center justify-center">
-        <div className="text-2xl text-[#2E2E2E]">Setting up your onboarding experience...</div>
+        <div className="text-2xl text-[#2E2E2E]">
+          {isNavigating ? "Completing setup..." : "Setting up your onboarding experience..."}
+        </div>
       </div>
     );
   }
@@ -156,7 +165,7 @@ export default function Onboarding() {
             <CareerPathSegmentation onSelect={handleCareerPathSelect} />
           ) : userType === 'employer' ? (
             <div className="flex flex-col items-center justify-center px-4 py-8">
-              <BusinessOnboardingForm onComplete={() => {}} />
+              <BusinessOnboardingForm onComplete={handleBusinessOnboardingComplete} />
             </div>
           ) : userType === 'job_seeker' && careerPath ? (
             <AIOnboardingFlow />
