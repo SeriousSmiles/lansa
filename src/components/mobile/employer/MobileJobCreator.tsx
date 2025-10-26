@@ -13,7 +13,6 @@ import { gsap } from "gsap";
 import { jobPostingService, JobFormData } from "@/services/jobPostingService";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { DragDropImageUpload } from "@/components/upload/DragDropImageUpload";
 
 interface MobileJobCreatorProps {
   onComplete: (jobData: JobFormData) => void;
@@ -56,9 +55,7 @@ export function MobileJobCreator({
     isActive: initialData.isActive !== undefined ? initialData.isActive : true,
     targetUserTypes: initialData.targetUserTypes || [],
     category: initialData.category || "",
-    expiresAt: initialData.expiresAt || undefined,
-    jobImage: null,
-    jobImageUrl: initialData.jobImageUrl || ""
+    expiresAt: initialData.expiresAt || undefined
   });
 
   const [newRequirement, setNewRequirement] = useState("");
@@ -291,26 +288,6 @@ export function MobileJobCreator({
               rows={6}
             />
           </div>
-        </div>
-      )
-    },
-    {
-      id: "job_image",
-      title: "Job Image",
-      description: "Add a 1:1 image (1080x1080px) for your job listing",
-      validation: () => true, // Image is optional
-      component: (
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">Upload a square image to make your job listing stand out. Recommended size: 1080x1080px</p>
-          <DragDropImageUpload
-            onImageSelect={(file) => updateJobData('jobImage', file)}
-            onImageRemove={() => {
-              updateJobData('jobImage', null);
-              updateJobData('jobImageUrl', '');
-            }}
-            currentImageUrl={jobData.jobImageUrl}
-            aspectRatio="square"
-          />
         </div>
       )
     },
