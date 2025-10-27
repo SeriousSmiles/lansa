@@ -17,7 +17,7 @@ export function JobPostCard({ job, onApply, onViewDetails }: JobPostCardProps) {
   const [showImageModal, setShowImageModal] = useState(false);
   
   return (
-    <Card className="w-full max-w-md overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 bg-card border">
+    <Card className="w-full max-w-[400px] overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 bg-card border">
       {job.image_url && (
         <div 
           className="w-full aspect-video bg-muted/10 max-h-64 cursor-pointer hover:opacity-90 transition-opacity"
