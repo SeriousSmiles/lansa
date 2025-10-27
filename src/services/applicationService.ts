@@ -80,11 +80,15 @@ export const applicationService = {
       .from('user_profiles')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) {
+    if (error) {
       console.error('Error fetching applicant profile:', error);
       throw new Error('Failed to fetch applicant profile');
+    }
+
+    if (!data) {
+      throw new Error('Applicant profile not found');
     }
 
     // Transform to DiscoveryProfile format
