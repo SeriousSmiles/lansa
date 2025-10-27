@@ -74,7 +74,9 @@ export const candidateDiscoveryService = {
                   period: edu.period || `${edu.start_year || ''} - ${edu.end_year || 'Present'}`
                 }))
             : [],
-          languages: Array.isArray(profile.languages) ? profile.languages as string[] : [],
+          languages: Array.isArray(profile.languages)
+            ? profile.languages.map((l: any) => (typeof l === 'string' ? l : l?.name)).filter(Boolean)
+            : [],
           achievements: Array.isArray(profile.achievements)
             ? profile.achievements
                 .filter((a: any) => a.is_featured)

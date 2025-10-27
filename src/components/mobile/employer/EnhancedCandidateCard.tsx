@@ -10,11 +10,12 @@ interface EnhancedCandidateCardProps {
 }
 
 export function EnhancedCandidateCard({ profile, className }: EnhancedCandidateCardProps) {
-  // Normalize skills to an array of strings (handles DB JSON objects like {id,name,level})
+  // Normalize skills and languages to arrays of strings (handles DB JSON objects)
   const skillNames: string[] = Array.isArray(profile.skills)
-    ? profile.skills
-        .map((skill: any) => (typeof skill === 'string' ? skill : skill?.name))
-        .filter(Boolean)
+    ? profile.skills.map((s: any) => (typeof s === 'string' ? s : s?.name)).filter(Boolean)
+    : [];
+  const languageNames: string[] = Array.isArray(profile.languages)
+    ? profile.languages.map((l: any) => (typeof l === 'string' ? l : l?.name)).filter(Boolean)
     : [];
 
   return (
@@ -197,11 +198,11 @@ export function EnhancedCandidateCard({ profile, className }: EnhancedCandidateC
           )}
 
           {/* Languages (if available) */}
-          {profile.languages && profile.languages.length > 0 && (
+          {languageNames.length > 0 && (
             <div className="pt-4 border-t border-border/50">
               <h4 className="font-semibold text-foreground text-sm mb-3">Languages</h4>
               <div className="flex flex-wrap gap-2">
-                {profile.languages.map((lang, index) => (
+                {languageNames.map((lang, index) => (
                   <Badge 
                     key={index} 
                     variant="outline" 
