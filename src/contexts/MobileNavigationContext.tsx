@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { useLocation } from 'react-router-dom';
+import { useUserState } from './UserStateProvider';
 
 interface MobileNavigationContextType {
   shouldShowNavigation: boolean;
@@ -28,11 +29,15 @@ interface MobileNavigationProviderProps {
 
 export const MobileNavigationProvider: React.FC<MobileNavigationProviderProps> = ({ children }) => {
   const { user, loading } = useAuth();
+  const { userType, loading: userStateLoading } = useUserState();
   const location = useLocation();
   const [fabAction, setFabAction] = useState<() => void>(() => () => {});
   
+  // Hide mobile navigation for employer users - they have their own navigation
   const shouldShowNavigation = !loading && 
+    !userStateLoading &&
     user && 
+    userType === 'job_seeker' &&  // CRITICAL: Only show for job seekers
     !AUTH_ROUTES.includes(location.pathname) &&
     !ONBOARDING_ROUTES.includes(location.pathname) &&
     !location.pathname.startsWith('/profile/share/');
