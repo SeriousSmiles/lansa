@@ -63,7 +63,11 @@ export const discoveryService = {
           title: profile.title || 'Seeking Opportunities',
           about_text: profile.about_text,
           profile_image: profile.profile_image,
-          skills: profile.skills || [],
+          skills: Array.isArray(profile.skills) 
+            ? profile.skills.map((skill: any) => 
+                typeof skill === 'string' ? skill : skill?.name || skill
+              )
+            : [],
           cover_color: profile.cover_color,
           highlight_color: profile.highlight_color || '#FF6B4A',
           professional_goal: profile.professional_goal,
