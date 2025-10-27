@@ -2,6 +2,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { employerDataService } from "./employerDataService";
 
+// Map business profile size values to company size enum
+const mapBusinessSizeToCompanySize = (businessSize: string | null | undefined): 'startup' | 'sme' | 'corporate' => {
+  if (!businessSize) return 'startup';
+  
+  const size = businessSize.toLowerCase();
+  
+  // Map common size ranges to company categories
+  if (size.includes('1-10') || size.includes('startup') || size.includes('small')) {
+    return 'startup';
+  } else if (size.includes('11-50') || size.includes('51-200') || size.includes('201-500') || 
+             size.includes('sme') || size.includes('medium')) {
+    return 'sme';
+  } else if (size.includes('500+') || size.includes('1000+') || size.includes('corporate') || 
+             size.includes('enterprise') || size.includes('large')) {
+    return 'corporate';
+  }
+  
+  // Default fallback
+  return 'startup';
+};
+
 export interface JobListing {
   id: string;
   company_id: string;
@@ -125,13 +146,16 @@ export const jobPostingService = {
         console.log('Found existing company:', companyId);
       } else {
         // Create company entry
+        const mappedSize = mapBusinessSizeToCompanySize(businessProfile.company_size);
         console.log('Creating new company for:', businessProfile.company_name);
+        console.log(`Mapping business size "${businessProfile.company_size}" to company size "${mappedSize}"`);
+        
         const { data: newCompany, error: companyError } = await supabase
           .from('companies')
           .insert({
             name: businessProfile.company_name.trim(),
             industry: businessProfile.industry || 'Technology',
-            size: (businessProfile.company_size?.toLowerCase() || 'startup'),
+            size: mappedSize,
             location: businessProfile.location || null
           })
           .select('id')
