@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Briefcase, BarChart3, Plus } from "lucide-react";
+import { LayoutDashboard, Users, Briefcase, BarChart3, Plus, Eye, CheckCircle2, XCircle } from "lucide-react";
 import { MobileEmployerDashboard } from "./MobileEmployerDashboard";
 import { MobileCandidateBrowser } from "./MobileCandidateBrowser";
 import { MobileJobCreator } from "./MobileJobCreator";
@@ -10,9 +10,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { discoveryService } from "@/services/discoveryService";
 import { swipeService } from "@/services/swipeService";
 import { matchService } from "@/services/matchService";
+import { jobPostingService, type JobListing } from "@/services/jobPostingService";
 import type { DiscoveryProfile } from "@/services/discoveryService";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { gsap } from "gsap";
 
 interface BusinessData {
@@ -50,12 +52,20 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
   });
   const [candidates, setCandidates] = useState<DiscoveryProfile[]>([]);
   const [isLoadingCandidates, setIsLoadingCandidates] = useState(false);
+  const [jobs, setJobs] = useState<JobListing[]>([]);
+  const [isLoadingJobs, setIsLoadingJobs] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
       loadEmployerStats();
     }
   }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.id && activeTab === 'jobs') {
+      loadJobs();
+    }
+  }, [user?.id, activeTab]);
 
   // Scroll detection for navigation animation
   useEffect(() => {
@@ -105,28 +115,19 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
     if (!user?.id) return;
 
     try {
-      // Get business profile
-      const { data: businessProfile } = await supabase
-        .from('business_profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
+      // Count active job listings from job_listings_v2
+      const { count: jobCount } = await supabase
+        .from('job_listings_v2')
+        .select('*', { count: 'exact', head: true })
+        .eq('created_by', user.id)
+        .eq('is_active', true);
 
-      if (businessProfile) {
-        // Count active job listings
-        const { count: jobCount } = await supabase
-          .from('job_listings')
-          .select('*', { count: 'exact' })
-          .eq('business_id', businessProfile.id)
-          .eq('is_active', true);
-
-        setStats(prev => ({ ...prev, activeJobs: jobCount || 0 }));
-      }
+      setStats(prev => ({ ...prev, activeJobs: jobCount || 0 }));
 
       // Count total swipes (candidate views)
       const { count: swipeCount } = await supabase
         .from('swipes')
-        .select('*', { count: 'exact' })
+        .select('*', { count: 'exact', head: true })
         .eq('swiper_user_id', user.id);
 
       // Get matches
@@ -139,6 +140,21 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
       }));
     } catch (error) {
       console.error('Error loading employer stats:', error);
+    }
+  };
+
+  const loadJobs = async () => {
+    if (!user?.id) return;
+
+    try {
+      setIsLoadingJobs(true);
+      const jobListings = await jobPostingService.getJobListings(user.id);
+      setJobs(jobListings);
+    } catch (error) {
+      console.error('Error loading jobs:', error);
+      toast.error("Failed to load job listings");
+    } finally {
+      setIsLoadingJobs(false);
     }
   };
 
@@ -170,50 +186,54 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
     if (!user?.id) return;
 
     try {
-      // Get or create business profile
-      let { data: businessProfile } = await supabase
-        .from('business_profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
+      // Map mobile job creator output to JobFormData
+      const jobFormData = {
+        title: jobData.title,
+        description: jobData.description,
+        location: jobData.location || '',
+        jobType: jobData.jobType || 'full_time',
+        workType: jobData.workType || 'remote',
+        salaryMin: jobData.salaryMin || '',
+        salaryMax: jobData.salaryMax || '',
+        currency: jobData.currency || 'USD',
+        requirements: jobData.requirements || [],
+        benefits: jobData.benefits || [],
+        skills: jobData.skills || [],
+        experienceLevel: jobData.experienceLevel || 'entry',
+        isRemote: jobData.isRemote ?? true,
+        isActive: jobData.isActive ?? true,
+        targetUserTypes: jobData.targetUserTypes || ['job_seeker'],
+        category: jobData.category || 'technology',
+        expiresAt: jobData.expiresAt,
+        jobImage: jobData.jobImage,
+        jobImageUrl: jobData.jobImageUrl
+      };
 
-      if (!businessProfile) {
-        const { data: newProfile, error: profileError } = await supabase
-          .from('business_profiles')
-          .insert({
-            user_id: user.id,
-            company_name: businessData?.company_name || jobData.company,
-            company_size: businessData?.business_size || '',
-            description: businessData?.business_services || ''
-          })
-          .select('id')
-          .single();
+      const result = await jobPostingService.createJobListing(user.id, jobFormData);
 
-        if (profileError) throw profileError;
-        businessProfile = newProfile;
+      if (result) {
+        toast.success("Job posted successfully!");
+        setShowJobCreator(false);
+        await Promise.all([loadEmployerStats(), loadJobs()]); // Refresh stats and job list
+      } else {
+        throw new Error("Failed to create job listing");
       }
-
-      // Create job listing
-      const { error: jobError } = await supabase
-        .from('job_listings')
-        .insert({
-          business_id: businessProfile.id,
-          title: jobData.title,
-          description: jobData.description,
-          location: jobData.location,
-          mode: 'employee',
-          top_skills: jobData.skills,
-          is_active: jobData.isActive
-        });
-
-      if (jobError) throw jobError;
-
-      toast.success("Job posted successfully!");
-      setShowJobCreator(false);
-      loadEmployerStats(); // Refresh stats
     } catch (error) {
       console.error('Error creating job:', error);
       toast.error("Failed to post job");
+    }
+  };
+
+  const handleToggleJobStatus = async (jobId: string, currentStatus: boolean) => {
+    try {
+      const success = await jobPostingService.toggleJobStatus(jobId, !currentStatus);
+      if (success) {
+        toast.success(`Job ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
+        await Promise.all([loadJobs(), loadEmployerStats()]);
+      }
+    } catch (error) {
+      console.error('Error toggling job status:', error);
+      toast.error("Failed to update job status");
     }
   };
 
@@ -288,27 +308,89 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
 
           <TabsContent value="jobs" className="h-full m-0 p-4">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold">Job Management</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold">Job Postings</h2>
                 <Button onClick={handleCreateJob} size="sm" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
                   <Plus className="h-4 w-4 mr-2" />
                   New Job
                 </Button>
               </div>
 
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="font-semibold mb-2">No Active Jobs</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Start by posting your first job listing
-                  </p>
-                  <Button onClick={handleCreateJob} className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Post Your First Job
-                  </Button>
-                </CardContent>
-              </Card>
+              {isLoadingJobs ? (
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <p className="text-sm text-muted-foreground">Loading jobs...</p>
+                  </CardContent>
+                </Card>
+              ) : jobs.length === 0 ? (
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="font-semibold mb-2">No Jobs Posted</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Start by posting your first job listing
+                    </p>
+                    <Button onClick={handleCreateJob} className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Post Your First Job
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-3">
+                  {jobs.map((job) => (
+                    <Card key={job.id}>
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold">{job.title}</h3>
+                              <Badge variant={job.is_active ? "default" : "secondary"}>
+                                {job.is_active ? "Active" : "Inactive"}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {job.location} • {job.job_type?.replace('_', ' ')}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Posted {new Date(job.posted_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex gap-2 mt-3">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1"
+                            onClick={() => handleToggleJobStatus(job.id, job.is_active)}
+                          >
+                            {job.is_active ? (
+                              <>
+                                <XCircle className="h-3 w-3 mr-1" />
+                                Deactivate
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle2 className="h-3 w-3 mr-1" />
+                                Activate
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1"
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            Applications
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           </TabsContent>
 
