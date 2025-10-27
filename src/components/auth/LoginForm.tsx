@@ -49,18 +49,21 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
       // Get the current session to check user ID
       const { data: { session } } = await supabase.auth.getSession();
 
-      // Failsafe: if session missing, just send to /dashboard and let ProtectedRoute decide
+      // Failsafe: if session missing, just send to onboarding
       if (!session?.user?.id) {
-        navigate('/dashboard', { replace: true });
+        navigate('/onboarding', { replace: true });
         return;
       }
 
-      // Check if user has completed onboarding
+      // Check if user has completed onboarding and get user type
       const userAnswers = await getUserAnswers(session.user.id);
       const onboardingCompleted = hasCompletedOnboarding(userAnswers);
+      const userType = userAnswers?.user_type as 'job_seeker' | 'employer' | undefined;
 
-      if (onboardingCompleted) {
-        navigate('/dashboard', { replace: true });
+      if (onboardingCompleted && userType) {
+        // Redirect to appropriate dashboard based on user type
+        const destination = userType === 'employer' ? '/employer-dashboard' : '/dashboard';
+        navigate(destination, { replace: true });
       } else {
         navigate('/onboarding', { replace: true });
       }

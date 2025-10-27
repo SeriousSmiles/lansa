@@ -40,8 +40,10 @@ export default function AuthCallback() {
           setIsProcessing(true);
 
           // UserStateProvider already checked both old and new onboarding flags
-          if (userState.hasCompletedOnboarding) {
-            navigate('/dashboard', { replace: true });
+          if (userState.hasCompletedOnboarding && userState.userType) {
+            // Redirect to appropriate dashboard based on user type
+            const destination = userState.userType === 'employer' ? '/employer-dashboard' : '/dashboard';
+            navigate(destination, { replace: true });
           } else {
             navigate('/onboarding', { replace: true });
           }
