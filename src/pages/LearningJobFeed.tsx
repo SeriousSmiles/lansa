@@ -104,7 +104,7 @@ export default function LearningJobFeed() {
       userName={user?.email?.split('@')[0] || 'User'} 
       email={user?.email || ''}
     >
-      <div className="container max-w-4xl mx-auto py-8 px-4">
+      <div className="container max-w-[1600px] mx-auto py-8 px-4">
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
@@ -147,7 +147,7 @@ export default function LearningJobFeed() {
 
         {/* Jobs List */}
         {!loading && jobs.length > 0 && (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {jobs.map((job) => (
               <LearningJobPostCard
                 key={job.id}

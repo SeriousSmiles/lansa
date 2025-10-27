@@ -92,7 +92,7 @@ export function LearningJobPostCard({ job, onApply, onViewDetails, disableApply 
   };
 
   return (
-    <Card ref={cardRef} className="w-full overflow-hidden hover:shadow-xl transition-all duration-300 bg-card border-border">
+    <Card ref={cardRef} className="w-full max-w-[400px] overflow-hidden hover:shadow-xl transition-all duration-300 bg-card border-border">
       {/* LinkedIn-style Company Header */}
       <div className="p-4 sm:p-6 border-b border-border">
         <div className="flex items-start gap-3 sm:gap-4">
