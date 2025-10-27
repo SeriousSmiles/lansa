@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, User, Calendar, FileText, Eye } from "lucide-react";
+import { Loader2, User, Calendar, FileText, Eye, Clock, CheckCircle, XCircle, Undo2 } from "lucide-react";
 import { applicationService, JobApplication } from "@/services/applicationService";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
@@ -94,13 +94,18 @@ export function ApplicationsSheet({ jobId, jobTitle, open, onOpenChange }: Appli
     setSelectedApplicantId(null);
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400';
-      case 'accepted': return 'bg-green-500/10 text-green-700 dark:text-green-400';
-      case 'declined': return 'bg-red-500/10 text-red-700 dark:text-red-400';
-      case 'withdrawn': return 'bg-gray-500/10 text-gray-700 dark:text-gray-400';
-      default: return 'bg-muted';
+      case 'pending': 
+        return <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />;
+      case 'accepted': 
+        return <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />;
+      case 'declined': 
+        return <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />;
+      case 'withdrawn': 
+        return <Undo2 className="h-5 w-5 text-gray-600 dark:text-gray-400" />;
+      default: 
+        return <Clock className="h-5 w-5 text-muted-foreground" />;
     }
   };
 
@@ -154,9 +159,9 @@ export function ApplicationsSheet({ jobId, jobTitle, open, onOpenChange }: Appli
                         </span>
                       </div>
                     </div>
-                    <Badge className={getStatusColor(application.status)}>
-                      {application.status}
-                    </Badge>
+                    <div className="flex-shrink-0" title={application.status}>
+                      {getStatusIcon(application.status)}
+                    </div>
                   </div>
 
                   {application.cover_note && (
