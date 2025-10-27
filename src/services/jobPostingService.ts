@@ -4,16 +4,22 @@ import { employerDataService } from "./employerDataService";
 
 export interface JobListing {
   id: string;
-  business_id: string;
+  company_id: string;
+  created_by?: string;
   title: string;
-  description?: string;
+  description: string;
   location?: string;
-  top_skills: string[];
-  mode: 'employee' | 'internship';
+  category: string;
+  job_type: 'full_time' | 'part_time' | 'contract' | 'internship';
   is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  job_image?: string;
+  target_user_types?: any;
+  skills_required?: any;
+  is_remote?: boolean;
+  salary_range?: string;
+  expires_at?: string;
+  posted_at: string;
+  image_url?: string;
+  search_tsv?: any;
 }
 
 export interface JobFormData {
@@ -41,18 +47,11 @@ export interface JobFormData {
 export const jobPostingService = {
   async getJobListings(userId: string): Promise<JobListing[]> {
     try {
-      // First get the business profile
-      const businessProfile = await employerDataService.getBusinessProfile(userId);
-      
-      if (!businessProfile) {
-        return [];
-      }
-
       const { data, error } = await supabase
-        .from('job_listings')
+        .from('job_listings_v2')
         .select('*')
-        .eq('business_id', businessProfile.id)
-        .order('created_at', { ascending: false });
+        .eq('created_by', userId)
+        .order('posted_at', { ascending: false });
 
       if (error) throw error;
       return data || [];
@@ -108,33 +107,51 @@ export const jobPostingService = {
       }
 
       // Get or create company entry
-      let companyId = businessProfile.id; // Fallback to business_id
+      let companyId: string | null = null;
       
       // Check if company exists for this business profile
-      const { data: existingCompany } = await supabase
+      const { data: existingCompanies, error: lookupError } = await supabase
         .from('companies')
         .select('id')
-        .eq('name', businessProfile.company_name)
-        .single();
+        .eq('name', businessProfile.company_name.trim());
 
-      if (existingCompany) {
-        companyId = existingCompany.id;
+      if (lookupError) {
+        console.error('Error looking up company:', lookupError);
+        throw new Error(`Company lookup failed: ${lookupError.message}`);
+      }
+
+      if (existingCompanies && existingCompanies.length > 0) {
+        companyId = existingCompanies[0].id;
+        console.log('Found existing company:', companyId);
       } else {
         // Create company entry
+        console.log('Creating new company for:', businessProfile.company_name);
         const { data: newCompany, error: companyError } = await supabase
           .from('companies')
           .insert({
-            name: businessProfile.company_name,
+            name: businessProfile.company_name.trim(),
             industry: businessProfile.industry || 'Technology',
-            size: businessProfile.company_size || 'startup',
+            size: (businessProfile.company_size?.toLowerCase() || 'startup'),
             location: businessProfile.location || null
           })
           .select('id')
           .single();
 
-        if (!companyError && newCompany) {
-          companyId = newCompany.id;
+        if (companyError) {
+          console.error('Error creating company:', companyError);
+          throw new Error(`Company creation failed: ${companyError.message}`);
         }
+
+        if (!newCompany) {
+          throw new Error('Company creation returned no data');
+        }
+
+        companyId = newCompany.id;
+        console.log('Created new company:', companyId);
+      }
+
+      if (!companyId) {
+        throw new Error('Unable to resolve company ID');
       }
 
       // Normalize job type to match enum values
@@ -152,10 +169,22 @@ export const jobPostingService = {
         return validTypeMap[normalized] || 'full_time';
       };
 
+      // Validate required fields
+      if (!jobData.title || !jobData.category || !jobData.jobType || !jobData.location) {
+        throw new Error('Missing required fields: title, category, job type, or location');
+      }
+
+      if (!jobData.targetUserTypes || jobData.targetUserTypes.length === 0) {
+        throw new Error('At least one target user type must be selected');
+      }
+
       // Format salary range
       const salaryRange = (jobData.salaryMin || jobData.salaryMax) 
         ? `${jobData.currency} ${jobData.salaryMin || '0'} - ${jobData.salaryMax || 'Competitive'}`
         : null;
+
+      // Convert expires_at to ISO format
+      const expiresISO = jobData.expiresAt ? new Date(jobData.expiresAt).toISOString() : null;
 
       // Insert into job_listings_v2 (the table used by job seekers)
       const jobListingData = {
@@ -171,9 +200,11 @@ export const jobPostingService = {
         skills_required: jobData.skills,
         is_remote: jobData.isRemote || jobData.workType === 'Remote',
         salary_range: salaryRange,
-        expires_at: jobData.expiresAt || null,
+        expires_at: expiresISO,
         image_url: imageUrl
       };
+
+      console.log('Inserting job listing with data:', jobListingData);
 
       const { data, error } = await supabase
         .from('job_listings_v2')
@@ -181,13 +212,22 @@ export const jobPostingService = {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Job insert error:', error);
+        throw new Error(`Job insertion failed: ${error.message}`);
+      }
+
+      if (!data) {
+        throw new Error('Job insertion returned no data');
+      }
       
+      console.log('Job listing created successfully:', data.id);
       toast.success("Job posted successfully!");
       return data as any; // Type compatibility
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating job listing:', error);
-      toast.error("Failed to create job listing");
+      const errorMsg = error?.message || 'Failed to create job listing';
+      toast.error(errorMsg);
       return null;
     }
   },
@@ -195,7 +235,7 @@ export const jobPostingService = {
   async updateJobListing(jobId: string, updates: Partial<JobListing>): Promise<JobListing | null> {
     try {
       const { data, error } = await supabase
-        .from('job_listings')
+        .from('job_listings_v2')
         .update(updates)
         .eq('id', jobId)
         .select()
@@ -215,7 +255,7 @@ export const jobPostingService = {
   async deleteJobListing(jobId: string): Promise<boolean> {
     try {
       const { error } = await supabase
-        .from('job_listings')
+        .from('job_listings_v2')
         .delete()
         .eq('id', jobId);
 
@@ -233,7 +273,7 @@ export const jobPostingService = {
   async toggleJobStatus(jobId: string, isActive: boolean): Promise<boolean> {
     try {
       const { error } = await supabase
-        .from('job_listings')
+        .from('job_listings_v2')
         .update({ is_active: isActive })
         .eq('id', jobId);
 
@@ -292,7 +332,7 @@ export const jobPostingService = {
   },
 
   // Real-time subscription for job listings
-  subscribeToJobListings(businessId: string, callback: (payload: any) => void) {
+  subscribeToJobListings(userId: string, callback: (payload: any) => void) {
     return supabase
       .channel('job-listings-realtime')
       .on(
@@ -300,8 +340,8 @@ export const jobPostingService = {
         {
           event: '*',
           schema: 'public',
-          table: 'job_listings',
-          filter: `business_id=eq.${businessId}`
+          table: 'job_listings_v2',
+          filter: `created_by=eq.${userId}`
         },
         callback
       )
