@@ -108,7 +108,7 @@ export default function JobFeed() {
 
         {/* Main Content */}
         <div className="container mx-auto px-4 py-6 lg:py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="flex flex-col lg:flex-row gap-6">
             {/* Mobile Filters */}
             {isMobile ? (
               <div className="mb-4">
@@ -129,7 +129,7 @@ export default function JobFeed() {
               </div>
             ) : (
               /* Desktop Filters Sidebar */
-              <div className="lg:col-span-1">
+              <div className="lg:w-64 flex-shrink-0">
                 <div className="lg:sticky lg:top-24">
                   <JobFilters
                     filters={filters}
@@ -140,7 +140,7 @@ export default function JobFeed() {
             )}
 
             {/* Jobs Feed */}
-            <div className={isMobile ? "col-span-1" : "lg:col-span-3"}>
+            <div className="flex-1">
               {loading ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader2 className="w-8 h-8 animate-spin text-primary" />
