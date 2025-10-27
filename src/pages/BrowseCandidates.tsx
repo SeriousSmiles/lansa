@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserType } from "@/hooks/useUserType";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SwipeDeck } from "@/components/discovery/SwipeDeck";
 import { LoadingSpinner } from "@/components/loading";
@@ -14,6 +14,8 @@ import { swipeService } from "@/services/swipeService";
 import type { DiscoveryProfile } from "@/services/discoveryService";
 import { useToast } from "@/hooks/use-toast";
 import { EmployerTopNavbar } from "@/components/dashboard/employer/EmployerTopNavbar";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileCandidateBrowser } from "@/components/mobile/employer/MobileCandidateBrowser";
 
 // Using DiscoveryProfile from service instead
 
@@ -21,6 +23,8 @@ export default function BrowseCandidates() {
   const { user } = useAuth();
   const { userType, isLoading: userTypeLoading } = useUserType();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const [profiles, setProfiles] = useState<DiscoveryProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -117,6 +121,17 @@ export default function BrowseCandidates() {
     );
   }
 
+  // Mobile view - use MobileCandidateBrowser
+  if (isMobile) {
+    return (
+      <MobileCandidateBrowser
+        userId={user?.id || ""}
+        onBack={() => navigate("/employer-dashboard")}
+      />
+    );
+  }
+
+  // Desktop view
   return (
     <div className="min-h-screen bg-background">
       <EmployerTopNavbar />
