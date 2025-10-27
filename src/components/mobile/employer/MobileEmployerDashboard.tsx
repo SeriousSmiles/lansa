@@ -84,15 +84,15 @@ export function MobileEmployerDashboard({
   return (
     <div className="mobile-safe-top bg-gradient-to-br from-background to-muted/50 min-h-screen">
       {/* Header */}
-      <div ref={headerRef} className="px-4 py-6">
+      <div ref={headerRef} className="px-5 py-6">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-2xl font-bold text-foreground leading-tight">
               Welcome back, {businessData?.company_name || userName}
             </h1>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge variant="secondary" className="text-xs">Employer</Badge>
-              <Badge variant="outline" className="text-xs">Beta</Badge>
+            <div className="flex items-center gap-2 mt-2">
+              <Badge variant="secondary" className="text-xs font-medium rounded-full px-3 py-1">Employer</Badge>
+              <Badge variant="outline" className="text-xs font-medium rounded-full px-3 py-1">Beta</Badge>
             </div>
           </div>
           <div className="relative">
@@ -101,17 +101,17 @@ export function MobileEmployerDashboard({
         </div>
         
         {businessData && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground mt-2">
             {businessData.business_size} • {businessData.business_services}
           </p>
         )}
       </div>
 
       {/* Stats Overview - Auto-sliding Carousel */}
-      <div className="px-4 mb-6">
-        <MobileCardLayout className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-foreground">This Week</h3>
+      <div className="px-5 mb-6">
+        <MobileCardLayout className="p-5">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="font-semibold text-foreground text-base">This Week</h3>
           </div>
           
           <Carousel
@@ -128,12 +128,12 @@ export function MobileEmployerDashboard({
                 return (
                   <CarouselItem key={index}>
                     <div className="flex items-center gap-4">
-                      <div className={`p-3 rounded-xl ${stat.color}`}>
+                      <div className={`p-3.5 rounded-2xl ${stat.color}`}>
                         <Icon className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                        <p className="text-sm text-muted-foreground">{stat.description}</p>
+                        <p className="text-3xl font-bold text-foreground">{stat.value}</p>
+                        <p className="text-sm text-muted-foreground mt-0.5">{stat.description}</p>
                       </div>
                     </div>
                   </CarouselItem>
@@ -145,8 +145,8 @@ export function MobileEmployerDashboard({
       </div>
 
       {/* Quick Actions */}
-      <div ref={cardsRef} className="px-4 space-y-4">
-        <h3 className="font-semibold text-foreground mb-2">Quick Actions</h3>
+      <div ref={cardsRef} className="px-5 space-y-3">
+        <h3 className="font-semibold text-foreground mb-3 text-base">Quick Actions</h3>
         
         <MobileCardLayout 
           data-animate="card" 
@@ -155,15 +155,15 @@ export function MobileEmployerDashboard({
         >
           <Button
             onClick={onCreateJob}
-            className="w-full h-20 bg-secondary hover:bg-secondary/90 text-secondary-foreground border-0 rounded-2xl shadow-lg"
+            className="w-full h-[88px] bg-secondary hover:bg-secondary/90 text-secondary-foreground border-0 rounded-3xl shadow-sm"
           >
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-white/20 rounded-full">
+              <div className="p-3 bg-white/20 rounded-2xl">
                 <Plus className="h-6 w-6" />
               </div>
               <div className="text-left">
-                <p className="font-semibold">Post New Job</p>
-                <p className="text-xs opacity-90">Find your next hire</p>
+                <p className="font-semibold text-base">Post New Job</p>
+                <p className="text-sm opacity-80">Find your next hire</p>
               </div>
             </div>
           </Button>
@@ -177,62 +177,62 @@ export function MobileEmployerDashboard({
           <Button
             onClick={onBrowseCandidates}
             variant="outline"
-            className="w-full h-20 border-2 border-primary/30 hover:bg-primary/5 hover:border-primary rounded-2xl transition-all"
+            className="w-full h-[88px] border border-border/50 hover:bg-accent/50 hover:border-border rounded-3xl transition-all"
           >
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-primary/10 rounded-full">
+              <div className="p-3 bg-primary/10 rounded-2xl">
                 <Search className="h-6 w-6 text-primary" />
               </div>
               <div className="text-left">
-                <p className="font-semibold text-foreground">Browse Candidates</p>
-                <p className="text-xs text-muted-foreground">Discover talent</p>
+                <p className="font-semibold text-foreground text-base">Browse Candidates</p>
+                <p className="text-sm text-muted-foreground">Discover talent</p>
               </div>
             </div>
           </Button>
         </MobileCardLayout>
 
         {/* Additional Actions Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3 mt-3">
           <MobileCardLayout 
             data-animate="card" 
-            className="p-4"
+            className="p-5"
             animationDelay={0.3}
           >
             <Link to="/employer-dashboard" className="block">
               <div className="text-center">
-                <div className="p-3 bg-primary/10 rounded-full w-fit mx-auto mb-2">
-                  <Briefcase className="h-5 w-5 text-primary" />
+                <div className="p-3.5 bg-primary/10 rounded-2xl w-fit mx-auto mb-3">
+                  <Briefcase className="h-6 w-6 text-primary" />
                 </div>
-                <p className="font-medium text-sm text-foreground">Manage Jobs</p>
-                <p className="text-xs text-muted-foreground">Edit listings</p>
+                <p className="font-semibold text-sm text-foreground">Manage Jobs</p>
+                <p className="text-xs text-muted-foreground mt-1">Edit listings</p>
               </div>
             </Link>
           </MobileCardLayout>
 
           <MobileCardLayout 
             data-animate="card" 
-            className="p-4"
+            className="p-5"
             animationDelay={0.4}
           >
             <div className="text-center">
-              <div className="p-3 bg-secondary/10 rounded-full w-fit mx-auto mb-2">
-                <Users className="h-5 w-5 text-secondary" />
+              <div className="p-3.5 bg-secondary/10 rounded-2xl w-fit mx-auto mb-3">
+                <Users className="h-6 w-6 text-secondary" />
               </div>
-              <p className="font-medium text-sm text-foreground">Analytics</p>
-              <p className="text-xs text-muted-foreground">View insights</p>
+              <p className="font-semibold text-sm text-foreground">Analytics</p>
+              <p className="text-xs text-muted-foreground mt-1">View insights</p>
             </div>
           </MobileCardLayout>
         </div>
       </div>
 
       {/* Recent Activity */}
-      <div className="px-4 py-6">
-        <h3 className="font-semibold text-foreground mb-4">Recent Activity</h3>
-        <MobileCardLayout className="p-4">
+      <div className="px-5 py-6">
+        <h3 className="font-semibold text-foreground mb-4 text-base">Recent Activity</h3>
+        <MobileCardLayout className="p-6">
           <div className="text-center text-muted-foreground">
-            <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No recent activity</p>
-            <p className="text-xs">Start browsing candidates to see updates here</p>
+            <Users className="h-10 w-10 mx-auto mb-3 opacity-40" />
+            <p className="text-sm font-medium">No recent activity</p>
+            <p className="text-xs mt-1">Start browsing candidates to see updates here</p>
           </div>
         </MobileCardLayout>
       </div>

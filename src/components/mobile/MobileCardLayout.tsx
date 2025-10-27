@@ -92,16 +92,10 @@ export function MobileCardLayout({
     <div 
       ref={cardRef}
       className={`
-        bg-card rounded-2xl shadow-lg border border-border/10 p-6 
-        transition-all duration-300 hover:shadow-xl
-        backdrop-blur-sm bg-card/95
+        bg-card rounded-3xl shadow-sm border border-border/40
+        transition-all duration-300 hover:shadow-md
         ${className}
       `}
-      style={{
-        background: 'linear-gradient(135deg, hsl(var(--card)/0.95), hsl(var(--primary)/0.02))',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-      }}
     >
       {children}
     </div>
