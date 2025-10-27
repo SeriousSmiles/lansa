@@ -25,7 +25,7 @@ export function JobDetailModal({ job, isOpen, onClose, onApply }: JobDetailModal
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0 gap-0 overflow-hidden animate-scale-in">
+      <DialogContent className="max-w-2xl max-h-[90vh] p-0 gap-0 overflow-hidden animate-scale-in">
         {/* Sticky Header with Close Button */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b bg-card/95 backdrop-blur-sm">
           <div className="flex items-center gap-3">
