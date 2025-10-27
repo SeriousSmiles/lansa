@@ -13,6 +13,7 @@ export interface JobListing {
   created_at: string;
   updated_at: string;
   job_image?: string;
+  image_url?: string;
   target_user_types: string[];
   category?: string;
   expires_at?: string;

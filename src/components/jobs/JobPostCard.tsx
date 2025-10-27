@@ -3,6 +3,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { JobListing } from "@/services/jobFeedService";
+import { useState } from "react";
+import { JobImageModal } from "./JobImageModal";
 
 interface JobPostCardProps {
   job: JobListing;
@@ -12,13 +14,17 @@ interface JobPostCardProps {
 
 export function JobPostCard({ job, onApply, onViewDetails }: JobPostCardProps) {
   const applied = job.job_applications && job.job_applications.length > 0;
+  const [showImageModal, setShowImageModal] = useState(false);
   
   return (
     <Card className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 bg-card border">
-      {job.job_image && (
-        <div className="w-full aspect-square bg-muted/10 max-h-96">
+      {job.image_url && (
+        <div 
+          className="w-full aspect-square bg-muted/10 max-h-96 cursor-pointer hover:opacity-90 transition-opacity"
+          onClick={() => setShowImageModal(true)}
+        >
           <img 
-            src={job.job_image} 
+            src={job.image_url} 
             alt={`${job.title} at ${job.business_profiles?.company_name}`} 
             className="object-cover w-full h-full" 
           />
@@ -91,6 +97,16 @@ export function JobPostCard({ job, onApply, onViewDetails }: JobPostCardProps) {
           Posted {new Date(job.created_at).toLocaleDateString()}
         </p>
       </div>
+
+      {/* Image Modal */}
+      {job.image_url && (
+        <JobImageModal
+          isOpen={showImageModal}
+          onClose={() => setShowImageModal(false)}
+          imageUrl={job.image_url}
+          jobTitle={job.title}
+        />
+      )}
     </Card>
   );
 }

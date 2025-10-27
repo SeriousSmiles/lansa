@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { JobListing } from "@/services/jobFeedService";
+import { useState } from "react";
+import { JobImageModal } from "./JobImageModal";
 
 interface JobDetailModalProps {
   job: JobListing | null;
@@ -13,6 +15,8 @@ interface JobDetailModalProps {
 }
 
 export function JobDetailModal({ job, isOpen, onClose, onApply }: JobDetailModalProps) {
+  const [showImageModal, setShowImageModal] = useState(false);
+  
   if (!job) return null;
 
   const hasApplied = job.job_applications && job.job_applications.length > 0;
@@ -20,6 +24,20 @@ export function JobDetailModal({ job, isOpen, onClose, onApply }: JobDetailModal
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        {/* Job Image at top */}
+        {job.image_url && (
+          <div 
+            className="w-full aspect-square -mt-6 -mx-6 mb-4 cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => setShowImageModal(true)}
+          >
+            <img 
+              src={job.image_url} 
+              alt={job.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
         <DialogHeader>
           <DialogTitle className="text-2xl">{job.title}</DialogTitle>
           <DialogDescription>
@@ -119,6 +137,16 @@ export function JobDetailModal({ job, isOpen, onClose, onApply }: JobDetailModal
             )}
           </div>
         </div>
+
+        {/* Image Modal */}
+        {job.image_url && (
+          <JobImageModal
+            isOpen={showImageModal}
+            onClose={() => setShowImageModal(false)}
+            imageUrl={job.image_url}
+            jobTitle={job.title}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

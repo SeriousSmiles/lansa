@@ -6,6 +6,7 @@ import { LearningJobListing, learningJobFeedService } from "@/services/learningJ
 import { formatDistanceToNow } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { JobImageModal } from "./JobImageModal";
 
 interface LearningJobPostCardProps {
   job: LearningJobListing;
@@ -18,6 +19,7 @@ export function LearningJobPostCard({ job, onApply, onViewDetails, disableApply 
   const cardRef = useRef<HTMLDivElement>(null);
   const [hasRecordedView, setHasRecordedView] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   // Record view interaction when card is in viewport
   useEffect(() => {
@@ -134,7 +136,10 @@ export function LearningJobPostCard({ job, onApply, onViewDetails, disableApply 
       {/* Job Image - Square format for 1080x1080 */}
       {job.image_url && (
         <div className="px-4 sm:px-6 pt-4">
-          <div className="w-full aspect-square rounded-lg overflow-hidden bg-muted border border-border">
+          <div 
+            className="w-full aspect-square rounded-lg overflow-hidden bg-muted border border-border cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => setShowImageModal(true)}
+          >
             <img 
               src={job.image_url} 
               alt={job.title}
@@ -256,6 +261,16 @@ export function LearningJobPostCard({ job, onApply, onViewDetails, disableApply 
           </Button>
         </div>
       </div>
+
+      {/* Image Modal */}
+      {job.image_url && (
+        <JobImageModal
+          isOpen={showImageModal}
+          onClose={() => setShowImageModal(false)}
+          imageUrl={job.image_url}
+          jobTitle={job.title}
+        />
+      )}
     </Card>
   );
 }

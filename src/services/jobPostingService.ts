@@ -86,17 +86,20 @@ export const jobPostingService = {
       let imageUrl = jobData.jobImageUrl || null;
       if (jobData.jobImage) {
         const fileExt = jobData.jobImage.name.split('.').pop();
-        const fileName = `${userId}-job-${Date.now()}.${fileExt}`;
-        const filePath = `job-images/${fileName}`;
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `job-images/${userId}/${fileName}`;
         
-        const { error: uploadError } = await supabase.storage
+        console.log('Uploading job image to:', filePath);
+        
+        const { error: uploadError, data: uploadData } = await supabase.storage
           .from('user-uploads')
           .upload(filePath, jobData.jobImage);
           
         if (uploadError) {
           console.error('Error uploading job image:', uploadError);
-          toast.error("Failed to upload job image");
+          toast.error(`Failed to upload job image: ${uploadError.message}`);
         } else {
+          console.log('Job image uploaded successfully:', uploadData);
           const { data: urlData } = supabase.storage
             .from('user-uploads')
             .getPublicUrl(filePath);
