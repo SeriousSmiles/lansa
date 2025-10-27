@@ -36,10 +36,12 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
 
   // Function to fetch user state from database
   const fetchUserState = useCallback(async () => {
+    console.log("📊 Fetching user state...");
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
+        console.log("❌ No session found");
         setState({ 
           loading: false, 
           isAuthenticated: false,
@@ -92,6 +94,12 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
             if (error) console.error("Failed to auto-migrate:", error);
           });
       }
+
+      console.log("✅ User state loaded:", {
+        userId,
+        userType: answersResult.data?.user_type,
+        hasCompletedOnboarding
+      });
 
       setState({
         loading: false,
@@ -155,8 +163,9 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
           verified: false,
           isRefreshing: false 
         });
-      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
-        // Set loading during transition
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        // Set loading during transition (but not on INITIAL_SESSION to avoid race condition)
+        console.log("🔄 Refetching user state due to auth change");
         setState(s => ({ ...s, loading: true }));
         // Refetch user state on login or token refresh
         await fetchUserState();
