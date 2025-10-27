@@ -411,25 +411,25 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
         >
           <TabsTrigger 
             value="dashboard" 
-            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
+            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-white text-gray-700 hover:text-gray-900 hover:bg-gray-100"
           >
             <LayoutDashboard className="h-7 w-7" />
           </TabsTrigger>
           <TabsTrigger 
             value="jobs" 
-            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
+            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-white text-gray-700 hover:text-gray-900 hover:bg-gray-100"
           >
             <Briefcase className="h-7 w-7" />
           </TabsTrigger>
           <TabsTrigger 
             value="candidates" 
-            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
+            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-white text-gray-700 hover:text-gray-900 hover:bg-gray-100"
           >
             <Users className="h-7 w-7" />
           </TabsTrigger>
           <TabsTrigger 
             value="analytics" 
-            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
+            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-white text-gray-700 hover:text-gray-900 hover:bg-gray-100"
           >
             <BarChart3 className="h-7 w-7" />
           </TabsTrigger>
