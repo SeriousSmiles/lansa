@@ -13,6 +13,19 @@ export interface DiscoveryProfile {
   cover_color?: string;
   highlight_color?: string;
   professional_goal?: string;
+  location?: string;
+  experiences?: Array<{
+    title: string;
+    subtitle: string;
+    description: string;
+    period: string;
+  }>;
+  education?: Array<{
+    title: string;
+    description: string;
+    period: string;
+  }>;
+  languages?: string[];
   achievements?: Array<{
     type: string;
     title: string;
@@ -54,6 +67,27 @@ export const discoveryService = {
           cover_color: profile.cover_color,
           highlight_color: profile.highlight_color || '#FF6B4A',
           professional_goal: profile.professional_goal,
+          location: profile.location,
+          experiences: Array.isArray(profile.experiences)
+            ? profile.experiences
+                .slice(0, 1)
+                .map((exp: any) => ({
+                  title: exp.title || exp.role,
+                  subtitle: exp.subtitle || exp.company,
+                  description: exp.description || '',
+                  period: exp.period || `${exp.start_date || ''} - ${exp.end_date || 'Present'}`
+                }))
+            : [],
+          education: Array.isArray(profile.education)
+            ? profile.education
+                .slice(0, 1)
+                .map((edu: any) => ({
+                  title: edu.title || edu.degree,
+                  description: edu.description || edu.institution,
+                  period: edu.period || `${edu.start_year || ''} - ${edu.end_year || 'Present'}`
+                }))
+            : [],
+          languages: Array.isArray(profile.languages) ? profile.languages as string[] : [],
           achievements: Array.isArray(profile.achievements) 
             ? profile.achievements
                 .filter((a: any) => a.is_featured)

@@ -10,7 +10,32 @@ export const mockFrontendCandidates: DiscoveryProfile[] = [
     skills: ["React", "TypeScript", "Next.js", "Tailwind CSS", "GraphQL"],
     cover_color: "#3b82f6",
     highlight_color: "#1d4ed8",
-    professional_goal: "Looking to join a startup where I can lead frontend architecture and mentor junior developers."
+    professional_goal: "Looking to join a startup where I can lead frontend architecture and mentor junior developers.",
+    location: "San Francisco, CA",
+    experiences: [
+      {
+        title: "Senior Frontend Developer",
+        subtitle: "TechCorp Inc.",
+        description: "Led frontend architecture decisions and mentored a team of 5 developers",
+        period: "2021 - Present"
+      }
+    ],
+    education: [
+      {
+        title: "BS Computer Science",
+        description: "Stanford University",
+        period: "2015 - 2019"
+      }
+    ],
+    languages: ["English", "Spanish"],
+    achievements: [
+      {
+        type: "certification",
+        title: "AWS Certified Developer",
+        description: "Amazon Web Services",
+        isFeatured: true
+      }
+    ]
   },
   {
     user_id: "mock-2",

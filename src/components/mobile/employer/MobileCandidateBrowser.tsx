@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, X, Star, Filter, ArrowLeft, Users, TrendingUp } from "lucide-react";
-import { SwipeableContainer } from "@/components/mobile/SwipeableContainer";
-import { MobileCardLayout } from "@/components/mobile/MobileCardLayout";
+import { Heart, X, Filter, ArrowLeft, Users, TrendingUp, Zap } from "lucide-react";
+import { SwipeableContainer } from "../SwipeableContainer";
+import { EnhancedCandidateCard } from "./EnhancedCandidateCard";
 import { mobileAnimations, mobileUtils } from "@/utils/mobileAnimations";
 import { gsap } from "gsap";
 import type { DiscoveryProfile } from "@/services/discoveryService";
@@ -182,64 +182,41 @@ export function MobileCandidateBrowser({
       </div>
 
       {/* Main Content */}
-      <div className="p-4 flex-1">
-        {currentProfile ? (
-          <div className="max-w-sm mx-auto">
-            <SwipeableContainer
-              onSwipeLeft={() => handleSwipeAction('left')}
-              onSwipeRight={() => handleSwipeAction('right')}
-              className="h-full"
-            >
-              <MobileCardLayout 
-                className="p-0 overflow-hidden h-[calc(100vh-250px)] max-h-[600px]"
-                enableParallax
+      <div className="flex-1 flex flex-col">
+        {/* Card Container */}
+        <div className="flex-1 relative px-4">
+          <div className="relative w-full h-[calc(100vh-280px)] max-h-[650px]">
+            {isLoading ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+              </div>
+            ) : currentProfile ? (
+              <SwipeableContainer
+                onSwipeLeft={() => handleSwipeAction('left')}
+                onSwipeRight={() => handleSwipeAction('right')}
+                className="w-full h-full"
               >
-                {/* Profile Image/Avatar */}
-                <div className="relative h-48 bg-gradient-to-br from-primary/20 to-primary/5">
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Avatar className="w-24 h-24">
-                      <AvatarFallback className="text-2xl bg-primary/10">
-                        {getProfileInitials(currentProfile)}
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                  
-                  {/* Overlay with key info */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                    <h2 className="text-xl font-bold text-white">
-                      {currentProfile.name || 'Anonymous User'}
-                    </h2>
-                  </div>
-                </div>
+                <EnhancedCandidateCard 
+                  profile={currentProfile}
+                  className="w-full h-full"
+                />
+              </SwipeableContainer>
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+                <div className="text-6xl mb-4">🎉</div>
+                <h3 className="text-xl font-semibold mb-2">No More Candidates</h3>
+                <p className="text-muted-foreground">
+                  You've reviewed all available candidates. Check back later for more!
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
 
-                {/* Profile Details */}
-                <div className="p-6 space-y-4">
-                  {currentProfile.professional_goal && (
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">
-                        {currentProfile.professional_goal}
-                      </h3>
-                    </div>
-                  )}
-
-                  {currentProfile.skills && currentProfile.skills.length > 0 && (
-                    <div>
-                      <h4 className="font-medium text-foreground mb-2">Skills</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {currentProfile.skills.slice(0, 6).map((skill, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {skill}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </MobileCardLayout>
-            </SwipeableContainer>
-
-            {/* Action Buttons */}
-            <div className="flex justify-center items-center gap-6 mt-6 px-4">
+        {/* Action Buttons */}
+        {currentProfile && (
+          <div className="px-4 py-6">
+            <div className="flex justify-center items-center gap-6">
               <Button
                 variant="outline"
                 size="lg"
@@ -257,7 +234,7 @@ export function MobileCandidateBrowser({
                 onClick={() => handleSwipeAction('nudge')}
                 disabled={isAnimating}
               >
-                <Star className="h-6 w-6" />
+                <Zap className="h-6 w-6" />
               </Button>
 
               <Button
@@ -272,35 +249,12 @@ export function MobileCandidateBrowser({
             </div>
 
             {/* Instructions */}
-            <div className="mt-6 px-4">
-              <Card className="bg-muted/50">
-                <CardContent className="p-4">
-                  <div className="text-xs space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-destructive"></div>
-                      <span>Pass • Not a fit</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                      <span>Super Like • Stand out</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                      <span>Like • Interested</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="mt-4 text-center text-xs text-muted-foreground space-y-1">
+              <p>← Swipe left to pass • Swipe right to like →</p>
+              <p>⚡ Tap lightning for super like</p>
             </div>
           </div>
-        ) : isLoading ? (
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center space-y-4">
-              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-              <p className="text-muted-foreground">Loading candidates...</p>
-            </div>
-          </div>
-        ) : null}
+        )}
       </div>
     </div>
   );
