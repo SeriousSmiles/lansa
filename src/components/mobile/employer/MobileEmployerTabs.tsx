@@ -357,7 +357,7 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
         </div>
 
         {/* Bottom Tab Navigation */}
-        <div className="mobile-safe-bottom bg-background border-t border-border/50">
+        <div className="bg-background border-t border-border/50">
           <TabsList className="w-full h-16 bg-transparent p-0">
             <TabsTrigger 
               value="dashboard" 
