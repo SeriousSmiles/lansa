@@ -99,6 +99,18 @@ Deno.serve(async (req) => {
 
     if (insertError) {
       console.error('Error creating application:', insertError);
+      
+      // Handle duplicate key constraint error (race condition)
+      if (insertError.code === '23505') {
+        return new Response(
+          JSON.stringify({ 
+            error: 'You have already applied to this job',
+            code: 'ALREADY_APPLIED'
+          }),
+          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       throw insertError;
     }
 
