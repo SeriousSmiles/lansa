@@ -4,10 +4,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, User, Calendar, FileText } from "lucide-react";
+import { Loader2, User, Calendar, FileText, Eye } from "lucide-react";
 import { applicationService, JobApplication } from "@/services/applicationService";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
+import { ApplicantProfileModal } from "./ApplicantProfileModal";
+import { DiscoveryProfile } from "@/services/discoveryService";
 
 interface ApplicationsSheetProps {
   jobId: string;
@@ -20,6 +22,10 @@ export function ApplicationsSheet({ jobId, jobTitle, open, onOpenChange }: Appli
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const [selectedApplicantId, setSelectedApplicantId] = useState<string | null>(null);
+  const [selectedProfile, setSelectedProfile] = useState<DiscoveryProfile | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
 
   useEffect(() => {
     if (open && jobId) {
@@ -59,6 +65,33 @@ export function ApplicationsSheet({ jobId, jobTitle, open, onOpenChange }: Appli
         description: "Failed to update application status",
       });
     }
+  };
+
+  const handleViewDetails = async (applicantUserId: string) => {
+    setSelectedApplicantId(applicantUserId);
+    setIsProfileModalOpen(true);
+    setIsLoadingProfile(true);
+    
+    try {
+      const profile = await applicationService.getApplicantProfile(applicantUserId);
+      setSelectedProfile(profile);
+    } catch (error) {
+      console.error('Error loading applicant profile:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load applicant profile",
+      });
+      setIsProfileModalOpen(false);
+    } finally {
+      setIsLoadingProfile(false);
+    }
+  };
+
+  const handleCloseProfileModal = () => {
+    setIsProfileModalOpen(false);
+    setSelectedProfile(null);
+    setSelectedApplicantId(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -139,6 +172,16 @@ export function ApplicationsSheet({ jobId, jobTitle, open, onOpenChange }: Appli
                   )}
 
                   <div className="flex gap-2 flex-wrap">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleViewDetails(application.applicant_user_id)}
+                      className="text-primary border-primary hover:bg-primary hover:text-white"
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      View Details
+                    </Button>
+                    
                     {application.status === 'pending' && (
                       <>
                         <Button
@@ -166,6 +209,17 @@ export function ApplicationsSheet({ jobId, jobTitle, open, onOpenChange }: Appli
           </ScrollArea>
         )}
       </SheetContent>
+
+      <ApplicantProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={handleCloseProfileModal}
+        profile={selectedProfile}
+        isLoading={isLoadingProfile}
+        applicantName={
+          applications.find(app => app.applicant_user_id === selectedApplicantId)
+            ?.applicant?.name || undefined
+        }
+      />
     </Sheet>
   );
 }
