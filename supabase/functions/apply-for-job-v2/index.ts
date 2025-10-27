@@ -77,11 +77,12 @@ Deno.serve(async (req) => {
     if (existing) {
       return new Response(
         JSON.stringify({ 
-          error: 'Already applied', 
+          error: 'You have already applied to this job',
+          code: 'ALREADY_APPLIED',
           application_id: existing.id,
           status: existing.status 
         }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 

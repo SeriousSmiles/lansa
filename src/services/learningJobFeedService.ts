@@ -76,7 +76,7 @@ export const learningJobFeedService = {
     }
   },
 
-  async applyForJob(jobId: string, coverNote?: string): Promise<{ success: boolean; application_id: string }> {
+  async applyForJob(jobId: string, coverNote?: string): Promise<{ success: boolean; application_id?: string; status?: string; alreadyApplied?: boolean }> {
     const { data, error } = await supabase.functions.invoke('apply-for-job-v2', {
       body: {
         job_id: jobId,
@@ -84,12 +84,39 @@ export const learningJobFeedService = {
       },
     });
 
-    if (error) {
-      console.error('Error applying for job:', error);
-      throw error;
+    if (!error) return data;
+
+    // Parse error response
+    const ctx: any = (error as any).context || {};
+    let payload: any = {};
+    try {
+      payload = ctx.body ? JSON.parse(ctx.body) : JSON.parse(error.message || '{}');
+    } catch {
+      payload = {};
     }
 
-    return data;
+    const msg = payload.error || error.message || 'Failed to submit application';
+    const duplicate =
+      payload.code === 'ALREADY_APPLIED' ||
+      /already applied/i.test(msg);
+
+    // Treat duplicate as soft success
+    if (duplicate) {
+      return {
+        success: true,
+        alreadyApplied: true,
+        application_id: payload.application_id,
+        status: payload.status,
+      };
+    }
+
+    // Handle inactive job
+    if (/job is no longer active/i.test(msg)) {
+      throw new Error('Job is no longer active');
+    }
+
+    console.error('Error applying for job:', error);
+    throw new Error(msg);
   },
 
   prettifyJobType(jobType: string): string {

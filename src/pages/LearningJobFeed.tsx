@@ -76,8 +76,14 @@ export default function LearningJobFeed() {
     }
 
     try {
-      await learningJobFeedService.applyForJob(jobId);
-      toast.success("Application submitted successfully!");
+      const result = await learningJobFeedService.applyForJob(jobId);
+      
+      if (result.alreadyApplied) {
+        toast.info(`You've already applied to this job${result.status ? ` (status: ${result.status})` : ''}`);
+      } else {
+        toast.success("Application submitted successfully!");
+      }
+      
       loadJobs(); // Refresh to update application status
     } catch (error: any) {
       toast.error(error.message || "Failed to submit application");
