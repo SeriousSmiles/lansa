@@ -667,7 +667,7 @@ export function MobileJobCreator({
         </div>
 
         {/* Footer Actions */}
-        <div className="px-4 pt-4 pb-8 bg-background/80 backdrop-blur-sm border-t border-border/50 mobile-safe-bottom">
+        <div className="px-4 py-4 bg-background/80 backdrop-blur-sm border-t border-border/50">
           <div className="max-w-md mx-auto">
             <Button
               onClick={handleNext}
@@ -684,6 +684,8 @@ export function MobileJobCreator({
               )}
             </Button>
           </div>
+          {/* Safe area spacer to ensure consistent bottom spacing across devices */}
+          <div className="mobile-safe-bottom" />
         </div>
       </div>
     </div>
