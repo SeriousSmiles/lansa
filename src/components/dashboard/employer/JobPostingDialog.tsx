@@ -204,7 +204,8 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
           .from('companies')
           .insert({
             name: businessProfile.company_name,
-            industry: businessProfile.industry
+            industry: businessProfile.industry,
+            size: 'startup'
           })
           .select('id')
           .single();
