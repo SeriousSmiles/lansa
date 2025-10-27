@@ -34,7 +34,7 @@ export function EnhancedCandidateCard({ profile, className }: EnhancedCandidateC
             : 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary)))'
         }}
       >
-        <div className="flex flex-col items-center text-center">
+        <div className="flex flex-col items-start text-left">
           <Avatar className="w-16 h-16 ring-4 ring-white/30 shadow-lg flex-shrink-0">
             <AvatarImage src={profile.profile_image} alt={profile.name} />
             <AvatarFallback 
@@ -49,7 +49,7 @@ export function EnhancedCandidateCard({ profile, className }: EnhancedCandidateC
             <h2 className="text-2xl font-bold mb-1 break-words">{profile.name}</h2>
             <p className="text-white/90 text-lg mb-2 break-words">{profile.title}</p>
             {profile.location && (
-              <p className="text-white/80 text-sm flex items-center justify-center gap-1">
+              <p className="text-white/80 text-sm flex items-center gap-1">
                 <MapPin className="w-3.5 h-3.5" />
                 {profile.location}
               </p>

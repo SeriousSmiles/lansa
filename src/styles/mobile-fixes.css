@@ -3,11 +3,10 @@
 /* Ensure proper modal positioning on mobile */
 @media (max-width: 768px) {
   [data-radix-dialog-content] {
-    margin: 0.5rem !important;
-    width: calc(100vw - 1rem) !important;
-    max-width: calc(100vw - 1rem) !important;
-    left: 50% !important;
-    transform: translateX(-50%) translateY(-50%) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: calc(100vw - 2rem) !important;
+    max-width: calc(100vw - 2rem) !important;
   }
   
   /* Fix dropdown positioning */
