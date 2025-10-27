@@ -1,14 +1,23 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Users, FileText, TrendingUp, Briefcase, Search } from "lucide-react";
+import { Plus, Users, FileText, TrendingUp, Briefcase, Search, Menu, LogOut, User, Building2 } from "lucide-react";
 import { gsap } from "gsap";
 import { mobileAnimations } from "@/utils/mobileAnimations";
 import { MobileCardLayout } from "@/components/mobile/MobileCardLayout";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface BusinessData {
   company_name: string;
@@ -41,10 +50,30 @@ export function MobileEmployerDashboard({
 }: MobileEmployerDashboardProps) {
   const headerRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [menuOpen, setMenuOpen] = useState(false);
   
   const autoplayPlugin = useRef(
     Autoplay({ delay: 3000, stopOnInteraction: true })
   );
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate("/auth");
+      toast({
+        title: "Logged out successfully",
+        description: "Come back soon!",
+      });
+    } catch (error) {
+      toast({
+        title: "Error logging out",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
 
   const statCards = [
     {
@@ -95,9 +124,55 @@ export function MobileEmployerDashboard({
               <Badge variant="outline" className="text-xs font-medium rounded-full px-3 py-1">Beta</Badge>
             </div>
           </div>
-          <div className="relative">
-            <div className="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
-          </div>
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+            <SheetTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="rounded-full h-10 w-10 border-2"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[280px] bg-background z-50">
+              <SheetHeader>
+                <SheetTitle>Account Menu</SheetTitle>
+              </SheetHeader>
+              <div className="mt-6 space-y-2">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-12"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate("/profile");
+                  }}
+                >
+                  <User className="mr-3 h-5 w-5" />
+                  My Profile
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-12"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate("/settings");
+                  }}
+                >
+                  <Building2 className="mr-3 h-5 w-5" />
+                  Organization Settings
+                </Button>
+                <div className="border-t my-2" />
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-12 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="mr-3 h-5 w-5" />
+                  Logout
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
         
         {businessData && (
