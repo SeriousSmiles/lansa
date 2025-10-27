@@ -78,9 +78,22 @@ export default function Onboarding() {
     loadUserAnswers();
   }, [user, navigate]);
 
-  const handleUserTypeSelect = (selectedType: 'job_seeker' | 'employer') => {
+  const handleUserTypeSelect = async (selectedType: 'job_seeker' | 'employer') => {
     setUserType(selectedType);
     setShowTypeSelection(false);
+    
+    // Save user_type to database immediately for both user types
+    if (user?.id) {
+      try {
+        await saveUserAnswers(user.id, { 
+          ...userAnswers, 
+          user_type: selectedType 
+        });
+      } catch (error) {
+        console.error("Error saving user type:", error);
+        toast.error("Failed to save your selection. Please try again.");
+      }
+    }
     
     // Show career segmentation only for job seekers
     if (selectedType === 'job_seeker') {
