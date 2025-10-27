@@ -20,6 +20,14 @@ export function LearningJobPostCard({ job, onApply, onViewDetails, disableApply 
   const [hasRecordedView, setHasRecordedView] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [hasApplied, setHasApplied] = useState(!!job.user_application_status);
+  const [applicationStatus, setApplicationStatus] = useState(job.user_application_status);
+
+  // Sync with prop changes
+  useEffect(() => {
+    setHasApplied(!!job.user_application_status);
+    setApplicationStatus(job.user_application_status);
+  }, [job.user_application_status]);
 
   // Record view interaction when card is in viewport
   useEffect(() => {
@@ -54,6 +62,9 @@ export function LearningJobPostCard({ job, onApply, onViewDetails, disableApply 
       return;
     }
     onApply(job.id);
+    // Optimistically update UI
+    setHasApplied(true);
+    setApplicationStatus('pending');
   };
 
   const handleSave = async () => {
@@ -255,9 +266,15 @@ export function LearningJobPostCard({ job, onApply, onViewDetails, disableApply 
           <Button
             className="flex-1 sm:flex-[1.5] font-semibold"
             onClick={handleApply}
-            disabled={disableApply}
+            disabled={disableApply || hasApplied}
+            variant={hasApplied ? "outline" : "primary"}
           >
-            {disableApply ? "🔒 Complete Certification" : "Apply Now"}
+            {disableApply 
+              ? "🔒 Complete Certification" 
+              : hasApplied 
+                ? `✓ Applied${applicationStatus ? ` (${applicationStatus})` : ''}` 
+                : "Apply Now"
+            }
           </Button>
         </div>
       </div>

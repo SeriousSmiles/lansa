@@ -23,6 +23,8 @@ export interface LearningJobListing {
   };
   recommendation_score?: number;
   recommendation_reason?: string;
+  user_application_status?: 'pending' | 'accepted' | 'declined' | 'withdrawn' | null;
+  user_applied_at?: string | null;
 }
 
 export interface LearningFeedResponse {

@@ -105,10 +105,10 @@ export function ApplicationsSheet({ jobId, jobTitle, open, onOpenChange }: Appli
                         {application.applicant?.name?.[0]?.toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold truncate">
-                        {application.applicant?.name || 'Anonymous'}
-                      </h4>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold truncate">
+                    {application.applicant?.name || 'Anonymous User'}
+                  </h4>
                       {application.applicant?.title && (
                         <p className="text-sm text-muted-foreground truncate">
                           {application.applicant.title}

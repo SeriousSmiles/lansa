@@ -82,9 +82,18 @@ export default function LearningJobFeed() {
         toast.info(`You've already applied to this job${result.status ? ` (status: ${result.status})` : ''}`);
       } else {
         toast.success("Application submitted successfully!");
+        
+        // Update local state to reflect applied status
+        setJobs(prevJobs => prevJobs.map(job => 
+          job.id === jobId 
+            ? { 
+                ...job, 
+                user_application_status: 'pending', 
+                user_applied_at: new Date().toISOString() 
+              }
+            : job
+        ));
       }
-      
-      loadJobs(); // Refresh to update application status
     } catch (error: any) {
       toast.error(error.message || "Failed to submit application");
     }

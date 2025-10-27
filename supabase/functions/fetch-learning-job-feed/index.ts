@@ -168,11 +168,27 @@ Deno.serve(async (req) => {
     // Apply pagination
     const paginatedJobs = orderedJobs.slice(0, limit);
 
-    console.log(`Returning ${paginatedJobs.length} jobs, teaser: ${teaser}`);
+    // Get user's application statuses for these jobs
+    const jobIds = paginatedJobs.map(j => j.id);
+    const { data: userApps } = await supabase
+      .from('job_applications_v2')
+      .select('job_id, status, created_at')
+      .eq('applicant_user_id', user.id)
+      .in('job_id', jobIds);
+
+    const appMap = new Map(userApps?.map(a => [a.job_id, a]) || []);
+
+    const jobsWithStatus = paginatedJobs.map(job => ({
+      ...job,
+      user_application_status: appMap.get(job.id)?.status || null,
+      user_applied_at: appMap.get(job.id)?.created_at || null,
+    }));
+
+    console.log(`Returning ${jobsWithStatus.length} jobs, teaser: ${teaser}`);
 
     return new Response(
       JSON.stringify({
-        jobs: paginatedJobs,
+        jobs: jobsWithStatus,
         teaser,
         total: orderedJobs.length,
         has_recommendations: (recs?.length || 0) > 0,
