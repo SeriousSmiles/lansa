@@ -357,32 +357,32 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
         </div>
 
         {/* Bottom Tab Navigation - Blue Brand Bar */}
-        <div className="fixed bottom-0 left-0 right-0 bg-primary text-primary-foreground shadow-lg rounded-t-2xl backdrop-blur-md">
-          <TabsList className="w-full h-16 bg-transparent p-0 flex justify-between items-center px-2">
+        <div className="fixed bottom-0 left-0 right-0 bg-primary shadow-lg rounded-t-2xl py-3">
+          <TabsList className="w-full h-16 bg-white rounded-xl mx-3 p-1 flex justify-between items-center gap-1">
             <TabsTrigger 
               value="dashboard" 
-              className="flex-1 flex flex-col items-center justify-center gap-1 h-full data-[state=active]:bg-primary-foreground/20 rounded-xl transition-all"
+              className="flex-1 flex flex-col items-center justify-center gap-1 h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
             >
               <LayoutDashboard className="h-6 w-6" />
               <span className="text-xs font-medium">Dashboard</span>
             </TabsTrigger>
             <TabsTrigger 
               value="jobs" 
-              className="flex-1 flex flex-col items-center justify-center gap-1 h-full data-[state=active]:bg-primary-foreground/20 rounded-xl transition-all"
+              className="flex-1 flex flex-col items-center justify-center gap-1 h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
             >
               <Briefcase className="h-6 w-6" />
               <span className="text-xs font-medium">Jobs</span>
             </TabsTrigger>
             <TabsTrigger 
               value="candidates" 
-              className="flex-1 flex flex-col items-center justify-center gap-1 h-full data-[state=active]:bg-primary-foreground/20 rounded-xl transition-all"
+              className="flex-1 flex flex-col items-center justify-center gap-1 h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
             >
               <Users className="h-6 w-6" />
               <span className="text-xs font-medium">Candidates</span>
             </TabsTrigger>
             <TabsTrigger 
               value="analytics" 
-              className="flex-1 flex flex-col items-center justify-center gap-1 h-full data-[state=active]:bg-primary-foreground/20 rounded-xl transition-all"
+              className="flex-1 flex flex-col items-center justify-center gap-1 h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
             >
               <BarChart3 className="h-6 w-6" />
               <span className="text-xs font-medium">Stats</span>
