@@ -34,21 +34,20 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
     isRefreshing: false
   });
 
-  // Debounce timer for refresh
-  const [refreshDebounceTimer, setRefreshDebounceTimer] = useState<NodeJS.Timeout | null>(null);
-
   // Function to fetch user state from database
   const fetchUserState = useCallback(async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        setState(s => ({ 
-          ...s, 
+        setState({ 
           loading: false, 
           isAuthenticated: false,
+          hasCompletedOnboarding: false,
+          lansaCertified: false,
+          verified: false,
           isRefreshing: false 
-        }));
+        });
         return { success: false };
       }
 
@@ -109,50 +108,64 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
       return { success: true };
     } catch (error) {
       console.error("Error loading user state:", error);
-      setState(s => ({ 
-        ...s, 
+      setState({ 
         loading: false,
+        isAuthenticated: false,
+        hasCompletedOnboarding: false,
+        lansaCertified: false,
+        verified: false,
         isRefreshing: false 
-      }));
+      });
       return { success: false };
     }
   }, []);
 
   // Debounced refresh function exposed to consumers
   const refreshUserState = useCallback(async () => {
-    // Clear any existing debounce timer
-    if (refreshDebounceTimer) {
-      clearTimeout(refreshDebounceTimer);
-    }
-
     setState(s => ({ ...s, isRefreshing: true }));
+    console.log("🔄 Refreshing user state...");
+    await fetchUserState();
+  }, [fetchUserState]);
 
-    // Debounce to prevent excessive DB calls (300ms)
-    await new Promise<void>((resolve) => {
-      const timer = setTimeout(async () => {
-        console.log("🔄 Refreshing user state...");
-        await fetchUserState();
-        resolve();
-      }, 300);
-      setRefreshDebounceTimer(timer);
-    });
-  }, [refreshDebounceTimer, fetchUserState]);
-
-  // Initial load
+  // Initial load and auth state listener
   useEffect(() => {
     let mounted = true;
 
+    // Initial fetch
     (async () => {
       if (mounted) {
         await fetchUserState();
       }
     })();
 
+    // Listen to auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      
+      console.log("🔐 Auth state change:", event);
+
+      if (event === 'SIGNED_OUT') {
+        // Immediately clear state on logout
+        console.log("🚪 User signed out - clearing state");
+        setState({ 
+          loading: false, 
+          isAuthenticated: false,
+          hasCompletedOnboarding: false,
+          lansaCertified: false,
+          verified: false,
+          isRefreshing: false 
+        });
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+        // Set loading during transition
+        setState(s => ({ ...s, loading: true }));
+        // Refetch user state on login or token refresh
+        await fetchUserState();
+      }
+    });
+
     return () => {
       mounted = false;
-      if (refreshDebounceTimer) {
-        clearTimeout(refreshDebounceTimer);
-      }
+      subscription.unsubscribe();
     };
   }, [fetchUserState]);
 
