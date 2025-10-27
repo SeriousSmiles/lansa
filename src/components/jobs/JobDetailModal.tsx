@@ -91,7 +91,11 @@ export function JobDetailModal({ job, isOpen, onClose, onApply }: JobDetailModal
               
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="w-4 h-4" />
-                <span>Posted {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}</span>
+                <span>
+                  {job.created_at && !isNaN(new Date(job.created_at).getTime())
+                    ? `Posted ${formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}`
+                    : 'Posted recently'}
+                </span>
               </div>
             </div>
 
