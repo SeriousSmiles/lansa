@@ -10,6 +10,13 @@ interface EnhancedCandidateCardProps {
 }
 
 export function EnhancedCandidateCard({ profile, className }: EnhancedCandidateCardProps) {
+  // Normalize skills to an array of strings (handles DB JSON objects like {id,name,level})
+  const skillNames: string[] = Array.isArray(profile.skills)
+    ? profile.skills
+        .map((skill: any) => (typeof skill === 'string' ? skill : skill?.name))
+        .filter(Boolean)
+    : [];
+
   return (
     <div 
       className={cn(
@@ -67,11 +74,11 @@ export function EnhancedCandidateCard({ profile, className }: EnhancedCandidateC
           )}
 
           {/* Skills section */}
-          {profile.skills && profile.skills.length > 0 && (
+          {skillNames.length > 0 && (
             <div>
               <h4 className="font-semibold text-foreground text-lg mb-3">Skills</h4>
               <div className="flex flex-wrap gap-2">
-                {profile.skills.slice(0, 8).map((skill, index) => (
+                {skillNames.slice(0, 8).map((skill, index) => (
                   <Badge 
                     key={index} 
                     variant="secondary" 
@@ -85,12 +92,12 @@ export function EnhancedCandidateCard({ profile, className }: EnhancedCandidateC
                     {skill}
                   </Badge>
                 ))}
-                {profile.skills.length > 8 && (
+                {skillNames.length > 8 && (
                   <Badge 
                     variant="outline" 
                     className="text-xs border-muted"
                   >
-                    +{profile.skills.length - 8} more
+                    +{skillNames.length - 8} more
                   </Badge>
                 )}
               </div>
