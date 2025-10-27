@@ -246,7 +246,7 @@ export function LearningJobPostCard({ job, onApply, onViewDetails, disableApply 
 
       {/* Action Buttons */}
       <div className="px-4 sm:px-6 pb-4 sm:pb-6">
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+        <div className="flex flex-col gap-2">
           <Button
             variant="outline"
             className="flex-1 gap-2"
