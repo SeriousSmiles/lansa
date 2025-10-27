@@ -21,6 +21,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { DragDropImageUpload } from "@/components/upload/DragDropImageUpload";
 
 interface JobListing {
   id: string;
@@ -78,6 +79,8 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
     expiresAt: undefined as Date | undefined
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [jobImage, setJobImage] = useState<File | null>(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string>("");
   const { user } = useAuth();
 
   useEffect(() => {
@@ -104,6 +107,8 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
         isRemote: editingJob.is_remote || false,
         expiresAt: editingJob.expires_at ? new Date(editingJob.expires_at) : undefined
       });
+      setCurrentImageUrl("");
+      setJobImage(null);
     } else {
       setFormData({
         title: "",
@@ -120,6 +125,8 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
         isRemote: false,
         expiresAt: undefined
       });
+      setCurrentImageUrl("");
+      setJobImage(null);
     }
   }, [editingJob, isOpen]);
 
@@ -158,6 +165,26 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
     
     setIsSubmitting(true);
     try {
+      // Upload job image if provided
+      let imageUrl = currentImageUrl;
+      if (jobImage) {
+        const fileExt = jobImage.name.split('.').pop();
+        const fileName = `${user.id}-job-${Date.now()}.${fileExt}`;
+        const filePath = `job-images/${fileName}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('user-uploads')
+          .upload(filePath, jobImage);
+          
+        if (uploadError) throw uploadError;
+        
+        const { data } = supabase.storage
+          .from('user-uploads')
+          .getPublicUrl(filePath);
+          
+        imageUrl = data.publicUrl;
+      }
+
       // Get or create business profile
       let { data: businessProfile, error: profileError } = await supabase
         .from('business_profiles')
@@ -234,7 +261,8 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
         is_remote: formData.isRemote,
         salary_range: salaryRange,
         expires_at: formData.expiresAt ? formData.expiresAt.toISOString() : null,
-        is_active: true
+        is_active: true,
+        image_url: imageUrl || null
       };
 
       if (editingJob) {
@@ -335,6 +363,23 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div>
+            <Label>Job Image (Optional)</Label>
+            <div className="mt-1">
+              <DragDropImageUpload
+                onImageSelect={(file) => setJobImage(file)}
+                onImageRemove={() => {
+                  setJobImage(null);
+                  setCurrentImageUrl("");
+                }}
+                currentImageUrl={currentImageUrl}
+                acceptedSize="1080x540"
+                maxFileSizeKB={2048}
+                aspectRatio="wide"
+              />
             </div>
           </div>
 
