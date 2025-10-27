@@ -7,6 +7,7 @@ import { JobPostingDialog } from "./JobPostingDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { ApplicationsSheet } from "@/components/employer/ApplicationsSheet";
 
 interface JobListing {
   id: string;
@@ -30,6 +31,9 @@ export function JobManagementTab() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<JobListing | null>(null);
   const { user } = useAuth();
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [selectedJobTitle, setSelectedJobTitle] = useState<string>("");
+  const [showApplicationsSheet, setShowApplicationsSheet] = useState(false);
 
   const loadJobListings = async () => {
     if (!user?.id) return;
@@ -190,7 +194,11 @@ export function JobManagementTab() {
                       <Edit2 className="h-4 w-4 mr-1" />
                       Edit
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => {
+                      setSelectedJobId(job.id);
+                      setSelectedJobTitle(job.title);
+                      setShowApplicationsSheet(true);
+                    }}>
                       <Eye className="h-4 w-4 mr-1" />
                       View Applications
                     </Button>
@@ -215,6 +223,15 @@ export function JobManagementTab() {
         onJobSaved={handleJobSaved}
         editingJob={editingJob}
       />
+
+      {selectedJobId && (
+        <ApplicationsSheet
+          jobId={selectedJobId}
+          jobTitle={selectedJobTitle}
+          open={showApplicationsSheet}
+          onOpenChange={setShowApplicationsSheet}
+        />
+      )}
     </div>
   );
 }

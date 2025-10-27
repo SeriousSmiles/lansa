@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { gsap } from "gsap";
+import { ApplicationsSheet } from "@/components/employer/ApplicationsSheet";
 
 interface BusinessData {
   company_name: string;
@@ -54,6 +55,9 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
   const [isLoadingCandidates, setIsLoadingCandidates] = useState(false);
   const [jobs, setJobs] = useState<JobListing[]>([]);
   const [isLoadingJobs, setIsLoadingJobs] = useState(false);
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [selectedJobTitle, setSelectedJobTitle] = useState<string>("");
+  const [showApplicationsSheet, setShowApplicationsSheet] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
@@ -381,6 +385,11 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
                             size="sm"
                             variant="outline"
                             className="flex-1"
+                            onClick={() => {
+                              setSelectedJobId(job.id);
+                              setSelectedJobTitle(job.title);
+                              setShowApplicationsSheet(true);
+                            }}
                           >
                             <Eye className="h-3 w-3 mr-1" />
                             Applications
@@ -517,6 +526,16 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
           </TabsTrigger>
         </TabsList>
       </Tabs>
+
+      {/* Applications Sheet */}
+      {selectedJobId && (
+        <ApplicationsSheet
+          jobId={selectedJobId}
+          jobTitle={selectedJobTitle}
+          open={showApplicationsSheet}
+          onOpenChange={setShowApplicationsSheet}
+        />
+      )}
     </div>
   );
 }
