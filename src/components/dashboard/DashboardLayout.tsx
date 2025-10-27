@@ -1,13 +1,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserState } from "@/contexts/UserStateProvider";
 import { gsap } from "gsap";
 import { TopNavbar } from "./TopNavbar";
 
 import { IconHome, IconBook, IconVideo, IconUser, IconBriefcase } from "@tabler/icons-react";
 import { AnnouncementBanner } from "@/components/common/AnnouncementBanner";
-
-import { useUserType } from "@/hooks/useUserType";
 interface DashboardLayoutProps {
   children: React.ReactNode;
   userName: string;
@@ -17,10 +16,9 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children, userName, email, themeColor }: DashboardLayoutProps) {
   const { signOut } = useAuth();
+  const { userType } = useUserState();
   const mainContentRef = useRef<HTMLDivElement>(null);
   const [isContentVisible, setIsContentVisible] = useState(false);
-  
-  const { userType } = useUserType();
 
   const handleLogout = async () => {
     await signOut();

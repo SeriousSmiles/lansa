@@ -8,7 +8,6 @@ import { QuickActionsSheet } from './QuickActionsSheet';
 import { SearchOverlay } from './SearchOverlay';
 import { useUIStore } from '@/stores/uiStore';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { supabase } from '@/integrations/supabase/client';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -19,41 +18,17 @@ const ONBOARDING_ROUTES = ['/onboarding', '/profile-starter'];
 
 export function AppShell({ children }: AppShellProps) {
   const { user, loading } = useAuth();
-  const { userType, loading: userStateLoading } = useUserState();
+  const { userType, loading: userStateLoading, hasCompletedOnboarding } = useUserState();
   const location = useLocation();
   const { isQuickActionsOpen, isSearchOpen } = useUIStore();
   const isMobile = useIsMobile();
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = React.useState(false);
-  const [userName, setUserName] = React.useState<string>();
   
   const isAuthRoute = AUTH_ROUTES.includes(location.pathname);
   const isOnboardingRoute = ONBOARDING_ROUTES.includes(location.pathname);
   const isSharedProfile = location.pathname.startsWith('/profile/share/');
   
-  // Check onboarding completion status and fetch user name
-  React.useEffect(() => {
-    async function checkOnboardingStatus() {
-      if (!user?.id) return;
-      
-      try {
-        const { data } = await supabase
-          .from('user_profiles')
-          .select('onboarding_completed, name')
-          .eq('user_id', user.id)
-          .single();
-          
-        console.log('Onboarding status check:', { data, onboarding_completed: data?.onboarding_completed });
-        setHasCompletedOnboarding(data?.onboarding_completed || false);
-        setUserName(data?.name || undefined);
-      } catch (error) {
-        console.error('Error checking onboarding status:', error);
-        // If there's an error, assume onboarding is completed to show navigation
-        setHasCompletedOnboarding(true);
-      }
-    }
-    
-    checkOnboardingStatus();
-  }, [user?.id]);
+  // Compute userName from auth user displayName
+  const userName = user?.displayName;
   
   console.log('AppShell state:', { 
     isMobile, 

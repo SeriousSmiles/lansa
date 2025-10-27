@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 type CareerPath = "student" | "job_seeker" | "freelancer" | "entrepreneur" | "visionary" | "business";
@@ -34,8 +34,18 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
     isRefreshing: false
   });
 
+  // Ref to prevent overlapping fetches
+  const inFlightRef = useRef(false);
+
   // Function to fetch user state from database
   const fetchUserState = useCallback(async () => {
+    // Prevent overlapping fetches
+    if (inFlightRef.current) {
+      console.log("⏭️ Skipping fetch - already in flight");
+      return;
+    }
+
+    inFlightRef.current = true;
     console.log("📊 Fetching user state...");
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -125,6 +135,8 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
         isRefreshing: false 
       });
       return { success: false };
+    } finally {
+      inFlightRef.current = false;
     }
   }, []);
 
@@ -146,14 +158,14 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
       }
     })();
 
-    // Listen to auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Listen to auth state changes (non-async to prevent cascading issues)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
       
       console.log("🔐 Auth state change:", event);
 
       if (event === 'SIGNED_OUT') {
-        // Immediately clear state on logout
+        // Immediately clear state on logout (synchronous)
         console.log("🚪 User signed out - clearing state");
         setState({ 
           loading: false, 
@@ -164,11 +176,15 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
           isRefreshing: false 
         });
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        // Set loading during transition (but not on INITIAL_SESSION to avoid race condition)
+        // Set loading and defer fetch to avoid blocking auth callback
         console.log("🔄 Refetching user state due to auth change");
         setState(s => ({ ...s, loading: true }));
-        // Refetch user state on login or token refresh
-        await fetchUserState();
+        // Defer to next tick to let auth state settle
+        setTimeout(() => {
+          if (mounted) {
+            fetchUserState();
+          }
+        }, 0);
       }
     });
 
