@@ -14,18 +14,44 @@ export interface Match {
 export const matchService = {
   async getMatches(userId: string) {
     try {
-      const { data, error } = await supabase
+      // First, get all matches for this user
+      const { data: matches, error: matchError } = await supabase
         .from('matches')
-        .select(`
-          *,
-          user_profiles_a:user_profiles!matches_user_a_fkey(name, title, profile_image),
-          user_profiles_b:user_profiles!matches_user_b_fkey(name, title, profile_image)
-        `)
+        .select('*')
         .or(`user_a.eq.${userId},user_b.eq.${userId}`)
         .order('latest_activity_at', { ascending: false });
 
-      if (error) throw error;
-      return data || [];
+      if (matchError) throw matchError;
+      if (!matches || matches.length === 0) return [];
+
+      // Extract all unique user IDs from matches
+      const userIds = new Set<string>();
+      matches.forEach(match => {
+        userIds.add(match.user_a);
+        userIds.add(match.user_b);
+      });
+
+      // Fetch user profiles for all involved users
+      const { data: profiles, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('user_id, name, title, profile_image')
+        .in('user_id', Array.from(userIds));
+
+      if (profileError) throw profileError;
+
+      // Create a map for quick profile lookup
+      const profileMap = new Map(
+        (profiles || []).map(p => [p.user_id, p])
+      );
+
+      // Enrich matches with profile data
+      const enrichedMatches = matches.map(match => ({
+        ...match,
+        user_profiles_a: profileMap.get(match.user_a) || null,
+        user_profiles_b: profileMap.get(match.user_b) || null,
+      }));
+
+      return enrichedMatches;
     } catch (error) {
       console.error('Error fetching matches:', error);
       toast.error('Failed to load matches');
