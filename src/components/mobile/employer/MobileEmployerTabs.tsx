@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Users, Briefcase, BarChart3, Plus } from "lucide-react";
@@ -13,6 +13,7 @@ import { matchService } from "@/services/matchService";
 import type { DiscoveryProfile } from "@/services/discoveryService";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { gsap } from "gsap";
 
 interface BusinessData {
   company_name: string;
@@ -37,6 +38,8 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showJobCreator, setShowJobCreator] = useState(false);
   const [showCandidateBrowser, setShowCandidateBrowser] = useState(false);
+  const [isAtBottom, setIsAtBottom] = useState(false);
+  const navRef = useRef<HTMLDivElement>(null);
   
   // Data states
   const [stats, setStats] = useState<EmployerStats>({
@@ -53,6 +56,50 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
       loadEmployerStats();
     }
   }, [user?.id]);
+
+  // Scroll detection for navigation animation
+  useEffect(() => {
+    const handleScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      const scrollTop = target.scrollTop;
+      const scrollHeight = target.scrollHeight;
+      const clientHeight = target.clientHeight;
+      
+      // Check if scrolled to within 50px of bottom
+      const isBottom = scrollHeight - scrollTop - clientHeight < 50;
+      
+      if (isBottom !== isAtBottom) {
+        setIsAtBottom(isBottom);
+        
+        // GSAP animation
+        if (navRef.current) {
+          if (isBottom) {
+            // Animate to footer mode
+            gsap.to(navRef.current, {
+              position: 'relative',
+              bottom: 0,
+              opacity: 0.95,
+              duration: 0.3,
+              ease: "power2.out"
+            });
+          } else {
+            // Animate back to fixed mode
+            gsap.to(navRef.current, {
+              position: 'fixed',
+              opacity: 1,
+              duration: 0.3,
+              ease: "power2.out"
+            });
+          }
+        }
+      }
+    };
+
+    const scrollContainer = document.querySelector('.employer-scroll-container');
+    scrollContainer?.addEventListener('scroll', handleScroll);
+    
+    return () => scrollContainer?.removeEventListener('scroll', handleScroll);
+  }, [isAtBottom]);
 
   const loadEmployerStats = async () => {
     if (!user?.id) return;
@@ -226,7 +273,7 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
     <div className="employer-theme h-full bg-background">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
         {/* Tab Content */}
-        <div className="h-[calc(100vh-64px)] overflow-y-auto pb-20">
+        <div className={`h-[calc(100vh-64px)] overflow-y-auto employer-scroll-container ${isAtBottom ? 'pb-2' : 'pb-20'}`}>
           <TabsContent value="dashboard" className="h-full m-0">
             <div className="md:hidden">
               <MobileEmployerDashboard
@@ -356,39 +403,37 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
           </TabsContent>
         </div>
 
-        {/* Bottom Tab Navigation - Blue Brand Bar */}
-        <div className="fixed bottom-0 left-0 right-0 bg-primary shadow-lg rounded-t-2xl py-3">
-          <TabsList className="w-full h-16 bg-white rounded-xl mx-3 p-1 flex justify-between items-center gap-1">
-            <TabsTrigger 
-              value="dashboard" 
-              className="flex-1 flex flex-col items-center justify-center gap-1 h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
-            >
-              <LayoutDashboard className="h-6 w-6" />
-              <span className="text-xs font-medium">Dashboard</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="jobs" 
-              className="flex-1 flex flex-col items-center justify-center gap-1 h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
-            >
-              <Briefcase className="h-6 w-6" />
-              <span className="text-xs font-medium">Jobs</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="candidates" 
-              className="flex-1 flex flex-col items-center justify-center gap-1 h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
-            >
-              <Users className="h-6 w-6" />
-              <span className="text-xs font-medium">Candidates</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="analytics" 
-              className="flex-1 flex flex-col items-center justify-center gap-1 h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
-            >
-              <BarChart3 className="h-6 w-6" />
-              <span className="text-xs font-medium">Stats</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
+        {/* Bottom Tab Navigation */}
+        <TabsList 
+          ref={navRef}
+          className="fixed bottom-0 left-0 right-0 h-16 bg-white shadow-lg px-4 py-2 flex justify-between items-center gap-2"
+          style={{ maxWidth: '100vw' }}
+        >
+          <TabsTrigger 
+            value="dashboard" 
+            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
+          >
+            <LayoutDashboard className="h-7 w-7" />
+          </TabsTrigger>
+          <TabsTrigger 
+            value="jobs" 
+            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
+          >
+            <Briefcase className="h-7 w-7" />
+          </TabsTrigger>
+          <TabsTrigger 
+            value="candidates" 
+            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
+          >
+            <Users className="h-7 w-7" />
+          </TabsTrigger>
+          <TabsTrigger 
+            value="analytics" 
+            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
+          >
+            <BarChart3 className="h-7 w-7" />
+          </TabsTrigger>
+        </TabsList>
       </Tabs>
     </div>
   );
