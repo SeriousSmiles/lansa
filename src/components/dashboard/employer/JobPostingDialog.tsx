@@ -27,16 +27,16 @@ interface JobListing {
   title: string;
   description: string;
   location: string;
-  mode: string;
   is_active: boolean;
-  top_skills: string[];
-  target_user_types?: string[];
+  skills_required?: any;
+  target_user_types?: any;
   category?: string;
   job_type?: string;
   is_remote?: boolean;
   salary_range?: string;
   expires_at?: string;
-  created_at: string;
+  posted_at: string;
+  company_id: string;
 }
 
 interface JobPostingDialogProps {
@@ -82,6 +82,13 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
 
   useEffect(() => {
     if (editingJob) {
+      const skills = editingJob.skills_required 
+        ? editingJob.skills_required.map(s => typeof s === 'string' ? s : s.name || s)
+        : [];
+      const userTypes = editingJob.target_user_types 
+        ? (Array.isArray(editingJob.target_user_types) ? editingJob.target_user_types : [])
+        : [];
+      
       setFormData({
         title: editingJob.title,
         description: editingJob.description,
@@ -91,9 +98,9 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
         salaryMin: "",
         salaryMax: "",
         currency: "USD",
-        skills: editingJob.top_skills || [],
+        skills,
         newSkill: "",
-        targetUserTypes: editingJob.target_user_types || [],
+        targetUserTypes: userTypes,
         isRemote: editingJob.is_remote || false,
         expiresAt: editingJob.expires_at ? new Date(editingJob.expires_at) : undefined
       });
@@ -151,9 +158,10 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
     
     setIsSubmitting(true);
     try {
+      // Get or create business profile
       let { data: businessProfile, error: profileError } = await supabase
         .from('business_profiles')
-        .select('id')
+        .select('id, company_name, industry')
         .eq('user_id', user.id)
         .single();
 
@@ -172,7 +180,7 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
               company_name: businessData.company_name,
               industry: businessData.business_services
             })
-            .select('id')
+            .select('id, company_name, industry')
             .single();
 
           if (createError) throw createError;
@@ -184,19 +192,43 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
         throw profileError;
       }
 
+      // Get or create company record
+      let { data: company, error: companyError } = await supabase
+        .from('companies')
+        .select('id')
+        .eq('name', businessProfile.company_name)
+        .single();
+
+      if (companyError && companyError.code === 'PGRST116') {
+        const { data: newCompany, error: createCompanyError } = await supabase
+          .from('companies')
+          .insert({
+            name: businessProfile.company_name,
+            industry: businessProfile.industry
+          })
+          .select('id')
+          .single();
+
+        if (createCompanyError) throw createCompanyError;
+        company = newCompany;
+      } else if (companyError) {
+        throw companyError;
+      }
+
       const salaryRange = (formData.salaryMin || formData.salaryMax)
         ? `${formData.currency} ${formData.salaryMin || '0'} - ${formData.salaryMax || 'Competitive'}`
         : null;
 
-      const jobData = {
-        business_id: businessProfile.id,
+      const normalizedJobType = formData.jobType.toLowerCase().replace(/\s+/g, '_');
+      const jobData: any = {
+        company_id: company.id,
+        created_by: user.id,
         title: formData.title,
         description: formData.description,
         location: formData.location,
         category: formData.category,
-        job_type: formData.jobType.toLowerCase().replace(/\s+/g, '_'),
-        mode: 'employee' as const,
-        top_skills: formData.skills,
+        job_type: normalizedJobType,
+        skills_required: formData.skills,
         target_user_types: formData.targetUserTypes,
         is_remote: formData.isRemote,
         salary_range: salaryRange,
@@ -206,7 +238,7 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
 
       if (editingJob) {
         const { error } = await supabase
-          .from('job_listings')
+          .from('job_listings_v2')
           .update(jobData)
           .eq('id', editingJob.id);
 
@@ -214,7 +246,7 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
         toast.success("Job updated successfully!");
       } else {
         const { error } = await supabase
-          .from('job_listings')
+          .from('job_listings_v2')
           .insert(jobData);
 
         if (error) throw error;

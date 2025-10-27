@@ -13,10 +13,15 @@ interface JobListing {
   title: string;
   description: string;
   location: string;
-  mode: string;
   is_active: boolean;
-  top_skills: string[];
-  created_at: string;
+  skills_required?: any;
+  target_user_types?: any;
+  category?: string;
+  job_type?: string;
+  salary_range?: string;
+  posted_at: string;
+  company_id: string;
+  image_url?: string;
 }
 
 export function JobManagementTab() {
@@ -30,60 +35,18 @@ export function JobManagementTab() {
     if (!user?.id) return;
 
     try {
-      // First get the business profile
-      const { data: businessProfile, error: profileError } = await supabase
-        .from('business_profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
+      // Fetch job listings created by this user from job_listings_v2
+      const { data: jobs, error: jobsError } = await supabase
+        .from('job_listings_v2')
+        .select('*')
+        .eq('created_by', user.id)
+        .order('posted_at', { ascending: false });
 
-      if (profileError && profileError.code !== 'PGRST116') {
-        console.error('Error fetching business profile:', profileError);
-        return;
-      }
-
-      if (!businessProfile) {
-        // Create business profile if it doesn't exist
-        const { data: businessData } = await supabase
-          .from('business_onboarding_data')
-          .select('company_name, business_services')
-          .eq('user_id', user.id)
-          .single();
-
-        if (businessData) {
-          const { data: newProfile, error: createError } = await supabase
-            .from('business_profiles')
-            .insert({
-              user_id: user.id,
-              company_name: businessData.company_name,
-              industry: businessData.business_services
-            })
-            .select('id')
-            .single();
-
-          if (createError) {
-            console.error('Error creating business profile:', createError);
-            return;
-          }
-          
-          // Use the new profile ID to fetch jobs (will be empty initially)
-          setJobListings([]);
-          return;
-        }
+      if (jobsError) {
+        console.error('Error fetching job listings:', jobsError);
+        toast.error('Failed to load job listings');
       } else {
-        // Fetch job listings for this business
-        const { data: jobs, error: jobsError } = await supabase
-          .from('job_listings')
-          .select('*')
-          .eq('business_id', businessProfile.id)
-          .order('created_at', { ascending: false });
-
-        if (jobsError) {
-          console.error('Error fetching job listings:', jobsError);
-          toast.error('Failed to load job listings');
-        } else {
-          setJobListings(jobs || []);
-        }
+        setJobListings(jobs || []);
       }
     } catch (error) {
       console.error('Error loading job listings:', error);
@@ -116,7 +79,7 @@ export function JobManagementTab() {
   const toggleJobStatus = async (jobId: string, currentStatus: boolean) => {
     try {
       const { error } = await supabase
-        .from('job_listings')
+        .from('job_listings_v2')
         .update({ is_active: !currentStatus })
         .eq('id', jobId);
 
@@ -184,10 +147,14 @@ export function JobManagementTab() {
                     </div>
                     <div className="flex items-center gap-4 text-sm text-[#666666]">
                       <span>{job.location}</span>
+                      {job.job_type && (
+                        <>
+                          <span>•</span>
+                          <span className="capitalize">{job.job_type.replace('_', ' ')}</span>
+                        </>
+                      )}
                       <span>•</span>
-                      <span className="capitalize">{job.mode}</span>
-                      <span>•</span>
-                      <span>Posted {new Date(job.created_at).toLocaleDateString()}</span>
+                      <span>Posted {new Date(job.posted_at).toLocaleDateString()}</span>
                     </div>
                   </div>
                   <Button variant="ghost" size="sm">
@@ -199,16 +166,16 @@ export function JobManagementTab() {
                 <div className="space-y-4">
                   <p className="text-[#666666] line-clamp-2">{job.description}</p>
                   
-                  {job.top_skills && job.top_skills.length > 0 && (
+                  {job.skills_required && Array.isArray(job.skills_required) && job.skills_required.length > 0 && (
                     <div className="flex flex-wrap gap-2">
-                      {job.top_skills.slice(0, 5).map((skill, index) => (
+                      {job.skills_required.slice(0, 5).map((skill, index) => (
                         <Badge key={index} variant="outline" className="text-xs">
-                          {skill}
+                          {typeof skill === 'string' ? skill : skill.name || skill}
                         </Badge>
                       ))}
-                      {job.top_skills.length > 5 && (
+                      {job.skills_required.length > 5 && (
                         <Badge variant="outline" className="text-xs">
-                          +{job.top_skills.length - 5} more
+                          +{job.skills_required.length - 5} more
                         </Badge>
                       )}
                     </div>
