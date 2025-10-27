@@ -97,6 +97,39 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
+  /* === Recruiter/Employer Theme Overrides === */
+  .employer-theme {
+    --primary: 215 85% 55%;              /* Lansa Blue - trust/smart */
+    --primary-foreground: 0 0% 100%;     /* White text on blue */
+    --secondary: 14 90% 60%;             /* Lansa Orange - energy/action */
+    --secondary-foreground: 0 0% 100%;   /* White text on orange */
+    --background: 215 40% 96%;           /* Soft light blue background */
+    --foreground: 215 15% 15%;           /* Dark text on light background */
+    --muted: 215 32% 94%;                /* Muted blue-grey */
+    --muted-foreground: 215 16% 47%;     /* Muted text */
+    --border: 215 30% 85%;               /* Light blue borders */
+    --accent: 215 40% 92%;               /* Subtle blue accent */
+    --accent-foreground: 215 15% 15%;    /* Dark text on accent */
+    --card: 0 0% 100%;                   /* White cards */
+    --card-foreground: 215 15% 15%;      /* Dark text on cards */
+  }
+
+  .dark .employer-theme {
+    --primary: 215 85% 55%;              /* Lansa Blue stays vibrant in dark */
+    --primary-foreground: 0 0% 100%;     /* White text */
+    --secondary: 14 90% 60%;             /* Lansa Orange */
+    --secondary-foreground: 0 0% 100%;   /* White text */
+    --background: 215 20% 12%;           /* Dark blue-grey background */
+    --foreground: 210 40% 98%;           /* Light text */
+    --muted: 215 20% 18%;                /* Darker muted */
+    --muted-foreground: 215 20% 65%;     /* Lighter muted text */
+    --border: 215 20% 22%;               /* Subtle borders */
+    --accent: 215 20% 20%;               /* Subtle accent */
+    --accent-foreground: 210 40% 98%;    /* Light text on accent */
+    --card: 215 20% 14%;                 /* Dark cards */
+    --card-foreground: 210 40% 98%;      /* Light text on cards */
+  }
 }
 
 @layer base {

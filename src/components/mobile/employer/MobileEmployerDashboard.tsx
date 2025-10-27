@@ -51,21 +51,21 @@ export function MobileEmployerDashboard({
       title: "Active Jobs",
       value: stats.activeJobs,
       icon: FileText,
-      color: "from-blue-500 to-blue-600",
+      color: "bg-primary",
       description: "Open positions"
     },
     {
       title: "Candidates Viewed",
       value: stats.candidatesViewed,
       icon: Users,
-      color: "from-green-500 to-green-600",
+      color: "bg-secondary",
       description: "Profiles reviewed"
     },
     {
       title: "New Matches",
       value: stats.newMatches,
       icon: TrendingUp,
-      color: "from-purple-500 to-purple-600",
+      color: "bg-primary",
       description: "Mutual interests"
     }
   ];
@@ -128,7 +128,7 @@ export function MobileEmployerDashboard({
                 return (
                   <CarouselItem key={index}>
                     <div className="flex items-center gap-4">
-                      <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.color}`}>
+                      <div className={`p-3 rounded-xl ${stat.color}`}>
                         <Icon className="h-6 w-6 text-white" />
                       </div>
                       <div>
@@ -155,15 +155,15 @@ export function MobileEmployerDashboard({
         >
           <Button
             onClick={onCreateJob}
-            className="w-full h-20 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 border-0 rounded-2xl"
+            className="w-full h-20 bg-secondary hover:bg-secondary/90 text-secondary-foreground border-0 rounded-2xl shadow-lg"
           >
             <div className="flex items-center gap-4">
               <div className="p-2 bg-white/20 rounded-full">
                 <Plus className="h-6 w-6" />
               </div>
               <div className="text-left">
-                <p className="font-semibold text-white">Post New Job</p>
-                <p className="text-xs text-white/80">Find your next hire</p>
+                <p className="font-semibold">Post New Job</p>
+                <p className="text-xs opacity-90">Find your next hire</p>
               </div>
             </div>
           </Button>
@@ -177,11 +177,11 @@ export function MobileEmployerDashboard({
           <Button
             onClick={onBrowseCandidates}
             variant="outline"
-            className="w-full h-20 border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 rounded-2xl"
+            className="w-full h-20 border-2 border-primary/30 hover:bg-primary/5 hover:border-primary rounded-2xl transition-all"
           >
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-muted rounded-full">
-                <Search className="h-6 w-6 text-muted-foreground" />
+              <div className="p-2 bg-primary/10 rounded-full">
+                <Search className="h-6 w-6 text-primary" />
               </div>
               <div className="text-left">
                 <p className="font-semibold text-foreground">Browse Candidates</p>
@@ -200,8 +200,8 @@ export function MobileEmployerDashboard({
           >
             <Link to="/employer-dashboard" className="block">
               <div className="text-center">
-                <div className="p-3 bg-muted rounded-full w-fit mx-auto mb-2">
-                  <Briefcase className="h-5 w-5 text-muted-foreground" />
+                <div className="p-3 bg-primary/10 rounded-full w-fit mx-auto mb-2">
+                  <Briefcase className="h-5 w-5 text-primary" />
                 </div>
                 <p className="font-medium text-sm text-foreground">Manage Jobs</p>
                 <p className="text-xs text-muted-foreground">Edit listings</p>
@@ -215,8 +215,8 @@ export function MobileEmployerDashboard({
             animationDelay={0.4}
           >
             <div className="text-center">
-              <div className="p-3 bg-muted rounded-full w-fit mx-auto mb-2">
-                <Users className="h-5 w-5 text-muted-foreground" />
+              <div className="p-3 bg-secondary/10 rounded-full w-fit mx-auto mb-2">
+                <Users className="h-5 w-5 text-secondary" />
               </div>
               <p className="font-medium text-sm text-foreground">Analytics</p>
               <p className="text-xs text-muted-foreground">View insights</p>

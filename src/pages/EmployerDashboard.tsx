@@ -73,8 +73,8 @@ export default function EmployerDashboard() {
 
   if (isLoading) {
     return (
-      <div className="h-screen bg-[rgba(253,248,242,1)] flex items-center justify-center">
-        <div className="text-2xl text-[#2E2E2E] animate-pulse">Loading your employer dashboard...</div>
+      <div className="employer-theme h-screen bg-background flex items-center justify-center">
+        <div className="text-2xl text-foreground animate-pulse">Loading your employer dashboard...</div>
       </div>
     );
   }
@@ -115,24 +115,26 @@ export default function EmployerDashboard() {
 
   return (
     <>
-      <DashboardLayout userName={userName} email={user?.email || ""}>
-        <div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
-          <div className="w-full">
-            <div className="flex items-center justify-between mb-4 animate-fade-in">
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl md:text-3xl font-bold">Employer Dashboard</h1>
-                  <Badge variant="secondary" className="text-xs">Beta</Badge>
+      <div className="employer-theme">
+        <DashboardLayout userName={userName} email={user?.email || ""}>
+          <div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
+            <div className="w-full">
+              <div className="flex items-center justify-between mb-4 animate-fade-in">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <h1 className="text-2xl md:text-3xl font-bold">Employer Dashboard</h1>
+                    <Badge variant="secondary" className="text-xs">Beta</Badge>
+                  </div>
+                  {businessData?.company_name && (
+                    <p className="text-muted-foreground mt-1">{businessData.company_name}</p>
+                  )}
                 </div>
-                {businessData?.company_name && (
-                  <p className="text-muted-foreground mt-1">{businessData.company_name}</p>
-                )}
               </div>
+              <EmployerDashboardTabs businessData={businessData} />
             </div>
-            <EmployerDashboardTabs businessData={businessData} />
           </div>
-        </div>
-      </DashboardLayout>
+        </DashboardLayout>
+      </div>
       
       {user?.id && (
         <CompanyLogoUploadModal

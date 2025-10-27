@@ -223,10 +223,10 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
   }
 
   return (
-    <div className="h-full">
+    <div className="employer-theme h-full bg-background">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
         {/* Tab Content */}
-        <div className="h-[calc(100vh-140px)] overflow-y-auto">
+        <div className="h-[calc(100vh-64px)] overflow-y-auto pb-20">
           <TabsContent value="dashboard" className="h-full m-0">
             <div className="md:hidden">
               <MobileEmployerDashboard
@@ -243,7 +243,7 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold">Job Management</h2>
-                <Button onClick={handleCreateJob} size="sm">
+                <Button onClick={handleCreateJob} size="sm" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
                   <Plus className="h-4 w-4 mr-2" />
                   New Job
                 </Button>
@@ -256,7 +256,7 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
                   <p className="text-sm text-muted-foreground mb-4">
                     Start by posting your first job listing
                   </p>
-                  <Button onClick={handleCreateJob}>
+                  <Button onClick={handleCreateJob} className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
                     <Plus className="h-4 w-4 mr-2" />
                     Post Your First Job
                   </Button>
@@ -293,7 +293,7 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
                   <p className="text-sm text-muted-foreground mb-4">
                     Browse through qualified candidates and find your next hire
                   </p>
-                  <Button onClick={handleBrowseCandidates} className="w-full">
+                  <Button onClick={handleBrowseCandidates} className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground">
                     Start Browsing
                   </Button>
                 </CardContent>
@@ -356,36 +356,36 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
           </TabsContent>
         </div>
 
-        {/* Bottom Tab Navigation */}
-        <div className="bg-background border-t border-border/50">
-          <TabsList className="w-full h-16 bg-transparent p-0">
+        {/* Bottom Tab Navigation - Blue Brand Bar */}
+        <div className="fixed bottom-0 left-0 right-0 bg-primary text-primary-foreground shadow-lg rounded-t-2xl backdrop-blur-md">
+          <TabsList className="w-full h-16 bg-transparent p-0 flex justify-between items-center px-2">
             <TabsTrigger 
               value="dashboard" 
-              className="flex-1 h-full flex-col gap-1 data-[state=active]:bg-primary/10"
+              className="flex-1 flex flex-col items-center justify-center gap-1 h-full data-[state=active]:bg-primary-foreground/20 rounded-xl transition-all"
             >
-              <LayoutDashboard className="h-5 w-5" />
-              <span className="text-xs">Dashboard</span>
+              <LayoutDashboard className="h-6 w-6" />
+              <span className="text-xs font-medium">Dashboard</span>
             </TabsTrigger>
             <TabsTrigger 
               value="jobs" 
-              className="flex-1 h-full flex-col gap-1 data-[state=active]:bg-primary/10"
+              className="flex-1 flex flex-col items-center justify-center gap-1 h-full data-[state=active]:bg-primary-foreground/20 rounded-xl transition-all"
             >
-              <Briefcase className="h-5 w-5" />
-              <span className="text-xs">Jobs</span>
+              <Briefcase className="h-6 w-6" />
+              <span className="text-xs font-medium">Jobs</span>
             </TabsTrigger>
             <TabsTrigger 
               value="candidates" 
-              className="flex-1 h-full flex-col gap-1 data-[state=active]:bg-primary/10"
+              className="flex-1 flex flex-col items-center justify-center gap-1 h-full data-[state=active]:bg-primary-foreground/20 rounded-xl transition-all"
             >
-              <Users className="h-5 w-5" />
-              <span className="text-xs">Candidates</span>
+              <Users className="h-6 w-6" />
+              <span className="text-xs font-medium">Candidates</span>
             </TabsTrigger>
             <TabsTrigger 
               value="analytics" 
-              className="flex-1 h-full flex-col gap-1 data-[state=active]:bg-primary/10"
+              className="flex-1 flex flex-col items-center justify-center gap-1 h-full data-[state=active]:bg-primary-foreground/20 rounded-xl transition-all"
             >
-              <BarChart3 className="h-5 w-5" />
-              <span className="text-xs">Analytics</span>
+              <BarChart3 className="h-6 w-6" />
+              <span className="text-xs font-medium">Stats</span>
             </TabsTrigger>
           </TabsList>
         </div>
