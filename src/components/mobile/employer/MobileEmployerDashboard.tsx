@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,8 +6,9 @@ import { Plus, Users, FileText, TrendingUp, Briefcase, Search } from "lucide-rea
 import { gsap } from "gsap";
 import { mobileAnimations } from "@/utils/mobileAnimations";
 import { MobileCardLayout } from "@/components/mobile/MobileCardLayout";
-import { SwipeableContainer } from "@/components/mobile/SwipeableContainer";
 import { Link } from "react-router-dom";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 interface BusinessData {
   company_name: string;
@@ -40,7 +41,10 @@ export function MobileEmployerDashboard({
 }: MobileEmployerDashboardProps) {
   const headerRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
-  const [currentStatIndex, setCurrentStatIndex] = useState(0);
+  
+  const autoplayPlugin = useRef(
+    Autoplay({ delay: 3000, stopOnInteraction: true })
+  );
 
   const statCards = [
     {
@@ -77,21 +81,6 @@ export function MobileEmployerDashboard({
     }
   }, []);
 
-  const handleStatSwipe = (direction: 'left' | 'right') => {
-    const maxIndex = statCards.length - 1;
-    if (direction === 'left' && currentStatIndex < maxIndex) {
-      setCurrentStatIndex(prev => prev + 1);
-    } else if (direction === 'right' && currentStatIndex > 0) {
-      setCurrentStatIndex(prev => prev - 1);
-    } else if (direction === 'left' && currentStatIndex === maxIndex) {
-      // Wrap to beginning
-      setCurrentStatIndex(0);
-    } else if (direction === 'right' && currentStatIndex === 0) {
-      // Wrap to end
-      setCurrentStatIndex(maxIndex);
-    }
-  };
-
   return (
     <div className="mobile-safe-top bg-gradient-to-br from-background to-muted/50 min-h-screen">
       {/* Header */}
@@ -118,63 +107,40 @@ export function MobileEmployerDashboard({
         )}
       </div>
 
-      {/* Stats Overview - Swipeable */}
+      {/* Stats Overview - Auto-sliding Carousel */}
       <div className="px-4 mb-6">
-        <MobileCardLayout className="p-0 overflow-hidden">
-          <SwipeableContainer 
-            onSwipeLeft={() => handleStatSwipe('left')}
-            onSwipeRight={() => handleStatSwipe('right')}
-            className="h-full"
+        <MobileCardLayout className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-foreground">This Week</h3>
+          </div>
+          
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            plugins={[autoplayPlugin.current]}
+            className="w-full"
           >
-            <div className="p-6 h-full">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-foreground">This Week</h3>
-                <div className="flex gap-1">
-                  {statCards.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                        index === currentStatIndex ? 'bg-primary' : 'bg-muted'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-              
-              <div className="relative h-24 overflow-hidden">
-                <div 
-                  className="flex transition-transform duration-500 ease-out"
-                  style={{
-                    transform: `translateX(-${currentStatIndex * 100}%)`,
-                    width: `${statCards.length * 100}%`
-                  }}
-                >
-                  {statCards.map((stat, index) => {
-                    const Icon = stat.icon;
-                    return (
-                      <div
-                        key={index}
-                        className="w-full flex-shrink-0 px-2"
-                        style={{ width: `${100 / statCards.length}%` }}
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center gap-4">
-                            <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.color}`}>
-                              <Icon className="h-6 w-6 text-white" />
-                            </div>
-                            <div>
-                              <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                              <p className="text-sm text-muted-foreground">{stat.description}</p>
-                            </div>
-                          </div>
-                        </div>
+            <CarouselContent>
+              {statCards.map((stat, index) => {
+                const Icon = stat.icon;
+                return (
+                  <CarouselItem key={index}>
+                    <div className="flex items-center gap-4">
+                      <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.color}`}>
+                        <Icon className="h-6 w-6 text-white" />
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </SwipeableContainer>
+                      <div>
+                        <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                        <p className="text-sm text-muted-foreground">{stat.description}</p>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                );
+              })}
+            </CarouselContent>
+          </Carousel>
         </MobileCardLayout>
       </div>
 

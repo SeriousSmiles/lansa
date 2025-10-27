@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserState } from '@/contexts/UserStateProvider';
 import { useLocation } from 'react-router-dom';
 import { BottomNav } from './BottomNav';
 import { QuickActionsSheet } from './QuickActionsSheet';
@@ -18,6 +19,7 @@ const ONBOARDING_ROUTES = ['/onboarding', '/profile-starter'];
 
 export function AppShell({ children }: AppShellProps) {
   const { user, loading } = useAuth();
+  const { userType, loading: userStateLoading } = useUserState();
   const location = useLocation();
   const { isQuickActionsOpen, isSearchOpen } = useUIStore();
   const isMobile = useIsMobile();
@@ -56,15 +58,19 @@ export function AppShell({ children }: AppShellProps) {
   console.log('AppShell state:', { 
     isMobile, 
     loading, 
+    userStateLoading,
     user: !!user, 
+    userType,
     hasCompletedOnboarding, 
     isAuthRoute, 
     isOnboardingRoute, 
     isSharedProfile,
-    showMobileNavigation: isMobile && !loading && user && hasCompletedOnboarding && !isAuthRoute && !isOnboardingRoute && !isSharedProfile 
+    showMobileNavigation: isMobile && !loading && !userStateLoading && user && userType === 'job_seeker' && !isAuthRoute && !isOnboardingRoute && !isSharedProfile 
   });
   
-  const showMobileNavigation = isMobile && !loading && user && !isAuthRoute && !isOnboardingRoute && !isSharedProfile;
+  // CRITICAL: Only show mobile navigation for job seekers
+  // Employers have their own navigation in MobileEmployerTabs
+  const showMobileNavigation = isMobile && !loading && !userStateLoading && user && userType === 'job_seeker' && !isAuthRoute && !isOnboardingRoute && !isSharedProfile;
   
   // On desktop, just render children without mobile shell
   if (!isMobile) {
