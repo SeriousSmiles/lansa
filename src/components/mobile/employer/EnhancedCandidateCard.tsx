@@ -34,8 +34,8 @@ export function EnhancedCandidateCard({ profile, className }: EnhancedCandidateC
             : 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary)))'
         }}
       >
-        <div className="flex items-start gap-4">
-          <Avatar className="w-20 h-20 ring-4 ring-white/30 shadow-lg flex-shrink-0">
+        <div className="flex flex-col items-center text-center">
+          <Avatar className="w-16 h-16 ring-4 ring-white/30 shadow-lg flex-shrink-0">
             <AvatarImage src={profile.profile_image} alt={profile.name} />
             <AvatarFallback 
               style={{ backgroundColor: profile.highlight_color || '#FF6B4A' }}
@@ -45,17 +45,17 @@ export function EnhancedCandidateCard({ profile, className }: EnhancedCandidateC
             </AvatarFallback>
           </Avatar>
           
-          <div className="flex-1 min-w-0 text-white">
+          <div className="mt-3 text-white">
             <h2 className="text-2xl font-bold mb-1 break-words">{profile.name}</h2>
             <p className="text-white/90 text-lg mb-2 break-words">{profile.title}</p>
             {profile.location && (
-              <p className="text-white/80 text-sm flex items-center gap-1">
+              <p className="text-white/80 text-sm flex items-center justify-center gap-1">
                 <MapPin className="w-3.5 h-3.5" />
                 {profile.location}
               </p>
             )}
             {profile.professional_goal && (
-              <p className="text-white/80 text-sm font-medium mt-2 line-clamp-2">{profile.professional_goal}</p>
+              <p className="text-white/80 text-sm font-medium mt-2">{profile.professional_goal}</p>
             )}
           </div>
         </div>
@@ -68,7 +68,7 @@ export function EnhancedCandidateCard({ profile, className }: EnhancedCandidateC
           {profile.about_text && (
             <div>
               <h4 className="font-semibold text-foreground mb-3 text-lg">About</h4>
-              <p className="text-muted-foreground text-sm leading-relaxed line-clamp-4">
+              <p className="text-muted-foreground text-sm leading-relaxed">
                 {profile.about_text}
               </p>
             </div>
@@ -79,7 +79,7 @@ export function EnhancedCandidateCard({ profile, className }: EnhancedCandidateC
             <div>
               <h4 className="font-semibold text-foreground text-lg mb-3">Skills</h4>
               <div className="flex flex-wrap gap-2">
-                {skillNames.slice(0, 8).map((skill, index) => (
+                {skillNames.map((skill, index) => (
                   <Badge 
                     key={index} 
                     variant="secondary" 
@@ -93,14 +93,6 @@ export function EnhancedCandidateCard({ profile, className }: EnhancedCandidateC
                     {skill}
                   </Badge>
                 ))}
-                {skillNames.length > 8 && (
-                  <Badge 
-                    variant="outline" 
-                    className="text-xs border-muted"
-                  >
-                    +{skillNames.length - 8} more
-                  </Badge>
-                )}
               </div>
             </div>
           )}

@@ -23,19 +23,9 @@ export function ApplicantProfileModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md h-[90vh] p-0 gap-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <div className="flex items-center justify-between">
-            <DialogTitle>
-              {applicantName ? `${applicantName}'s Profile` : 'Applicant Profile'}
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="h-8 w-8"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <DialogTitle>
+            {applicantName ? `${applicantName}'s Profile` : 'Applicant Profile'}
+          </DialogTitle>
         </DialogHeader>
         
         <div className="flex-1 overflow-hidden">
