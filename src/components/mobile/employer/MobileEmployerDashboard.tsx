@@ -128,7 +128,7 @@ export function MobileEmployerDashboard({
                 return (
                   <CarouselItem key={index}>
                     <div className="flex items-center gap-4">
-                      <div className={`p-3.5 rounded-2xl ${stat.color}`}>
+                      <div className={`p-3.5 rounded-lg ${stat.color}`}>
                         <Icon className="h-6 w-6 text-white" />
                       </div>
                       <div>
@@ -155,10 +155,10 @@ export function MobileEmployerDashboard({
         >
           <Button
             onClick={onCreateJob}
-            className="w-full h-[88px] bg-secondary hover:bg-secondary/90 text-secondary-foreground border-0 rounded-3xl shadow-sm"
+            className="w-full h-[88px] bg-secondary hover:bg-secondary/90 text-secondary-foreground border-0 rounded-xl shadow-sm"
           >
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-white/20 rounded-2xl">
+              <div className="p-3 bg-white/20 rounded-lg">
                 <Plus className="h-6 w-6" />
               </div>
               <div className="text-left">
@@ -177,10 +177,10 @@ export function MobileEmployerDashboard({
           <Button
             onClick={onBrowseCandidates}
             variant="outline"
-            className="w-full h-[88px] border border-border/50 hover:bg-accent/50 hover:border-border rounded-3xl transition-all"
+            className="w-full h-[88px] border border-border/50 hover:bg-accent/50 hover:border-border rounded-xl transition-all"
           >
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary/10 rounded-2xl">
+              <div className="p-3 bg-primary/10 rounded-lg">
                 <Search className="h-6 w-6 text-primary" />
               </div>
               <div className="text-left">
@@ -200,7 +200,7 @@ export function MobileEmployerDashboard({
           >
             <Link to="/employer-dashboard" className="block">
               <div className="text-center">
-                <div className="p-3.5 bg-primary/10 rounded-2xl w-fit mx-auto mb-3">
+                <div className="p-3.5 bg-primary/10 rounded-lg w-fit mx-auto mb-3">
                   <Briefcase className="h-6 w-6 text-primary" />
                 </div>
                 <p className="font-semibold text-sm text-foreground">Manage Jobs</p>
@@ -215,7 +215,7 @@ export function MobileEmployerDashboard({
             animationDelay={0.4}
           >
             <div className="text-center">
-              <div className="p-3.5 bg-secondary/10 rounded-2xl w-fit mx-auto mb-3">
+              <div className="p-3.5 bg-secondary/10 rounded-lg w-fit mx-auto mb-3">
                 <Users className="h-6 w-6 text-secondary" />
               </div>
               <p className="font-semibold text-sm text-foreground">Analytics</p>
