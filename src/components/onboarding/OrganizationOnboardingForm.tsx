@@ -103,6 +103,9 @@ export function OrganizationOnboardingForm({ onComplete }: OrganizationOnboardin
       // Refresh organization context
       await refreshOrganization();
       
+      // Wait for React state to propagate
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       // Complete onboarding
       onComplete();
     } catch (error: any) {

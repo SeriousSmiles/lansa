@@ -106,11 +106,40 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
   );
 
   /**
-   * Refresh organization data
+   * Refresh organization data (force reload)
    */
   const refreshOrganization = useCallback(async () => {
-    await loadOrganizations();
-  }, [loadOrganizations]);
+    setIsLoading(true);
+    try {
+      const memberships = await organizationService.getUserOrganizations();
+      setOrganizations(memberships);
+
+      // Check for pending requests
+      const pending = memberships.some((m) => !m.is_active);
+      setHasPendingRequest(pending);
+
+      // Set active organization
+      if (memberships.length > 0) {
+        const activeMemberships = memberships.filter((m) => m.is_active);
+        if (activeMemberships.length > 0) {
+          // Try to restore from localStorage or use first active
+          const savedOrgId = localStorage.getItem(ACTIVE_ORG_KEY);
+          const savedMembership = activeMemberships.find(
+            (m) => m.organization_id === savedOrgId
+          );
+
+          const membership = savedMembership || activeMemberships[0];
+          setActiveMembership(membership);
+          setActiveOrganization(membership.organization as Organization);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to refresh organizations:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   /**
    * Check if user has a specific permission
