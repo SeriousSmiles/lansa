@@ -56,7 +56,7 @@ export const Header83 = (props: Header83Props) => {
 
   return (
     <section ref={containerRef} id="relume" className="relative h-[300vh]">
-      <div className="sticky top-0 h-[100svh] overflow-hidden">
+      <div className="sticky top-0 h-[100svh] overflow-hidden" style={{ height: '100dvh' }}>
         <div className="flex h-full items-center justify-center">
           <div className="px-[5%] py-16 md:py-24 lg:py-28">
             <div className="relative z-10 mx-auto max-w-lg text-center">
