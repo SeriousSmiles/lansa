@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { Button } from "@relume_io/relume-ui";
 import type { ButtonProps } from "@relume_io/relume-ui";
 import clsx from "clsx";
@@ -25,13 +26,18 @@ export const Header83 = (props: Header83Props) => {
     ...props,
   };
 
-  const { scrollYProgress } = useScroll();
-  const opacityContent = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const opacityOverlay = useTransform(scrollYProgress, [0, 1], [1, 0]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"]
+  });
+  
+  const opacityContent = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
+  const opacityOverlay = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 1], [3.2, 1]);
 
   return (
-    <section id="relume" className="relative h-[300vh]">
+    <section ref={containerRef} id="relume" className="relative h-[300vh]">
       <div className="sticky top-0 h-screen overflow-hidden">
         <motion.div
           className="flex h-full items-center justify-center"
