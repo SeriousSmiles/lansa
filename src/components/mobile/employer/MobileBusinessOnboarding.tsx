@@ -6,18 +6,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { mobileAnimations } from "@/utils/mobileAnimations";
 import { gsap } from "gsap";
+import { organizationService } from "@/services/organizationService";
+import { useOrganization } from "@/contexts/OrganizationContext";
+import { toast } from "sonner";
 
-interface BusinessOnboardingData {
-  companyName: string;
-  businessSize: string;
-  roleFunction: string;
-  businessServices: string;
+interface OrganizationData {
+  name: string;
+  size_range: string;
+  industry: string;
 }
 
 interface MobileBusinessOnboardingProps {
-  onComplete: (data: BusinessOnboardingData) => void;
+  onComplete: () => void;
   onBack?: () => void;
-  initialData?: Partial<BusinessOnboardingData>;
+  initialData?: Partial<OrganizationData>;
 }
 
 interface OnboardingStep {
@@ -34,11 +36,12 @@ export function MobileBusinessOnboarding({
   initialData = {} 
 }: MobileBusinessOnboardingProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState<BusinessOnboardingData>({
-    companyName: initialData.companyName || "",
-    businessSize: initialData.businessSize || "",
-    roleFunction: initialData.roleFunction || "",
-    businessServices: initialData.businessServices || ""
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { refreshOrganization } = useOrganization();
+  const [formData, setFormData] = useState<OrganizationData>({
+    name: initialData.name || "",
+    size_range: initialData.size_range || "",
+    industry: initialData.industry || ""
   });
 
   const contentRef = useRef<HTMLDivElement>(null);
@@ -49,17 +52,12 @@ export function MobileBusinessOnboarding({
     "201-500 employees", "501-1000 employees", "1000+ employees"
   ];
 
-  const roleFunctions = [
-    "CEO/Founder", "HR Director", "Hiring Manager", 
-    "Recruiter", "Operations Manager", "Other"
-  ];
-
   const businessServices = [
     "Technology", "Healthcare", "Finance", "Education",
     "Manufacturing", "Retail", "Consulting", "Marketing", "Other"
   ];
 
-  const updateFormData = (field: keyof BusinessOnboardingData, value: any) => {
+  const updateFormData = (field: keyof OrganizationData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -68,7 +66,7 @@ export function MobileBusinessOnboarding({
       id: "company",
       title: "Tell us about your company",
       description: "Let's start with the basics",
-      validation: () => formData.companyName.length > 0 && formData.businessSize.length > 0,
+      validation: () => formData.name.length > 0 && formData.size_range.length > 0,
       component: (
         <div className="space-y-6">
           <div>
@@ -77,8 +75,8 @@ export function MobileBusinessOnboarding({
             </Label>
             <Input
               id="companyName"
-              value={formData.companyName}
-              onChange={(e) => updateFormData('companyName', e.target.value)}
+              value={formData.name}
+              onChange={(e) => updateFormData('name', e.target.value)}
               placeholder="Enter your company name"
               className="mt-2 h-12 text-base"
             />
@@ -89,8 +87,8 @@ export function MobileBusinessOnboarding({
               Company Size *
             </Label>
             <Select 
-              value={formData.businessSize} 
-              onValueChange={(value) => updateFormData('businessSize', value)}
+              value={formData.size_range} 
+              onValueChange={(value) => updateFormData('size_range', value)}
             >
               <SelectTrigger className="mt-2 h-12 text-base">
                 <SelectValue placeholder="Select company size" />
@@ -106,44 +104,18 @@ export function MobileBusinessOnboarding({
       )
     },
     {
-      id: "role",
-      title: "What's your role?",
-      description: "Help us understand your function",
-      validation: () => formData.roleFunction.length > 0,
-      component: (
-        <div>
-          <Label htmlFor="roleFunction" className="text-base font-medium">
-            Role & Function *
-          </Label>
-          <Select 
-            value={formData.roleFunction} 
-            onValueChange={(value) => updateFormData('roleFunction', value)}
-          >
-            <SelectTrigger className="mt-2 h-12 text-base">
-              <SelectValue placeholder="Select your role" />
-            </SelectTrigger>
-            <SelectContent>
-              {roleFunctions.map((role) => (
-                <SelectItem key={role} value={role}>{role}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )
-    },
-    {
       id: "industry",
       title: "What industry are you in?",
       description: "This helps us match you with relevant candidates",
-      validation: () => formData.businessServices.length > 0,
+      validation: () => formData.industry.length > 0,
       component: (
         <div>
           <Label htmlFor="businessServices" className="text-base font-medium">
             Industry *
           </Label>
           <Select 
-            value={formData.businessServices} 
-            onValueChange={(value) => updateFormData('businessServices', value)}
+            value={formData.industry} 
+            onValueChange={(value) => updateFormData('industry', value)}
           >
             <SelectTrigger className="mt-2 h-12 text-base">
               <SelectValue placeholder="Select your industry" />
@@ -169,12 +141,12 @@ export function MobileBusinessOnboarding({
           </div>
           <div className="space-y-2">
             <p className="text-muted-foreground">
-              Your employer profile is ready! You can now:
+              Your organization is ready! You can now:
             </p>
             <ul className="text-sm text-muted-foreground space-y-1">
               <li>• Post job listings</li>
+              <li>• Invite team members</li>
               <li>• Browse and connect with candidates</li>
-              <li>• Get AI-powered matches</li>
             </ul>
           </div>
         </div>
@@ -202,12 +174,29 @@ export function MobileBusinessOnboarding({
     }
   }, [currentStep]);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const step = steps[currentStep];
     if (!step.validation()) return;
 
     if (currentStep === steps.length - 1) {
-      onComplete(formData);
+      // Final step - create organization
+      try {
+        setIsSubmitting(true);
+        await organizationService.createOrganization({
+          name: formData.name,
+          size_range: formData.size_range,
+          industry: formData.industry
+        });
+        
+        await refreshOrganization();
+        toast.success("Organization created successfully!");
+        onComplete();
+      } catch (error) {
+        console.error("Error creating organization:", error);
+        toast.error("Failed to create organization");
+      } finally {
+        setIsSubmitting(false);
+      }
     } else {
       setCurrentStep(prev => prev + 1);
     }
@@ -282,10 +271,12 @@ export function MobileBusinessOnboarding({
           <div className="max-w-md mx-auto">
             <Button
               onClick={handleNext}
-              disabled={!currentStepData.validation()}
+              disabled={!currentStepData.validation() || isSubmitting}
               className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-medium"
             >
-              {currentStep === steps.length - 1 ? (
+              {isSubmitting ? (
+                "Creating..."
+              ) : currentStep === steps.length - 1 ? (
                 "Complete Setup"
               ) : (
                 <>
