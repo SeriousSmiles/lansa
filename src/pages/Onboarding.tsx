@@ -58,14 +58,24 @@ export default function Onboarding() {
           // Check if user has already selected a type
           if (answers.user_type) {
             setUserType(answers.user_type);
-            setShowTypeSelection(false);
             
-            // Check if user has already selected career path
-            if (answers.career_path) {
-              setCareerPath(answers.career_path);
-              setShowCareerSegmentation(false);
-            } else if (answers.user_type === 'job_seeker') {
-              setShowCareerSegmentation(true);
+            // Restore user_intent from onboarding_inputs if available
+            const savedIntent = answers.onboarding_inputs?.user_intent as 'job_seeker' | 'create_org' | 'join_org' | undefined;
+            
+            if (savedIntent) {
+              setUserIntent(savedIntent);
+              setShowTypeSelection(false);
+              
+              // Check if user has already selected career path (for job seekers)
+              if (answers.career_path) {
+                setCareerPath(answers.career_path);
+                setShowCareerSegmentation(false);
+              } else if (savedIntent === 'job_seeker') {
+                setShowCareerSegmentation(true);
+              }
+            } else {
+              // No saved intent - show type selection again
+              setShowTypeSelection(true);
             }
           }
         }
@@ -89,13 +99,20 @@ export default function Onboarding() {
     const mappedUserType = selectedIntent === 'job_seeker' ? 'job_seeker' : 'employer';
     setUserType(mappedUserType);
     
-    // Save user_type to database immediately
+    // Save user_type AND user_intent to database immediately
     if (user?.id) {
       try {
-        await saveUserAnswers(user.id, { 
+        const updatedAnswers = { 
           ...userAnswers, 
-          user_type: mappedUserType 
-        });
+          user_type: mappedUserType,
+          onboarding_inputs: {
+            ...userAnswers.onboarding_inputs,
+            user_intent: selectedIntent
+          }
+        };
+        await saveUserAnswers(user.id, updatedAnswers);
+        setUserAnswers(updatedAnswers);
+        console.log("Saved user intent:", selectedIntent);
       } catch (error) {
         console.error("Error saving user type:", error);
         toast.error("Failed to save your selection. Please try again.");
@@ -118,7 +135,7 @@ export default function Onboarding() {
   const handleBackToTypeSelection = () => {
     setShowTypeSelection(true);
     setUserIntent(null);
-    setUserType(null);
+    // Don't reset userType here - keep it so we don't lose the employer status
     setShowCareerSegmentation(false);
   };
 
