@@ -8,14 +8,14 @@ export default function IndexPage() {
   return (
     <>
       <SEOHead
-        title="Lansa - AI-Powered Professional Profile Builder | Transform Your Career"
+        title="Lansa - AI-Powered Professional Profile Builder | Transform Your Career | Find the right employee"
         description="Join thousands building better careers with Lansa's AI-powered professional profile builder. Get personalized career insights, create compelling profiles, and connect with opportunities that match your goals."
         keywords="professional profile builder, AI career coach, career development, resume builder, job search platform, professional networking, career insights, profile optimization"
-        canonical="https://lansa.online/"
+        canonical="https://www.lansa.online/"
       />
       <Header83
         heading="Professionals and Businesses, Connected"
-        description="Build a standout professional profile, discover opportunities, and unlock your career potential with AI-powered insights."
+        description="Lansa is a software company that gives young professionals something better to offer and connects them to business that needs them."
         buttons={[
           { 
             title: "Get Started",
