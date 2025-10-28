@@ -183,6 +183,13 @@ export default function Onboarding() {
   const handleBusinessOnboardingComplete = async () => {
     try {
       console.log("Business onboarding complete, navigating to dashboard...");
+      
+      // Mark onboarding as complete first
+      if (user?.id) {
+        const { markOnboardingComplete } = await import('@/services/onboarding/unifiedOnboardingService');
+        await markOnboardingComplete(user.id, 'employer');
+      }
+      
       await navigateAfterOnboarding('employer');
     } catch (error) {
       console.error("Error during post-onboarding navigation:", error);
