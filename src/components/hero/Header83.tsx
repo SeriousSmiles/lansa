@@ -33,10 +33,10 @@ export const Header83 = (props: Header83Props) => {
     offset: ["start start", "end start"]
   });
   
-  const opacityHeading = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
-  const opacityDescription = useTransform(scrollYProgress, [0.05, 0.25], [1, 0]);
-  const opacityButtons = useTransform(scrollYProgress, [0.1, 0.3], [1, 0]);
-  const opacityOverlay = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const opacityHeading = useTransform(scrollYProgress, [0, 0.25], [1, 0]);
+  const opacityDescription = useTransform(scrollYProgress, [0.05, 0.3], [1, 0]);
+  const opacityButtons = useTransform(scrollYProgress, [0.1, 0.35], [1, 0]);
+  const opacityOverlay = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 1], [3.2, 1]);
 
   return (
