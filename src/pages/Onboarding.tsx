@@ -9,6 +9,8 @@ import {
 } from "@/services/question";
 import { UserTypeSelection } from "@/components/onboarding/UserTypeSelection";
 import { BusinessOnboardingForm } from "@/components/onboarding/BusinessOnboardingForm";
+import { OrganizationOnboardingForm } from "@/components/onboarding/OrganizationOnboardingForm";
+import { JoinOrganizationFlow } from "@/components/onboarding/JoinOrganizationFlow";
 import { StudentOnboardingContainer } from "@/components/onboarding/student/StudentOnboardingContainer";
 import { CareerPathSegmentation, type CareerPath } from "@/components/onboarding/CareerPathSegmentation";
 import { AIOnboardingFlow } from "@/components/onboarding/AIOnboardingFlow";
@@ -21,6 +23,7 @@ export default function Onboarding() {
   const [isLoading, setIsLoading] = useState(true);
   const [userAnswers, setUserAnswers] = useState<any>({});
   const [userType, setUserType] = useState<'job_seeker' | 'employer' | null>(null);
+  const [userIntent, setUserIntent] = useState<'job_seeker' | 'create_org' | 'join_org' | null>(null);
   const [careerPath, setCareerPath] = useState<CareerPath | null>(null);
   const [showTypeSelection, setShowTypeSelection] = useState(true);
   const [showCareerSegmentation, setShowCareerSegmentation] = useState(false);
@@ -78,16 +81,20 @@ export default function Onboarding() {
     loadUserAnswers();
   }, [user, navigate]);
 
-  const handleUserTypeSelect = async (selectedType: 'job_seeker' | 'employer') => {
-    setUserType(selectedType);
+  const handleUserTypeSelect = async (selectedIntent: 'job_seeker' | 'create_org' | 'join_org') => {
+    setUserIntent(selectedIntent);
     setShowTypeSelection(false);
     
-    // Save user_type to database immediately for both user types
+    // Map intent to user_type for database
+    const mappedUserType = selectedIntent === 'job_seeker' ? 'job_seeker' : 'employer';
+    setUserType(mappedUserType);
+    
+    // Save user_type to database immediately
     if (user?.id) {
       try {
         await saveUserAnswers(user.id, { 
           ...userAnswers, 
-          user_type: selectedType 
+          user_type: mappedUserType 
         });
       } catch (error) {
         console.error("Error saving user type:", error);
@@ -95,9 +102,16 @@ export default function Onboarding() {
       }
     }
     
-    // Show career segmentation only for job seekers
-    if (selectedType === 'job_seeker') {
+    // Handle different intents
+    if (selectedIntent === 'job_seeker') {
+      // Show career segmentation for job seekers
       setShowCareerSegmentation(true);
+    } else if (selectedIntent === 'create_org') {
+      // Go directly to organization creation flow
+      // This will render the OrganizationOnboardingForm (to be created)
+    } else if (selectedIntent === 'join_org') {
+      // Go directly to join organization flow
+      // This will render the JoinOrganizationFlow (to be created)
     }
   };
 
@@ -183,10 +197,10 @@ export default function Onboarding() {
             <UserTypeSelection onSelect={handleUserTypeSelect} />
           ) : showCareerSegmentation ? (
             <CareerPathSegmentation onSelect={handleCareerPathSelect} />
-          ) : userType === 'employer' ? (
-            <div className="flex flex-col items-center justify-center px-4 py-8">
-              <BusinessOnboardingForm onComplete={handleBusinessOnboardingComplete} />
-            </div>
+          ) : userIntent === 'create_org' ? (
+            <OrganizationOnboardingForm onComplete={handleBusinessOnboardingComplete} />
+          ) : userIntent === 'join_org' ? (
+            <JoinOrganizationFlow onComplete={handleBusinessOnboardingComplete} />
           ) : userType === 'job_seeker' && careerPath ? (
             <AIOnboardingFlow />
           ) : (
