@@ -1,5 +1,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 import { getAuthenticatedUser, formatAuthError, AuthorizationError } from '../_shared/guard.ts';
+import { requireOrgPermission } from '../_shared/orgPermissions.ts';
+import { sendInvitationEmail } from '../_shared/emailService.ts';
+import { rateLimit } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,6 +20,21 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Rate limiting
+  const rateLimitResult = await rateLimit(req, { limit: 20, window: 60 });
+  if (!rateLimitResult.allowed) {
+    return new Response(
+      JSON.stringify({ 
+        error: 'Rate limit exceeded',
+        retryAfter: rateLimitResult.retryAfter 
+      }),
+      { 
+        status: 429, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
+  }
+
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -29,22 +47,8 @@ Deno.serve(async (req) => {
 
     console.log(`[invite-org-member] User ${state.userId} inviting ${email} to org ${organizationId} as ${role}`);
 
-    // Check if user has permission to invite (admin or owner)
-    const { data: membership, error: membershipError } = await supabase
-      .from('organization_memberships')
-      .select('role')
-      .eq('organization_id', organizationId)
-      .eq('user_id', state.userId)
-      .eq('is_active', true)
-      .single();
-
-    if (membershipError || !membership) {
-      throw new AuthorizationError('Not a member of this organization', 'forbidden');
-    }
-
-    if (!['owner', 'admin'].includes(membership.role)) {
-      throw new AuthorizationError('Insufficient permissions to invite members', 'forbidden');
-    }
+    // Check permission using new permission system
+    await requireOrgPermission(supabase, state.userId, organizationId, 'invite_members');
 
     // Check if email is already a member
     const { data: existingMember } = await supabase
@@ -98,7 +102,31 @@ Deno.serve(async (req) => {
 
     console.log(`[invite-org-member] Invitation created: ${invitation.id}`);
 
-    // TODO: Send email notification (integrate with email service)
+    // Get organization details and inviter info for email
+    const { data: organization } = await supabase
+      .from('organizations')
+      .select('name')
+      .eq('id', organizationId)
+      .single();
+
+    const { data: inviterData } = await supabase.auth.admin.getUserById(state.userId);
+    const inviterName = inviterData.user?.user_metadata?.full_name || 
+                       inviterData.user?.email?.split('@')[0] || 
+                       'A team member';
+
+    // Send invitation email (non-blocking - don't fail request if email fails)
+    try {
+      await sendInvitationEmail({
+        organizationName: organization?.name || 'the organization',
+        inviterName,
+        recipientEmail: email,
+        role: role,
+        inviteUrl: `https://lansa.app/join?token=${invitation.token}`
+      });
+    } catch (emailError) {
+      console.error('[invite-org-member] Email sending failed:', emailError);
+      // Continue anyway - invitation is created
+    }
 
     return new Response(
       JSON.stringify({ success: true, invitation }),

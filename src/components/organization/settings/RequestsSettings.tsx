@@ -7,10 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { useOrgPermissions } from "@/contexts/OrganizationContext";
 import { organizationService } from "@/services/organizationService";
-import type { OrganizationMembership } from "@/types/organization";
+import type { OrganizationMembership, OrgRole } from "@/types/organization";
 import { toast } from "sonner";
 import { UserPlus, Check, X } from "lucide-react";
 import { format } from "date-fns";
@@ -20,6 +22,9 @@ export function RequestsSettings() {
   const { canInviteMembers } = useOrgPermissions(); // Approving requests requires invite permission
   const [requests, setRequests] = useState<OrganizationMembership[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedRequest, setSelectedRequest] = useState<string | null>(null);
+  const [selectedRole, setSelectedRole] = useState<OrgRole>('member');
+  const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
 
   useEffect(() => {
     loadRequests();
@@ -40,15 +45,25 @@ export function RequestsSettings() {
     }
   };
 
-  const handleApprove = async (membershipId: string) => {
+  const handleApprove = (membershipId: string) => {
+    setSelectedRequest(membershipId);
+    setSelectedRole('member'); // Default
+    setIsRoleDialogOpen(true);
+  };
+
+  const confirmApprovalWithRole = async () => {
+    if (!selectedRequest) return;
+    
     try {
-      await organizationService.approveMembershipRequest(membershipId);
-      toast.success("Request approved successfully");
+      await organizationService.approveMembershipRequest(selectedRequest, selectedRole);
+      toast.success('Request approved successfully');
+      setIsRoleDialogOpen(false);
+      setSelectedRequest(null);
       loadRequests();
       refreshOrganization();
     } catch (error) {
-      console.error("Error approving request:", error);
-      toast.error("Failed to approve request");
+      console.error('Error approving request:', error);
+      toast.error('Failed to approve request');
     }
   };
 
@@ -142,6 +157,61 @@ export function RequestsSettings() {
           </div>
         )}
       </CardContent>
+
+      {/* Role Selection Dialog */}
+      <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Select Role</DialogTitle>
+            <DialogDescription>
+              Choose the role for this new member. Each role has different permissions.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as OrgRole)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="viewer">
+                  <div className="flex flex-col items-start">
+                    <span className="font-medium">Viewer</span>
+                    <span className="text-xs text-muted-foreground">Read-only access</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="member">
+                  <div className="flex flex-col items-start">
+                    <span className="font-medium">Member</span>
+                    <span className="text-xs text-muted-foreground">View applications and analytics</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="manager">
+                  <div className="flex flex-col items-start">
+                    <span className="font-medium">Manager</span>
+                    <span className="text-xs text-muted-foreground">Create jobs and manage applications</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="admin">
+                  <div className="flex flex-col items-start">
+                    <span className="font-medium">Admin</span>
+                    <span className="text-xs text-muted-foreground">Full management access</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsRoleDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmApprovalWithRole}>
+              Approve as {selectedRole}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

@@ -1,5 +1,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 import { getAuthenticatedUser, formatAuthError, AuthorizationError } from '../_shared/guard.ts';
+import { requireOrgRole } from '../_shared/orgPermissions.ts';
+import { sendApprovalEmail, sendRejectionEmail } from '../_shared/emailService.ts';
+import { rateLimit } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,6 +18,21 @@ interface ManageRequestBody {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Rate limiting
+  const rateLimitResult = await rateLimit(req, { limit: 20, window: 60 });
+  if (!rateLimitResult.allowed) {
+    return new Response(
+      JSON.stringify({ 
+        error: 'Rate limit exceeded',
+        retryAfter: rateLimitResult.retryAfter 
+      }),
+      { 
+        status: 429, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
   }
 
   try {
@@ -44,22 +62,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if user has permission to manage requests (admin or owner)
-    const { data: membership, error: membershipError } = await supabase
-      .from('organization_memberships')
-      .select('role')
-      .eq('organization_id', request.organization_id)
-      .eq('user_id', state.userId)
-      .eq('is_active', true)
-      .single();
-
-    if (membershipError || !membership) {
-      throw new AuthorizationError('Not a member of this organization', 'forbidden');
-    }
-
-    if (!['owner', 'admin'].includes(membership.role)) {
-      throw new AuthorizationError('Insufficient permissions to manage requests', 'forbidden');
-    }
+    // Check permission using new permission system
+    await requireOrgRole(supabase, state.userId, request.organization_id, ['owner', 'admin']);
 
     if (action === 'approve') {
       // Check seat limit
@@ -107,6 +111,30 @@ Deno.serve(async (req) => {
 
       console.log(`[manage-org-request] Request approved: ${membershipId}`);
 
+      // Get user details for email
+      const { data: userData } = await supabase.auth.admin.getUserById(request.user_id);
+      const userName = userData.user?.user_metadata?.full_name || 
+                      userData.user?.email?.split('@')[0] || 
+                      'there';
+      const userEmail = userData.user?.email;
+
+      // Send approval email (non-blocking)
+      if (userEmail) {
+        try {
+          await sendApprovalEmail(
+            {
+              organizationName: request.organization.name,
+              recipientName: userName,
+              role: role || 'member',
+              dashboardUrl: 'https://lansa.app/employer-dashboard'
+            },
+            userEmail
+          );
+        } catch (emailError) {
+          console.error('[manage-org-request] Approval email failed:', emailError);
+        }
+      }
+
       return new Response(
         JSON.stringify({ success: true, action: 'approved' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -124,6 +152,26 @@ Deno.serve(async (req) => {
       }
 
       console.log(`[manage-org-request] Request rejected: ${membershipId}`);
+
+      // Get user details for email
+      const { data: userData } = await supabase.auth.admin.getUserById(request.user_id);
+      const userName = userData.user?.user_metadata?.full_name || 
+                      userData.user?.email?.split('@')[0] || 
+                      'there';
+      const userEmail = userData.user?.email;
+
+      // Send rejection email (non-blocking)
+      if (userEmail) {
+        try {
+          await sendRejectionEmail(
+            request.organization.name,
+            userName,
+            userEmail
+          );
+        } catch (emailError) {
+          console.error('[manage-org-request] Rejection email failed:', emailError);
+        }
+      }
 
       return new Response(
         JSON.stringify({ success: true, action: 'rejected' }),
