@@ -29,38 +29,53 @@ export default function EmployerDashboard() {
 
   useEffect(() => {
     async function loadBusinessData() {
-      if (!user?.id) return;
+      if (!user?.id || !activeOrganization?.id) return;
 
       try {
         track('dashboard_visited');
 
-        const { data, error } = await supabase
+        // ✅ FIXED: Load from business_profiles linked to organization
+        const { data: profile, error: profileError } = await supabase
+          .from('business_profiles')
+          .select('company_name, company_size, industry')
+          .eq('organization_id', activeOrganization.id)
+          .maybeSingle();
+
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('Error fetching business profile:', profileError);
+        }
+
+        // Fallback to business_onboarding_data for legacy support
+        const { data: onboardingData } = await supabase
           .from('business_onboarding_data')
           .select('company_name, business_size, role_function, business_services, company_logo')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error fetching business data:', error);
-        } else {
-          setBusinessData(data);
+        // Merge data with organization data taking precedence
+        const merged = {
+          company_name: activeOrganization.name || profile?.company_name || onboardingData?.company_name || '',
+          business_size: activeOrganization.size_range || profile?.company_size || onboardingData?.business_size || '',
+          role_function: onboardingData?.role_function || 'Member',
+          business_services: activeOrganization.industry || profile?.industry || onboardingData?.business_services || '',
+          company_logo: activeOrganization.logo_url || onboardingData?.company_logo
+        };
+
+        setBusinessData(merged);
+        
+        // Check if we should show logo upload modal
+        if (!merged.company_logo) {
+          const { data: userAnswers } = await supabase
+            .from('user_answers')
+            .select('onboarding_inputs')
+            .eq('user_id', user.id)
+            .maybeSingle();
           
-          // Check if we should show logo upload modal
-          // Show only if: 1) No logo uploaded yet, 2) User hasn't skipped
-          if (data && !data.company_logo) {
-            const { data: userAnswers } = await supabase
-              .from('user_answers')
-              .select('onboarding_inputs')
-              .eq('user_id', user.id)
-              .single();
-            
-            const hasSkipped = (userAnswers?.onboarding_inputs as any)?.company_logo_skipped;
-            const hasUploaded = (userAnswers?.onboarding_inputs as any)?.company_logo_uploaded;
-            
-            if (!hasSkipped && !hasUploaded) {
-              // Show modal after a brief delay for better UX
-              setTimeout(() => setShowLogoModal(true), 1000);
-            }
+          const hasSkipped = (userAnswers?.onboarding_inputs as any)?.company_logo_skipped;
+          const hasUploaded = (userAnswers?.onboarding_inputs as any)?.company_logo_uploaded;
+          
+          if (!hasSkipped && !hasUploaded) {
+            setTimeout(() => setShowLogoModal(true), 1000);
           }
         }
       } catch (error) {
@@ -71,7 +86,7 @@ export default function EmployerDashboard() {
     }
 
     loadBusinessData();
-  }, [user?.id, track]);
+  }, [user?.id, activeOrganization?.id, track]);
 
   if (isLoading || orgLoading) {
     return (
@@ -96,15 +111,18 @@ export default function EmployerDashboard() {
 
   const handleLogoUploadSuccess = async () => {
     // Reload business data to show the new logo
-    if (user?.id) {
-      const { data } = await supabase
+    if (user?.id && activeOrganization?.id) {
+      const { data: onboardingData } = await supabase
         .from('business_onboarding_data')
         .select('company_name, business_size, role_function, business_services, company_logo')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       
-      if (data) {
-        setBusinessData(data);
+      if (onboardingData) {
+        setBusinessData({
+          ...businessData,
+          company_logo: onboardingData.company_logo
+        } as BusinessData);
       }
     }
   };

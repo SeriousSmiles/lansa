@@ -21,6 +21,7 @@ interface MobileJobCreatorProps {
   initialData?: Partial<JobFormData>;
   companyName?: string;
   userId: string;
+  organizationId: string;
 }
 
 interface JobStep {
@@ -36,7 +37,8 @@ export function MobileJobCreator({
   onClose, 
   initialData = {},
   companyName = "",
-  userId
+  userId,
+  organizationId
 }: MobileJobCreatorProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [jobData, setJobData] = useState<JobFormData>({
@@ -495,7 +497,7 @@ export function MobileJobCreator({
     if (currentStep === steps.length - 1) {
       // Submit the job
       try {
-        const createdJob = await jobPostingService.createJobListing(userId, jobData);
+        const createdJob = await jobPostingService.createJobListing(userId, organizationId, jobData);
         if (createdJob) {
           onComplete(jobData);
         }

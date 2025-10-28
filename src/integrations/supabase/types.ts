@@ -679,6 +679,7 @@ export type Database = {
           created_at: string
           id: string
           job_id: string
+          organization_id: string | null
           status: Database["public"]["Enums"]["application_status"]
           updated_at: string
         }
@@ -688,6 +689,7 @@ export type Database = {
           created_at?: string
           id?: string
           job_id: string
+          organization_id?: string | null
           status?: Database["public"]["Enums"]["application_status"]
           updated_at?: string
         }
@@ -697,6 +699,7 @@ export type Database = {
           created_at?: string
           id?: string
           job_id?: string
+          organization_id?: string | null
           status?: Database["public"]["Enums"]["application_status"]
           updated_at?: string
         }
@@ -713,6 +716,13 @@ export type Database = {
             columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "job_listings_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_applications_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -847,6 +857,7 @@ export type Database = {
           is_remote: boolean | null
           job_type: Database["public"]["Enums"]["job_type"]
           location: string | null
+          organization_id: string | null
           posted_at: string
           salary_range: string | null
           search_tsv: unknown
@@ -866,6 +877,7 @@ export type Database = {
           is_remote?: boolean | null
           job_type: Database["public"]["Enums"]["job_type"]
           location?: string | null
+          organization_id?: string | null
           posted_at?: string
           salary_range?: string | null
           search_tsv?: unknown
@@ -885,6 +897,7 @@ export type Database = {
           is_remote?: boolean | null
           job_type?: Database["public"]["Enums"]["job_type"]
           location?: string | null
+          organization_id?: string | null
           posted_at?: string
           salary_range?: string | null
           search_tsv?: unknown
@@ -906,6 +919,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user_profiles"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "job_listings_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
         ]
       }

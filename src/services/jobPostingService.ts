@@ -83,8 +83,13 @@ export const jobPostingService = {
     }
   },
 
-  async createJobListing(userId: string, jobData: JobFormData): Promise<JobListing | null> {
+  async createJobListing(userId: string, organizationId: string, jobData: JobFormData): Promise<JobListing | null> {
     try {
+      // Verify organization membership
+      if (!organizationId) {
+        throw new Error('Organization ID is required to create a job');
+      }
+
       // Get or create business profile
       let businessProfile = await employerDataService.getBusinessProfile(userId);
       
@@ -213,6 +218,7 @@ export const jobPostingService = {
       // Insert into job_listings_v2 (the table used by job seekers)
       const jobListingData = {
         company_id: companyId,
+        organization_id: organizationId, // ✅ CRITICAL: Link job to organization
         created_by: userId,
         title: jobData.title,
         description: this.formatJobDescription(jobData),

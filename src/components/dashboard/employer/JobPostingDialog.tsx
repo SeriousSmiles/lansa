@@ -18,6 +18,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { X, Calendar as CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrganization } from "@/contexts/OrganizationContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -82,6 +83,7 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
   const [jobImage, setJobImage] = useState<File | null>(null);
   const [currentImageUrl, setCurrentImageUrl] = useState<string>("");
   const { user } = useAuth();
+  const { activeOrganization } = useOrganization();
 
   useEffect(() => {
     if (editingJob) {
@@ -161,7 +163,10 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
   };
 
   const handleSubmit = async () => {
-    if (!user?.id) return;
+    if (!user?.id || !activeOrganization?.id) {
+      toast.error("Organization context is required");
+      return;
+    }
     
     setIsSubmitting(true);
     try {
@@ -250,6 +255,7 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
       const normalizedJobType = formData.jobType.toLowerCase().replace(/\s+/g, '_');
       const jobData: any = {
         company_id: company.id,
+        organization_id: activeOrganization.id, // ✅ CRITICAL: Link job to organization
         created_by: user.id,
         title: formData.title,
         description: formData.description,

@@ -6,6 +6,7 @@ import { MobileEmployerDashboard } from "./MobileEmployerDashboard";
 import { MobileCandidateBrowser } from "./MobileCandidateBrowser";
 import { MobileJobCreator } from "./MobileJobCreator";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrganization } from "@/contexts/OrganizationContext";
 import { supabase } from "@/integrations/supabase/client";
 import { discoveryService } from "@/services/discoveryService";
 import { swipeService } from "@/services/swipeService";
@@ -38,6 +39,7 @@ interface MobileEmployerTabsProps {
 
 export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
   const { user } = useAuth();
+  const { activeOrganization } = useOrganization();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showJobCreator, setShowJobCreator] = useState(false);
   const [showCandidateBrowser, setShowCandidateBrowser] = useState(false);
@@ -213,7 +215,12 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
         jobImageUrl: jobData.jobImageUrl
       };
 
-      const result = await jobPostingService.createJobListing(user.id, jobFormData);
+      if (!activeOrganization?.id) {
+        toast.error("Organization context is required");
+        return;
+      }
+
+      const result = await jobPostingService.createJobListing(user.id, activeOrganization.id, jobFormData);
 
       if (result) {
         toast.success("Job posted successfully!");
@@ -273,10 +280,11 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
   };
 
   // Show full-screen components
-  if (showJobCreator) {
+  if (showJobCreator && activeOrganization?.id) {
     return (
       <MobileJobCreator
         userId={user?.id || ""}
+        organizationId={activeOrganization.id}
         onComplete={handleJobCreated}
         onClose={() => setShowJobCreator(false)}
         companyName={businessData?.company_name}

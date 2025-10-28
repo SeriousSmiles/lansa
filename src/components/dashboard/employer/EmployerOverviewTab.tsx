@@ -37,9 +37,9 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
       if (!activeOrganization?.id) return;
 
       try {
-        // Count active job listings for this organization
+        // ✅ FIXED: Count active job listings for this organization (using job_listings_v2)
         const { count: jobCount } = await supabase
-          .from('job_listings')
+          .from('job_listings_v2')
           .select('*', { count: 'exact', head: true })
           .eq('organization_id', activeOrganization.id)
           .eq('is_active', true);
@@ -50,12 +50,15 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
           .select('*', { count: 'exact', head: true })
           .eq('swiper_user_id', user?.id || '');
 
-        // TODO: Count organization-wide applications when organization_id is added to job_listings
-        // For now, set to 0 as we need to first get job IDs then count apps
+        // ✅ FIXED: Count organization-wide applications
+        const { count: appCount } = await supabase
+          .from('job_applications_v2')
+          .select('*', { count: 'exact', head: true })
+          .eq('organization_id', activeOrganization.id);
         
         setStats({
           activeJobs: jobCount || 0,
-          totalApplications: 0,
+          totalApplications: appCount || 0,
           candidatesViewed: swipeCount || 0
         });
       } catch (error) {

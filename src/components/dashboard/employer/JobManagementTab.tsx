@@ -44,13 +44,11 @@ export function JobManagementTab() {
     if (!activeOrganization?.id) return;
 
     try {
-      // Fetch job listings for this organization
-      // For now, using created_by since we're in transition
-      // TODO: Update when organization_id is added to job_listings_v2
+      // ✅ FIXED: Query jobs by organization_id (all team members see org jobs)
       const { data: jobs, error: jobsError } = await supabase
         .from('job_listings_v2')
         .select('*')
-        .eq('created_by', user?.id || '')
+        .eq('organization_id', activeOrganization.id)
         .order('posted_at', { ascending: false });
 
       if (jobsError) {
