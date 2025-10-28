@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Building2, Users, FileText, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrganization } from "@/contexts/OrganizationContext";
 import { supabase } from "@/integrations/supabase/client";
 
 interface BusinessData {
@@ -29,44 +30,41 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
     candidatesViewed: 0
   });
   const { user } = useAuth();
+  const { activeOrganization } = useOrganization();
 
   useEffect(() => {
     async function loadStats() {
-      if (!user?.id) return;
+      if (!activeOrganization?.id) return;
 
       try {
-        // Get business profile first
-        const { data: businessProfile } = await supabase
-          .from('business_profiles')
-          .select('id')
-          .eq('user_id', user.id)
-          .single();
+        // Count active job listings for this organization
+        const { count: jobCount } = await supabase
+          .from('job_listings')
+          .select('*', { count: 'exact', head: true })
+          .eq('organization_id', activeOrganization.id)
+          .eq('is_active', true);
 
-        if (businessProfile) {
-          // Count active job listings
-          const { count: jobCount } = await supabase
-            .from('job_listings')
-            .select('*', { count: 'exact' })
-            .eq('business_id', businessProfile.id)
-            .eq('is_active', true);
-
-          setStats(prev => ({ ...prev, activeJobs: jobCount || 0 }));
-        }
-
-        // Count total swipes (candidate views)
+        // Count candidate views for this organization
         const { count: swipeCount } = await supabase
           .from('swipes')
-          .select('*', { count: 'exact' })
-          .eq('swiper_user_id', user.id);
+          .select('*', { count: 'exact', head: true })
+          .eq('swiper_user_id', user?.id || '');
 
-        setStats(prev => ({ ...prev, candidatesViewed: swipeCount || 0 }));
+        // TODO: Count organization-wide applications when organization_id is added to job_listings
+        // For now, set to 0 as we need to first get job IDs then count apps
+        
+        setStats({
+          activeJobs: jobCount || 0,
+          totalApplications: 0,
+          candidatesViewed: swipeCount || 0
+        });
       } catch (error) {
         console.error('Error loading employer stats:', error);
       }
     }
 
     loadStats();
-  }, [user?.id]);
+  }, [activeOrganization?.id, user?.id]);
 
   return (
     <div className="space-y-6">
@@ -80,20 +78,24 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {businessData && (
+            {activeOrganization && (
               <>
                 <div>
-                  <h3 className="font-semibold text-[#2E2E2E] mb-2">Company Information</h3>
+                  <h3 className="font-semibold text-[#2E2E2E] mb-2">Organization Information</h3>
                   <div className="space-y-2">
-                    <p><span className="font-medium">Company:</span> {businessData.company_name}</p>
-                    <p><span className="font-medium">Size:</span> {businessData.business_size}</p>
-                    <p><span className="font-medium">Industry:</span> {businessData.business_services}</p>
+                    <p><span className="font-medium">Name:</span> {activeOrganization.name}</p>
+                    {activeOrganization.size_range && (
+                      <p><span className="font-medium">Size:</span> {activeOrganization.size_range}</p>
+                    )}
+                    {activeOrganization.industry && (
+                      <p><span className="font-medium">Industry:</span> {activeOrganization.industry}</p>
+                    )}
                   </div>
                 </div>
                 <div>
                   <h3 className="font-semibold text-[#2E2E2E] mb-2">Your Role</h3>
-                  <Badge variant="secondary" className="text-sm">
-                    {businessData.role_function}
+                  <Badge variant="secondary" className="text-sm capitalize">
+                    {businessData?.role_function || 'Member'}
                   </Badge>
                 </div>
               </>

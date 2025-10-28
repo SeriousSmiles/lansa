@@ -1,0 +1,140 @@
+/**
+ * General Organization Settings
+ * Manage organization name, logo, industry, description, etc.
+ */
+
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useOrganization } from "@/contexts/OrganizationContext";
+import { useOrgPermissions } from "@/contexts/OrganizationContext";
+import { organizationService } from "@/services/organizationService";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+
+export function GeneralSettings() {
+  const { activeOrganization, refreshOrganization } = useOrganization();
+  const { canManageOrgSettings } = useOrgPermissions();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: activeOrganization?.name || "",
+    industry: activeOrganization?.industry || "",
+    size_range: activeOrganization?.size_range || "",
+    description: activeOrganization?.description || "",
+    website: activeOrganization?.website || "",
+    domain: activeOrganization?.domain || "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeOrganization || !canManageOrgSettings) return;
+
+    setIsSubmitting(true);
+    try {
+      await organizationService.updateOrganization(activeOrganization.id, formData);
+      await refreshOrganization();
+      toast.success("Organization settings updated successfully");
+    } catch (error) {
+      console.error("Error updating organization:", error);
+      toast.error("Failed to update organization settings");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Organization Information</CardTitle>
+          <CardDescription>
+            Update your organization's basic information
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Organization Name *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                disabled={!canManageOrgSettings}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="industry">Industry</Label>
+              <Input
+                id="industry"
+                value={formData.industry}
+                onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                disabled={!canManageOrgSettings}
+                placeholder="e.g., Technology, Finance"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="size_range">Company Size</Label>
+              <Input
+                id="size_range"
+                value={formData.size_range}
+                onChange={(e) => setFormData({ ...formData, size_range: e.target.value })}
+                disabled={!canManageOrgSettings}
+                placeholder="e.g., 1-10, 11-50, 51-200"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="website">Website</Label>
+              <Input
+                id="website"
+                type="url"
+                value={formData.website}
+                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                disabled={!canManageOrgSettings}
+                placeholder="https://example.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="domain">Domain</Label>
+              <Input
+                id="domain"
+                value={formData.domain}
+                onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
+                disabled={!canManageOrgSettings}
+                placeholder="example.com"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              disabled={!canManageOrgSettings}
+              placeholder="Tell us about your organization..."
+              rows={4}
+            />
+          </div>
+
+          {canManageOrgSettings && (
+            <div className="flex justify-end">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Changes
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </form>
+  );
+}

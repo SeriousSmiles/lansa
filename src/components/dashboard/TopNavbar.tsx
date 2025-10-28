@@ -11,6 +11,7 @@ import { AnimatedTabNav } from "@/components/navigation/AnimatedTabNav";
 import { Search } from "lucide-react";
 import { useUIStore } from "@/stores/uiStore";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { OrganizationSwitcher } from "@/components/organization/OrganizationSwitcher";
 
 type MenuItem = {
   title: string;
@@ -49,9 +50,11 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
         </Link>
 
         {/* Animated Tab Navigation */}
-        <div className="hidden md:flex items-center">
+        <div className="hidden md:flex items-center gap-4">
           <AnimatedTabNav items={items} themeColor={themeColor} />
+          {userType === 'employer' && <OrganizationSwitcher />}
         </div>
+        
         {/* Actions */}
         <div className="flex items-center gap-1 sm:gap-2">
           {isMobile && (

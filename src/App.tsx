@@ -26,6 +26,7 @@ import SharedProfile from "./pages/SharedProfile";
 import Dashboard from "./pages/Dashboard";
 import BrowseCandidates from "./pages/BrowseCandidates";
 import EmployerDashboard from "./pages/EmployerDashboard";
+import OrganizationSettings from "./pages/OrganizationSettings";
 import Resources from "./pages/Resources";
 import ContentLibrary from "./pages/ContentLibrary";
 import Card from "./pages/Card";
@@ -170,6 +171,14 @@ const App: React.FC = () => {
                       <RequireOnboarding soft={false}>
                         <RequireUserType allowedTypes={['employer']}>
                           <EmployerDashboard />
+                        </RequireUserType>
+                      </RequireOnboarding>
+                    } />
+                    
+                    <Route path="/organization/settings" element={
+                      <RequireOnboarding soft={false}>
+                        <RequireUserType allowedTypes={['employer']}>
+                          <OrganizationSettings />
                         </RequireUserType>
                       </RequireOnboarding>
                     } />

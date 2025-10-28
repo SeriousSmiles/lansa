@@ -6,6 +6,8 @@ import { Plus, Edit2, Eye, MoreHorizontal, Trash2 } from "lucide-react";
 import { JobPostingDialog } from "./JobPostingDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrganization } from "@/contexts/OrganizationContext";
+import { useOrgPermissions } from "@/contexts/OrganizationContext";
 import { toast } from "sonner";
 import { ApplicationsSheet } from "@/components/employer/ApplicationsSheet";
 import { jobPostingService } from "@/services/jobPostingService";
@@ -32,19 +34,23 @@ export function JobManagementTab() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<JobListing | null>(null);
   const { user } = useAuth();
+  const { activeOrganization } = useOrganization();
+  const { canCreateJobs, canEditJobs, canDeleteJobs } = useOrgPermissions();
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [selectedJobTitle, setSelectedJobTitle] = useState<string>("");
   const [showApplicationsSheet, setShowApplicationsSheet] = useState(false);
 
   const loadJobListings = async () => {
-    if (!user?.id) return;
+    if (!activeOrganization?.id) return;
 
     try {
-      // Fetch job listings created by this user from job_listings_v2
+      // Fetch job listings for this organization
+      // For now, using created_by since we're in transition
+      // TODO: Update when organization_id is added to job_listings_v2
       const { data: jobs, error: jobsError } = await supabase
         .from('job_listings_v2')
         .select('*')
-        .eq('created_by', user.id)
+        .eq('created_by', user?.id || '')
         .order('posted_at', { ascending: false });
 
       if (jobsError) {
@@ -63,7 +69,7 @@ export function JobManagementTab() {
 
   useEffect(() => {
     loadJobListings();
-  }, [user?.id]);
+  }, [activeOrganization?.id, user?.id]);
 
   const handleCreateJob = () => {
     setEditingJob(null);
@@ -127,12 +133,14 @@ export function JobManagementTab() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold text-[#2E2E2E]">Job Listings</h2>
-          <p className="text-[#666666]">Manage your active job postings</p>
+          <p className="text-[#666666]">Manage your organization's job postings</p>
         </div>
-        <Button onClick={handleCreateJob} className="bg-[#FF6B4A] hover:bg-[#FF6B4A]/90">
-          <Plus className="h-4 w-4 mr-2" />
-          Post New Job
-        </Button>
+        {canCreateJobs && (
+          <Button onClick={handleCreateJob} className="bg-[#FF6B4A] hover:bg-[#FF6B4A]/90">
+            <Plus className="h-4 w-4 mr-2" />
+            Post New Job
+          </Button>
+        )}
       </div>
 
       {jobListings.length === 0 ? (
@@ -203,14 +211,16 @@ export function JobManagementTab() {
                   )}
                   
                   <div className="flex items-center gap-2 pt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditJob(job)}
-                    >
-                      <Edit2 className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
+                    {canEditJobs && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditJob(job)}
+                      >
+                        <Edit2 className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                    )}
                     <Button variant="outline" size="sm" onClick={() => {
                       setSelectedJobId(job.id);
                       setSelectedJobTitle(job.title);
@@ -219,22 +229,26 @@ export function JobManagementTab() {
                       <Eye className="h-4 w-4 mr-1" />
                       View Applications
                     </Button>
-                    <Button
-                      variant={job.is_active ? "outline" : "primary"}
-                      size="sm"
-                      onClick={() => toggleJobStatus(job.id, job.is_active)}
-                    >
-                      {job.is_active ? "Deactivate" : "Activate"}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteJob(job.id, job.title)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Delete
-                    </Button>
+                    {canEditJobs && (
+                      <Button
+                        variant={job.is_active ? "outline" : "primary"}
+                        size="sm"
+                        onClick={() => toggleJobStatus(job.id, job.is_active)}
+                      >
+                        {job.is_active ? "Deactivate" : "Activate"}
+                      </Button>
+                    )}
+                    {canDeleteJobs && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteJob(job.id, job.title)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardContent>

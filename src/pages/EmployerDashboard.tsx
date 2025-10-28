@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrganization } from "@/contexts/OrganizationContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { EmployerDashboardTabs } from "@/components/dashboard/EmployerDashboardTabs";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +23,7 @@ export default function EmployerDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [showLogoModal, setShowLogoModal] = useState(false);
   const { user } = useAuth();
+  const { activeOrganization, isLoading: orgLoading } = useOrganization();
   const { track } = useActionTracking();
   const isMobile = useIsMobile();
 
@@ -71,7 +73,7 @@ export default function EmployerDashboard() {
     loadBusinessData();
   }, [user?.id, track]);
 
-  if (isLoading) {
+  if (isLoading || orgLoading) {
     return (
       <div className="employer-theme h-screen bg-background flex items-center justify-center">
         <div className="text-2xl text-foreground animate-pulse">Loading your employer dashboard...</div>
@@ -79,7 +81,18 @@ export default function EmployerDashboard() {
     );
   }
 
-  const userName = user?.displayName || businessData?.company_name || "Employer";
+  if (!activeOrganization) {
+    return (
+      <div className="employer-theme h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="text-2xl text-foreground">No Organization Found</div>
+          <p className="text-muted-foreground">Please create or join an organization to access the employer dashboard.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const userName = user?.displayName || activeOrganization.name || "Employer";
 
   const handleLogoUploadSuccess = async () => {
     // Reload business data to show the new logo
@@ -125,9 +138,7 @@ export default function EmployerDashboard() {
                     <h1 className="text-2xl md:text-3xl font-bold">Employer Dashboard</h1>
                     <Badge variant="secondary" className="text-xs">Beta</Badge>
                   </div>
-                  {businessData?.company_name && (
-                    <p className="text-muted-foreground mt-1">{businessData.company_name}</p>
-                  )}
+                  <p className="text-muted-foreground mt-1">{activeOrganization.name}</p>
                 </div>
               </div>
               <EmployerDashboardTabs businessData={businessData} />
