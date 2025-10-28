@@ -1,27 +1,9 @@
-import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import { AuthLayout } from "@/components/auth/AuthLayout";
-import { SignUpForm } from "@/components/auth/SignUpForm";
-import { LoginForm } from "@/components/auth/LoginForm";
-import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
-import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
-import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { Header83 } from "@/components/hero/Header83";
 import { SEOHead } from "@/components/SEOHead";
 
-type AuthMode = 'login' | 'signup' | 'forgot-password' | 'reset-password';
-
 export default function IndexPage() {
-  const [searchParams] = useSearchParams();
-  const [authMode, setAuthMode] = useState<AuthMode>('login');
-  const { t } = useTranslation();
-
-  useEffect(() => {
-    const mode = searchParams.get('mode');
-    
-    if (mode === 'reset') {
-      setAuthMode('reset-password');
-    }
-  }, [searchParams]);
+  const navigate = useNavigate();
 
   return (
     <>
@@ -31,40 +13,59 @@ export default function IndexPage() {
         keywords="professional profile builder, AI career coach, career development, resume builder, job search platform, professional networking, career insights, profile optimization"
         canonical="https://lansa.online/"
       />
-      <AuthLayout imageSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/21db5620684d4cbbfb27b61d5dfc0736c8a7cd9c?placeholderIfAbsent=true">
-      <div className="w-full text-foreground font-normal text-center max-md:max-w-full">
-        <h1 className="text-5xl leading-[1.2] tracking-[-0.48px] max-md:max-w-full max-md:text-[40px]">
-          {authMode === 'login' && t('auth.titleWelcomeBack')}
-          {authMode === 'signup' && t('auth.titleSignup')}
-          {authMode === 'forgot-password' && 'Reset Password'}
-          {authMode === 'reset-password' && 'Set New Password'}
-        </h1>
-        <p className="text-lg mt-6 max-md:max-w-full">
-          {authMode === 'login' && t('auth.subtitleLogin')}
-          {authMode === 'signup' && t('auth.subtitleSignup')}
-          {authMode === 'forgot-password' && 'Enter your email to receive a password reset link'}
-          {authMode === 'reset-password' && 'Enter your new password below'}
-        </p>
-      </div>
-      <div className="flex flex-col items-center w-full">
-        {authMode === 'login' && <LoginForm onForgotPassword={() => setAuthMode('forgot-password')} />}
-        {authMode === 'signup' && <SignUpForm />}
-        {authMode === 'forgot-password' && <ForgotPasswordForm onBack={() => setAuthMode('login')} />}
-        {authMode === 'reset-password' && <ResetPasswordForm />}
-        
-        {(authMode === 'login' || authMode === 'signup') && (
-          <div className="text-center mt-6">
-            <button 
-              onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
-              className="text-primary font-medium hover:underline focus:outline-none"
-              data-testid="toggle-auth-mode"
-            >
-              {authMode === 'login' ? t('auth.toggleToSignup') : t('auth.toggleToLogin')}
-            </button>
-          </div>
-        )}
-      </div>
-    </AuthLayout>
+      <Header83
+        heading="Transform Your Career with AI"
+        description="Build a standout professional profile, discover opportunities, and unlock your career potential with AI-powered insights."
+        buttons={[
+          { 
+            title: "Get Started", 
+            onClick: () => navigate('/signup')
+          },
+          { 
+            title: "Sign In", 
+            variant: "secondary-alt" as const,
+            onClick: () => navigate('/login')
+          }
+        ]}
+        images={[
+          {
+            src: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=800&fit=crop",
+            alt: "Professional team collaboration",
+          },
+          {
+            src: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=800&fit=crop",
+            alt: "Career development workshop",
+          },
+          {
+            src: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=800&fit=crop",
+            alt: "Professional networking event",
+          },
+          {
+            src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800&h=800&fit=crop",
+            alt: "Business professional at work",
+          },
+          {
+            src: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&h=800&fit=crop",
+            alt: "Team meeting and collaboration",
+          },
+          {
+            src: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800&h=800&fit=crop",
+            alt: "Professional workspace",
+          },
+          {
+            src: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=800&fit=crop",
+            alt: "Career success celebration",
+          },
+          {
+            src: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=800&fit=crop",
+            alt: "Modern office environment",
+          },
+          {
+            src: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&h=800&fit=crop",
+            alt: "Technology and innovation",
+          },
+        ]}
+      />
     </>
   );
 }

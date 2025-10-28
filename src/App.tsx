@@ -12,6 +12,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppShell } from "@/components/mobile/app/AppShell";
 import HomeSpotlight from "./pages/HomeSpotlight";
 import Index from "./pages/Index";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import AuthCallback from "./pages/AuthCallback";
 import Help from "./pages/Help";
 import Privacy from "./pages/Privacy";
@@ -62,8 +66,12 @@ const App: React.FC = () => {
               <AppShell>
                 <Routes>
                   {/* Public routes */}
-                  <Route path="/" element={<HomeSpotlight />} />
-                  <Route path="/auth" element={<Index />} />
+                  <Route path="/" element={<Index />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/auth" element={<Login />} />
                   <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/help" element={<Help />} />
                   <Route path="/privacy" element={<Privacy />} />
