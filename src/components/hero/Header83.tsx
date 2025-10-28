@@ -26,7 +26,7 @@ export const Header83 = (props: Header83Props) => {
     ...props,
   };
 
-  const containerRef = useRef<HTMLElement>(null);
+  const containerRef = useRef<HTMLElement | null>(null);
   
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -39,9 +39,16 @@ export const Header83 = (props: Header83Props) => {
   const opacityOverlay = useTransform(scrollYProgress, [0, 0.4], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 1], [3.2, 1]);
 
+  if (import.meta.env.DEV) {
+    scrollYProgress.on("change", (v) => {
+      // Debug: observe scroll progress especially on mobile
+      console.debug("Header83 scrollYProgress:", Number(v).toFixed(3));
+    });
+  }
+
   return (
     <section ref={containerRef} id="relume" className="relative h-[300vh]">
-      <div className="sticky top-0 h-screen overflow-hidden">
+      <div className="sticky top-0 h-[100svh] overflow-hidden">
         <div className="flex h-full items-center justify-center">
           <div className="px-[5%] py-16 md:py-24 lg:py-28">
             <div className="relative z-10 mx-auto max-w-lg text-center">
@@ -72,7 +79,7 @@ export const Header83 = (props: Header83Props) => {
         </div>
         <div className="absolute inset-0 z-0">
           <motion.div
-            className="absolute inset-0 z-10 bg-black/50"
+            className="absolute inset-0 z-10 bg-black/50 pointer-events-none"
             style={{ opacity: opacityOverlay }}
           />
           <motion.div
