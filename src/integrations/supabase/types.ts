@@ -2194,6 +2194,18 @@ export type Database = {
         Args: { _organization_id: string; _roles?: string[]; _user_id: string }
         Returns: boolean
       }
+      create_organization_with_owner: {
+        Args: {
+          p_description?: string
+          p_domain?: string
+          p_industry?: string
+          p_logo_url?: string
+          p_name: string
+          p_size_range?: string
+          p_website?: string
+        }
+        Returns: Json
+      }
       generate_cert_verification_code: { Args: never; Returns: string }
       has_org_role: {
         Args: { _org_id: string; _role: string; _user_id: string }

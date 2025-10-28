@@ -33,49 +33,24 @@ export const organizationService = {
     } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
-    // Generate slug from name
-    const slug = data.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+    // Use security definer function to atomically create org + membership
+    const { data: result, error } = await supabase.rpc('create_organization_with_owner', {
+      p_name: data.name,
+      p_industry: data.industry,
+      p_size_range: data.size_range,
+      p_description: data.description,
+      p_logo_url: data.logo_url,
+      p_website: data.website,
+      p_domain: data.domain,
+    });
 
-    // Create organization
-    const { data: organization, error: orgError } = await supabase
-      .from('organizations')
-      .insert({
-        name: data.name,
-        clerk_org_id: `org-${Date.now()}`,
-        slug,
-        industry: data.industry,
-        size_range: data.size_range,
-        description: data.description,
-        logo_url: data.logo_url,
-        website: data.website,
-        domain: data.domain,
-        is_active: true,
-      })
-      .select()
-      .single();
+    if (error) throw error;
+    if (!result) throw new Error('Failed to create organization');
 
-    if (orgError) throw orgError;
-
-    // Create membership as owner
-    const { data: membership, error: membershipError } = await supabase
-      .from('organization_memberships')
-      .insert({
-        organization_id: organization.id,
-        user_id: user.id,
-        role: 'owner',
-        is_active: true,
-      })
-      .select()
-      .single();
-
-    if (membershipError) throw membershipError;
-
-    return { 
-      organization: organization as Organization, 
-      membership: membership as OrganizationMembership 
+    const parsed = result as any;
+    return {
+      organization: parsed.organization as Organization,
+      membership: parsed.membership as OrganizationMembership,
     };
   },
 
