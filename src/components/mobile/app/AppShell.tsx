@@ -27,6 +27,8 @@ export function AppShell({ children }: AppShellProps) {
   const isOnboardingRoute = ONBOARDING_ROUTES.includes(location.pathname);
   const isSharedProfile = location.pathname.startsWith('/profile/share/');
   
+  // Landing route disables transforms to preserve sticky on mobile
+  const isLanding = location.pathname === "/";
   // Compute userName from auth user displayName
   const userName = user?.displayName;
   
@@ -71,15 +73,13 @@ export function AppShell({ children }: AppShellProps) {
       >
         <motion.div
           key={location.pathname}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ 
-            type: "spring", 
-            stiffness: 400, 
-            damping: 30,
-            duration: 0.3 
-          }}
+          initial={isLanding ? { opacity: 0 } : { opacity: 0, x: 20 }}
+          animate={isLanding ? { opacity: 1 } : { opacity: 1, x: 0 }}
+          exit={isLanding ? { opacity: 0 } : { opacity: 0, x: -20 }}
+          transition={isLanding 
+            ? { duration: 0.25, ease: "easeOut" }
+            : { type: "spring", stiffness: 400, damping: 30, duration: 0.3 }
+          }
           className="h-full"
         >
           {children}

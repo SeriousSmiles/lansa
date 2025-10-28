@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { Button } from "@relume_io/relume-ui";
 import type { ButtonProps } from "@relume_io/relume-ui";
 import clsx from "clsx";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useMotionValue, useMotionValueEvent } from "framer-motion";
 
 type ImageProps = {
   src: string;
@@ -28,21 +28,29 @@ export const Header83 = (props: Header83Props) => {
 
   const containerRef = useRef<HTMLElement | null>(null);
   
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"]
+  const sectionProgress = useMotionValue(0);
+  const { scrollY } = useScroll();
+
+  useMotionValueEvent(scrollY, "change", () => {
+    const el = containerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const total = Math.max(rect.height - window.innerHeight, 1);
+    const scrolled = Math.min(Math.max(-rect.top, 0), total);
+    const p = scrolled / total;
+    sectionProgress.set(p);
   });
   
-  const opacityHeading = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
-  const opacityDescription = useTransform(scrollYProgress, [0.05, 0.2], [1, 0]);
-  const opacityButtons = useTransform(scrollYProgress, [0.1, 0.25], [1, 0]);
-  const opacityOverlay = useTransform(scrollYProgress, [0, 0.4], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], [3.2, 1]);
+  const opacityHeading = useTransform(sectionProgress, [0, 0.15], [1, 0]);
+  const opacityDescription = useTransform(sectionProgress, [0.05, 0.2], [1, 0]);
+  const opacityButtons = useTransform(sectionProgress, [0.1, 0.25], [1, 0]);
+  const opacityOverlay = useTransform(sectionProgress, [0, 0.4], [1, 0]);
+  const scale = useTransform(sectionProgress, [0, 1], [3.2, 1]);
 
   if (import.meta.env.DEV) {
-    scrollYProgress.on("change", (v) => {
-      // Debug: observe scroll progress especially on mobile
-      console.debug("Header83 scrollYProgress:", Number(v).toFixed(3));
+    useMotionValueEvent(sectionProgress, "change", (v) => {
+      // Debug: observe section progress especially on mobile
+      console.debug("Header83 sectionProgress:", Number(v).toFixed(3));
     });
   }
 
