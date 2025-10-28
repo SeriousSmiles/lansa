@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { Button } from "@relume_io/relume-ui";
 import type { ButtonProps } from "@relume_io/relume-ui";
 import clsx from "clsx";
@@ -25,34 +26,50 @@ export const Header83 = (props: Header83Props) => {
     ...props,
   };
 
-  const { scrollYProgress } = useScroll();
-  const opacityContent = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const opacityOverlay = useTransform(scrollYProgress, [0, 1], [1, 0]);
+  const containerRef = useRef<HTMLElement>(null);
+  
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"]
+  });
+  
+  const opacityHeading = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
+  const opacityDescription = useTransform(scrollYProgress, [0.05, 0.2], [1, 0]);
+  const opacityButtons = useTransform(scrollYProgress, [0.1, 0.25], [1, 0]);
+  const opacityOverlay = useTransform(scrollYProgress, [0, 0.4], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 1], [3.2, 1]);
 
   return (
-    <section id="relume" className="relative h-[300vh]">
+    <section ref={containerRef} id="relume" className="relative h-[300vh]">
       <div className="sticky top-0 h-screen overflow-hidden">
-        <motion.div
-          className="flex h-full items-center justify-center"
-          style={{ opacity: opacityContent }}
-        >
+        <div className="flex h-full items-center justify-center">
           <div className="px-[5%] py-16 md:py-24 lg:py-28">
             <div className="relative z-10 mx-auto max-w-lg text-center">
-              <h1 className="mb-5 text-6xl font-bold text-text-alternative md:mb-6 md:text-9xl lg:text-10xl">
+              <motion.h1 
+                className="mb-5 text-6xl font-bold text-text-alternative md:mb-6 md:text-9xl lg:text-10xl"
+                style={{ opacity: opacityHeading }}
+              >
                 {heading}
-              </h1>
-              <p className="text-text-alternative md:text-md">{description}</p>
-              <div className="mt-6 flex items-center justify-center gap-x-4 md:mt-8">
+              </motion.h1>
+              <motion.p 
+                className="text-text-alternative md:text-md"
+                style={{ opacity: opacityDescription }}
+              >
+                {description}
+              </motion.p>
+              <motion.div 
+                className="mt-6 flex items-center justify-center gap-x-4 md:mt-8"
+                style={{ opacity: opacityButtons }}
+              >
                 {buttons.map((button, index) => (
                   <Button key={index} {...button}>
                     {button.title}
                   </Button>
                 ))}
-              </div>
+              </motion.div>
             </div>
           </div>
-        </motion.div>
+        </div>
         <div className="absolute inset-0 z-0">
           <motion.div
             className="absolute inset-0 z-10 bg-black/50"
