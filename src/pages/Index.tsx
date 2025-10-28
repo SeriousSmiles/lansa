@@ -1,6 +1,15 @@
 import { useNavigate } from "react-router-dom";
 import { Header83 } from "@/components/hero/Header83";
 import { SEOHead } from "@/components/SEOHead";
+import homepage1 from "@/assets/homepage-1.png";
+import homepage2 from "@/assets/homepage-2.png";
+import homepage3 from "@/assets/homepage-3.png";
+import homepage4 from "@/assets/homepage-4.png";
+import homepage5 from "@/assets/homepage-5.png";
+import homepage6 from "@/assets/homepage-6.png";
+import homepage7 from "@/assets/homepage-7.png";
+import homepage8 from "@/assets/homepage-8.png";
+import homepage9 from "@/assets/homepage-9.png";
 
 export default function IndexPage() {
   const navigate = useNavigate();
@@ -32,40 +41,40 @@ export default function IndexPage() {
         ]}
         images={[
           {
-            src: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=800&fit=crop",
-            alt: "Professional team collaboration",
+            src: homepage2,
+            alt: "Lansa team and platform",
           },
           {
-            src: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=800&fit=crop",
-            alt: "Career development workshop",
+            src: homepage3,
+            alt: "Professional development with Lansa",
           },
           {
-            src: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=800&fit=crop",
-            alt: "Professional networking event",
+            src: homepage4,
+            alt: "Career growth opportunities",
           },
           {
-            src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800&h=800&fit=crop",
-            alt: "Business professional at work",
+            src: homepage5,
+            alt: "Business connections",
           },
           {
-            src: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&h=800&fit=crop",
-            alt: "Team meeting and collaboration",
+            src: homepage1,
+            alt: "Lansa community collaboration",
           },
           {
-            src: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800&h=800&fit=crop",
-            alt: "Professional workspace",
+            src: homepage6,
+            alt: "Professional networking",
           },
           {
-            src: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=800&fit=crop",
-            alt: "Career success celebration",
+            src: homepage7,
+            alt: "Team success with Lansa",
           },
           {
-            src: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=800&fit=crop",
-            alt: "Modern office environment",
+            src: homepage8,
+            alt: "Career transformation",
           },
           {
-            src: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&h=800&fit=crop",
-            alt: "Technology and innovation",
+            src: homepage9,
+            alt: "Professional opportunities",
           },
         ]}
       />
