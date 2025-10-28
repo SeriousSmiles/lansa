@@ -18,9 +18,10 @@ import type { Organization } from "@/types/organization";
 
 interface JoinOrganizationFlowProps {
   onComplete?: () => void;
+  onBack?: () => void;
 }
 
-export function JoinOrganizationFlow({ onComplete }: JoinOrganizationFlowProps) {
+export function JoinOrganizationFlow({ onComplete, onBack }: JoinOrganizationFlowProps) {
   const { user } = useAuth();
   const { refreshOrganization } = useOrganization();
   const navigate = useNavigate();
@@ -270,7 +271,13 @@ export function JoinOrganizationFlow({ onComplete }: JoinOrganizationFlowProps) 
 
           <Button
             variant="outline"
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              if (onBack) {
+                onBack();
+              } else {
+                navigate(-1);
+              }
+            }}
             className="w-full"
           >
             Back

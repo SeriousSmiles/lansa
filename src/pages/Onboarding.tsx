@@ -115,6 +115,13 @@ export default function Onboarding() {
     }
   };
 
+  const handleBackToTypeSelection = () => {
+    setShowTypeSelection(true);
+    setUserIntent(null);
+    setUserType(null);
+    setShowCareerSegmentation(false);
+  };
+
   const handleCareerPathSelect = async (selectedPath: CareerPath) => {
     setCareerPath(selectedPath);
     setShowCareerSegmentation(false);
@@ -200,7 +207,10 @@ export default function Onboarding() {
           ) : userIntent === 'create_org' ? (
             <OrganizationOnboardingForm onComplete={handleBusinessOnboardingComplete} />
           ) : userIntent === 'join_org' ? (
-            <JoinOrganizationFlow onComplete={handleBusinessOnboardingComplete} />
+            <JoinOrganizationFlow 
+              onComplete={handleBusinessOnboardingComplete}
+              onBack={handleBackToTypeSelection}
+            />
           ) : userType === 'job_seeker' && careerPath ? (
             <AIOnboardingFlow />
           ) : (
