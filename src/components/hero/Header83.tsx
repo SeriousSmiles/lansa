@@ -55,7 +55,7 @@ export const Header83 = (props: Header83Props) => {
   }
 
   return (
-    <section ref={containerRef} id="relume" className="relative h-screen md:h-[300vh]">
+    <section ref={containerRef} id="relume" className="relative h-screen overflow-hidden md:overflow-visible md:h-[300vh]">
       <div className="md:sticky top-0 h-[100svh] overflow-hidden" style={{ height: '100dvh' }}>
         <div className="flex h-full items-center justify-center">
           <div className="px-[5%] py-16 md:py-24 lg:py-28">
