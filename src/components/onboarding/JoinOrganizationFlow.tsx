@@ -168,7 +168,7 @@ export function JoinOrganizationFlow({ onComplete }: JoinOrganizationFlowProps) 
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-6">
+    <div className="w-full max-w-xl mx-auto p-6">
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
           <UserPlus className="w-8 h-8 text-primary" />
