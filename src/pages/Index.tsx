@@ -20,13 +20,13 @@ export default function IndexPage() {
           { 
             title: "Get Started",
             variant: "primary" as const,
-            className: "bg-primary hover:bg-primary/90 text-primary-foreground font-urbanist font-semibold",
+            className: "bg-primary hover:bg-primary/90 text-white font-urbanist font-semibold shadow-[0px_32px_24px_0px_rgba(255,255,255,0.05)_inset,0px_2px_1px_0px_rgba(255,255,255,0.25)_inset,0px_0px_0px_1px_rgba(13,5,4,0.15)_inset,0px_-2px_1px_0px_rgba(0,0,0,0.20)_inset,0px_1px_2px_0px_rgba(13,5,4,0.05)] rounded-xl",
             onClick: () => navigate('/signup')
           },
           { 
             title: "Sign In", 
-            variant: "secondary" as const,
-            className: "bg-secondary hover:bg-secondary/90 text-secondary-foreground font-urbanist font-semibold",
+            variant: "secondary-alt" as const,
+            className: "bg-secondary hover:bg-secondary/90 text-white font-urbanist font-semibold shadow-[0px_0px_0px_1px_rgba(13,5,4,0.05)_inset,0px_-2px_1px_0px_rgba(13,5,4,0.05)_inset,0px_1px_2px_0px_rgba(13,5,4,0.05)] rounded-xl",
             onClick: () => navigate('/login')
           }
         ]}
