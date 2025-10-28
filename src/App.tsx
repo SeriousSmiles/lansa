@@ -36,6 +36,7 @@ import Certification from "./pages/Certification";
 import VerifyCertification from "./pages/VerifyCertification";
 import { AuthProvider } from "./contexts/AuthContext";
 import { UserStateProvider } from "./contexts/UserStateProvider";
+import { OrganizationProvider } from "./contexts/OrganizationContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { RequireOnboarding, RequireUserType } from "./components/auth/RouteGuards";
 
@@ -49,13 +50,14 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <UserStateProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <AddToHomeScreenPrompt />
-            <HotjarScript />
-            <CookieConsent />
-            <BrowserRouter>
+          <OrganizationProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <AddToHomeScreenPrompt />
+              <HotjarScript />
+              <CookieConsent />
+              <BrowserRouter>
               <AppShell>
                 <Routes>
                   {/* Public routes */}
@@ -185,7 +187,8 @@ const App: React.FC = () => {
                 </Routes>
               </AppShell>
             </BrowserRouter>
-          </TooltipProvider>
+            </TooltipProvider>
+          </OrganizationProvider>
         </UserStateProvider>
       </AuthProvider>
     </QueryClientProvider>

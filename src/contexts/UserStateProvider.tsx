@@ -12,6 +12,9 @@ type UserState = {
   hasCompletedOnboarding: boolean;
   lansaCertified: boolean;
   verified: boolean;
+  organizationId?: string;
+  organizationRole?: 'owner' | 'admin' | 'manager' | 'member' | 'viewer';
+  hasPendingOrgRequest?: boolean;
   refreshUserState?: () => Promise<void>;
   isRefreshing?: boolean;
 };
@@ -65,8 +68,8 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
 
       const userId = session.user.id;
 
-      // Fetch both profile and user_answers for complete state
-      const [profileResult, answersResult] = await Promise.all([
+      // Fetch profile, user_answers, and organization membership for complete state
+      const [profileResult, answersResult, orgMembershipResult] = await Promise.all([
         supabase
           .from("user_profiles")
           .select("onboarding_completed")
@@ -76,6 +79,12 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
           .from("user_answers")
           .select("user_type, career_path, career_path_onboarding_completed")
           .eq("user_id", userId)
+          .maybeSingle(),
+        supabase
+          .from("organization_memberships")
+          .select("organization_id, role, is_active")
+          .eq("user_id", userId)
+          .eq("is_active", true)
           .maybeSingle()
       ]);
 
@@ -105,10 +114,20 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
           });
       }
 
+      // Check for pending org requests
+      const { data: pendingRequests } = await supabase
+        .from("organization_memberships")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("is_active", false)
+        .maybeSingle();
+
       console.log("✅ User state loaded:", {
         userId,
         userType: answersResult.data?.user_type,
-        hasCompletedOnboarding
+        hasCompletedOnboarding,
+        hasOrgMembership: !!orgMembershipResult.data,
+        hasPendingOrgRequest: !!pendingRequests
       });
 
       setState({
@@ -120,6 +139,9 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
         hasCompletedOnboarding,
         lansaCertified: !!certData?.lansa_certified,
         verified: !!certData?.verified,
+        organizationId: orgMembershipResult.data?.organization_id,
+        organizationRole: orgMembershipResult.data?.role as any,
+        hasPendingOrgRequest: !!pendingRequests,
         isRefreshing: false
       });
 

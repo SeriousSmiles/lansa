@@ -1015,6 +1015,91 @@ export type Database = {
           },
         ]
       }
+      organization_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          organization_id: string
+          performed_by: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          organization_id: string
+          performed_by?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          organization_id?: string
+          performed_by?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_audit_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          organization_id: string
+          role: string
+          status: string
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          organization_id: string
+          role?: string
+          status?: string
+          token?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          organization_id?: string
+          role?: string
+          status?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_memberships: {
         Row: {
           clerk_user_id: string | null
@@ -1073,51 +1158,69 @@ export type Database = {
       }
       organizations: {
         Row: {
+          billing_status: string | null
           clerk_org_id: string
           created_at: string
           description: string | null
+          domain: string | null
           id: string
           industry: string | null
           is_active: boolean
           logo_url: string | null
           name: string
           plan_type: string | null
+          seat_limit: number | null
           settings: Json | null
           size_range: string | null
           slug: string
           updated_at: string
+          verification_status: string | null
+          verified_at: string | null
+          verified_by: string | null
           website: string | null
         }
         Insert: {
+          billing_status?: string | null
           clerk_org_id: string
           created_at?: string
           description?: string | null
+          domain?: string | null
           id?: string
           industry?: string | null
           is_active?: boolean
           logo_url?: string | null
           name: string
           plan_type?: string | null
+          seat_limit?: number | null
           settings?: Json | null
           size_range?: string | null
           slug: string
           updated_at?: string
+          verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
           website?: string | null
         }
         Update: {
+          billing_status?: string | null
           clerk_org_id?: string
           created_at?: string
           description?: string | null
+          domain?: string | null
           id?: string
           industry?: string | null
           is_active?: boolean
           logo_url?: string | null
           name?: string
           plan_type?: string | null
+          seat_limit?: number | null
           settings?: Json | null
           size_range?: string | null
           slug?: string
           updated_at?: string
+          verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
           website?: string | null
         }
         Relationships: []
@@ -2106,6 +2209,16 @@ export type Database = {
       is_thread_participant: {
         Args: { _thread_id: string; _user_id: string }
         Returns: boolean
+      }
+      log_org_action: {
+        Args: {
+          _action: string
+          _metadata?: Json
+          _org_id: string
+          _performed_by: string
+          _user_id: string
+        }
+        Returns: string
       }
     }
     Enums: {
