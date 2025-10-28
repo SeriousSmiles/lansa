@@ -38,8 +38,8 @@
     --secondary: 215 85% 55%;
     --secondary-foreground: 0 0% 100%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 280 65% 55%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
@@ -81,8 +81,8 @@
     --secondary: 215 85% 55%;
     --secondary-foreground: 0 0% 100%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 280 65% 55%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
@@ -109,8 +109,8 @@
     --muted: 215 32% 94%;                /* Muted blue-grey */
     --muted-foreground: 215 16% 47%;     /* Muted text */
     --border: 215 30% 85%;               /* Light blue borders */
-    --accent: 215 40% 92%;               /* Subtle blue accent */
-    --accent-foreground: 215 15% 15%;    /* Dark text on accent */
+    --accent: 280 65% 55%;               /* Purple accent */
+    --accent-foreground: 0 0% 100%;      /* White text on accent */
     --card: 0 0% 100%;                   /* White cards */
     --card-foreground: 215 15% 15%;      /* Dark text on cards */
   }
@@ -125,8 +125,8 @@
     --muted: 215 20% 18%;                /* Darker muted */
     --muted-foreground: 215 20% 65%;     /* Lighter muted text */
     --border: 215 20% 22%;               /* Subtle borders */
-    --accent: 215 20% 20%;               /* Subtle accent */
-    --accent-foreground: 210 40% 98%;    /* Light text on accent */
+    --accent: 280 65% 55%;               /* Purple accent */
+    --accent-foreground: 0 0% 100%;      /* White text on accent */
     --card: 215 20% 14%;                 /* Dark cards */
     --card-foreground: 210 40% 98%;      /* Light text on cards */
   }
