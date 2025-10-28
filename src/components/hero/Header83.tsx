@@ -60,41 +60,41 @@ export const Header83 = (props: Header83Props) => {
         <div className="flex h-full items-center justify-center">
           <div className="px-[5%] py-16 md:py-24 lg:py-28">
             <div className="relative z-10 mx-auto max-w-lg text-center">
-              <h1 
-                className="mb-5 text-6xl font-bold font-urbanist text-white md:mb-6 md:text-9xl lg:text-10xl md:opacity-100"
-                style={{ opacity: window.innerWidth >= 768 ? opacityHeading.get() : 1 }}
+              <motion.h1 
+                className="mb-5 text-6xl font-bold font-urbanist text-white md:mb-6 md:text-9xl lg:text-10xl"
+                style={{ opacity: opacityHeading }}
               >
                 {heading}
-              </h1>
-              <p 
-                className="text-white font-public-sans md:text-md md:opacity-100"
-                style={{ opacity: window.innerWidth >= 768 ? opacityDescription.get() : 1 }}
+              </motion.h1>
+              <motion.p 
+                className="text-white font-public-sans md:text-md"
+                style={{ opacity: opacityDescription }}
               >
                 {description}
-              </p>
-              <div 
-                className="mt-6 flex items-center justify-center gap-x-4 md:mt-8 md:opacity-100"
-                style={{ opacity: window.innerWidth >= 768 ? opacityButtons.get() : 1 }}
+              </motion.p>
+              <motion.div 
+                className="mt-6 flex items-center justify-center gap-x-4 md:mt-8"
+                style={{ opacity: opacityButtons }}
               >
                 {buttons.map((button, index) => (
                   <Button key={index} {...button}>
                     {button.title}
                   </Button>
                 ))}
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
         <div className="absolute inset-0 z-0">
-          <div
+          <motion.div
             className="absolute inset-0 z-10 pointer-events-none"
             style={{ 
-              opacity: window.innerWidth >= 768 ? opacityOverlay.get() : 0.6,
+              opacity: opacityOverlay,
               background: 'linear-gradient(135deg, hsl(215 85% 55% / 0.6), hsl(0 0% 0% / 0.7))'
             }}
           />
-          <div
-            style={{ scale: window.innerWidth >= 768 ? scale.get() : 1 }}
+          <motion.div
+            style={{ scale }}
             className="grid size-full auto-cols-fr grid-cols-1 gap-x-4 gap-y-4 md:grid-cols-3"
           >
             {images.map((image, index) => (
@@ -112,7 +112,7 @@ export const Header83 = (props: Header83Props) => {
                 />
               </div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
