@@ -2190,6 +2190,10 @@ export type Database = {
       }
     }
     Functions: {
+      check_org_membership: {
+        Args: { _organization_id: string; _roles?: string[]; _user_id: string }
+        Returns: boolean
+      }
       generate_cert_verification_code: { Args: never; Returns: string }
       has_org_role: {
         Args: { _org_id: string; _role: string; _user_id: string }
