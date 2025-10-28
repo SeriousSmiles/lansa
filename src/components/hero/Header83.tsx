@@ -5,6 +5,7 @@ import { Button } from "@relume_io/relume-ui";
 import type { ButtonProps } from "@relume_io/relume-ui";
 import clsx from "clsx";
 import { motion, useScroll, useTransform, useMotionValue, useMotionValueEvent } from "framer-motion";
+import { ZoomOut } from "lucide-react";
 
 type ImageProps = {
   src: string;
@@ -81,6 +82,13 @@ export const Header83 = (props: Header83Props) => {
                     {button.title}
                   </Button>
                 ))}
+              </motion.div>
+              <motion.div 
+                className="hidden md:flex mt-8 items-center justify-center gap-x-2 text-white/70"
+                style={{ opacity: opacityButtons }}
+              >
+                <span className="text-sm font-public-sans">scroll down</span>
+                <ZoomOut size={16} />
               </motion.div>
             </div>
           </div>
