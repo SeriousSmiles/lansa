@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit2, Eye, MoreHorizontal } from "lucide-react";
+import { Plus, Edit2, Eye, MoreHorizontal, Trash2 } from "lucide-react";
 import { JobPostingDialog } from "./JobPostingDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { ApplicationsSheet } from "@/components/employer/ApplicationsSheet";
+import { jobPostingService } from "@/services/jobPostingService";
 
 interface JobListing {
   id: string;
@@ -94,6 +95,22 @@ export function JobManagementTab() {
     } catch (error) {
       console.error('Error updating job status:', error);
       toast.error('Failed to update job status');
+    }
+  };
+
+  const handleDeleteJob = async (jobId: string, jobTitle: string) => {
+    if (!window.confirm(`Are you sure you want to delete "${jobTitle}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const success = await jobPostingService.deleteJobListing(jobId);
+      if (success) {
+        loadJobListings();
+      }
+    } catch (error) {
+      console.error('Error deleting job:', error);
+      toast.error('Failed to delete job');
     }
   };
 
@@ -208,6 +225,15 @@ export function JobManagementTab() {
                       onClick={() => toggleJobStatus(job.id, job.is_active)}
                     >
                       {job.is_active ? "Deactivate" : "Activate"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteJob(job.id, job.title)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete
                     </Button>
                   </div>
                 </div>
