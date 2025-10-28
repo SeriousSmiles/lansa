@@ -149,73 +149,28 @@ export const organizationService = {
     email: string,
     role: OrgRole = 'member'
   ): Promise<OrganizationInvitation> {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
-
-    const { data, error } = await supabase
-      .from('organization_invitations')
-      .insert({
-        organization_id: organizationId,
-        email,
-        role,
-        invited_by: user.id,
-        status: 'pending',
-      })
-      .select()
-      .single();
+    const { data, error } = await supabase.functions.invoke('invite-org-member', {
+      body: { organizationId, email, role },
+    });
 
     if (error) throw error;
-    return data as OrganizationInvitation;
+    if (data.error) throw new Error(data.error);
+    
+    return data.invitation;
   },
 
   /**
    * Accept an invitation to join an organization
    */
   async acceptInvitation(token: string): Promise<OrganizationMembership> {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
+    const { data, error } = await supabase.functions.invoke('accept-org-invitation', {
+      body: { token },
+    });
 
-    // Get invitation
-    const { data: invitation, error: inviteError } = await supabase
-      .from('organization_invitations')
-      .select('*, organization:organizations(*)')
-      .eq('token', token)
-      .eq('status', 'pending')
-      .single();
-
-    if (inviteError || !invitation) throw new Error('Invalid invitation');
-
-    // Check if expired
-    if (new Date(invitation.expires_at) < new Date()) {
-      throw new Error('Invitation has expired');
-    }
-
-    // Create membership
-    const { data: membership, error: membershipError } = await supabase
-      .from('organization_memberships')
-      .insert({
-        organization_id: invitation.organization_id,
-        user_id: user.id,
-        role: invitation.role as OrgRole,
-        is_active: true,
-        invited_by: invitation.invited_by,
-      })
-      .select()
-      .single();
-
-    if (membershipError) throw membershipError;
-
-    // Mark invitation as accepted
-    await supabase
-      .from('organization_invitations')
-      .update({ status: 'accepted', accepted_at: new Date().toISOString() })
-      .eq('id', invitation.id);
-
-    return membership as OrganizationMembership;
+    if (error) throw error;
+    if (data.error) throw new Error(data.error);
+    
+    return data.membership;
   },
 
   /**
@@ -268,25 +223,25 @@ export const organizationService = {
   /**
    * Approve a pending membership request
    */
-  async approveMembershipRequest(membershipId: string): Promise<void> {
-    const { error } = await supabase
-      .from('organization_memberships')
-      .update({ is_active: true })
-      .eq('id', membershipId);
+  async approveMembershipRequest(membershipId: string, role: OrgRole = 'member'): Promise<void> {
+    const { data, error } = await supabase.functions.invoke('manage-org-request', {
+      body: { membershipId, action: 'approve', role },
+    });
 
     if (error) throw error;
+    if (data.error) throw new Error(data.error);
   },
 
   /**
    * Reject a pending membership request
    */
   async rejectMembershipRequest(membershipId: string): Promise<void> {
-    const { error } = await supabase
-      .from('organization_memberships')
-      .delete()
-      .eq('id', membershipId);
+    const { data, error } = await supabase.functions.invoke('manage-org-request', {
+      body: { membershipId, action: 'reject' },
+    });
 
     if (error) throw error;
+    if (data.error) throw new Error(data.error);
   },
 
   /**
