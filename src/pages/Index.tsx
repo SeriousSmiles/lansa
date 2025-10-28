@@ -18,12 +18,15 @@ export default function IndexPage() {
         description="Build a standout professional profile, discover opportunities, and unlock your career potential with AI-powered insights."
         buttons={[
           { 
-            title: "Get Started", 
+            title: "Get Started",
+            variant: "primary" as const,
+            className: "bg-primary hover:bg-primary/90 text-primary-foreground font-urbanist font-semibold",
             onClick: () => navigate('/signup')
           },
           { 
             title: "Sign In", 
-            variant: "secondary-alt" as const,
+            variant: "secondary" as const,
+            className: "bg-secondary hover:bg-secondary/90 text-secondary-foreground font-urbanist font-semibold",
             onClick: () => navigate('/login')
           }
         ]}

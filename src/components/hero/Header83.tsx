@@ -61,13 +61,13 @@ export const Header83 = (props: Header83Props) => {
           <div className="px-[5%] py-16 md:py-24 lg:py-28">
             <div className="relative z-10 mx-auto max-w-lg text-center">
               <motion.h1 
-                className="mb-5 text-6xl font-bold text-text-alternative md:mb-6 md:text-9xl lg:text-10xl"
+                className="mb-5 text-6xl font-bold font-urbanist text-white md:mb-6 md:text-9xl lg:text-10xl"
                 style={{ opacity: opacityHeading }}
               >
                 {heading}
               </motion.h1>
               <motion.p 
-                className="text-text-alternative md:text-md"
+                className="text-white font-public-sans md:text-md"
                 style={{ opacity: opacityDescription }}
               >
                 {description}
@@ -87,8 +87,11 @@ export const Header83 = (props: Header83Props) => {
         </div>
         <div className="absolute inset-0 z-0">
           <motion.div
-            className="absolute inset-0 z-10 bg-black/50 pointer-events-none"
-            style={{ opacity: opacityOverlay }}
+            className="absolute inset-0 z-10 pointer-events-none"
+            style={{ 
+              opacity: opacityOverlay,
+              background: 'linear-gradient(135deg, hsl(215 85% 55% / 0.6), hsl(0 0% 0% / 0.7))'
+            }}
           />
           <motion.div
             style={{ scale }}
