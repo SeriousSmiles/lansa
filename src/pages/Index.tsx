@@ -14,7 +14,7 @@ export default function IndexPage() {
         canonical="https://lansa.online/"
       />
       <Header83
-        heading="Transform Your Career with AI"
+        heading="Professionals and Businesses, Connected"
         description="Build a standout professional profile, discover opportunities, and unlock your career potential with AI-powered insights."
         buttons={[
           { 
