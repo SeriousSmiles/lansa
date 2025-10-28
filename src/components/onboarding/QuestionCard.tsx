@@ -139,7 +139,7 @@ export function QuestionCard({
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-[#2E2E2E] mb-4">
           {question}
         </h1>
-        <p className="text-[#5A5A5A] text-lg max-w-2xl">
+        <p className="text-[#5A5A5A] text-lg max-w-xl">
           This helps us personalize your professional clarity journey.
         </p>
       </div>

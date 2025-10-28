@@ -52,12 +52,12 @@ const TextQuestionCard: React.FC<TextQuestionCardProps> = ({
             {title}
           </h2>
           {helper && (
-            <p className="text-[hsl(var(--muted-foreground))] text-center max-w-2xl mx-auto">
+            <p className="text-[hsl(var(--muted-foreground))] text-center max-w-xl mx-auto">
               {helper}
             </p>
           )}
 
-          <div className="max-w-2xl mx-auto w-full">
+          <div className="max-w-xl mx-auto w-full">
             <Textarea
               value={value}
               onChange={(e) => setValue(e.target.value)}

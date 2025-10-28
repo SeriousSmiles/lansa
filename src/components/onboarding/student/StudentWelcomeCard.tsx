@@ -8,7 +8,7 @@ interface StudentWelcomeCardProps {
 
 export function StudentWelcomeCard({ onStart }: StudentWelcomeCardProps) {
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-8">
+    <div className="w-full max-w-xl mx-auto space-y-8">
       {/* Hero Section */}
       <div className="relative overflow-hidden rounded-xl">
         <img 
@@ -32,7 +32,7 @@ export function StudentWelcomeCard({ onStart }: StudentWelcomeCardProps) {
       <Card className="bg-card border-border shadow-lg">
         <div className="p-6 lg:p-8 text-center space-y-8">
           <div className="space-y-4">
-            <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto">
               You're about to show the world how you deliver value — before you even get hired. Let's transform how employers see you.
             </p>
           </div>

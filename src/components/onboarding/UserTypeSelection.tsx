@@ -43,7 +43,7 @@ export function UserTypeSelection({ onSelect }: UserTypeSelectionProps) {
           <h2 className="text-xl md:text-3xl font-bold text-foreground mb-4 md:mb-6">
             What brings you here today?
           </h2>
-          <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
             Choose your path to get a personalized experience tailored to your goals
           </p>
         </div>

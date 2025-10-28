@@ -71,7 +71,7 @@ export function OnboardingLayout({
       </div>
 
       {/* Main content */}
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto px-4 py-8 max-w-xl">
         {children}
       </main>
     </div>

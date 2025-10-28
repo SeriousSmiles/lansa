@@ -316,7 +316,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
             tags={["AI-Powered", "5 Minutes", "Career-Focused"]}
             onAction={() => setCurrentStep('demographics')}
             actionLabel="Let's start ✨"
-            className="max-w-2xl mx-auto"
+            className="max-w-xl mx-auto"
           />
         </div>
       </div>
@@ -338,7 +338,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
           image={demographicsImage}
         />
 
-        <Card className="shadow-lg border-border max-w-2xl mx-auto">
+        <Card className="shadow-lg border-border max-w-xl mx-auto">
           <CardContent className="p-4">
             <div className="space-y-8">
               <ActionCard
@@ -452,7 +452,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
           powerMoment="Power Moment #1"
         />
 
-        <Card className="shadow-lg border-border max-w-2xl mx-auto">
+        <Card className="shadow-lg border-border max-w-xl mx-auto">
           <CardContent className="p-4">
             <div className="space-y-6">
               <ActionCard
@@ -550,7 +550,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
           powerMoment="Power Moment #2"
         />
 
-        <Card className="shadow-lg border-border max-w-2xl mx-auto">
+        <Card className="shadow-lg border-border max-w-xl mx-auto">
           <CardContent className="p-4">
             <div className="space-y-6">
               <ActionCard
@@ -651,7 +651,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
           powerMoment="Your Mirror Moment"
         />
 
-        <Card className="shadow-lg border-border max-w-2xl mx-auto">
+        <Card className="shadow-lg border-border max-w-xl mx-auto">
           <CardContent className="p-4">
             {mirrorData ? (
               <div className="space-y-4">

@@ -78,7 +78,7 @@ export function CareerPathSegmentation({ onSelect }: CareerPathSegmentationProps
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             Choose Your Career Path
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto">
             Tell us about your career aspirations so we can customize your Lansa experience
           </p>
         </div>

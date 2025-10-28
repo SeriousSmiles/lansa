@@ -127,7 +127,7 @@ export function PowerMirrorStep({
         totalSteps={totalSteps}
         title="Getting Started"
       >
-        <Card className="w-full max-w-2xl mx-auto bg-card border-border">
+        <Card className="w-full max-w-xl mx-auto bg-card border-border">
           <div className="p-6 lg:p-8 text-center space-y-6">
             <div className="space-y-2">
               <div className="text-sm text-muted-foreground">

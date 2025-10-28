@@ -37,7 +37,7 @@ export class PowerMirrorErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return this.props.fallback || (
-        <Card className="w-full max-w-2xl mx-auto bg-card border-border">
+        <Card className="w-full max-w-xl mx-auto bg-card border-border">
           <CardHeader className="text-center pb-4">
             <div className="flex justify-center mb-4">
               <AlertTriangle className="h-12 w-12 text-orange-500" />
