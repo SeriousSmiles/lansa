@@ -55,46 +55,46 @@ export const Header83 = (props: Header83Props) => {
   }
 
   return (
-    <section ref={containerRef} id="relume" className="relative h-[300vh]">
-      <div className="sticky top-0 h-[100svh] overflow-hidden" style={{ height: '100dvh' }}>
+    <section ref={containerRef} id="relume" className="relative h-screen md:h-[300vh]">
+      <div className="md:sticky top-0 h-[100svh] overflow-hidden" style={{ height: '100dvh' }}>
         <div className="flex h-full items-center justify-center">
           <div className="px-[5%] py-16 md:py-24 lg:py-28">
             <div className="relative z-10 mx-auto max-w-lg text-center">
-              <motion.h1 
-                className="mb-5 text-6xl font-bold font-urbanist text-white md:mb-6 md:text-9xl lg:text-10xl"
-                style={{ opacity: opacityHeading }}
+              <h1 
+                className="mb-5 text-6xl font-bold font-urbanist text-white md:mb-6 md:text-9xl lg:text-10xl md:opacity-100"
+                style={{ opacity: window.innerWidth >= 768 ? opacityHeading.get() : 1 }}
               >
                 {heading}
-              </motion.h1>
-              <motion.p 
-                className="text-white font-public-sans md:text-md"
-                style={{ opacity: opacityDescription }}
+              </h1>
+              <p 
+                className="text-white font-public-sans md:text-md md:opacity-100"
+                style={{ opacity: window.innerWidth >= 768 ? opacityDescription.get() : 1 }}
               >
                 {description}
-              </motion.p>
-              <motion.div 
-                className="mt-6 flex items-center justify-center gap-x-4 md:mt-8"
-                style={{ opacity: opacityButtons }}
+              </p>
+              <div 
+                className="mt-6 flex items-center justify-center gap-x-4 md:mt-8 md:opacity-100"
+                style={{ opacity: window.innerWidth >= 768 ? opacityButtons.get() : 1 }}
               >
                 {buttons.map((button, index) => (
                   <Button key={index} {...button}>
                     {button.title}
                   </Button>
                 ))}
-              </motion.div>
+              </div>
             </div>
           </div>
         </div>
         <div className="absolute inset-0 z-0">
-          <motion.div
+          <div
             className="absolute inset-0 z-10 pointer-events-none"
             style={{ 
-              opacity: opacityOverlay,
+              opacity: window.innerWidth >= 768 ? opacityOverlay.get() : 0.6,
               background: 'linear-gradient(135deg, hsl(215 85% 55% / 0.6), hsl(0 0% 0% / 0.7))'
             }}
           />
-          <motion.div
-            style={{ scale }}
+          <div
+            style={{ scale: window.innerWidth >= 768 ? scale.get() : 1 }}
             className="grid size-full auto-cols-fr grid-cols-1 gap-x-4 gap-y-4 md:grid-cols-3"
           >
             {images.map((image, index) => (
@@ -112,7 +112,7 @@ export const Header83 = (props: Header83Props) => {
                 />
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>
