@@ -96,7 +96,7 @@ export function UserProfile({ userName, email, handleLogout, themeColor }: UserP
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => {
           setIsMenuOpen(false);
-          safeHandler(() => {}, "Settings")();
+          navigate(userType === 'employer' ? '/organization/settings' : '/settings');
         }}>
           Settings
         </DropdownMenuItem>

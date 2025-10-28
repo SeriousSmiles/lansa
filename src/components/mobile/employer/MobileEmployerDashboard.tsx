@@ -155,7 +155,7 @@ export function MobileEmployerDashboard({
                   className="w-full justify-start h-12"
                   onClick={() => {
                     setMenuOpen(false);
-                    navigate("/settings");
+                    navigate("/organization/settings");
                   }}
                 >
                   <Building2 className="mr-3 h-5 w-5" />

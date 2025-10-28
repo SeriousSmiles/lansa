@@ -1,9 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Users, FileText, TrendingUp } from "lucide-react";
+import { Building2, Users, FileText, TrendingUp, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrganization } from "@/contexts/OrganizationContext";
+import { useOrgPermissions } from "@/hooks/useOrgPermissions";
 import { supabase } from "@/integrations/supabase/client";
 
 interface BusinessData {
@@ -31,6 +33,8 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
   });
   const { user } = useAuth();
   const { activeOrganization } = useOrganization();
+  const { canManageOrgSettings } = useOrgPermissions();
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function loadStats() {
@@ -161,6 +165,18 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
               <h3 className="font-semibold text-[#2E2E2E] mb-2">Browse Candidates</h3>
               <p className="text-sm text-[#666666]">Discover skilled professionals looking for opportunities</p>
             </div>
+            {canManageOrgSettings && (
+              <div 
+                className="p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                onClick={() => navigate('/organization/settings')}
+              >
+                <h3 className="font-semibold text-[#2E2E2E] mb-2">
+                  <Settings className="inline h-4 w-4 mr-2" />
+                  Organization Settings
+                </h3>
+                <p className="text-sm text-[#666666]">Manage members, invitations, and organization details</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

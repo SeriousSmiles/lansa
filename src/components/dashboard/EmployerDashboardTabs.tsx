@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, FileText, BarChart3 } from "lucide-react";
+import { Building2, FileText, BarChart3, Settings } from "lucide-react";
 import { gsap } from "gsap";
+import { useNavigate } from "react-router-dom";
+import { useOrgPermissions } from "@/hooks/useOrgPermissions";
 import { EmployerOverviewTab } from "./employer/EmployerOverviewTab";
 import { JobManagementTab } from "./employer/JobManagementTab";
 import { EmployerAnalyticsTab } from "./employer/EmployerAnalyticsTab";
@@ -19,6 +21,8 @@ interface EmployerDashboardTabsProps {
 
 export function EmployerDashboardTabs({ businessData }: EmployerDashboardTabsProps) {
   const tabsRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const { canManageOrgSettings } = useOrgPermissions();
   
   useEffect(() => {
     if (tabsRef.current) {
@@ -34,7 +38,7 @@ export function EmployerDashboardTabs({ businessData }: EmployerDashboardTabsPro
   return (
     <div ref={tabsRef}>
       <Tabs defaultValue="overview" className="mb-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className={`grid w-full ${canManageOrgSettings ? 'grid-cols-4' : 'grid-cols-3'}`}>
           <TabsTrigger value="overview" className="flex items-center gap-1.5 transition-colors hover:bg-muted">
             <Building2 className="h-4 w-4" />
             Overview
@@ -47,6 +51,16 @@ export function EmployerDashboardTabs({ businessData }: EmployerDashboardTabsPro
             <BarChart3 className="h-4 w-4" />
             Analytics
           </TabsTrigger>
+          {canManageOrgSettings && (
+            <TabsTrigger 
+              value="settings" 
+              className="flex items-center gap-1.5 transition-colors hover:bg-muted"
+              onClick={() => navigate('/organization/settings')}
+            >
+              <Settings className="h-4 w-4" />
+              Settings
+            </TabsTrigger>
+          )}
         </TabsList>
         
         <TabsContent value="overview" className="pt-4">

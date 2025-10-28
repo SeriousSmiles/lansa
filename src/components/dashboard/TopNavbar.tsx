@@ -1,14 +1,15 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { getContrastTextColor } from "@/utils/colorUtils";
 import { UserProfile } from "./UserProfile";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useUserType } from "@/hooks/useUserType";
+import { useOrgPermissions } from "@/hooks/useOrgPermissions";
 import { TablerIcon } from "@tabler/icons-react";
 import { AnimatedTabNav } from "@/components/navigation/AnimatedTabNav";
-import { Search } from "lucide-react";
+import { Search, Settings } from "lucide-react";
 import { useUIStore } from "@/stores/uiStore";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { OrganizationSwitcher } from "@/components/organization/OrganizationSwitcher";
@@ -31,8 +32,10 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
   const isDarkTheme = themeColor ? getContrastTextColor(themeColor) === "#FFFFFF" : false;
   const { t } = useTranslation();
   const { userType } = useUserType();
+  const { canManageOrgSettings } = useOrgPermissions();
   const { setSearchOpen } = useUIStore();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   return (
     <header
@@ -52,7 +55,22 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
         {/* Animated Tab Navigation */}
         <div className="hidden md:flex items-center gap-4">
           <AnimatedTabNav items={items} themeColor={themeColor} />
-          {userType === 'employer' && <OrganizationSwitcher />}
+          {userType === 'employer' && (
+            <>
+              <OrganizationSwitcher />
+              {canManageOrgSettings && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/organization/settings')}
+                  className="btn-animate"
+                  title="Organization Settings"
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+              )}
+            </>
+          )}
         </div>
         
         {/* Actions */}
