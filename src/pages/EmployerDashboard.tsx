@@ -29,7 +29,10 @@ export default function EmployerDashboard() {
 
   useEffect(() => {
     async function loadBusinessData() {
-      if (!user?.id || !activeOrganization?.id) return;
+      if (!user?.id || !activeOrganization?.id) {
+        setIsLoading(false);
+        return;
+      }
 
       try {
         track('dashboard_visited');
