@@ -34,6 +34,7 @@ export function OrganizationOnboardingForm({ onComplete }: OrganizationOnboardin
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1);
+  const [duplicateWarning, setDuplicateWarning] = useState<string>('');
   
   // Form data
   const [formData, setFormData] = useState({
@@ -44,6 +45,8 @@ export function OrganizationOnboardingForm({ onComplete }: OrganizationOnboardin
     logo_url: '',
     website: '',
     domain: '',
+    country: '',
+    city: '',
   });
 
   const industries = [
@@ -72,6 +75,26 @@ export function OrganizationOnboardingForm({ onComplete }: OrganizationOnboardin
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const checkDuplicateName = async (name: string) => {
+    if (name.length < 3) {
+      setDuplicateWarning('');
+      return;
+    }
+
+    try {
+      const results = await organizationService.searchOrganizations(name);
+      if (results.length > 0) {
+        setDuplicateWarning(
+          `${results.length} organization(s) with similar name found. Please add location details to help users distinguish your company.`
+        );
+      } else {
+        setDuplicateWarning('');
+      }
+    } catch (error) {
+      console.error('Error checking duplicates:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -96,6 +119,8 @@ export function OrganizationOnboardingForm({ onComplete }: OrganizationOnboardin
         description: formData.description || undefined,
         website: formData.website || undefined,
         domain: formData.domain || undefined,
+        country: formData.country || undefined,
+        city: formData.city || undefined,
       });
 
       toast.success(`${organization.name} created successfully!`);
@@ -145,8 +170,14 @@ export function OrganizationOnboardingForm({ onComplete }: OrganizationOnboardin
                 placeholder="e.g., Acme Corporation"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
+                onBlur={(e) => checkDuplicateName(e.target.value)}
                 required
               />
+              {duplicateWarning && (
+                <p className="text-sm text-amber-600 dark:text-amber-400">
+                  ⚠️ {duplicateWarning}
+                </p>
+              )}
             </div>
 
             {/* Industry */}
@@ -225,6 +256,29 @@ export function OrganizationOnboardingForm({ onComplete }: OrganizationOnboardin
               <p className="text-sm text-muted-foreground">
                 Team members with this email domain can request to join automatically
               </p>
+            </div>
+
+            {/* Location Fields */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="country">Country</Label>
+                <Input
+                  id="country"
+                  placeholder="e.g., Kenya, United States"
+                  value={formData.country}
+                  onChange={(e) => handleInputChange('country', e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="city">City/Region</Label>
+                <Input
+                  id="city"
+                  placeholder="e.g., Nairobi, New York"
+                  value={formData.city}
+                  onChange={(e) => handleInputChange('city', e.target.value)}
+                />
+              </div>
             </div>
 
             <div className="flex gap-4 pt-4">

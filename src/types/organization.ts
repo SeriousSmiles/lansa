@@ -19,6 +19,8 @@ export interface Organization {
   verified_at?: string;
   verified_by?: string;
   domain?: string;
+  country?: string;
+  city?: string;
   seat_limit?: number;
   billing_status?: string;
   created_at: string;

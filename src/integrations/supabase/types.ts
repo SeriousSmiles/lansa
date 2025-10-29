@@ -1179,7 +1179,9 @@ export type Database = {
       organizations: {
         Row: {
           billing_status: string | null
+          city: string | null
           clerk_org_id: string
+          country: string | null
           created_at: string
           description: string | null
           domain: string | null
@@ -1201,7 +1203,9 @@ export type Database = {
         }
         Insert: {
           billing_status?: string | null
+          city?: string | null
           clerk_org_id: string
+          country?: string | null
           created_at?: string
           description?: string | null
           domain?: string | null
@@ -1223,7 +1227,9 @@ export type Database = {
         }
         Update: {
           billing_status?: string | null
+          city?: string | null
           clerk_org_id?: string
+          country?: string | null
           created_at?: string
           description?: string | null
           domain?: string | null

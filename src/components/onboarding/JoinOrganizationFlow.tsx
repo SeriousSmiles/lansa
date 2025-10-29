@@ -13,7 +13,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { organizationService } from "@/services/organizationService";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { toast } from "sonner";
-import { Search, Building2, Loader2, Check, UserPlus } from "lucide-react";
+import { 
+  Search, 
+  Building2, 
+  Loader2, 
+  Check, 
+  UserPlus,
+  MapPin,
+  Globe,
+  Briefcase,
+  Users,
+  CheckCircle2
+} from "lucide-react";
 import type { Organization } from "@/types/organization";
 
 interface JoinOrganizationFlowProps {
@@ -220,40 +231,97 @@ export function JoinOrganizationFlow({ onComplete, onBack }: JoinOrganizationFlo
               {organizations.map((org) => (
                 <Card key={org.id} className="hover:border-primary transition-colors">
                   <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3 flex-1">
-                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                          {org.logo_url ? (
-                            <img
-                              src={org.logo_url}
-                              alt={org.name}
-                              className="w-full h-full object-cover rounded-lg"
-                            />
-                          ) : (
-                            <Building2 className="w-6 h-6 text-primary" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-lg mb-1">{org.name}</h3>
-                          {org.industry && (
-                            <p className="text-sm text-muted-foreground mb-1">{org.industry}</p>
-                          )}
-                          {org.size_range && (
-                            <p className="text-xs text-muted-foreground">{org.size_range}</p>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        onClick={() => handleRequestToJoin(org)}
-                        disabled={isJoining}
-                        size="sm"
-                      >
-                        {isJoining && selectedOrg?.id === org.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                    <div className="flex items-start justify-between gap-4">
+                      {/* Logo */}
+                      <div className="flex-shrink-0 w-16 h-16 rounded-lg border-2 bg-white flex items-center justify-center overflow-hidden">
+                        {org.logo_url ? (
+                          <img 
+                            src={org.logo_url} 
+                            alt={org.name} 
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
-                          'Request to Join'
+                          <Building2 className="w-8 h-8 text-muted-foreground" />
                         )}
-                      </Button>
+                      </div>
+
+                      {/* Organization Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h3 className="font-semibold text-lg">{org.name}</h3>
+                            
+                            {/* Location Badge - PROMINENT */}
+                            {(org.city || org.country) && (
+                              <div className="flex items-center gap-1 text-sm text-primary font-medium mt-1">
+                                <MapPin className="h-3.5 w-3.5" />
+                                {org.city && org.country 
+                                  ? `${org.city}, ${org.country}` 
+                                  : org.city || org.country}
+                              </div>
+                            )}
+                          </div>
+                          
+                          <Button 
+                            onClick={() => handleRequestToJoin(org)} 
+                            disabled={isJoining} 
+                            size="sm"
+                            className="ml-2"
+                          >
+                            {isJoining && selectedOrg?.id === org.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              'Request to Join'
+                            )}
+                          </Button>
+                        </div>
+
+                        {/* Secondary Info */}
+                        <div className="space-y-1">
+                          {org.industry && (
+                            <p className="text-sm text-muted-foreground">
+                              <Briefcase className="inline h-3.5 w-3.5 mr-1" />
+                              {org.industry}
+                            </p>
+                          )}
+                          
+                          {org.website && (
+                            <p className="text-sm text-muted-foreground truncate">
+                              <Globe className="inline h-3.5 w-3.5 mr-1" />
+                              <a 
+                                href={org.website} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="hover:text-primary underline"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {org.website}
+                              </a>
+                            </p>
+                          )}
+                          
+                          {org.size_range && (
+                            <p className="text-xs text-muted-foreground">
+                              <Users className="inline h-3.5 w-3.5 mr-1" />
+                              {org.size_range}
+                            </p>
+                          )}
+
+                          {org.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
+                              {org.description}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Verification Badge */}
+                        {org.verification_status === 'verified' && (
+                          <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 mt-2">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Verified Organization
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

@@ -19,6 +19,8 @@ export interface CreateOrganizationData {
   logo_url?: string;
   website?: string;
   domain?: string;
+  country?: string;
+  city?: string;
 }
 
 export const organizationService = {
@@ -32,6 +34,22 @@ export const organizationService = {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
+
+    // Check for duplicate organizations
+    const duplicates = await this.checkForDuplicates(data.name, data.domain);
+    if (duplicates.length > 0) {
+      const exactMatch = duplicates.find(
+        org => org.name.toLowerCase() === data.name.toLowerCase() && 
+               org.domain === data.domain
+      );
+      
+      if (exactMatch) {
+        throw new Error(
+          'An organization with this name and domain already exists. ' +
+          'If this is your organization, please request to join instead.'
+        );
+      }
+    }
 
     // Use security definer function to atomically create org + membership
     const { data: result, error } = await supabase.rpc('create_organization_with_owner', {
@@ -48,10 +66,47 @@ export const organizationService = {
     if (!result) throw new Error('Failed to create organization');
 
     const parsed = result as any;
+    let organization = parsed.organization as Organization;
+
+    // Update with country and city if provided (function doesn't support these yet)
+    if (data.country || data.city) {
+      const { data: updatedOrg, error: updateError } = await supabase
+        .from('organizations')
+        .update({
+          country: data.country,
+          city: data.city,
+        })
+        .eq('id', organization.id)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+      organization = updatedOrg as Organization;
+    }
+
     return {
-      organization: parsed.organization as Organization,
+      organization,
       membership: parsed.membership as OrganizationMembership,
     };
+  },
+
+  /**
+   * Check for duplicate organizations by name or domain
+   */
+  async checkForDuplicates(name: string, domain?: string): Promise<Organization[]> {
+    let query = supabase
+      .from('organizations')
+      .select('id, name, domain, country, city')
+      .eq('is_active', true);
+
+    if (domain) {
+      query = query.or(`name.ilike.${name},domain.eq.${domain}`);
+    } else {
+      query = query.ilike('name', name);
+    }
+
+    const { data } = await query;
+    return (data || []) as Organization[];
   },
 
   /**
