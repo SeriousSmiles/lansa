@@ -5,6 +5,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { organizationService } from '@/services/organizationService';
 import type {
   Organization,
@@ -16,6 +17,7 @@ import { ROLE_PERMISSIONS } from '@/types/organization';
 interface OrganizationContextValue {
   activeOrganization: Organization | null;
   activeMembership: OrganizationMembership | null;
+  pendingMembership: OrganizationMembership | null;
   organizations: OrganizationMembership[];
   isLoading: boolean;
   hasPendingRequest: boolean;
@@ -36,6 +38,9 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
   const [activeMembership, setActiveMembership] = useState<OrganizationMembership | null>(
     null
   );
+  const [pendingMembership, setPendingMembership] = useState<OrganizationMembership | null>(
+    null
+  );
   const [organizations, setOrganizations] = useState<OrganizationMembership[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
@@ -48,33 +53,45 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
       setOrganizations([]);
       setActiveOrganization(null);
       setActiveMembership(null);
+      setPendingMembership(null);
       setIsLoading(false);
       return;
     }
 
     try {
       setIsLoading(true);
-      const memberships = await organizationService.getUserOrganizations();
-      setOrganizations(memberships);
+      
+      // Fetch all memberships (both active and pending) with organization details
+      const { data: allMemberships, error } = await supabase
+        .from('organization_memberships')
+        .select('*, organizations(*)')
+        .eq('user_id', user.id);
 
-      // Check for pending requests
-      const pending = memberships.some((m) => !m.is_active);
-      setHasPendingRequest(pending);
+      if (error) throw error;
+
+      const activeMemberships = (allMemberships || []).filter((m) => m.is_active);
+      const pendingMemberships = (allMemberships || []).filter((m) => !m.is_active);
+
+      setOrganizations(activeMemberships as OrganizationMembership[]);
+      setHasPendingRequest(pendingMemberships.length > 0);
+      
+      if (pendingMemberships.length > 0) {
+        setPendingMembership(pendingMemberships[0] as OrganizationMembership);
+      } else {
+        setPendingMembership(null);
+      }
 
       // Set active organization
-      if (memberships.length > 0) {
-        const activeMemberships = memberships.filter((m) => m.is_active);
-        if (activeMemberships.length > 0) {
-          // Try to restore from localStorage
-          const savedOrgId = localStorage.getItem(ACTIVE_ORG_KEY);
-          const savedMembership = activeMemberships.find(
-            (m) => m.organization_id === savedOrgId
-          );
+      if (activeMemberships.length > 0) {
+        // Try to restore from localStorage
+        const savedOrgId = localStorage.getItem(ACTIVE_ORG_KEY);
+        const savedMembership = activeMemberships.find(
+          (m) => m.organization_id === savedOrgId
+        );
 
-          const membership = savedMembership || activeMemberships[0];
-          setActiveMembership(membership);
-          setActiveOrganization(membership.organization as Organization);
-        }
+        const membership = savedMembership || activeMemberships[0];
+        setActiveMembership(membership as OrganizationMembership);
+        setActiveOrganization((membership as any).organizations as Organization);
       }
     } catch (error) {
       console.error('Failed to load organizations:', error);
@@ -115,8 +132,13 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
       setOrganizations(memberships);
 
       // Check for pending requests
-      const pending = memberships.some((m) => !m.is_active);
-      setHasPendingRequest(pending);
+      const pendingMemberships = memberships.filter((m) => !m.is_active);
+      setHasPendingRequest(pendingMemberships.length > 0);
+      if (pendingMemberships.length > 0) {
+        setPendingMembership(pendingMemberships[0]);
+      } else {
+        setPendingMembership(null);
+      }
 
       // Set active organization
       if (memberships.length > 0) {
@@ -170,6 +192,7 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
   const value: OrganizationContextValue = {
     activeOrganization,
     activeMembership,
+    pendingMembership,
     organizations,
     isLoading,
     hasPendingRequest,

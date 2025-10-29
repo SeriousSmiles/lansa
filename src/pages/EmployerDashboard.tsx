@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { CompanyLogoUploadModal } from "@/components/employer/CompanyLogoUploadModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileEmployerTabs } from "@/components/mobile/employer/MobileEmployerTabs";
+import { PendingRequestBanner } from "@/components/organization/PendingRequestBanner";
 
 interface BusinessData {
   company_name: string;
@@ -23,7 +24,7 @@ export default function EmployerDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [showLogoModal, setShowLogoModal] = useState(false);
   const { user } = useAuth();
-  const { activeOrganization, isLoading: orgLoading } = useOrganization();
+  const { activeOrganization, pendingMembership, hasPendingRequest, isLoading: orgLoading } = useOrganization();
   const { track } = useActionTracking();
   const isMobile = useIsMobile();
 
@@ -100,6 +101,21 @@ export default function EmployerDashboard() {
   }
 
   if (!activeOrganization) {
+    if (hasPendingRequest && pendingMembership) {
+      const pendingOrgName = (pendingMembership as any).organizations?.name;
+      return (
+        <div className="employer-theme h-screen bg-background flex items-center justify-center p-4">
+          <div className="max-w-2xl w-full">
+            <PendingRequestBanner organizationName={pendingOrgName} />
+            <div className="text-center mt-6">
+              <p className="text-muted-foreground">
+                You'll be able to access your dashboard once your request is approved.
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="employer-theme h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">

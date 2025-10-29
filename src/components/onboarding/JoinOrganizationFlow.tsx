@@ -167,10 +167,10 @@ export function JoinOrganizationFlow({ onComplete, onBack }: JoinOrganizationFlo
                 You'll receive a notification once your request is reviewed.
               </p>
               <Button
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/employer-dashboard')}
                 className="w-full"
               >
-                Continue to Dashboard
+                View Your Dashboard
               </Button>
             </div>
           </CardContent>

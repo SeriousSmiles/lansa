@@ -186,6 +186,22 @@ export const organizationService = {
     } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
+    // Check if user already has a membership (active or pending)
+    const { data: existing } = await supabase
+      .from('organization_memberships')
+      .select('is_active')
+      .eq('organization_id', organizationId)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (existing) {
+      if (existing.is_active) {
+        throw new Error('You are already a member of this organization');
+      } else {
+        throw new Error('You already have a pending request to join this organization');
+      }
+    }
+
     const { error } = await supabase.from('organization_memberships').insert({
       organization_id: organizationId,
       user_id: user.id,
