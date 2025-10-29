@@ -103,6 +103,20 @@ export function CompanyLogoUploadModal({
         return;
       }
 
+      // Also update the organization's logo_url
+      const { data: businessProfile } = await supabase
+        .from('business_profiles')
+        .select('organization_id')
+        .eq('user_id', userId)
+        .single();
+
+      if (businessProfile?.organization_id) {
+        await supabase
+          .from('organizations')
+          .update({ logo_url: logoUrl })
+          .eq('id', businessProfile.organization_id);
+      }
+
       // Mark that logo has been uploaded in user_answers to track completion
       await supabase
         .from('user_answers')
