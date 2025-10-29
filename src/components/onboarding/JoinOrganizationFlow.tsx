@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { organizationService } from "@/services/organizationService";
 import { useOrganization } from "@/contexts/OrganizationContext";
+import { markOnboardingComplete } from "@/services/onboarding/unifiedOnboardingService";
 import { toast } from "sonner";
 import { 
   Search, 
@@ -88,6 +89,9 @@ export function JoinOrganizationFlow({ onComplete, onBack }: JoinOrganizationFlo
       setSelectedOrg(org);
       
       await organizationService.requestToJoinOrganization(org.id);
+      
+      // Mark onboarding as complete so user can access pending dashboard
+      await markOnboardingComplete(user.id, 'employer');
       
       toast.success(`Join request sent to ${org.name}!`);
       setRequestSent(true);
@@ -167,7 +171,13 @@ export function JoinOrganizationFlow({ onComplete, onBack }: JoinOrganizationFlo
                 You'll receive a notification once your request is reviewed.
               </p>
               <Button
-                onClick={() => navigate('/employer-dashboard')}
+                onClick={() => {
+                  if (onComplete) {
+                    onComplete();
+                  } else {
+                    navigate('/employer-dashboard', { replace: true });
+                  }
+                }}
                 className="w-full"
               >
                 View Your Dashboard

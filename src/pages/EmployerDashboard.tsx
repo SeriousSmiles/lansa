@@ -105,11 +105,54 @@ export default function EmployerDashboard() {
       const pendingOrgName = (pendingMembership as any).organizations?.name;
       return (
         <div className="employer-theme h-screen bg-background flex items-center justify-center p-4">
-          <div className="max-w-2xl w-full">
+          <div className="max-w-2xl w-full space-y-6">
             <PendingRequestBanner organizationName={pendingOrgName} />
-            <div className="text-center mt-6">
-              <p className="text-muted-foreground">
-                You'll be able to access your dashboard once your request is approved.
+            
+            {/* Status Timeline */}
+            <div className="bg-card border rounded-lg p-6">
+              <h3 className="font-semibold mb-4">Your Progress</h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium">Account Created</p>
+                    <p className="text-sm text-muted-foreground">Your account is ready to use</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium">Join Request Sent</p>
+                    <p className="text-sm text-muted-foreground">Waiting for admin approval</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+                    <svg className="w-4 h-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-muted-foreground">Approval Pending</p>
+                    <p className="text-sm text-muted-foreground">You'll receive an email when approved</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">
+                While you wait, you can close this page. We'll notify you by email once your request is reviewed.
               </p>
             </div>
           </div>
