@@ -80,8 +80,18 @@ export function RequestsSettings() {
     }
   };
 
-  const getInitials = (userId: string) => {
-    return userId.substring(0, 2).toUpperCase();
+  const getInitials = (name?: string) => {
+    if (!name) return "??";
+    const parts = name.split(" ");
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  const getUserName = (request: OrganizationMembership) => {
+    const profile = (request as any).user_profiles;
+    return profile?.name || profile?.email || `User ${request.user_id.substring(0, 8)}`;
   };
 
   if (isLoading) {
@@ -117,10 +127,10 @@ export function RequestsSettings() {
               >
                 <div className="flex items-center gap-4">
                   <Avatar>
-                    <AvatarFallback>{getInitials(request.user_id)}</AvatarFallback>
+                    <AvatarFallback>{getInitials(getUserName(request))}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <div className="font-medium">User {request.user_id.substring(0, 8)}</div>
+                    <div className="font-medium">{getUserName(request)}</div>
                     <div className="text-sm text-muted-foreground">
                       Requested {format(new Date(request.created_at), "MMM d, yyyy")}
                     </div>

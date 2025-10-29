@@ -265,7 +265,14 @@ export const organizationService = {
   async getPendingRequests(organizationId: string): Promise<OrganizationMembership[]> {
     const { data, error } = await supabase
       .from('organization_memberships')
-      .select('*')
+      .select(`
+        *,
+        user_profiles (
+          name,
+          profile_image,
+          email
+        )
+      `)
       .eq('organization_id', organizationId)
       .eq('is_active', false)
       .order('created_at', { ascending: false });
