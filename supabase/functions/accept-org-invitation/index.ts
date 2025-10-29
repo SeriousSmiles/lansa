@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 import { getAuthenticatedUser, formatAuthError, AuthorizationError } from '../_shared/guard.ts';
+import { markOnboardingComplete } from '../_shared/onboardingHelper.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -105,23 +106,10 @@ Deno.serve(async (req) => {
       })
       .eq('id', invitation.id);
 
-    // Set user_type to employer if not set
-    const { data: userAnswers } = await supabase
-      .from('user_answers')
-      .select('user_type')
-      .eq('user_id', state.userId)
-      .maybeSingle();
+    // Mark onboarding as complete and set user_type to employer
+    await markOnboardingComplete(supabase, state.userId, 'employer');
 
-    if (!userAnswers?.user_type) {
-      await supabase
-        .from('user_answers')
-        .upsert({
-          user_id: state.userId,
-          user_type: 'employer',
-        });
-    }
-
-    console.log(`[accept-org-invitation] Membership created: ${membership.id}`);
+    console.log(`[accept-org-invitation] Membership created: ${membership.id}, onboarding marked complete`);
 
     return new Response(
       JSON.stringify({ success: true, membership, organization: invitation.organization }),

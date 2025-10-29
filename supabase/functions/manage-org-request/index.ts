@@ -3,6 +3,7 @@ import { getAuthenticatedUser, formatAuthError, AuthorizationError } from '../_s
 import { requireOrgRole } from '../_shared/orgPermissions.ts';
 import { sendApprovalEmail, sendRejectionEmail } from '../_shared/emailService.ts';
 import { rateLimit } from '../_shared/rateLimit.ts';
+import { markOnboardingComplete } from '../_shared/onboardingHelper.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -101,15 +102,10 @@ Deno.serve(async (req) => {
         throw updateError;
       }
 
-      // Set user_type to employer
-      await supabase
-        .from('user_answers')
-        .upsert({
-          user_id: request.user_id,
-          user_type: 'employer',
-        });
+      // Mark onboarding as complete and set user_type to employer
+      await markOnboardingComplete(supabase, request.user_id, 'employer');
 
-      console.log(`[manage-org-request] Request approved: ${membershipId}`);
+      console.log(`[manage-org-request] Request approved: ${membershipId}, onboarding marked complete`);
 
       // Get user details for email
       const { data: userData } = await supabase.auth.admin.getUserById(request.user_id);
