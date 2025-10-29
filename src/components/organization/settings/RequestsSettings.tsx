@@ -66,9 +66,19 @@ export function RequestsSettings() {
       setSelectedRequest(null);
       loadRequests();
       refreshOrganization();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error approving request:', error);
-      toast.error('Failed to approve request');
+      
+      // Handle already approved case
+      if (error?.message?.includes('already been approved') || error?.status === 'already_approved') {
+        toast.info('This request has already been approved');
+        setIsRoleDialogOpen(false);
+        setSelectedRequest(null);
+        loadRequests(); // Refresh to remove from list
+        refreshOrganization();
+      } else {
+        toast.error(error?.message || 'Failed to approve request');
+      }
     }
   };
 

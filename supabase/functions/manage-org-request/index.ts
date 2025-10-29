@@ -54,20 +54,38 @@ Deno.serve(async (req) => {
 
     console.log(`[manage-org-request] User ${state.userId} ${action}ing request ${membershipId}`);
 
-    // Get the membership request
-    const { data: request, error: requestError } = await supabase
+    // First check if membership exists at all
+    const { data: membership, error: membershipError } = await supabase
       .from('organization_memberships')
       .select('*, organization:organizations(*)')
       .eq('id', membershipId)
-      .eq('is_active', false)
-      .single();
+      .maybeSingle();
 
-    if (requestError || !request) {
+    if (membershipError) {
+      console.error('[manage-org-request] Error fetching membership:', membershipError);
+      throw membershipError;
+    }
+
+    if (!membership) {
       return new Response(
         JSON.stringify({ error: 'Request not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Check if already approved
+    if (membership.is_active) {
+      console.log(`[manage-org-request] Request ${membershipId} is already approved`);
+      return new Response(
+        JSON.stringify({ 
+          error: 'This request has already been approved',
+          status: 'already_approved'
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const request = membership;
 
     // Check permission using new permission system
     await requireOrgRole(supabase, state.userId, request.organization_id, ['owner', 'admin']);

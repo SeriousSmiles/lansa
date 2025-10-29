@@ -334,7 +334,11 @@ export const organizationService = {
     });
 
     if (error) throw error;
-    if (data.error) throw new Error(data.error);
+    if (data?.error) {
+      const err: any = new Error(data.error);
+      err.status = data.status; // Preserve status field for "already_approved"
+      throw err;
+    }
   },
 
   /**
