@@ -36,10 +36,15 @@ export function RequestsSettings() {
     try {
       setIsLoading(true);
       const data = await organizationService.getPendingRequests(activeOrganization.id);
+      console.log('Loaded pending requests:', data);
       setRequests(data);
     } catch (error) {
-      console.error("Error loading requests:", error);
-      toast.error("Failed to load requests");
+      console.error("Error loading pending requests:", error);
+      if (error instanceof Error) {
+        toast.error(`Failed to load requests: ${error.message}`);
+      } else {
+        toast.error("Failed to load membership requests. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
