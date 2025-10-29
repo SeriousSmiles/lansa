@@ -43,6 +43,12 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     );
 
+    // Create service role client for bypassing RLS when updating user profiles
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
     const state = await getAuthenticatedUser(supabase);
     const { membershipId, action, role }: ManageRequestBody = await req.json();
 
@@ -103,7 +109,8 @@ Deno.serve(async (req) => {
       }
 
       // Mark onboarding as complete and set user_type to employer
-      await markOnboardingComplete(supabase, request.user_id, 'employer');
+      // Use admin client to bypass RLS when updating the requesting user's profile
+      await markOnboardingComplete(supabaseAdmin, request.user_id, 'employer');
 
       console.log(`[manage-org-request] Request approved: ${membershipId}, onboarding marked complete`);
 
