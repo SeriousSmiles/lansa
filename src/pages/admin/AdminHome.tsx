@@ -4,10 +4,16 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { LoadingSpinner } from '@/components/loading/LoadingSpinner';
 import { COLOR_CONFIG, getEffectiveColor } from '@/utils/adminColors';
-import { Users, TrendingUp, Award, AlertCircle } from 'lucide-react';
+import { Users, TrendingUp, Award, AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
 
 export default function AdminHome() {
-  const { data: stats, isLoading } = useQuery({
+  const { toast } = useToast();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  const { data: stats, isLoading, refetch } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
       const { data: profiles } = await supabase
@@ -51,6 +57,32 @@ export default function AdminHome() {
     }
   });
 
+  const handleRefreshColors = async () => {
+    setIsRefreshing(true);
+    try {
+      const { error } = await supabase.functions.invoke('update-user-colors');
+      
+      if (error) throw error;
+
+      toast({
+        title: 'Colors updated',
+        description: 'User colors have been recalculated successfully.',
+      });
+
+      // Refetch stats to show updated counts
+      await refetch();
+    } catch (error) {
+      console.error('Error refreshing colors:', error);
+      toast({
+        title: 'Error updating colors',
+        description: 'There was an error recalculating user colors. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <AdminLayout title="Dashboard">
@@ -62,7 +94,20 @@ export default function AdminHome() {
   }
 
   return (
-    <AdminLayout title="Dashboard">
+    <AdminLayout 
+      title="Dashboard"
+      actions={
+        <Button 
+          onClick={handleRefreshColors} 
+          disabled={isRefreshing}
+          variant="outline"
+          size="sm"
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+          Refresh Colors
+        </Button>
+      }
+    >
       <div className="space-y-6">
         {/* KPI Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

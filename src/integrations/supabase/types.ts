@@ -2444,6 +2444,10 @@ export type Database = {
       }
     }
     Functions: {
+      assign_user_color: {
+        Args: { user_id_param: string }
+        Returns: Database["public"]["Enums"]["user_color"]
+      }
       check_org_membership: {
         Args: { _organization_id: string; _roles?: string[]; _user_id: string }
         Returns: boolean
@@ -2493,6 +2497,16 @@ export type Database = {
           _user_id: string
         }
         Returns: string
+      }
+      update_all_user_colors: {
+        Args: never
+        Returns: {
+          green_count: number
+          orange_count: number
+          purple_count: number
+          red_count: number
+          total_updated: number
+        }[]
       }
     }
     Enums: {
