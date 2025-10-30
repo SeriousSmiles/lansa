@@ -106,7 +106,14 @@ export function RequestsSettings() {
 
   const getUserName = (request: OrganizationMembership) => {
     const profile = (request as any).user_profiles;
-    return profile?.name || profile?.email || `User ${request.user_id.substring(0, 8)}`;
+    // Priority: name -> email -> fallback to "User" with ID
+    if (profile?.name && profile.name.trim() !== '') {
+      return profile.name;
+    }
+    if (profile?.email && profile.email.trim() !== '') {
+      return profile.email;
+    }
+    return `User ${request.user_id.substring(0, 8)}`;
   };
 
   if (isLoading) {

@@ -5,6 +5,7 @@ import { getContrastTextColor } from "@/utils/colorUtils";
 import { UserProfile } from "./UserProfile";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useUserType } from "@/hooks/useUserType";
 import { useOrgPermissions } from "@/hooks/useOrgPermissions";
 import { TablerIcon } from "@tabler/icons-react";
@@ -88,10 +89,11 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
           {userType !== 'employer' && !isMobile && (
             <Link to="/profile">
               <Button className="btn-animate" size="sm">{t('navbar.resumeBuilder')}</Button>
-            </Link>
-          )}
-          <LanguageSwitcher />
-          <UserProfile 
+          </Link>
+        )}
+        <NotificationBell />
+        <LanguageSwitcher />
+        <UserProfile
             userName={userName}
             email={email}
             handleLogout={onLogout}

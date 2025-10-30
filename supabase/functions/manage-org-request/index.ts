@@ -2,6 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 import { getAuthenticatedUser, formatAuthError, AuthorizationError } from '../_shared/guard.ts';
 import { requireOrgRole } from '../_shared/orgPermissions.ts';
 import { sendApprovalEmail, sendRejectionEmail } from '../_shared/emailService.ts';
+import { createNotification } from '../_shared/notificationHelper.ts';
 import { rateLimit } from '../_shared/rateLimit.ts';
 import { markOnboardingComplete } from '../_shared/onboardingHelper.ts';
 
@@ -195,6 +196,53 @@ Deno.serve(async (req) => {
         }
       }
 
+      // Create in-app notification for the user
+      try {
+        await createNotification(supabaseAdmin, {
+          userId: request.user_id,
+          type: 'org_request_approved',
+          title: 'Request Approved!',
+          message: `Your request to join ${request.organization.name} has been approved as ${role || 'member'}.`,
+          actionUrl: '/employer-dashboard',
+          metadata: {
+            organizationId: request.organization_id,
+            organizationName: request.organization.name,
+            role: role || 'member',
+          },
+        });
+      } catch (notifError) {
+        console.error('[manage-org-request] Failed to create notification:', notifError);
+      }
+
+      // Notify all org members about new member (except the actor)
+      try {
+        const { data: members } = await supabaseAdmin
+          .from('organization_memberships')
+          .select('user_id')
+          .eq('organization_id', request.organization_id)
+          .eq('is_active', true)
+          .neq('user_id', state.userId); // Don't notify the admin who approved
+
+        if (members && members.length > 0) {
+          for (const member of members) {
+            await createNotification(supabaseAdmin, {
+              userId: member.user_id,
+              type: 'org_member_joined',
+              title: 'New Team Member',
+              message: `${userName} has joined ${request.organization.name} as ${role || 'member'}.`,
+              actionUrl: '/organization/settings',
+              metadata: {
+                organizationId: request.organization_id,
+                newMemberId: request.user_id,
+                newMemberName: userName,
+              },
+            });
+          }
+        }
+      } catch (notifError) {
+        console.error('[manage-org-request] Failed to notify members:', notifError);
+      }
+
       return new Response(
         JSON.stringify({ success: true, action: 'approved' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -231,6 +279,22 @@ Deno.serve(async (req) => {
         } catch (emailError) {
           console.error('[manage-org-request] Rejection email failed:', emailError);
         }
+      }
+
+      // Create in-app notification for the user
+      try {
+        await createNotification(supabaseAdmin, {
+          userId: request.user_id,
+          type: 'org_request_rejected',
+          title: 'Request Not Approved',
+          message: `Your request to join ${request.organization.name} was not approved.`,
+          metadata: {
+            organizationId: request.organization_id,
+            organizationName: request.organization.name,
+          },
+        });
+      } catch (notifError) {
+        console.error('[manage-org-request] Failed to create notification:', notifError);
       }
 
       return new Response(

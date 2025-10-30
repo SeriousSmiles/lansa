@@ -39,9 +39,11 @@ import LearningJobFeed from "./pages/LearningJobFeed";
 import DevTools from "./pages/DevTools";
 import Certification from "./pages/Certification";
 import VerifyCertification from "./pages/VerifyCertification";
+import Notifications from "./pages/Notifications";
 import { AuthProvider } from "./contexts/AuthContext";
 import { UserStateProvider } from "./contexts/UserStateProvider";
 import { OrganizationProvider } from "./contexts/OrganizationContext";
+import { NotificationProvider } from "./contexts/NotificationContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { RequireOnboarding, RequireUserType } from "./components/auth/RouteGuards";
 
@@ -56,7 +58,8 @@ const App: React.FC = () => {
       <AuthProvider>
         <UserStateProvider>
           <OrganizationProvider>
-            <TooltipProvider>
+            <NotificationProvider>
+              <TooltipProvider>
               <Toaster />
               <Sonner />
               <AddToHomeScreenPrompt />
@@ -143,6 +146,8 @@ const App: React.FC = () => {
                       </RequireUserType>
                     } />
                     
+                    <Route path="/notifications" element={<Notifications />} />
+                    
                     <Route path="/content" element={
                       <RequireUserType allowedTypes={['job_seeker']}>
                         <ContentLibrary />
@@ -203,8 +208,9 @@ const App: React.FC = () => {
                   <Route path="*" element={<HomeSpotlight />} />
                 </Routes>
               </AppShell>
-            </BrowserRouter>
-            </TooltipProvider>
+              </BrowserRouter>
+              </TooltipProvider>
+            </NotificationProvider>
           </OrganizationProvider>
         </UserStateProvider>
       </AuthProvider>

@@ -1035,6 +1035,45 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          message: string
+          metadata: Json | null
+          read_at: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          message: string
+          metadata?: Json | null
+          read_at?: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          message?: string
+          metadata?: Json | null
+          read_at?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       organization_audit_log: {
         Row: {
           action: string
@@ -1255,6 +1294,42 @@ export type Database = {
           verified_at?: string | null
           verified_by?: string | null
           website?: string | null
+        }
+        Relationships: []
+      }
+      product_updates: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string
+          id: string
+          image_url: string | null
+          link_url: string | null
+          published_at: string | null
+          title: string
+          version: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description: string
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          published_at?: string | null
+          title: string
+          version?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          published_at?: string | null
+          title?: string
+          version?: string | null
         }
         Relationships: []
       }
@@ -2164,6 +2239,32 @@ export type Database = {
           },
         ]
       }
+      user_seen_updates: {
+        Row: {
+          seen_at: string | null
+          update_id: string
+          user_id: string
+        }
+        Insert: {
+          seen_at?: string | null
+          update_id: string
+          user_id: string
+        }
+        Update: {
+          seen_at?: string | null
+          update_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_seen_updates_update_id_fkey"
+            columns: ["update_id"]
+            isOneToOne: false
+            referencedRelation: "product_updates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_stories: {
         Row: {
           content: string
@@ -2297,6 +2398,18 @@ export type Database = {
       interaction_type: "view" | "save" | "apply" | "ignore" | "share"
       job_type: "full_time" | "part_time" | "contract" | "internship"
       match_context: "employee" | "internship"
+      notification_type:
+        | "org_request_received"
+        | "org_request_approved"
+        | "org_request_rejected"
+        | "org_invitation_received"
+        | "org_member_joined"
+        | "org_role_changed"
+        | "job_application_received"
+        | "job_application_status_changed"
+        | "match_created"
+        | "message_received"
+        | "system_update"
       swipe_direction: "right" | "left" | "nudge"
     }
     CompositeTypes: {
@@ -2454,6 +2567,19 @@ export const Constants = {
       interaction_type: ["view", "save", "apply", "ignore", "share"],
       job_type: ["full_time", "part_time", "contract", "internship"],
       match_context: ["employee", "internship"],
+      notification_type: [
+        "org_request_received",
+        "org_request_approved",
+        "org_request_rejected",
+        "org_invitation_received",
+        "org_member_joined",
+        "org_role_changed",
+        "job_application_received",
+        "job_application_status_changed",
+        "match_created",
+        "message_received",
+        "system_update",
+      ],
       swipe_direction: ["right", "left", "nudge"],
     },
   },
