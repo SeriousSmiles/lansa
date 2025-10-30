@@ -57,59 +57,7 @@ export function JoinOrganizationFlow({ onComplete, onBack }: JoinOrganizationFlo
     }
   }, [inviteToken]);
 
-  // Phase 1: Polling for approval status after request is sent
-  useEffect(() => {
-    if (!requestSent || !user?.id) return;
-
-    console.log('[JoinOrganizationFlow] Starting polling for approval...');
-    
-    let pollCount = 0;
-    const maxPolls = 60; // Poll for 10 minutes max (60 * 10s)
-    
-    const pollInterval = setInterval(async () => {
-      pollCount++;
-      
-      try {
-        // Check if user has any active memberships
-        const { data: memberships } = await supabase
-          .from('organization_memberships')
-          .select('id, organization_id, is_active, organization:organizations(name)')
-          .eq('user_id', user.id)
-          .eq('is_active', true);
-
-        if (memberships && memberships.length > 0) {
-          clearInterval(pollInterval);
-          console.log('[JoinOrganizationFlow] Approval detected!');
-          
-          const org = memberships[0].organization as any;
-          toast.success(`🎉 You're in! Welcome to ${org?.name || 'the organization'}`, {
-            duration: 5000,
-          });
-          
-          // Refresh and navigate
-          await refreshOrganization();
-          
-          setTimeout(() => {
-            if (onComplete) {
-              onComplete();
-            } else {
-              navigate('/employer-dashboard', { replace: true });
-            }
-          }, 1000);
-        }
-      } catch (error) {
-        console.error('[JoinOrganizationFlow] Error polling for approval:', error);
-      }
-
-      // Stop polling after max attempts
-      if (pollCount >= maxPolls) {
-        clearInterval(pollInterval);
-        console.log('[JoinOrganizationFlow] Stopped polling after', pollCount, 'attempts');
-      }
-    }, 10000); // Poll every 10 seconds
-
-    return () => clearInterval(pollInterval);
-  }, [requestSent, user?.id]);
+  // No longer need polling - user goes to dashboard immediately with pending state
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -149,10 +97,16 @@ export function JoinOrganizationFlow({ onComplete, onBack }: JoinOrganizationFlo
       await markOnboardingComplete(user.id, 'employer');
       
       toast.success(`Join request sent to ${org.name}!`);
-      setRequestSent(true);
       
       // Refresh organization context
       await refreshOrganization();
+      
+      // Navigate to dashboard immediately with pending state
+      if (onComplete) {
+        onComplete();
+      } else {
+        navigate('/employer-dashboard', { replace: true });
+      }
     } catch (error: any) {
       console.error("Error requesting to join:", error);
       toast.error(error.message || "Failed to send join request. Please try again.");
@@ -172,12 +126,15 @@ export function JoinOrganizationFlow({ onComplete, onBack }: JoinOrganizationFlo
       
       const membership = await organizationService.acceptInvitation(token);
       
+      // Mark onboarding complete for invited users
+      await markOnboardingComplete(user.id, 'employer');
+      
       toast.success("Invitation accepted! Welcome to the team.");
       
       // Refresh organization context
       await refreshOrganization();
       
-      // Complete onboarding
+      // Navigate to dashboard
       if (onComplete) {
         onComplete();
       } else {
@@ -207,42 +164,7 @@ export function JoinOrganizationFlow({ onComplete, onBack }: JoinOrganizationFlo
     );
   }
 
-  // Request sent confirmation
-  if (requestSent && selectedOrg) {
-    return (
-      <div className="w-full max-w-md mx-auto p-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center space-y-4">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900">
-                <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
-              </div>
-              <h2 className="text-2xl font-bold">Request Sent!</h2>
-              <p className="text-muted-foreground">
-                Your request to join <strong>{selectedOrg.name}</strong> has been sent to the
-                organization admins for approval.
-              </p>
-              <p className="text-sm text-muted-foreground">
-                You'll receive a notification once your request is reviewed.
-              </p>
-              <Button
-                onClick={() => {
-                  if (onComplete) {
-                    onComplete();
-                  } else {
-                    navigate('/employer-dashboard', { replace: true });
-                  }
-                }}
-                className="w-full"
-              >
-                View Your Dashboard
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // No longer show confirmation screen - navigate immediately
 
   return (
     <div className="w-full max-w-xl mx-auto p-6">

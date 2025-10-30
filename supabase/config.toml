@@ -124,3 +124,10 @@ verify_jwt = true
 
 [functions.cert-summary]
 verify_jwt = true
+
+[functions.backfill-employer-onboarding]
+verify_jwt = false
+
+[functions.manage-org-request]
+verify_jwt = true
+

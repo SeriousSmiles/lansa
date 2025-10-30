@@ -104,10 +104,15 @@ export default function EmployerDashboard() {
   if (!activeOrganization) {
     if (hasPendingRequest && pendingMembership) {
       const pendingOrgName = (pendingMembership as any).organizations?.name;
+      const requestSentAt = pendingMembership.created_at;
+      
       return (
         <div className="employer-theme h-screen bg-background flex items-center justify-center p-4">
           <div className="max-w-2xl w-full space-y-6">
-            <PendingRequestBanner organizationName={pendingOrgName} />
+            <PendingRequestBanner 
+              organizationName={pendingOrgName}
+              requestSentAt={requestSentAt}
+            />
             
             {/* Status Timeline */}
             <div className="bg-card border rounded-lg p-6">

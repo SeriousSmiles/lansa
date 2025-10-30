@@ -216,6 +216,14 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
     };
   }, [fetchUserState]);
 
+  // Expose refreshUserState globally for OrganizationContext
+  useEffect(() => {
+    (window as any).__userStateRefresh = refreshUserState;
+    return () => {
+      delete (window as any).__userStateRefresh;
+    };
+  }, [refreshUserState]);
+
   const value = useMemo(() => ({
     ...state,
     refreshUserState,

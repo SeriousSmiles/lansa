@@ -73,15 +73,45 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if already approved
+    // If already approved, check if onboarding flags need backfilling
     if (membership.is_active) {
-      console.log(`[manage-org-request] Request ${membershipId} is already approved`);
+      console.log('[manage-org-request] Request already approved, checking onboarding flags...');
+      
+      // Check if onboarding flags are set
+      const [profileResult, answersResult] = await Promise.all([
+        supabaseAdmin
+          .from('user_profiles')
+          .select('onboarding_completed')
+          .eq('user_id', membership.user_id)
+          .maybeSingle(),
+        supabaseAdmin
+          .from('user_answers')
+          .select('career_path_onboarding_completed')
+          .eq('user_id', membership.user_id)
+          .maybeSingle()
+      ]);
+
+      const profileCompleted = profileResult.data?.onboarding_completed ?? false;
+      const legacyCompleted = answersResult.data?.career_path_onboarding_completed ?? false;
+
+      let backfilled = false;
+      if (!profileCompleted || !legacyCompleted) {
+        console.log('[manage-org-request] Backfilling missing onboarding flags...');
+        await markOnboardingComplete(supabaseAdmin, membership.user_id, 'employer');
+        backfilled = true;
+      }
+
       return new Response(
-        JSON.stringify({ 
-          error: 'This request has already been approved',
-          status: 'already_approved'
+        JSON.stringify({
+          success: true,
+          message: 'Request already approved',
+          status: 'already_approved',
+          backfilled,
         }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
       );
     }
 
@@ -126,11 +156,20 @@ Deno.serve(async (req) => {
         throw updateError;
       }
 
-      // Mark onboarding as complete and set user_type to employer
-      // Use admin client to bypass RLS when updating the requesting user's profile
-      await markOnboardingComplete(supabaseAdmin, request.user_id, 'employer');
+      // Onboarding should already be complete (marked when request was sent)
+      // But we'll check and backfill just in case
+      const { data: profileData } = await supabaseAdmin
+        .from('user_profiles')
+        .select('onboarding_completed')
+        .eq('user_id', request.user_id)
+        .maybeSingle();
 
-      console.log(`[manage-org-request] Request approved: ${membershipId}, onboarding marked complete`);
+      if (!profileData?.onboarding_completed) {
+        console.log('[manage-org-request] Backfilling onboarding on approval...');
+        await markOnboardingComplete(supabaseAdmin, request.user_id, 'employer');
+      }
+
+      console.log(`[manage-org-request] Request approved for user ${request.user_id}`);
 
       // Get user details for email
       const { data: userData } = await supabase.auth.admin.getUserById(request.user_id);

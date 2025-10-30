@@ -36,6 +36,7 @@ const ACTIVE_ORG_KEY = 'lansa_active_organization';
 
 export function OrganizationProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const [refreshUserStateFn, setRefreshUserStateFn] = useState<(() => Promise<void>) | null>(null);
   const [activeOrganization, setActiveOrganization] = useState<Organization | null>(null);
   const [activeMembership, setActiveMembership] = useState<OrganizationMembership | null>(
     null
@@ -140,6 +141,15 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
             
             // Refresh organization data
             await loadOrganizations();
+            
+            // Also refresh user state to update onboarding flags and user context
+            if (refreshUserStateFn) {
+              try {
+                await refreshUserStateFn();
+              } catch (error) {
+                console.error('[OrganizationContext] Error refreshing user state:', error);
+              }
+            }
           }
         }
       )
@@ -234,6 +244,15 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
   const isAdmin = useCallback((): boolean => {
     return activeMembership?.role === 'admin' || activeMembership?.role === 'owner';
   }, [activeMembership]);
+
+  // Allow UserStateProvider to register its refresh function
+  useEffect(() => {
+    // Access UserStateContext if available
+    const userStateContext = (window as any).__userStateRefresh;
+    if (userStateContext) {
+      setRefreshUserStateFn(() => userStateContext);
+    }
+  }, []);
 
   const value: OrganizationContextValue = {
     activeOrganization,

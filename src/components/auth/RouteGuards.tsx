@@ -54,6 +54,12 @@ export function RequireOnboarding({
     return <Navigate to="/onboarding" state={{ from: location }} replace />;
   }
 
+  // NEW: For employers, allow access if onboarding completed (even without active org)
+  // They can see the pending dashboard with their request status
+  if (userType === 'employer' && hasCompletedOnboarding) {
+    return children;
+  }
+
   // Soft gate: show teaser with banner (DEPRECATED - only for premium features)
   if (soft && FLAGS.softGateOnboarding) {
     console.warn("⚠️ DEPRECATED: Soft onboarding gate used. This should only be used for premium features, not core onboarding.");
