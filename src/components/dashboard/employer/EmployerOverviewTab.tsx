@@ -25,12 +25,17 @@ interface EmployerStats {
   candidatesViewed: number;
 }
 
+interface UserOrgRole {
+  role: string;
+}
+
 export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) {
   const [stats, setStats] = useState<EmployerStats>({
     activeJobs: 0,
     totalApplications: 0,
     candidatesViewed: 0
   });
+  const [userRole, setUserRole] = useState<string>('member');
   const { user } = useAuth();
   const { activeOrganization } = useOrganization();
   const { canManageOrgSettings } = useOrgPermissions();
@@ -38,9 +43,22 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
 
   useEffect(() => {
     async function loadStats() {
-      if (!activeOrganization?.id) return;
+      if (!activeOrganization?.id || !user?.id) return;
 
       try {
+        // Fetch user's role in the organization
+        const { data: membership } = await supabase
+          .from('organization_memberships')
+          .select('role')
+          .eq('organization_id', activeOrganization.id)
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .single();
+        
+        if (membership?.role) {
+          setUserRole(membership.role);
+        }
+
         // ✅ FIXED: Count active job listings for this organization (using job_listings_v2)
         const { count: jobCount } = await supabase
           .from('job_listings_v2')
@@ -102,7 +120,7 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
                 <div>
                   <h3 className="font-semibold text-[#2E2E2E] mb-2">Your Role</h3>
                   <Badge variant="secondary" className="text-sm capitalize">
-                    {businessData?.role_function || 'Member'}
+                    {userRole}
                   </Badge>
                 </div>
               </>
