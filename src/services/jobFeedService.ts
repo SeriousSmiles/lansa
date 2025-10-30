@@ -20,6 +20,12 @@ export interface JobListing {
   salary_range?: string;
   job_type?: string;
   is_remote: boolean;
+  organization_id?: string;
+  organizations?: {
+    id: string;
+    name: string;
+    logo_url?: string;
+  };
   business_profiles?: {
     company_name: string;
     industry?: string;

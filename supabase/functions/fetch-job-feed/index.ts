@@ -109,6 +109,11 @@ Deno.serve(async (req) => {
             name
           )
         ),
+        organizations(
+          id,
+          name,
+          logo_url
+        ),
         job_applications!left(
           id,
           status,

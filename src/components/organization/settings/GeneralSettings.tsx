@@ -37,30 +37,63 @@ export function GeneralSettings() {
 
     setIsUploadingLogo(true);
     try {
+      console.log('[Logo Upload] Starting upload for org:', activeOrganization.id);
+      
+      // Validate file size
+      if (logoFile.size > 2048 * 1024) {
+        throw new Error('File size must be under 2MB');
+      }
+
       const fileExt = logoFile.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `company-logos/${activeOrganization.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      console.log('[Logo Upload] Uploading to path:', filePath);
+      
+      // Upload to storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('user-uploads')
-        .upload(filePath, logoFile);
+        .upload(filePath, logoFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('[Logo Upload] Storage error:', uploadError);
+        throw uploadError;
+      }
 
+      console.log('[Logo Upload] Upload successful:', uploadData);
+
+      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('user-uploads')
         .getPublicUrl(filePath);
 
-      await organizationService.updateOrganization(activeOrganization.id, {
+      console.log('[Logo Upload] Public URL:', publicUrl);
+
+      // Update database
+      console.log('[Logo Upload] Updating database...');
+      const updatedOrg = await organizationService.updateOrganization(activeOrganization.id, {
         logo_url: publicUrl
       });
+
+      console.log('[Logo Upload] Database updated:', updatedOrg);
+
+      // Verify the update
+      const verification = await organizationService.getOrganizationById(activeOrganization.id);
+      console.log('[Logo Upload] Verification:', verification?.logo_url);
+
+      if (!verification?.logo_url) {
+        throw new Error('Logo URL was not saved to database');
+      }
 
       await refreshOrganization();
       setLogoFile(null);
       toast.success("Organization logo updated successfully");
-    } catch (error) {
-      console.error("Error uploading logo:", error);
-      toast.error("Failed to upload logo");
+    } catch (error: any) {
+      console.error('[Logo Upload] Error:', error);
+      toast.error(error.message || "Failed to upload logo");
     } finally {
       setIsUploadingLogo(false);
     }

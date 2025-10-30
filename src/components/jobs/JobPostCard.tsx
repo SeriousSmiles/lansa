@@ -12,6 +12,21 @@ interface JobPostCardProps {
   onViewDetails: (job: JobListing) => void;
 }
 
+// Helper function to get company logo with proper fallback
+const getCompanyLogo = (job: JobListing): string | null => {
+  // Priority 1: Organization logo (new system)
+  if (job.organizations?.logo_url) {
+    return job.organizations.logo_url;
+  }
+  
+  // Priority 2: Business profile organization logo (if available)
+  if (job.business_profiles?.organizations?.logo_url) {
+    return job.business_profiles.organizations.logo_url;
+  }
+  
+  return null;
+};
+
 export function JobPostCard({ job, onApply, onViewDetails }: JobPostCardProps) {
   const applied = job.job_applications && job.job_applications.length > 0;
   const [showImageModal, setShowImageModal] = useState(false);
@@ -34,11 +49,11 @@ export function JobPostCard({ job, onApply, onViewDetails }: JobPostCardProps) {
         <div className="flex items-start gap-3">
           {/* Company Logo */}
           <div className="flex-shrink-0 w-12 h-12 rounded-lg border overflow-hidden bg-background">
-            {job.business_profiles?.organizations?.logo_url ? (
+            {getCompanyLogo(job) ? (
               <img 
-                src={job.business_profiles.organizations.logo_url} 
-                alt={job.business_profiles.company_name}
-                className="w-full h-full object-cover"
+                src={getCompanyLogo(job)!} 
+                alt={job.business_profiles?.company_name || 'Company'}
+                className="w-full h-full object-contain"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
