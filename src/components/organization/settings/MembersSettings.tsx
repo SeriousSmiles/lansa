@@ -96,9 +96,12 @@ export function MembersSettings() {
 
   const getUserName = (member: OrganizationMembership) => {
     const profile = (member as any).user_profiles;
-    // Return actual name or fallback
+    // Priority: actual name -> email as name -> fallback to user ID
     if (profile?.name && profile.name.trim() !== '') {
       return profile.name;
+    }
+    if (profile?.email && profile.email.trim() !== '') {
+      return profile.email.split('@')[0]; // Use email username part as name
     }
     return `User ${member.user_id.substring(0, 8)}`;
   };
