@@ -94,28 +94,27 @@ export function GeneralSettings() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-start gap-6">
+          <div className="flex flex-col sm:flex-row items-start gap-6">
             {/* Current Logo Preview */}
-            <div className="flex-shrink-0">
-              <div className="w-24 h-24 rounded-lg border-2 border-border overflow-hidden bg-muted flex items-center justify-center">
-                {activeOrganization?.logo_url ? (
+            {activeOrganization?.logo_url && (
+              <div className="flex-shrink-0 w-full sm:w-auto">
+                <p className="text-sm font-medium mb-2">Current Logo</p>
+                <div className="w-[250px] h-[250px] rounded-lg border-2 border-border overflow-hidden bg-muted flex items-center justify-center">
                   <img 
                     src={activeOrganization.logo_url} 
                     alt={activeOrganization.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
-                ) : (
-                  <Building2 className="w-10 h-10 text-muted-foreground" />
-                )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Upload Controls */}
-            <div className="flex-1 space-y-4">
+            <div className="w-full sm:max-w-[250px] space-y-4">
               <DragDropImageUpload
                 onImageSelect={setLogoFile}
                 onImageRemove={() => setLogoFile(null)}
-                acceptedSize="square"
+                acceptedSize="250x250"
                 maxFileSizeKB={2048}
                 aspectRatio="square"
               />
@@ -125,6 +124,7 @@ export function GeneralSettings() {
                   type="button"
                   onClick={handleLogoUpload}
                   disabled={isUploadingLogo || !canManageOrgSettings}
+                  className="w-full"
                 >
                   {isUploadingLogo && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Upload Logo
