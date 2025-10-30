@@ -151,12 +151,12 @@ export function JoinOrganizationFlow({ onComplete, onBack }: JoinOrganizationFlo
   // If processing invitation
   if (inviteToken && isJoining) {
     return (
-      <div className="w-full max-w-md mx-auto p-6">
+      <div className="w-full max-w-md mx-auto p-4 sm:p-6">
         <Card>
           <CardContent className="pt-6">
             <div className="text-center space-y-4">
-              <Loader2 className="w-12 h-12 animate-spin mx-auto text-primary" />
-              <p className="text-lg">Accepting invitation...</p>
+              <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 animate-spin mx-auto text-primary" />
+              <p className="text-base sm:text-lg">Accepting invitation...</p>
             </div>
           </CardContent>
         </Card>
@@ -167,45 +167,45 @@ export function JoinOrganizationFlow({ onComplete, onBack }: JoinOrganizationFlo
   // No longer show confirmation screen - navigate immediately
 
   return (
-    <div className="w-full max-w-xl mx-auto p-6">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-          <UserPlus className="w-8 h-8 text-primary" />
+    <div className="w-full max-w-xl mx-auto p-4 sm:p-6">
+      <div className="text-center mb-6 sm:mb-8">
+        <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-primary/10 mb-3 sm:mb-4">
+          <UserPlus className="w-7 h-7 sm:w-8 sm:h-8 text-primary" />
         </div>
-        <h1 className="text-3xl font-bold mb-2">Join Your Organization</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Join Your Organization</h1>
+        <p className="text-sm sm:text-base text-muted-foreground px-2">
           Search for your company and request to join their team
         </p>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Find Your Company</CardTitle>
-          <CardDescription>
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="text-lg sm:text-xl">Find Your Company</CardTitle>
+          <CardDescription className="text-sm">
             Search for your organization by name to send a join request
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 sm:space-y-6">
           {/* Search Input */}
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <Input
-                placeholder="Enter your company name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              />
-            </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Input
+              placeholder="Enter your company name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              className="w-full h-12 text-base"
+            />
             <Button
               onClick={handleSearch}
               disabled={isSearching || !searchQuery.trim()}
+              className="w-full sm:w-auto sm:min-w-[120px] h-12"
             >
               {isSearching ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <>
-                  <Search className="h-4 w-4 mr-2" />
-                  Search
+                  <Search className="h-5 w-5 sm:mr-2" />
+                  <span>Search</span>
                 </>
               )}
             </Button>
@@ -214,13 +214,17 @@ export function JoinOrganizationFlow({ onComplete, onBack }: JoinOrganizationFlo
           {/* Search Results */}
           {organizations.length > 0 && (
             <div className="space-y-3">
-              <Label>Search Results</Label>
-              {organizations.map((org) => (
-                <Card key={org.id} className="hover:border-primary transition-colors">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      {/* Logo */}
-                      <div className="flex-shrink-0 w-16 h-16 rounded-lg border-2 bg-white flex items-center justify-center overflow-hidden">
+              <Label className="text-sm sm:text-base">Search Results</Label>
+              {organizations.map((org, index) => (
+                <Card 
+                  key={org.id} 
+                  className="hover:border-primary transition-all duration-300 mobile-fade-in"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <CardContent className="p-4 space-y-4">
+                    {/* Header: Logo + Company Name */}
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-lg border-2 bg-white flex items-center justify-center overflow-hidden">
                         {org.logo_url ? (
                           <img 
                             src={org.logo_url} 
@@ -228,88 +232,81 @@ export function JoinOrganizationFlow({ onComplete, onBack }: JoinOrganizationFlo
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <Building2 className="w-8 h-8 text-muted-foreground" />
+                          <Building2 className="w-7 h-7 sm:w-8 sm:h-8 text-muted-foreground" />
                         )}
                       </div>
-
-                      {/* Organization Info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <h3 className="font-semibold text-lg">{org.name}</h3>
-                            
-                            {/* Location Badge - PROMINENT */}
-                            {(org.city || org.country) && (
-                              <div className="flex items-center gap-1 text-sm text-primary font-medium mt-1">
-                                <MapPin className="h-3.5 w-3.5" />
-                                {org.city && org.country 
-                                  ? `${org.city}, ${org.country}` 
-                                  : org.city || org.country}
-                              </div>
-                            )}
-                          </div>
-                          
-                          <Button 
-                            onClick={() => handleRequestToJoin(org)} 
-                            disabled={isJoining} 
-                            size="sm"
-                            className="ml-2"
-                          >
-                            {isJoining && selectedOrg?.id === org.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              'Request to Join'
-                            )}
-                          </Button>
-                        </div>
-
-                        {/* Secondary Info */}
-                        <div className="space-y-1">
-                          {org.industry && (
-                            <p className="text-sm text-muted-foreground">
-                              <Briefcase className="inline h-3.5 w-3.5 mr-1" />
-                              {org.industry}
-                            </p>
-                          )}
-                          
-                          {org.website && (
-                            <p className="text-sm text-muted-foreground truncate">
-                              <Globe className="inline h-3.5 w-3.5 mr-1" />
-                              <a 
-                                href={org.website} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="hover:text-primary underline"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {org.website}
-                              </a>
-                            </p>
-                          )}
-                          
-                          {org.size_range && (
-                            <p className="text-xs text-muted-foreground">
-                              <Users className="inline h-3.5 w-3.5 mr-1" />
-                              {org.size_range}
-                            </p>
-                          )}
-
-                          {org.description && (
-                            <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
-                              {org.description}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Verification Badge */}
-                        {org.verification_status === 'verified' && (
-                          <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 mt-2">
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                            Verified Organization
+                        <h3 className="font-semibold text-lg truncate">{org.name}</h3>
+                        {(org.city || org.country) && (
+                          <div className="flex items-center gap-1.5 text-sm sm:text-base text-primary font-medium mt-0.5">
+                            <MapPin className="h-4 w-4 flex-shrink-0" />
+                            <span className="truncate">
+                              {org.city && org.country 
+                                ? `${org.city}, ${org.country}` 
+                                : org.city || org.country}
+                            </span>
                           </div>
                         )}
                       </div>
                     </div>
+                    
+                    {/* Company Details - Vertical Stack */}
+                    <div className="space-y-2.5">
+                      {org.industry && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Briefcase className="h-4 w-4 flex-shrink-0" />
+                          <span>{org.industry}</span>
+                        </div>
+                      )}
+                      
+                      {org.website && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Globe className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                          <a 
+                            href={org.website} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-primary hover:underline truncate"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {org.website.replace(/^https?:\/\//, '')}
+                          </a>
+                        </div>
+                      )}
+                      
+                      {org.size_range && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Users className="h-4 w-4 flex-shrink-0" />
+                          <span>{org.size_range}</span>
+                        </div>
+                      )}
+                      
+                      {org.description && (
+                        <p className="text-sm text-muted-foreground leading-relaxed pt-1">
+                          {org.description}
+                        </p>
+                      )}
+                      
+                      {org.verification_status === 'verified' && (
+                        <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/30 px-3 py-1.5 rounded-full w-fit">
+                          <CheckCircle2 className="h-4 w-4" />
+                          <span className="font-medium">Verified</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Action Button - Full Width */}
+                    <Button 
+                      onClick={() => handleRequestToJoin(org)} 
+                      disabled={isJoining} 
+                      className="w-full h-12 text-base"
+                    >
+                      {isJoining && selectedOrg?.id === org.id ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        'Request to Join'
+                      )}
+                    </Button>
                   </CardContent>
                 </Card>
               ))}
@@ -317,10 +314,10 @@ export function JoinOrganizationFlow({ onComplete, onBack }: JoinOrganizationFlo
           )}
 
           {/* Help Text */}
-          <div className="bg-muted/50 p-4 rounded-lg">
-            <p className="text-sm text-muted-foreground">
-              <strong>Can't find your company?</strong> Ask your administrator to invite you via
-              email, or contact them to create an organization account first.
+          <div className="bg-muted/50 p-3 sm:p-4 rounded-lg">
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              <strong className="block mb-1">Can't find your company?</strong>
+              Ask your administrator to invite you via email, or contact them to create an organization account first.
             </p>
           </div>
 
@@ -333,7 +330,7 @@ export function JoinOrganizationFlow({ onComplete, onBack }: JoinOrganizationFlo
                 navigate(-1);
               }
             }}
-            className="w-full"
+            className="w-full h-12 text-base"
           >
             Back
           </Button>
