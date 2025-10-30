@@ -46,56 +46,28 @@ export function SignUpForm() {
     try {
       const fullName = `${data.firstName} ${data.lastName}`;
 
-      // Sign up user with email and password
-      const { error, data: authData } = await signUp(data.email, data.password);
+      // Sign up user with metadata - the database trigger will handle profile creation
+      const { error } = await signUp(data.email, data.password, {
+        first_name: data.firstName,
+        last_name: data.lastName,
+        full_name: fullName
+      });
+      
       if (error) {
         toast.error(error.message || "Failed to sign up");
         setIsLoading(false);
         return;
       }
 
-      // Save user profile information
-      if (authData?.user?.id) {
-        try {
-          // Store name in local storage temporarily to use on first login
-          localStorage.setItem('userName', fullName);
-
-          // Check if profile exists first
-          const {
-            data: existingProfile
-          } = await supabase.from('user_profiles').select('user_id').eq('user_id', authData.user.id).maybeSingle();
-          if (existingProfile) {
-            // Update existing profile
-            await supabase.from('user_profiles').update({
-              name: fullName
-            }).eq('user_id', authData.user.id);
-          } else {
-            // Create new profile
-            await supabase.from('user_profiles').insert({
-              user_id: authData.user.id,
-              name: fullName
-            });
-          }
-          // Quiet logging for demo
-          if (process.env.NODE_ENV === 'development') {
-            console.log("Saved user profile information with name:", fullName);
-          }
-        } catch (profileError) {
-          if (process.env.NODE_ENV === 'development') {
-            console.error("Error saving profile:", profileError);
-          }
-          // Don't block the sign-up flow if profile save fails
-        }
-      }
       toast.success("Account created successfully! Please check your email to confirm your account. Once confirmed, you'll be automatically signed in.");
       setIsLoading(false);
-        } catch (error: any) {
-          if (process.env.NODE_ENV === 'development') {
-            console.error(error);
-          }
-          toast.error(error.message || "An error occurred during sign up");
-          setIsLoading(false);
-        }
+    } catch (error: any) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error(error);
+      }
+      toast.error(error.message || "An error occurred during sign up");
+      setIsLoading(false);
+    }
   };
 
   const handleGoogleSignUp = async () => {
