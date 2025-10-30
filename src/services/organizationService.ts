@@ -250,12 +250,46 @@ export const organizationService = {
   async getOrganizationMembers(organizationId: string): Promise<OrganizationMembership[]> {
     const { data, error } = await supabase
       .from('organization_memberships')
-      .select('*')
+      .select(`
+        *,
+        user_profiles (
+          name,
+          profile_image,
+          email
+        )
+      `)
       .eq('organization_id', organizationId)
       .eq('is_active', true)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      // Fallback if join fails
+      console.warn('Join query failed, using fallback approach:', error);
+      
+      const { data: memberships, error: membershipError } = await supabase
+        .from('organization_memberships')
+        .select('*')
+        .eq('organization_id', organizationId)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (membershipError) throw membershipError;
+      if (!memberships || memberships.length === 0) return [];
+
+      // Fetch user profiles separately
+      const userIds = memberships.map(m => m.user_id);
+      const { data: profiles } = await supabase
+        .from('user_profiles')
+        .select('user_id, name, email, profile_image')
+        .in('user_id', userIds);
+
+      // Merge the data
+      return memberships.map(membership => ({
+        ...membership,
+        user_profiles: profiles?.find(p => p.user_id === membership.user_id) || null
+      })) as OrganizationMembership[];
+    }
+
     return (data || []) as OrganizationMembership[];
   },
 

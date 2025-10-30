@@ -85,8 +85,25 @@ export function MembersSettings() {
     }
   };
 
-  const getInitials = (userId: string) => {
-    return userId.substring(0, 2).toUpperCase();
+  const getInitials = (name?: string) => {
+    if (!name) return "??";
+    const parts = name.split(" ");
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  const getUserName = (member: OrganizationMembership) => {
+    const profile = (member as any).user_profiles;
+    // Priority: name -> email -> fallback to "User" with ID
+    if (profile?.name && profile.name.trim() !== '') {
+      return profile.name;
+    }
+    if (profile?.email && profile.email.trim() !== '') {
+      return profile.email;
+    }
+    return `User ${member.user_id.substring(0, 8)}`;
   };
 
   if (isLoading) {
@@ -127,10 +144,10 @@ export function MembersSettings() {
               >
                 <div className="flex items-center gap-4">
                   <Avatar>
-                    <AvatarFallback>{getInitials(member.user_id)}</AvatarFallback>
+                    <AvatarFallback>{getInitials(getUserName(member))}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <div className="font-medium">User {member.user_id.substring(0, 8)}</div>
+                    <div className="font-medium">{getUserName(member)}</div>
                     <div className="text-sm text-muted-foreground">
                       Joined {new Date(member.joined_at).toLocaleDateString()}
                     </div>
