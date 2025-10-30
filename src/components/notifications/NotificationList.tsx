@@ -16,31 +16,34 @@ export function NotificationList() {
 
   if (notifications.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-        <Inbox className="h-12 w-12 mb-3 opacity-20" />
-        <p className="text-sm">No new notifications</p>
+      <div className="flex flex-col items-center justify-center py-16 px-4 text-muted-foreground">
+        <div className="w-14 h-14 rounded-full bg-muted/50 flex items-center justify-center mb-3">
+          <Inbox className="h-7 w-7 opacity-40" />
+        </div>
+        <p className="text-sm font-medium">No notifications</p>
+        <p className="text-xs text-muted-foreground/70 mt-1">You're all caught up!</p>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col">
-      <ScrollArea className="max-h-[400px]">
-        <div className="divide-y">
+      <ScrollArea className="max-h-[min(70vh,500px)]">
+        <div className="divide-y divide-border/50">
           {notifications.map((notification) => (
             <NotificationItem key={notification.id} notification={notification} />
           ))}
         </div>
       </ScrollArea>
-      <div className="border-t p-2 flex items-center justify-between bg-muted/50">
+      <div className="border-t border-border/50 px-3 py-2.5 flex items-center justify-between bg-muted/20 backdrop-blur-sm">
         {unreadCount > 0 && (
           <Button
             variant="ghost"
             size="sm"
             onClick={markAllAsRead}
-            className="text-xs"
+            className="text-xs h-8 hover:bg-background/80"
           >
-            <CheckCheck className="h-3 w-3 mr-1" />
+            <CheckCheck className="h-3.5 w-3.5 mr-1.5" />
             Mark all read
           </Button>
         )}
@@ -48,7 +51,7 @@ export function NotificationList() {
           variant="ghost"
           size="sm"
           onClick={() => navigate('/notifications')}
-          className="text-xs ml-auto"
+          className="text-xs h-8 ml-auto hover:bg-background/80"
         >
           View all
         </Button>

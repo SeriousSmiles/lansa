@@ -52,42 +52,49 @@ export function NotificationItem({ notification }: NotificationItemProps) {
   return (
     <div
       className={cn(
-        'p-4 hover:bg-accent/50 cursor-pointer transition-colors relative group',
-        isUnread && 'bg-accent/20'
+        'px-4 py-3.5 hover:bg-muted/40 cursor-pointer transition-all duration-150 relative group',
+        isUnread && 'bg-[hsl(var(--lansa-orange)/0.03)]'
       )}
       onClick={handleClick}
     >
-      <div className="flex gap-3">
+      <div className="flex gap-3 items-start">
         <div className={cn(
-          'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
-          isUnread ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+          'flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-colors',
+          isUnread 
+            ? 'bg-[hsl(var(--lansa-orange)/0.1)] text-[hsl(var(--lansa-orange))]' 
+            : 'bg-muted/50 text-muted-foreground'
         )}>
-          <Icon className="h-4 w-4" />
+          <Icon className="h-4.5 w-4.5" />
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <p className={cn('text-sm font-medium', isUnread && 'text-foreground')}>
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex items-start justify-between gap-3">
+            <p className={cn(
+              'text-sm leading-snug',
+              isUnread ? 'font-semibold text-foreground' : 'font-medium text-foreground/90'
+            )}>
               {notification.title}
             </p>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={handleDelete}
-            >
-              <X className="h-3 w-3" />
-            </Button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {isUnread && (
+                <div className="w-2 h-2 rounded-full bg-[hsl(var(--lansa-orange))]" />
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background/80 -mr-1"
+                onClick={handleDelete}
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
             {notification.message}
           </p>
-          <p className="text-xs text-muted-foreground mt-2">
+          <p className="text-xs text-muted-foreground/60 font-medium">
             {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
           </p>
         </div>
-        {isUnread && (
-          <div className="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-2" />
-        )}
       </div>
     </div>
   );

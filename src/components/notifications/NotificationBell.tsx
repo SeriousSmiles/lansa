@@ -30,22 +30,31 @@ export function NotificationBell() {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[380px] p-0">
+      <DropdownMenuContent align="end" className="w-[420px] max-w-[calc(100vw-2rem)] p-0 shadow-lg">
         <Tabs defaultValue="inbox" className="w-full">
-          <div className="border-b px-4 pt-4">
-            <TabsList className="w-full grid grid-cols-2">
-              <TabsTrigger value="inbox" className="relative">
-                Inbox
+          <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="px-4 pt-3 pb-2">
+              <h2 className="text-sm font-semibold text-foreground">Notifications</h2>
+            </div>
+            <TabsList className="w-full grid grid-cols-2 bg-transparent px-2 pb-2">
+              <TabsTrigger 
+                value="inbox" 
+                className="relative data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+              >
+                <span className="text-sm">Inbox</span>
                 {unreadCount > 0 && (
-                  <span className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                  <span className="ml-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-[hsl(var(--lansa-orange))] px-1.5 text-[10px] font-semibold text-white">
                     {unreadCount}
                   </span>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="updates" className="relative">
-                What's New
+              <TabsTrigger 
+                value="updates" 
+                className="relative data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+              >
+                <span className="text-sm">What's New</span>
                 {unseenUpdatesCount > 0 && (
-                  <span className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                  <span className="ml-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-[hsl(var(--lansa-blue))] px-1.5 text-[10px] font-semibold text-white">
                     {unseenUpdatesCount}
                   </span>
                 )}
