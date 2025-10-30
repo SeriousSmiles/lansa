@@ -41,7 +41,7 @@ export function NotificationList() {
             variant="ghost"
             size="sm"
             onClick={markAllAsRead}
-            className="text-xs h-8 hover:bg-background/80"
+            className="text-xs h-8 text-foreground hover:bg-muted/60"
           >
             <CheckCheck className="h-3.5 w-3.5 mr-1.5" />
             Mark all read
@@ -51,7 +51,7 @@ export function NotificationList() {
           variant="ghost"
           size="sm"
           onClick={() => navigate('/notifications')}
-          className="text-xs h-8 ml-auto hover:bg-background/80"
+          className="text-xs h-8 ml-auto text-foreground hover:bg-muted/60"
         >
           View all
         </Button>
