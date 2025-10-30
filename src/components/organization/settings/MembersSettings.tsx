@@ -96,14 +96,16 @@ export function MembersSettings() {
 
   const getUserName = (member: OrganizationMembership) => {
     const profile = (member as any).user_profiles;
-    // Priority: name -> email -> fallback to "User" with ID
+    // Return actual name or fallback
     if (profile?.name && profile.name.trim() !== '') {
       return profile.name;
     }
-    if (profile?.email && profile.email.trim() !== '') {
-      return profile.email;
-    }
     return `User ${member.user_id.substring(0, 8)}`;
+  };
+
+  const getUserEmail = (member: OrganizationMembership) => {
+    const profile = (member as any).user_profiles;
+    return profile?.email || 'No email';
   };
 
   if (isLoading) {
@@ -148,6 +150,9 @@ export function MembersSettings() {
                   </Avatar>
                   <div>
                     <div className="font-medium">{getUserName(member)}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {getUserEmail(member)}
+                    </div>
                     <div className="text-sm text-muted-foreground">
                       Joined {new Date(member.joined_at).toLocaleDateString()}
                     </div>
