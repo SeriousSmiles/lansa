@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_access_log: {
+        Row: {
+          admin_id: string
+          created_at: string
+          id: number
+          path: string
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string
+          id?: never
+          path: string
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string
+          id?: never
+          path?: string
+        }
+        Relationships: []
+      }
+      admin_actions_log: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          id: number
+          metadata: Json | null
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string
+          id?: never
+          metadata?: Json | null
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          id?: never
+          metadata?: Json | null
+          target_user_id?: string | null
+        }
+        Relationships: []
+      }
+      admin_notes: {
+        Row: {
+          author_id: string
+          created_at: string
+          id: number
+          note: string
+          user_id: string
+        }
+        Insert: {
+          author_id: string
+          created_at?: string
+          id?: never
+          note: string
+          user_id: string
+        }
+        Update: {
+          author_id?: string
+          created_at?: string
+          id?: never
+          note?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_feedback_log: {
         Row: {
           ai_suggestion: string
@@ -1297,6 +1369,33 @@ export type Database = {
         }
         Relationships: []
       }
+      pricing_wall_events: {
+        Row: {
+          created_at: string
+          details: Json | null
+          id: number
+          outcome: Database["public"]["Enums"]["wall_outcome"]
+          user_id: string
+          wall: Database["public"]["Enums"]["wall_type"]
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          id?: never
+          outcome: Database["public"]["Enums"]["wall_outcome"]
+          user_id: string
+          wall: Database["public"]["Enums"]["wall_type"]
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          id?: never
+          outcome?: Database["public"]["Enums"]["wall_outcome"]
+          user_id?: string
+          wall?: Database["public"]["Enums"]["wall_type"]
+        }
+        Relationships: []
+      }
       product_updates: {
         Row: {
           category: string
@@ -1918,7 +2017,11 @@ export type Database = {
           age_group: string | null
           biggest_challenge: string | null
           career_goal_type: string | null
+          certification_paid_at: string | null
+          certified: boolean | null
           clerk_user_id: string | null
+          color_admin: Database["public"]["Enums"]["user_color"] | null
+          color_auto: Database["public"]["Enums"]["user_color"] | null
           cover_color: string | null
           created_at: string | null
           cv_imported_at: string | null
@@ -1934,8 +2037,10 @@ export type Database = {
           highlight_color: string | null
           hire_rate_score: number | null
           identity: string | null
+          intent: Database["public"]["Enums"]["intent_stage"] | null
           is_public: boolean
           languages: Json | null
+          last_active_at: string | null
           last_name: string | null
           location: string | null
           major: string | null
@@ -1952,6 +2057,7 @@ export type Database = {
           title: string | null
           updated_at: string | null
           user_id: string
+          visible_to_employers: boolean | null
         }
         Insert: {
           about_text?: string | null
@@ -1959,7 +2065,11 @@ export type Database = {
           age_group?: string | null
           biggest_challenge?: string | null
           career_goal_type?: string | null
+          certification_paid_at?: string | null
+          certified?: boolean | null
           clerk_user_id?: string | null
+          color_admin?: Database["public"]["Enums"]["user_color"] | null
+          color_auto?: Database["public"]["Enums"]["user_color"] | null
           cover_color?: string | null
           created_at?: string | null
           cv_imported_at?: string | null
@@ -1975,8 +2085,10 @@ export type Database = {
           highlight_color?: string | null
           hire_rate_score?: number | null
           identity?: string | null
+          intent?: Database["public"]["Enums"]["intent_stage"] | null
           is_public?: boolean
           languages?: Json | null
+          last_active_at?: string | null
           last_name?: string | null
           location?: string | null
           major?: string | null
@@ -1993,6 +2105,7 @@ export type Database = {
           title?: string | null
           updated_at?: string | null
           user_id: string
+          visible_to_employers?: boolean | null
         }
         Update: {
           about_text?: string | null
@@ -2000,7 +2113,11 @@ export type Database = {
           age_group?: string | null
           biggest_challenge?: string | null
           career_goal_type?: string | null
+          certification_paid_at?: string | null
+          certified?: boolean | null
           clerk_user_id?: string | null
+          color_admin?: Database["public"]["Enums"]["user_color"] | null
+          color_auto?: Database["public"]["Enums"]["user_color"] | null
           cover_color?: string | null
           created_at?: string | null
           cv_imported_at?: string | null
@@ -2016,8 +2133,10 @@ export type Database = {
           highlight_color?: string | null
           hire_rate_score?: number | null
           identity?: string | null
+          intent?: Database["public"]["Enums"]["intent_stage"] | null
           is_public?: boolean
           languages?: Json | null
+          last_active_at?: string | null
           last_name?: string | null
           location?: string | null
           major?: string | null
@@ -2034,6 +2153,7 @@ export type Database = {
           title?: string | null
           updated_at?: string | null
           user_id?: string
+          visible_to_employers?: boolean | null
         }
         Relationships: [
           {
@@ -2360,6 +2480,10 @@ export type Database = {
         Args: { _thread_id: string; _user_id: string }
         Returns: boolean
       }
+      log_admin_action: {
+        Args: { p_action: string; p_metadata?: Json; p_target_user_id?: string }
+        Returns: undefined
+      }
       log_org_action: {
         Args: {
           _action: string
@@ -2395,6 +2519,7 @@ export type Database = {
         | "applied_thinking"
       exam_sector: "office" | "service" | "technical" | "digital"
       exam_status: "in_progress" | "completed" | "abandoned"
+      intent_stage: "upgrade_ready" | "downgrade_risk" | "cancel_risk" | "none"
       interaction_type: "view" | "save" | "apply" | "ignore" | "share"
       job_type: "full_time" | "part_time" | "contract" | "internship"
       match_context: "employee" | "internship"
@@ -2411,6 +2536,9 @@ export type Database = {
         | "message_received"
         | "system_update"
       swipe_direction: "right" | "left" | "nudge"
+      user_color: "purple" | "green" | "orange" | "red"
+      wall_outcome: "fired" | "info_opened" | "paid" | "dismissed" | "ignored"
+      wall_type: "certification"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2564,6 +2692,7 @@ export const Constants = {
       ],
       exam_sector: ["office", "service", "technical", "digital"],
       exam_status: ["in_progress", "completed", "abandoned"],
+      intent_stage: ["upgrade_ready", "downgrade_risk", "cancel_risk", "none"],
       interaction_type: ["view", "save", "apply", "ignore", "share"],
       job_type: ["full_time", "part_time", "contract", "internship"],
       match_context: ["employee", "internship"],
@@ -2581,6 +2710,9 @@ export const Constants = {
         "system_update",
       ],
       swipe_direction: ["right", "left", "nudge"],
+      user_color: ["purple", "green", "orange", "red"],
+      wall_outcome: ["fired", "info_opened", "paid", "dismissed", "ignored"],
+      wall_type: ["certification"],
     },
   },
 } as const

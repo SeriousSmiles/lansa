@@ -40,6 +40,16 @@ import DevTools from "./pages/DevTools";
 import Certification from "./pages/Certification";
 import VerifyCertification from "./pages/VerifyCertification";
 import Notifications from "./pages/Notifications";
+import AdminHome from "./pages/admin/AdminHome";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminOrganizations from "./pages/admin/AdminOrganizations";
+import AdminPricing from "./pages/admin/AdminPricing";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AdminTrends from "./pages/admin/AdminTrends";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminHistorical from "./pages/admin/AdminHistorical";
+import AdminDocuments from "./pages/admin/AdminDocuments";
+import AdminSupport from "./pages/admin/AdminSupport";
 import { AuthProvider } from "./contexts/AuthContext";
 import { UserStateProvider } from "./contexts/UserStateProvider";
 import { OrganizationProvider } from "./contexts/OrganizationContext";
@@ -203,6 +213,18 @@ const App: React.FC = () => {
                         </RequireUserType>
                       </RequireOnboarding>
                     } />
+                    
+                    {/* Admin Routes - Auth handled by useAdminAuth hook */}
+                    <Route path="/admin" element={<AdminHome />} />
+                    <Route path="/admin/users" element={<AdminUsers />} />
+                    <Route path="/admin/organizations" element={<AdminOrganizations />} />
+                    <Route path="/admin/pricing" element={<AdminPricing />} />
+                    <Route path="/admin/trends" element={<AdminTrends />} />
+                    <Route path="/admin/analytics" element={<AdminAnalytics />} />
+                    <Route path="/admin/historical" element={<AdminHistorical />} />
+                    <Route path="/admin/documents" element={<AdminDocuments />} />
+                    <Route path="/admin/support" element={<AdminSupport />} />
+                    <Route path="/admin/settings" element={<AdminSettings />} />
                   </Route>
                   
                   <Route path="*" element={<HomeSpotlight />} />
