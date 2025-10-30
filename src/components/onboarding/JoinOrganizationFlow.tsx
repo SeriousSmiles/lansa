@@ -6,6 +6,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -55,6 +56,60 @@ export function JoinOrganizationFlow({ onComplete, onBack }: JoinOrganizationFlo
       handleAcceptInvitation(inviteToken);
     }
   }, [inviteToken]);
+
+  // Phase 1: Polling for approval status after request is sent
+  useEffect(() => {
+    if (!requestSent || !user?.id) return;
+
+    console.log('[JoinOrganizationFlow] Starting polling for approval...');
+    
+    let pollCount = 0;
+    const maxPolls = 60; // Poll for 10 minutes max (60 * 10s)
+    
+    const pollInterval = setInterval(async () => {
+      pollCount++;
+      
+      try {
+        // Check if user has any active memberships
+        const { data: memberships } = await supabase
+          .from('organization_memberships')
+          .select('id, organization_id, is_active, organization:organizations(name)')
+          .eq('user_id', user.id)
+          .eq('is_active', true);
+
+        if (memberships && memberships.length > 0) {
+          clearInterval(pollInterval);
+          console.log('[JoinOrganizationFlow] Approval detected!');
+          
+          const org = memberships[0].organization as any;
+          toast.success(`🎉 You're in! Welcome to ${org?.name || 'the organization'}`, {
+            duration: 5000,
+          });
+          
+          // Refresh and navigate
+          await refreshOrganization();
+          
+          setTimeout(() => {
+            if (onComplete) {
+              onComplete();
+            } else {
+              navigate('/employer-dashboard', { replace: true });
+            }
+          }, 1000);
+        }
+      } catch (error) {
+        console.error('[JoinOrganizationFlow] Error polling for approval:', error);
+      }
+
+      // Stop polling after max attempts
+      if (pollCount >= maxPolls) {
+        clearInterval(pollInterval);
+        console.log('[JoinOrganizationFlow] Stopped polling after', pollCount, 'attempts');
+      }
+    }, 10000); // Poll every 10 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [requestSent, user?.id]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {

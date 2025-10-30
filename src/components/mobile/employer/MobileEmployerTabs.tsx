@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Briefcase, BarChart3, Plus, Eye, CheckCircle2, XCircle } from "lucide-react";
+import { LayoutDashboard, Users, Briefcase, BarChart3, Plus, Eye, CheckCircle2, XCircle, Settings } from "lucide-react";
 import { MobileEmployerDashboard } from "./MobileEmployerDashboard";
 import { MobileCandidateBrowser } from "./MobileCandidateBrowser";
 import { MobileJobCreator } from "./MobileJobCreator";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrganization } from "@/contexts/OrganizationContext";
+import { useOrgPermissions } from "@/hooks/useOrgPermissions";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import { discoveryService } from "@/services/discoveryService";
 import { swipeService } from "@/services/swipeService";
 import { matchService } from "@/services/matchService";
@@ -40,6 +42,8 @@ interface MobileEmployerTabsProps {
 export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
   const { user } = useAuth();
   const { activeOrganization } = useOrganization();
+  const { canManageOrgSettings } = useOrgPermissions();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showJobCreator, setShowJobCreator] = useState(false);
   const [showCandidateBrowser, setShowCandidateBrowser] = useState(false);
@@ -502,10 +506,10 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
           </TabsContent>
         </div>
 
-        {/* Bottom Tab Navigation */}
+        {/* Bottom Tab Navigation - Phase 4: Added Settings Tab */}
         <TabsList 
           ref={navRef}
-          className="fixed bottom-0 left-0 right-0 h-16 bg-white shadow-lg px-4 py-2 flex justify-between items-center gap-2"
+          className={`fixed bottom-0 left-0 right-0 h-16 bg-white shadow-lg px-4 py-2 flex justify-between items-center ${canManageOrgSettings ? 'gap-1' : 'gap-2'}`}
           style={{ maxWidth: '100vw' }}
         >
           <TabsTrigger 
@@ -532,6 +536,15 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
           >
             <BarChart3 className="h-7 w-7" />
           </TabsTrigger>
+          {canManageOrgSettings && (
+            <TabsTrigger 
+              value="settings" 
+              onClick={() => navigate('/organization/settings')}
+              className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-white text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+            >
+              <Settings className="h-7 w-7" />
+            </TabsTrigger>
+          )}
         </TabsList>
       </Tabs>
 

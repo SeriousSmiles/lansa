@@ -135,6 +135,34 @@ export function GeneralSettings() {
           )}
         </CardContent>
       </Card>
+
+      {/* Phase 3.3: Ownership Transfer - Danger Zone */}
+      {useOrgPermissions().isOwner && (
+        <Card className="border-destructive">
+          <CardHeader>
+            <CardTitle className="text-destructive">Danger Zone</CardTitle>
+            <CardDescription>
+              Irreversible actions that will affect organization ownership
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start justify-between p-4 border border-destructive/20 rounded-lg">
+              <div className="space-y-1">
+                <p className="font-medium">Transfer Ownership</p>
+                <p className="text-sm text-muted-foreground">
+                  Transfer full ownership of this organization to another admin. You will become an admin.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => toast.info('Ownership transfer feature - Coming soon')}
+              >
+                Transfer
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </form>
   );
 }

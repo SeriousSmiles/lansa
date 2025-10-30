@@ -354,15 +354,15 @@ export const organizationService = {
   },
 
   /**
-   * Update member role
+   * Update a member's role using edge function for proper validation
    */
   async updateMemberRole(membershipId: string, newRole: OrgRole): Promise<void> {
-    const { error } = await supabase
-      .from('organization_memberships')
-      .update({ role: newRole })
-      .eq('id', membershipId);
+    const { data, error } = await supabase.functions.invoke('change-member-role', {
+      body: { membershipId, newRole }
+    });
 
     if (error) throw error;
+    if (data?.error) throw new Error(data.error);
   },
 
   /**

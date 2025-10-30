@@ -3,14 +3,16 @@
  * Manages active organization and user's membership state
  */
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useAuth } from './AuthContext';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { organizationService } from '@/services/organizationService';
-import type {
-  Organization,
+import { useAuth } from './AuthContext';
+import { toast } from 'sonner';
+import type { 
+  Organization, 
   OrganizationMembership,
   OrgPermission,
+  OrgRole 
 } from '@/types/organization';
 import { ROLE_PERMISSIONS } from '@/types/organization';
 
@@ -103,6 +105,50 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     loadOrganizations();
   }, [loadOrganizations]);
+
+  // Phase 1: Real-time subscription for membership changes
+  useEffect(() => {
+    if (!user?.id) return;
+
+    console.log('[OrganizationContext] Setting up real-time subscription for user:', user.id);
+
+    const channel = supabase
+      .channel('org-membership-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'organization_memberships',
+          filter: `user_id=eq.${user.id}`
+        },
+        async (payload) => {
+          console.log('[OrganizationContext] Membership changed:', payload);
+          
+          const newMembership = payload.new as any;
+          
+          // If membership was just approved (is_active changed to true)
+          if (newMembership.is_active && !payload.old?.is_active) {
+            // Fetch organization name
+            const { data: org } = await supabase
+              .from('organizations')
+              .select('name')
+              .eq('id', newMembership.organization_id)
+              .single();
+
+            toast.success(`Your request has been approved! Welcome to ${org?.name || 'the organization'}`);
+            
+            // Refresh organization data
+            await loadOrganizations();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, loadOrganizations]);
 
   /**
    * Switch active organization

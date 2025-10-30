@@ -10,6 +10,7 @@ import { CompanyLogoUploadModal } from "@/components/employer/CompanyLogoUploadM
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileEmployerTabs } from "@/components/mobile/employer/MobileEmployerTabs";
 import { PendingRequestBanner } from "@/components/organization/PendingRequestBanner";
+import { QuickActionsWidget } from "@/components/organization/QuickActionsWidget";
 
 interface BusinessData {
   company_name: string;
@@ -224,6 +225,9 @@ export default function EmployerDashboard() {
               <EmployerDashboardTabs businessData={businessData} />
             </div>
           </div>
+          
+          {/* Phase 4: Quick Actions Widget (desktop only) */}
+          <QuickActionsWidget />
         </DashboardLayout>
       </div>
       

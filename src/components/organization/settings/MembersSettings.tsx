@@ -63,14 +63,25 @@ export function MembersSettings() {
     }
   };
 
-  const handleChangeRole = async (membershipId: string, newRole: OrgRole) => {
+  const handleChangeRole = async (membershipId: string, newRole: OrgRole, currentRole: OrgRole) => {
+    // Confirmation for critical role changes
+    if (currentRole === 'owner' || newRole === 'owner') {
+      const confirmed = window.confirm(
+        `⚠️ ${newRole === 'owner' 
+          ? 'This will promote the member to Owner with full control over the organization.' 
+          : 'This will demote the Owner to a lower role. Make sure another Owner exists first.'
+        }\n\nContinue?`
+      );
+      if (!confirmed) return;
+    }
+
     try {
       await organizationService.updateMemberRole(membershipId, newRole);
-      toast.success("Member role updated successfully");
+      toast.success('Member role updated successfully');
       loadMembers();
-    } catch (error) {
-      console.error("Error updating role:", error);
-      toast.error("Failed to update member role");
+    } catch (error: any) {
+      console.error('Error updating role:', error);
+      toast.error(error?.message || 'Failed to update member role');
     }
   };
 
@@ -127,9 +138,26 @@ export function MembersSettings() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <Badge variant="secondary" className="capitalize">
-                    {member.role}
-                  </Badge>
+                  {/* Role Badge with Tooltip */}
+                  <div className="text-sm">
+                    <span 
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
+                        ${member.role === 'owner' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
+                          member.role === 'admin' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                          member.role === 'manager' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                          'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                        }`}
+                      title={
+                        member.role === 'owner' ? 'Full control - can transfer ownership' :
+                        member.role === 'admin' ? 'Manage members, roles, settings (except billing)' :
+                        member.role === 'manager' ? 'Create/edit jobs, manage applications' :
+                        member.role === 'member' ? 'View applications and analytics' :
+                        'View-only access'
+                      }
+                    >
+                      {member.role === 'owner' ? '👑 Owner' : member.role}
+                    </span>
+                  </div>
 
                   {(canManageRoles || canRemoveMembers) && member.role !== "owner" && (
                     <DropdownMenu>
@@ -144,17 +172,17 @@ export function MembersSettings() {
                         
                         {canManageRoles && (
                           <>
-                            <DropdownMenuItem onClick={() => handleChangeRole(member.id, "admin")}>
+                            <DropdownMenuItem onClick={() => handleChangeRole(member.id, "admin", member.role)}>
                               <Shield className="mr-2 h-4 w-4" />
-                              Make Admin
+                              {member.role === 'admin' ? '✓ Admin' : 'Make Admin'}
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleChangeRole(member.id, "manager")}>
+                            <DropdownMenuItem onClick={() => handleChangeRole(member.id, "manager", member.role)}>
                               <Shield className="mr-2 h-4 w-4" />
-                              Make Manager
+                              {member.role === 'manager' ? '✓ Manager' : 'Make Manager'}
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleChangeRole(member.id, "member")}>
+                            <DropdownMenuItem onClick={() => handleChangeRole(member.id, "member", member.role)}>
                               <Shield className="mr-2 h-4 w-4" />
-                              Make Member
+                              {member.role === 'member' ? '✓ Member' : 'Make Member'}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                           </>
