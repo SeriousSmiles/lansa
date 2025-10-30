@@ -125,7 +125,7 @@ export function MembersSettings() {
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <CardTitle>Organization Members</CardTitle>
               <CardDescription>
@@ -133,7 +133,7 @@ export function MembersSettings() {
               </CardDescription>
             </div>
             {canInviteMembers && (
-              <Button onClick={() => setShowInviteDialog(true)}>
+              <Button onClick={() => setShowInviteDialog(true)} className="w-full sm:w-auto">
                 <Mail className="mr-2 h-4 w-4" />
                 Invite Member
               </Button>
@@ -145,15 +145,15 @@ export function MembersSettings() {
             {members.map((member) => (
               <div
                 key={member.id}
-                className="flex items-center justify-between p-4 border rounded-lg"
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border rounded-lg"
               >
-                <div className="flex items-center gap-4">
-                  <Avatar>
+                <div className="flex items-center gap-4 min-w-0 flex-1">
+                  <Avatar className="flex-shrink-0">
                     <AvatarFallback>{getInitials(getUserName(member))}</AvatarFallback>
                   </Avatar>
-                  <div>
-                    <div className="font-medium">{getUserName(member)}</div>
-                    <div className="text-sm text-muted-foreground">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium truncate">{getUserName(member)}</div>
+                    <div className="text-sm text-muted-foreground truncate">
                       {getUserEmail(member)}
                     </div>
                     <div className="text-sm text-muted-foreground">
@@ -162,7 +162,7 @@ export function MembersSettings() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-shrink-0 self-start sm:self-center">
                   {/* Role Badge with Tooltip */}
                   <div className="text-sm">
                     <span 
