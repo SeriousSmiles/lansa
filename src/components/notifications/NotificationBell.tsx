@@ -14,9 +14,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { NotificationList } from './NotificationList';
 import { ProductUpdatesList } from './ProductUpdatesList';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function NotificationBell() {
   const { totalCount, unreadCount, unseenUpdatesCount } = useNotifications();
+  const isMobile = useIsMobile();
 
   return (
     <DropdownMenu>
@@ -30,7 +32,7 @@ export function NotificationBell() {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[420px] max-w-[calc(100vw-2rem)] p-0 shadow-lg">
+      <DropdownMenuContent align={isMobile ? "center" : "end"} className="w-[420px] max-w-[calc(100vw-2rem)] p-0 shadow-lg">
         <Tabs defaultValue="inbox" className="w-full">
           <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="px-4 pt-3 pb-2">
