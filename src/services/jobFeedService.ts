@@ -25,6 +25,11 @@ export interface JobListing {
     industry?: string;
     location?: string;
     website?: string;
+    organization_id?: string;
+    organizations?: {
+      logo_url?: string;
+      name: string;
+    };
   };
   job_applications?: Array<{
     id: string;

@@ -102,7 +102,12 @@ Deno.serve(async (req) => {
           company_name,
           industry,
           location,
-          website
+          website,
+          organization_id,
+          organizations(
+            logo_url,
+            name
+          )
         ),
         job_applications!left(
           id,

@@ -1,4 +1,4 @@
-import { MapPin, Briefcase, Clock, CheckCircle2 } from "lucide-react";
+import { MapPin, Briefcase, Clock, CheckCircle2, Building2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,11 +19,29 @@ export function JobCard({ job, onApply, onViewDetails }: JobCardProps) {
       <div className="flex flex-col gap-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <h3 className="text-xl font-semibold mb-1">{job.title}</h3>
-            <p className="text-muted-foreground">
-              {job.business_profiles?.company_name}
-            </p>
+          <div className="flex items-start gap-3 flex-1">
+            {/* Company Logo */}
+            <div className="flex-shrink-0 w-12 h-12 rounded-lg border overflow-hidden bg-background">
+              {job.business_profiles?.organizations?.logo_url ? (
+                <img 
+                  src={job.business_profiles.organizations.logo_url} 
+                  alt={job.business_profiles.company_name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Building2 className="w-6 h-6 text-muted-foreground" />
+                </div>
+              )}
+            </div>
+            
+            {/* Job Info */}
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xl font-semibold mb-1">{job.title}</h3>
+              <p className="text-muted-foreground">
+                {job.business_profiles?.company_name}
+              </p>
+            </div>
           </div>
           {job.mode === 'internship' && (
             <Badge variant="secondary">Internship</Badge>

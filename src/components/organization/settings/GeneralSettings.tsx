@@ -13,12 +13,16 @@ import { useOrganization } from "@/contexts/OrganizationContext";
 import { useOrgPermissions } from "@/contexts/OrganizationContext";
 import { organizationService } from "@/services/organizationService";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Building2 } from "lucide-react";
+import { DragDropImageUpload } from "@/components/upload/DragDropImageUpload";
+import { supabase } from "@/integrations/supabase/client";
 
 export function GeneralSettings() {
   const { activeOrganization, refreshOrganization } = useOrganization();
   const { canManageOrgSettings } = useOrgPermissions();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [formData, setFormData] = useState({
     name: activeOrganization?.name || "",
     industry: activeOrganization?.industry || "",
@@ -27,6 +31,40 @@ export function GeneralSettings() {
     website: activeOrganization?.website || "",
     domain: activeOrganization?.domain || "",
   });
+
+  const handleLogoUpload = async () => {
+    if (!logoFile || !activeOrganization) return;
+
+    setIsUploadingLogo(true);
+    try {
+      const fileExt = logoFile.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `company-logos/${activeOrganization.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('user-uploads')
+        .upload(filePath, logoFile);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('user-uploads')
+        .getPublicUrl(filePath);
+
+      await organizationService.updateOrganization(activeOrganization.id, {
+        logo_url: publicUrl
+      });
+
+      await refreshOrganization();
+      setLogoFile(null);
+      toast.success("Organization logo updated successfully");
+    } catch (error) {
+      console.error("Error uploading logo:", error);
+      toast.error("Failed to upload logo");
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +85,56 @@ export function GeneralSettings() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Logo Upload Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Organization Logo</CardTitle>
+          <CardDescription>
+            Upload your organization's logo. This will appear in job listings and organization search results.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-start gap-6">
+            {/* Current Logo Preview */}
+            <div className="flex-shrink-0">
+              <div className="w-24 h-24 rounded-lg border-2 border-border overflow-hidden bg-muted flex items-center justify-center">
+                {activeOrganization?.logo_url ? (
+                  <img 
+                    src={activeOrganization.logo_url} 
+                    alt={activeOrganization.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Building2 className="w-10 h-10 text-muted-foreground" />
+                )}
+              </div>
+            </div>
+
+            {/* Upload Controls */}
+            <div className="flex-1 space-y-4">
+              <DragDropImageUpload
+                onImageSelect={setLogoFile}
+                onImageRemove={() => setLogoFile(null)}
+                acceptedSize="square"
+                maxFileSizeKB={2048}
+                aspectRatio="square"
+              />
+              
+              {logoFile && (
+                <Button 
+                  type="button"
+                  onClick={handleLogoUpload}
+                  disabled={isUploadingLogo || !canManageOrgSettings}
+                >
+                  {isUploadingLogo && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Upload Logo
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Organization Information</CardTitle>
