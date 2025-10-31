@@ -60,7 +60,16 @@ import { RequireOnboarding, RequireUserType } from "./components/auth/RouteGuard
 console.log("App.tsx loading, React available:", !!React);
 console.log("React hooks available:", typeof React.useState, typeof React.useEffect);
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      refetchOnMount: true,
+      staleTime: 5 * 60 * 1000,
+      retry: 1,
+    },
+  },
+});
 
 const App: React.FC = () => {
   return (
