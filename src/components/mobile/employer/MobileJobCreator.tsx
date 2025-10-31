@@ -74,7 +74,7 @@ export function MobileJobCreator({
   const jobTypes = ["Full-time", "Part-time", "Contract", "Temporary", "Internship"];
   const workTypes = ["On-site", "Remote", "Hybrid"];
   const experienceLevels = ["Entry Level", "Mid Level", "Senior Level", "Executive"];
-  const currencies = ["USD", "EUR", "GBP", "CAD", "AUD"];
+  const currencies = ["USD", "EUR", "GBP", "CAD", "AUD", "XCG"];
   const categories = ["Engineering", "Marketing", "Design", "Sales", "Product", "Operations", "Finance", "Human Resources", "Customer Success", "Data Science"];
   const userTypes = [
     { value: "student", label: "Students" },

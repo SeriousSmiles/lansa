@@ -446,6 +446,7 @@ export function JobPostingDialog({ isOpen, onClose, onJobSaved, editingJob }: Jo
                   <SelectItem value="EUR">EUR</SelectItem>
                   <SelectItem value="GBP">GBP</SelectItem>
                   <SelectItem value="CAD">CAD</SelectItem>
+                  <SelectItem value="XCG">XCG</SelectItem>
                 </SelectContent>
               </Select>
             </div>
