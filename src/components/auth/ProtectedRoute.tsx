@@ -5,12 +5,14 @@ import { LoadingSpinner } from '@/components/loading/LoadingSpinner';
 
 export default function ProtectedRoute() {
   const { session, loading: authLoading } = useAuth();
-  const { userType, loading: stateLoading } = useUserState();
+  const { userType, loading: stateLoading, isRefreshing } = useUserState();
   const location = useLocation();
 
-  const loading = authLoading || stateLoading;
+  // CRITICAL: Only show loading screen if we don't know auth status yet
+  // Don't block for background refreshes (isRefreshing)
+  const shouldShowLoading = (authLoading || stateLoading) && !session && !isRefreshing;
 
-  if (loading) {
+  if (shouldShowLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner />

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Briefcase, BarChart3, Plus, Eye, CheckCircle2, XCircle, Settings } from "lucide-react";
+import { LayoutDashboard, Users, Briefcase, BarChart3, Plus, Eye, CheckCircle2, XCircle, Settings, RefreshCw } from "lucide-react";
 import { MobileEmployerDashboard } from "./MobileEmployerDashboard";
 import { MobileCandidateBrowser } from "./MobileCandidateBrowser";
 import { MobileJobCreator } from "./MobileJobCreator";
@@ -61,6 +61,7 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
   const [isLoadingCandidates, setIsLoadingCandidates] = useState(false);
   const [jobs, setJobs] = useState<JobListing[]>([]);
   const [isLoadingJobs, setIsLoadingJobs] = useState(false);
+  const [isRefreshingStats, setIsRefreshingStats] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [selectedJobTitle, setSelectedJobTitle] = useState<string>("");
   const [showApplicationsSheet, setShowApplicationsSheet] = useState(false);
@@ -124,6 +125,7 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
   const loadEmployerStats = async () => {
     if (!user?.id) return;
 
+    setIsRefreshingStats(true);
     try {
       // Count active job listings from job_listings_v2
       const { count: jobCount } = await supabase
@@ -150,6 +152,8 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
       }));
     } catch (error) {
       console.error('Error loading employer stats:', error);
+    } finally {
+      setIsRefreshingStats(false);
     }
   };
 
@@ -312,6 +316,17 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
         <div className={`h-[calc(100vh-64px)] overflow-y-auto employer-scroll-container ${isAtBottom ? 'pb-2' : 'pb-20'}`}>
           <TabsContent value="dashboard" className="h-full m-0">
             <div className="md:hidden">
+              <div className="sticky top-0 z-10 bg-background border-b px-4 py-3 flex items-center justify-between">
+                <h2 className="text-xl font-bold">Dashboard</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={loadEmployerStats}
+                  disabled={isRefreshingStats}
+                >
+                  <RefreshCw className={`h-4 w-4 ${isRefreshingStats ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
               <MobileEmployerDashboard
                 userName={user?.displayName || businessData?.company_name || "Employer"}
                 businessData={businessData}
@@ -326,10 +341,20 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold">Job Postings</h2>
-                <Button onClick={handleCreateJob} size="sm" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
-                  <Plus className="h-4 w-4 mr-2" />
-                  New Job
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={loadJobs}
+                    disabled={isLoadingJobs}
+                  >
+                    <RefreshCw className={`h-4 w-4 ${isLoadingJobs ? 'animate-spin' : ''}`} />
+                  </Button>
+                  <Button onClick={handleCreateJob} size="sm" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Job
+                  </Button>
+                </div>
               </div>
 
               {isLoadingJobs ? (

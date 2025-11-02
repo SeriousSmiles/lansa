@@ -1,16 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrganization } from "@/contexts/OrganizationContext";
+import { useUserState } from "@/contexts/UserStateProvider";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { EmployerDashboardTabs } from "@/components/dashboard/EmployerDashboardTabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useActionTracking } from "@/hooks/useActionTracking";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { CompanyLogoUploadModal } from "@/components/employer/CompanyLogoUploadModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileEmployerTabs } from "@/components/mobile/employer/MobileEmployerTabs";
 import { PendingRequestBanner } from "@/components/organization/PendingRequestBanner";
 import { QuickActionsWidget } from "@/components/organization/QuickActionsWidget";
+import { RefreshCw } from "lucide-react";
 
 interface BusinessData {
   company_name: string;
@@ -23,14 +26,15 @@ interface BusinessData {
 export default function EmployerDashboard() {
   const [businessData, setBusinessData] = useState<BusinessData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshingDashboard, setIsRefreshingDashboard] = useState(false);
   const [showLogoModal, setShowLogoModal] = useState(false);
   const { user } = useAuth();
-  const { activeOrganization, pendingMembership, hasPendingRequest, isLoading: orgLoading } = useOrganization();
+  const { activeOrganization, pendingMembership, hasPendingRequest, isLoading: orgLoading, refreshOrganization } = useOrganization();
+  const { refreshUserState } = useUserState();
   const { track } = useActionTracking();
   const isMobile = useIsMobile();
 
-  useEffect(() => {
-    async function loadBusinessData() {
+  const loadBusinessData = useCallback(async () => {
       if (!user?.id || !activeOrganization?.id) {
         setIsLoading(false);
         return;
@@ -88,10 +92,26 @@ export default function EmployerDashboard() {
       } finally {
         setIsLoading(false);
       }
-    }
-
-    loadBusinessData();
   }, [user?.id, activeOrganization?.id, track]);
+
+  useEffect(() => {
+    loadBusinessData();
+  }, [loadBusinessData]);
+
+  const handleRefreshDashboard = async () => {
+    setIsRefreshingDashboard(true);
+    try {
+      await Promise.all([
+        refreshOrganization?.(),
+        refreshUserState?.()
+      ]);
+      await loadBusinessData();
+    } catch (error) {
+      console.error('Error refreshing dashboard:', error);
+    } finally {
+      setIsRefreshingDashboard(false);
+    }
+  };
 
   if (isLoading || orgLoading) {
     return (
@@ -226,6 +246,15 @@ export default function EmployerDashboard() {
                   </div>
                   <p className="text-muted-foreground mt-1">{activeOrganization.name}</p>
                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRefreshDashboard}
+                  disabled={isRefreshingDashboard}
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshingDashboard ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
               </div>
               <EmployerDashboardTabs businessData={businessData} />
             </div>

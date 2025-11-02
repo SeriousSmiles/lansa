@@ -39,6 +39,8 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
 
   // Ref to prevent overlapping fetches
   const inFlightRef = useRef(false);
+  // Ref to track if we've completed initial load
+  const initializedRef = useRef(false);
 
   // Function to fetch user state from database
   const fetchUserState = useCallback(async () => {
@@ -145,6 +147,9 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
         isRefreshing: false
       });
 
+      // Mark as initialized after first successful fetch
+      initializedRef.current = true;
+
       return { success: true };
     } catch (error) {
       console.error("Error loading user state:", error);
@@ -198,9 +203,17 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
           isRefreshing: false 
         });
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        // Set loading and defer fetch to avoid blocking auth callback
+        // CRITICAL: Differentiate between initial login and background refresh
         console.log("🔄 Refetching user state due to auth change");
-        setState(s => ({ ...s, loading: true }));
+        
+        if (!initializedRef.current) {
+          // Initial login - show loading screen
+          setState(s => ({ ...s, loading: true }));
+        } else {
+          // Background refresh (tab focus) - don't show loading screen
+          setState(s => ({ ...s, isRefreshing: true }));
+        }
+        
         // Defer to next tick to let auth state settle
         setTimeout(() => {
           if (mounted) {

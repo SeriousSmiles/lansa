@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit2, Eye, MoreHorizontal, Trash2 } from "lucide-react";
+import { Plus, Edit2, Eye, MoreHorizontal, Trash2, RefreshCw } from "lucide-react";
 import { JobPostingDialog } from "./JobPostingDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -133,12 +133,23 @@ export function JobManagementTab() {
           <h2 className="text-xl font-semibold text-[#2E2E2E]">Job Listings</h2>
           <p className="text-[#666666]">Manage your organization's job postings</p>
         </div>
-        {canCreateJobs && (
-          <Button onClick={handleCreateJob} className="bg-[#FF6B4A] hover:bg-[#FF6B4A]/90">
-            <Plus className="h-4 w-4 mr-2" />
-            Post New Job
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={loadJobListings}
+            disabled={isLoading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
           </Button>
-        )}
+          {canCreateJobs && (
+            <Button onClick={handleCreateJob} className="bg-[#FF6B4A] hover:bg-[#FF6B4A]/90">
+              <Plus className="h-4 w-4 mr-2" />
+              Post New Job
+            </Button>
+          )}
+        </div>
       </div>
 
       {jobListings.length === 0 ? (

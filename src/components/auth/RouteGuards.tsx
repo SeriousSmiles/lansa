@@ -17,11 +17,14 @@ function LoadingScreen() {
 }
 
 export function RequireAuth({ children }: { children: JSX.Element }) {
-  const { loading, isAuthenticated } = useUserState();
+  const { loading, isAuthenticated, isRefreshing } = useUserState();
   const location = useLocation();
 
   if (!FLAGS.routeGuardsV2) return children;
-  if (loading) return <LoadingScreen />;
+  
+  // Only show loading if we don't know auth status yet (not for background refreshes)
+  if (loading && !isAuthenticated && !isRefreshing) return <LoadingScreen />;
+  
   if (!isAuthenticated) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
@@ -35,11 +38,13 @@ export function RequireOnboarding({
   children: JSX.Element; 
   soft?: boolean;  // DEPRECATED: Soft gates should only be used for premium features, not onboarding
 }) {
-  const { loading, hasCompletedOnboarding, userType } = useUserState();
+  const { loading, hasCompletedOnboarding, userType, isAuthenticated, isRefreshing } = useUserState();
   const location = useLocation();
 
   if (!FLAGS.routeGuardsV2) return children;
-  if (loading) return <LoadingScreen />;
+  
+  // Only show loading if we don't know auth status yet (not for background refreshes)
+  if (loading && !isAuthenticated && !isRefreshing) return <LoadingScreen />;
 
   // If user has completed onboarding, allow access
   if (hasCompletedOnboarding) return children;
@@ -96,7 +101,7 @@ export function RequireUserType({
   children: JSX.Element; 
   allowedTypes: Array<'job_seeker' | 'employer'>;
 }) {
-  const { loading, userType, careerPath } = useUserState();
+  const { loading, userType, careerPath, isAuthenticated, isRefreshing } = useUserState();
   const location = useLocation();
 
   useEffect(() => {
@@ -108,7 +113,9 @@ export function RequireUserType({
   }, [loading, userType, allowedTypes]);
 
   if (!FLAGS.routeGuardsV2) return children;
-  if (loading) return <LoadingScreen />;
+  
+  // Only show loading if we don't know auth status yet (not for background refreshes)
+  if (loading && !isAuthenticated && !isRefreshing) return <LoadingScreen />;
 
   if (!userType || !allowedTypes.includes(userType)) {
     return (
