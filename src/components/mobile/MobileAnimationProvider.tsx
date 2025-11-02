@@ -38,7 +38,7 @@ export function MobileAnimationProvider({ children }: MobileAnimationProviderPro
     // Configure ScrollTrigger for mobile
     ScrollTrigger.config({
       ignoreMobileResize: true,
-      autoRefreshEvents: "visibilitychange,DOMContentLoaded,load"
+      autoRefreshEvents: "resize,DOMContentLoaded,load"
     });
 
     // Add mobile-specific CSS variables
