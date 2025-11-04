@@ -1398,36 +1398,51 @@ export type Database = {
       }
       product_updates: {
         Row: {
+          badge_color: string | null
+          badge_text: string | null
           category: string
           created_at: string | null
+          created_by: string | null
           description: string
+          icon_name: string | null
           id: string
           image_url: string | null
           link_url: string | null
           published_at: string | null
           title: string
+          updated_at: string | null
           version: string | null
         }
         Insert: {
+          badge_color?: string | null
+          badge_text?: string | null
           category: string
           created_at?: string | null
+          created_by?: string | null
           description: string
+          icon_name?: string | null
           id?: string
           image_url?: string | null
           link_url?: string | null
           published_at?: string | null
           title: string
+          updated_at?: string | null
           version?: string | null
         }
         Update: {
+          badge_color?: string | null
+          badge_text?: string | null
           category?: string
           created_at?: string | null
+          created_by?: string | null
           description?: string
+          icon_name?: string | null
           id?: string
           image_url?: string | null
           link_url?: string | null
           published_at?: string | null
           title?: string
+          updated_at?: string | null
           version?: string | null
         }
         Relationships: []

@@ -15,6 +15,11 @@ export interface ProductUpdate {
   link_url?: string;
   published_at: string;
   created_at: string;
+  icon_name?: string;
+  badge_text?: string;
+  badge_color?: string;
+  created_by?: string;
+  updated_at?: string;
 }
 
 export const productUpdatesService = {

@@ -43,6 +43,7 @@ import Notifications from "./pages/Notifications";
 import AdminHome from "./pages/admin/AdminHome";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminOrganizations from "./pages/admin/AdminOrganizations";
+import AdminUpdates from "./pages/admin/AdminUpdates";
 import AdminPricing from "./pages/admin/AdminPricing";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminTrends from "./pages/admin/AdminTrends";
@@ -228,6 +229,7 @@ const App: React.FC = () => {
                     <Route path="/admin" element={<AdminHome />} />
                     <Route path="/admin/users" element={<AdminUsers />} />
                     <Route path="/admin/organizations" element={<AdminOrganizations />} />
+                    <Route path="/admin/updates" element={<AdminUpdates />} />
                     <Route path="/admin/pricing" element={<AdminPricing />} />
                     <Route path="/admin/trends" element={<AdminTrends />} />
                     <Route path="/admin/analytics" element={<AdminAnalytics />} />
