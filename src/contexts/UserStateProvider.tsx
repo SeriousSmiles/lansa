@@ -41,6 +41,8 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
   const inFlightRef = useRef(false);
   // Ref to track if we've completed initial load
   const initializedRef = useRef(false);
+  // CRITICAL: Preserve userType during refresh to prevent race condition
+  const previousUserTypeRef = useRef<'job_seeker' | 'employer'>();
 
   // Function to fetch user state from database
   const fetchUserState = useCallback(async () => {
@@ -132,11 +134,15 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
         hasPendingOrgRequest: !!pendingRequests
       });
 
+      // CRITICAL: Use previous userType as fallback during refresh to prevent race condition
+      const currentUserType = answersResult.data?.user_type as 'job_seeker' | 'employer' | undefined;
+      const finalUserType = currentUserType || previousUserTypeRef.current;
+      
       setState({
         loading: false,
         isAuthenticated: true,
         userId,
-        userType: answersResult.data?.user_type as 'job_seeker' | 'employer' | undefined,
+        userType: finalUserType,
         careerPath: answersResult.data?.career_path as CareerPath | undefined,
         hasCompletedOnboarding,
         lansaCertified: !!certData?.lansa_certified,
@@ -146,6 +152,11 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
         hasPendingOrgRequest: !!pendingRequests,
         isRefreshing: false
       });
+      
+      // Update ref for next refresh
+      if (currentUserType) {
+        previousUserTypeRef.current = currentUserType;
+      }
 
       // Mark as initialized after first successful fetch
       initializedRef.current = true;

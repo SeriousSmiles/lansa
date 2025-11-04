@@ -1,6 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useUserState } from "@/contexts/UserStateProvider";
-import { FLAGS } from "@/config/flags";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useEffect } from "react";
@@ -19,8 +18,6 @@ function LoadingScreen() {
 export function RequireAuth({ children }: { children: JSX.Element }) {
   const { loading, isAuthenticated, isRefreshing } = useUserState();
   const location = useLocation();
-
-  if (!FLAGS.routeGuardsV2) return children;
   
   // Only show loading if we don't know auth status yet (not for background refreshes)
   if (loading && !isAuthenticated && !isRefreshing) return <LoadingScreen />;
@@ -40,8 +37,6 @@ export function RequireOnboarding({
 }) {
   const { loading, hasCompletedOnboarding, userType, isAuthenticated, isRefreshing } = useUserState();
   const location = useLocation();
-
-  if (!FLAGS.routeGuardsV2) return children;
   
   // Only show loading if we don't know auth status yet (not for background refreshes)
   if (loading && !isAuthenticated && !isRefreshing) return <LoadingScreen />;
@@ -66,7 +61,7 @@ export function RequireOnboarding({
   }
 
   // Soft gate: show teaser with banner (DEPRECATED - only for premium features)
-  if (soft && FLAGS.softGateOnboarding) {
+  if (soft) {
     console.warn("⚠️ DEPRECATED: Soft onboarding gate used. This should only be used for premium features, not core onboarding.");
     return (
       <div className="min-h-screen bg-background">
@@ -111,8 +106,6 @@ export function RequireUserType({
       });
     }
   }, [loading, userType, allowedTypes]);
-
-  if (!FLAGS.routeGuardsV2) return children;
   
   // Only show loading if we don't know auth status yet (not for background refreshes)
   if (loading && !isAuthenticated && !isRefreshing) return <LoadingScreen />;

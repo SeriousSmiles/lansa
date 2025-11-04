@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { checkAdminRole } from '@/utils/roleHelpers';
 import { supabase } from '@/integrations/supabase/client';
 
 export function useAdminAuth() {
@@ -10,7 +11,7 @@ export function useAdminAuth() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    async function checkAdminRole() {
+    async function checkAdmin() {
       if (authLoading) return;
 
       if (!user) {
@@ -19,20 +20,9 @@ export function useAdminAuth() {
       }
 
       try {
-        const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
-          .maybeSingle();
-
-        if (error) {
-          console.error('Error checking admin role:', error);
-          navigate('/', { replace: true });
-          return;
-        }
-
-        if (!data) {
+        const adminStatus = await checkAdminRole(user.id);
+        
+        if (!adminStatus) {
           navigate('/', { replace: true });
           return;
         }
@@ -52,7 +42,7 @@ export function useAdminAuth() {
       }
     }
 
-    checkAdminRole();
+    checkAdmin();
   }, [user, authLoading, navigate]);
 
   return { isAdmin, loading };

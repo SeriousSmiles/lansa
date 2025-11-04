@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserState } from "@/contexts/UserStateProvider";
 import { toast } from "sonner";
@@ -30,16 +30,52 @@ export default function Onboarding() {
   const { user } = useAuth();
   const { hasCompletedOnboarding, loading: userStateLoading, userType: contextUserType } = useUserState();
   const navigate = useNavigate();
+  const location = useLocation();
   const { navigateAfterOnboarding, isNavigating } = useOnboardingNavigation();
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+
+  // Check if user is admin
+  useEffect(() => {
+    async function checkAdminRole() {
+      if (!user?.id) {
+        setIsAdmin(false);
+        return;
+      }
+
+      try {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+
+        setIsAdmin(!!data);
+      } catch (error) {
+        console.error('Error checking admin role:', error);
+        setIsAdmin(false);
+      }
+    }
+
+    checkAdminRole();
+  }, [user?.id]);
 
   // CRITICAL: Redirect returning users who have already completed onboarding
   useEffect(() => {
     if (!userStateLoading && hasCompletedOnboarding && contextUserType) {
+      // Check if admin is trying to access admin area
+      const referrer = location.state?.from?.pathname;
+      if (isAdmin && referrer?.startsWith('/admin')) {
+        console.log('Admin bypassing onboarding redirect to access admin area');
+        navigate(referrer, { replace: true });
+        return;
+      }
+
       const destination = getPostOnboardingDestination(contextUserType as any);
       console.log(`User has completed onboarding, redirecting to ${destination}`);
       navigate(destination, { replace: true });
     }
-  }, [userStateLoading, hasCompletedOnboarding, contextUserType, navigate]);
+  }, [userStateLoading, hasCompletedOnboarding, contextUserType, navigate, isAdmin, location]);
 
   useEffect(() => {
     async function loadUserAnswers() {
