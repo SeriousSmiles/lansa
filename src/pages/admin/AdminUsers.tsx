@@ -17,6 +17,16 @@ export default function AdminUsers() {
   const [colorFilter, setColorFilter] = useState<string>('all');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
+  const { data: totalCount } = useQuery({
+    queryKey: ['admin-users-count'],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from('user_profiles')
+        .select('*', { count: 'exact', head: true });
+      return count || 0;
+    }
+  });
+
   const { data: users, isLoading, refetch } = useQuery({
     queryKey: ['admin-users', searchQuery, colorFilter],
     queryFn: async () => {
@@ -47,7 +57,11 @@ export default function AdminUsers() {
 
   return (
     <>
-      <div className="flex items-center justify-end gap-2 mb-6">
+      <div className="flex items-center justify-between gap-2 mb-6">
+        <div className="text-sm text-muted-foreground">
+          Total Users: <span className="font-medium">{totalCount}</span>
+        </div>
+        <div className="flex items-center gap-2">
         <Input
           placeholder="Search users..."
           value={searchQuery}
@@ -67,6 +81,7 @@ export default function AdminUsers() {
             <SelectItem value="red">Red</SelectItem>
           </SelectContent>
         </Select>
+        </div>
       </div>
 
       <Card>
