@@ -118,7 +118,7 @@ export default function AdminHome() {
         </Card>
 
           {Object.entries(COLOR_CONFIG).map(([color, config]) => (
-            <Card key={color}>
+            <Card key={color} className={config.bgClass}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">
                   <span className="mr-2">{config.pattern}</span>
@@ -129,7 +129,7 @@ export default function AdminHome() {
                 <div className="text-2xl font-bold">
                   {stats?.colorCounts[color as keyof typeof stats.colorCounts] || 0}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs mt-1 opacity-80">
                   {config.description}
                 </p>
               </CardContent>

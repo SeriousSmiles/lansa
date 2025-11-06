@@ -40,8 +40,8 @@ export function AdminSidebar() {
 
   const getNavClass = ({ isActive }: { isActive: boolean }) =>
     isActive
-      ? 'bg-muted text-primary font-medium'
-      : 'hover:bg-muted/50';
+      ? 'bg-muted text-black dark:text-white font-medium'
+      : 'text-black dark:text-white hover:bg-muted/50';
 
   return (
     <Sidebar collapsible="icon" className="border-r">
