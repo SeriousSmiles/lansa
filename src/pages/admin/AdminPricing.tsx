@@ -167,6 +167,7 @@ export default function AdminPricing() {
                       <td className="p-2 font-mono text-xs">{event.user_id.substring(0, 8)}...</td>
                     </tr>
                   ))}
+                </tbody>
               </table>
             </div>
           </CardContent>

@@ -197,6 +197,5 @@ export default function AdminHome() {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
-}
+    );
+  }
