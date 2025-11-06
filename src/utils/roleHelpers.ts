@@ -1,12 +1,22 @@
 import { supabase } from '@/integrations/supabase/client';
 
+// Cache to reduce database queries for role checks
+const roleCache = new Map<string, { isAdmin: boolean; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 /**
- * Check if a user has admin role
+ * Check if a user has admin role (with caching)
  * @param userId - User ID to check
  * @returns Promise<boolean> - True if user is admin
  */
 export async function checkAdminRole(userId: string): Promise<boolean> {
   try {
+    // Check cache first
+    const cached = roleCache.get(userId);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return cached.isAdmin;
+    }
+
     const { data, error } = await supabase
       .from('user_roles')
       .select('role')
@@ -19,7 +29,10 @@ export async function checkAdminRole(userId: string): Promise<boolean> {
       return false;
     }
 
-    return !!data;
+    const isAdmin = !!data;
+    roleCache.set(userId, { isAdmin, timestamp: Date.now() });
+
+    return isAdmin;
   } catch (error) {
     console.error('Error in checkAdminRole:', error);
     return false;

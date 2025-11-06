@@ -1,4 +1,3 @@
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,17 +45,14 @@ export default function AdminSettings() {
 
   if (logsLoading || adminsLoading) {
     return (
-      <AdminLayout title="Settings">
-        <div className="flex items-center justify-center h-64">
-          <LoadingSpinner />
-        </div>
-      </AdminLayout>
+      <div className="flex items-center justify-center h-64">
+        <LoadingSpinner />
+      </div>
     );
   }
 
   return (
-    <AdminLayout title="Settings">
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Admin Roles */}
         <Card>
           <CardHeader>
@@ -116,11 +112,9 @@ export default function AdminSettings() {
                     </div>
                   )}
                 </div>
-              ))}
             </div>
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
-  );
-}
+    );
+  }

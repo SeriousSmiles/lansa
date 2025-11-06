@@ -32,50 +32,22 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const location = useLocation();
   const { navigateAfterOnboarding, isNavigating } = useOnboardingNavigation();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
-  // Check if user is admin
+  // Redirect users who have completed onboarding
   useEffect(() => {
-    async function checkAdminRole() {
-      if (!user?.id) {
-        setIsAdmin(false);
-        return;
-      }
+    if (userStateLoading) return;
+    if (!hasCompletedOnboarding) return;
+    if (!contextUserType) return;
 
-      try {
-        const { data } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
-          .maybeSingle();
-
-        setIsAdmin(!!data);
-      } catch (error) {
-        console.error('Error checking admin role:', error);
-        setIsAdmin(false);
-      }
+    if (contextUserType === 'employer') {
+      navigate('/employer-dashboard', { replace: true, state: { fromRedirect: true } });
+    } else if (contextUserType === 'job_seeker') {
+      navigate('/dashboard', { replace: true, state: { fromRedirect: true } });
+    } else {
+      // Fallback
+      navigate('/', { replace: true, state: { fromRedirect: true } });
     }
-
-    checkAdminRole();
-  }, [user?.id]);
-
-  // CRITICAL: Redirect returning users who have already completed onboarding
-  useEffect(() => {
-    if (!userStateLoading && hasCompletedOnboarding && contextUserType) {
-      // Check if admin is trying to access admin area
-      const referrer = location.state?.from?.pathname;
-      if (isAdmin && referrer?.startsWith('/admin')) {
-        console.log('Admin bypassing onboarding redirect to access admin area');
-        navigate(referrer, { replace: true });
-        return;
-      }
-
-      const destination = getPostOnboardingDestination(contextUserType as any);
-      console.log(`User has completed onboarding, redirecting to ${destination}`);
-      navigate(destination, { replace: true });
-    }
-  }, [userStateLoading, hasCompletedOnboarding, contextUserType, navigate, isAdmin, location]);
+  }, [userStateLoading, hasCompletedOnboarding, contextUserType, navigate]);
 
   useEffect(() => {
     async function loadUserAnswers() {

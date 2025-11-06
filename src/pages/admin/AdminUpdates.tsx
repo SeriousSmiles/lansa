@@ -1,10 +1,4 @@
-/**
- * Admin Product Updates Page
- * Manage product updates and announcements
- */
-
 import { useState, useEffect } from 'react';
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 import { adminProductUpdatesService } from '@/services/adminProductUpdatesService';
@@ -96,15 +90,14 @@ export default function AdminUpdates() {
   };
 
   return (
-    <AdminLayout
-      title="Product Updates"
-      actions={
+    <>
+      <div className="flex justify-end mb-6">
         <Button onClick={handleCreate}>
           <Plus className="mr-2 h-4 w-4" />
           Create Update
         </Button>
-      }
-    >
+      </div>
+
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -212,6 +205,6 @@ export default function AdminUpdates() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </AdminLayout>
+    </>
   );
 }

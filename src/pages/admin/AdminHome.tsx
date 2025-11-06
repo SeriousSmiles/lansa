@@ -1,4 +1,3 @@
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -85,18 +84,16 @@ export default function AdminHome() {
 
   if (isLoading) {
     return (
-      <AdminLayout title="Dashboard">
-        <div className="flex items-center justify-center h-64">
-          <LoadingSpinner />
-        </div>
-      </AdminLayout>
+      <div className="flex items-center justify-center h-64">
+        <LoadingSpinner />
+      </div>
     );
   }
 
   return (
-    <AdminLayout 
-      title="Dashboard"
-      actions={
+    <div className="space-y-6">
+      {/* Refresh Button */}
+      <div className="flex justify-end">
         <Button 
           onClick={handleRefreshColors} 
           disabled={isRefreshing}
@@ -106,20 +103,19 @@ export default function AdminHome() {
           <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
           Refresh Colors
         </Button>
-      }
-    >
-      <div className="space-y-6">
-        {/* KPI Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>
-            </CardContent>
-          </Card>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>
+          </CardContent>
+        </Card>
 
           {Object.entries(COLOR_CONFIG).map(([color, config]) => (
             <Card key={color}>
@@ -201,6 +197,6 @@ export default function AdminHome() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+    </div>
   );
 }

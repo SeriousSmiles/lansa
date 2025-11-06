@@ -1,4 +1,3 @@
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,16 +23,14 @@ export default function AdminOrganizations() {
 
   if (isLoading) {
     return (
-      <AdminLayout title="Organizations">
-        <div className="flex items-center justify-center h-64">
-          <LoadingSpinner />
-        </div>
-      </AdminLayout>
+      <div className="flex items-center justify-center h-64">
+        <LoadingSpinner />
+      </div>
     );
   }
 
   return (
-    <AdminLayout title="Organizations">
+    <>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {organizations?.map((org) => (
           <Card key={org.id} className="p-6">
@@ -76,6 +73,6 @@ export default function AdminOrganizations() {
           <p className="text-muted-foreground">No organizations found</p>
         </Card>
       )}
-    </AdminLayout>
+    </>
   );
 }

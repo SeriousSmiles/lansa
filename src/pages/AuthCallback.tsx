@@ -43,9 +43,9 @@ export default function AuthCallback() {
           if (userState.hasCompletedOnboarding && userState.userType) {
             // Redirect to appropriate dashboard based on user type
             const destination = userState.userType === 'employer' ? '/employer-dashboard' : '/dashboard';
-            navigate(destination, { replace: true });
+            navigate(destination, { replace: true, state: { fromRedirect: true } });
           } else {
-            navigate('/onboarding', { replace: true });
+            navigate('/onboarding', { replace: true, state: { fromRedirect: true } });
           }
           
           setIsProcessing(false);

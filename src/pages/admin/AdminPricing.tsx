@@ -1,4 +1,3 @@
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,17 +41,14 @@ export default function AdminPricing() {
 
   if (isLoading) {
     return (
-      <AdminLayout title="Pricing Wall">
-        <div className="flex items-center justify-center h-64">
-          <LoadingSpinner />
-        </div>
-      </AdminLayout>
+      <div className="flex items-center justify-center h-64">
+        <LoadingSpinner />
+      </div>
     );
   }
 
   return (
-    <AdminLayout title="Pricing Wall">
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* KPI Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
@@ -171,12 +167,10 @@ export default function AdminPricing() {
                       <td className="p-2 font-mono text-xs">{event.user_id.substring(0, 8)}...</td>
                     </tr>
                   ))}
-                </tbody>
               </table>
             </div>
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
-  );
-}
+    );
+  }

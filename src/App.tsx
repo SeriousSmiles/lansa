@@ -57,6 +57,9 @@ import { OrganizationProvider } from "./contexts/OrganizationContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { RequireOnboarding, RequireUserType } from "./components/auth/RouteGuards";
+import { AdminRoute } from "./components/auth/AdminRoute";
+import { AdminLayout } from "./components/admin/AdminLayout";
+import { DefaultRoute } from "./components/auth/DefaultRoute";
 
 console.log("App.tsx loading, React available:", !!React);
 console.log("React hooks available:", typeof React.useState, typeof React.useEffect);
@@ -90,7 +93,7 @@ const App: React.FC = () => {
               <AppShell>
                 <Routes>
                   {/* Public routes */}
-                  <Route path="/" element={<Index />} />
+                  <Route path="/" element={<DefaultRoute />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -225,18 +228,28 @@ const App: React.FC = () => {
                       </RequireOnboarding>
                     } />
                     
-                    {/* Admin Routes - Auth handled by useAdminAuth hook */}
-                    <Route path="/admin" element={<AdminHome />} />
-                    <Route path="/admin/users" element={<AdminUsers />} />
-                    <Route path="/admin/organizations" element={<AdminOrganizations />} />
-                    <Route path="/admin/updates" element={<AdminUpdates />} />
-                    <Route path="/admin/pricing" element={<AdminPricing />} />
-                    <Route path="/admin/trends" element={<AdminTrends />} />
-                    <Route path="/admin/analytics" element={<AdminAnalytics />} />
-                    <Route path="/admin/historical" element={<AdminHistorical />} />
-                    <Route path="/admin/documents" element={<AdminDocuments />} />
-                    <Route path="/admin/support" element={<AdminSupport />} />
-                    <Route path="/admin/settings" element={<AdminSettings />} />
+                  </Route>
+
+                  {/* Admin Routes - Isolated with AdminRoute guard */}
+                  <Route
+                    path="/admin"
+                    element={
+                      <AdminRoute>
+                        <AdminLayout />
+                      </AdminRoute>
+                    }
+                  >
+                    <Route index element={<AdminHome />} />
+                    <Route path="users" element={<AdminUsers />} />
+                    <Route path="organizations" element={<AdminOrganizations />} />
+                    <Route path="updates" element={<AdminUpdates />} />
+                    <Route path="pricing" element={<AdminPricing />} />
+                    <Route path="trends" element={<AdminTrends />} />
+                    <Route path="analytics" element={<AdminAnalytics />} />
+                    <Route path="historical" element={<AdminHistorical />} />
+                    <Route path="documents" element={<AdminDocuments />} />
+                    <Route path="support" element={<AdminSupport />} />
+                    <Route path="settings" element={<AdminSettings />} />
                   </Route>
                   
                   <Route path="*" element={<HomeSpotlight />} />

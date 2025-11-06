@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -40,41 +39,36 @@ export default function AdminUsers() {
 
   if (isLoading) {
     return (
-      <AdminLayout title="Users">
-        <div className="flex items-center justify-center h-64">
-          <LoadingSpinner />
-        </div>
-      </AdminLayout>
+      <div className="flex items-center justify-center h-64">
+        <LoadingSpinner />
+      </div>
     );
   }
 
   return (
-    <AdminLayout 
-      title="Users"
-      actions={
-        <div className="flex items-center gap-2">
-          <Input
-            placeholder="Search users..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-64"
-          />
-          <Select value={colorFilter} onValueChange={setColorFilter}>
-            <SelectTrigger className="w-40">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Filter by color" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Colors</SelectItem>
-              <SelectItem value="purple">Purple</SelectItem>
-              <SelectItem value="green">Green</SelectItem>
-              <SelectItem value="orange">Orange</SelectItem>
-              <SelectItem value="red">Red</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      }
-    >
+    <>
+      <div className="flex items-center justify-end gap-2 mb-6">
+        <Input
+          placeholder="Search users..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-64"
+        />
+        <Select value={colorFilter} onValueChange={setColorFilter}>
+          <SelectTrigger className="w-40">
+            <Filter className="h-4 w-4 mr-2" />
+            <SelectValue placeholder="Filter by color" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Colors</SelectItem>
+            <SelectItem value="purple">Purple</SelectItem>
+            <SelectItem value="green">Green</SelectItem>
+            <SelectItem value="orange">Orange</SelectItem>
+            <SelectItem value="red">Red</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <Card>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -149,8 +143,8 @@ export default function AdminUsers() {
                       </Button>
                     </td>
                   </tr>
-                );
-              })}
+                 );
+               })}
             </tbody>
           </table>
         </div>
@@ -164,6 +158,6 @@ export default function AdminUsers() {
           onUpdate={refetch}
         />
       )}
-    </AdminLayout>
+    </>
   );
 }

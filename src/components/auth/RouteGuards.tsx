@@ -2,7 +2,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useUserState } from "@/contexts/UserStateProvider";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 function LoadingScreen() {
   return (
@@ -91,21 +91,36 @@ export function RequireOnboarding({
 
 export function RequireUserType({ 
   children, 
-  allowedTypes 
+  allowedTypes,
+  silent = false
 }: { 
   children: JSX.Element; 
   allowedTypes: Array<'job_seeker' | 'employer'>;
+  silent?: boolean;
 }) {
   const { loading, userType, careerPath, isAuthenticated, isRefreshing } = useUserState();
   const location = useLocation();
+  const hasShownToast = useRef(false);
 
   useEffect(() => {
-    if (!loading && userType && !allowedTypes.includes(userType)) {
+    if (loading) return;
+    if (!userType) return;
+
+    const isAllowed = allowedTypes.includes(userType);
+    const isRedirect = Boolean(location.state && (location.state as any).fromRedirect);
+
+    // Show toast only if:
+    //  - not silent
+    //  - not already shown
+    //  - user is NOT allowed
+    //  - this navigation was deliberate (i.e., not an auto-redirect)
+    if (!silent && !hasShownToast.current && !isAllowed && !isRedirect) {
       toast.error(`This area is for ${allowedTypes.join(' or ')} users only.`, {
         description: `You're currently set as: ${userType}`,
       });
+      hasShownToast.current = true;
     }
-  }, [loading, userType, allowedTypes]);
+  }, [loading, userType, allowedTypes, silent, location.state]);
   
   // Only show loading if we don't know auth status yet (not for background refreshes)
   if (loading && !isAuthenticated && !isRefreshing) return <LoadingScreen />;

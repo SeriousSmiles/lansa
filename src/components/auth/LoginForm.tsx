@@ -63,9 +63,9 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
       if (onboardingCompleted && userType) {
         // Redirect to appropriate dashboard based on user type
         const destination = userType === 'employer' ? '/employer-dashboard' : '/dashboard';
-        navigate(destination, { replace: true });
+        navigate(destination, { replace: true, state: { fromRedirect: true } });
       } else {
-        navigate('/onboarding', { replace: true });
+        navigate('/onboarding', { replace: true, state: { fromRedirect: true } });
       }
       
     } catch (error: any) {
