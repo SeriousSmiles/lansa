@@ -2,10 +2,11 @@ import { Card } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { LoadingSpinner } from '@/components/loading/LoadingSpinner';
-import { Building2 } from 'lucide-react';
+import { Building2, RefreshCw } from 'lucide-react';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 
 export default function AdminOrganizations() {
-  const { data: organizations, isLoading } = useQuery({
+  const { data: organizations, isLoading, refetch } = useQuery({
     queryKey: ['admin-organizations'],
     queryFn: async () => {
       const { data } = await supabase
@@ -21,6 +22,12 @@ export default function AdminOrganizations() {
     }
   });
 
+  const { containerRef, isRefreshing: isPulling } = usePullToRefresh({
+    onRefresh: async () => {
+      await refetch();
+    }
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -30,7 +37,13 @@ export default function AdminOrganizations() {
   }
 
   return (
-    <>
+    <div ref={containerRef}>
+      {isPulling && (
+        <div className="text-center py-2 md:hidden">
+          <RefreshCw className="h-5 w-5 animate-spin mx-auto text-primary" />
+        </div>
+      )}
+      
       <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {organizations?.map((org) => (
           <Card key={org.id} className="p-4 md:p-6">
@@ -73,6 +86,6 @@ export default function AdminOrganizations() {
           <p className="text-muted-foreground">No organizations found</p>
         </Card>
       )}
-    </>
+    </div>
   );
 }

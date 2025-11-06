@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, RefreshCw } from 'lucide-react';
 import { adminProductUpdatesService } from '@/services/adminProductUpdatesService';
 import { ProductUpdate } from '@/services/productUpdatesService';
 import { UpdateFormDialog } from '@/components/admin/updates/UpdateFormDialog';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -89,8 +90,18 @@ export default function AdminUpdates() {
     await loadUpdates();
   };
 
+  const { containerRef, isRefreshing: isPulling } = usePullToRefresh({
+    onRefresh: loadUpdates
+  });
+
   return (
-    <>
+    <div ref={containerRef}>
+      {isPulling && (
+        <div className="text-center py-2 md:hidden">
+          <RefreshCw className="h-5 w-5 animate-spin mx-auto text-primary" />
+        </div>
+      )}
+      
       <div className="flex justify-end mb-4 md:mb-6">
         <Button onClick={handleCreate} size="sm" className="md:size-default">
           <Plus className="mr-2 h-4 w-4" />
@@ -206,6 +217,6 @@ export default function AdminUpdates() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }

@@ -2,10 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { LoadingSpinner } from '@/components/loading/LoadingSpinner';
-import { TrendingUp, Users, CheckCircle, XCircle } from 'lucide-react';
+import { TrendingUp, Users, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 
 export default function AdminPricing() {
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading, refetch } = useQuery({
     queryKey: ['admin-pricing-stats'],
     queryFn: async () => {
       const { data: allEvents } = await supabase
@@ -39,6 +40,12 @@ export default function AdminPricing() {
     }
   });
 
+  const { containerRef, isRefreshing: isPulling } = usePullToRefresh({
+    onRefresh: async () => {
+      await refetch();
+    }
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -48,8 +55,14 @@ export default function AdminPricing() {
   }
 
   return (
-    <div className="space-y-4 md:space-y-6">
-        {/* KPI Cards */}
+    <div ref={containerRef} className="space-y-4 md:space-y-6">
+      {isPulling && (
+        <div className="text-center py-2 md:hidden">
+          <RefreshCw className="h-5 w-5 animate-spin mx-auto text-primary" />
+        </div>
+      )}
+      
+      {/* KPI Cards */}
         <div className="grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">

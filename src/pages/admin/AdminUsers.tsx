@@ -9,8 +9,9 @@ import { LoadingSpinner } from '@/components/loading/LoadingSpinner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ColorChip } from '@/components/admin/ColorChip';
 import { getEffectiveColor, INTENT_CONFIG } from '@/utils/adminColors';
-import { Filter } from 'lucide-react';
+import { Filter, RefreshCw } from 'lucide-react';
 import { UserDrawer } from '@/components/admin/UserDrawer';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 
 export default function AdminUsers() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -82,6 +83,12 @@ export default function AdminUsers() {
     }
   });
 
+  const { containerRef, isRefreshing: isPulling } = usePullToRefresh({
+    onRefresh: async () => {
+      await refetch();
+    }
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -91,7 +98,13 @@ export default function AdminUsers() {
   }
 
   return (
-    <>
+    <div ref={containerRef}>
+      {isPulling && (
+        <div className="text-center py-2 md:hidden">
+          <RefreshCw className="h-5 w-5 animate-spin mx-auto text-primary" />
+        </div>
+      )}
+      
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 md:gap-3 mb-4 md:mb-6">
         <div className="p-2 md:p-3 rounded-lg border bg-card">
@@ -298,6 +311,6 @@ export default function AdminUsers() {
           onUpdate={refetch}
         />
       )}
-    </>
+    </div>
   );
 }

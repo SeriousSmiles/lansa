@@ -7,6 +7,7 @@ import { Users, TrendingUp, Award, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 
 export default function AdminHome() {
   const { toast } = useToast();
@@ -82,6 +83,12 @@ export default function AdminHome() {
     }
   };
 
+  const { containerRef, isRefreshing: isPulling } = usePullToRefresh({
+    onRefresh: async () => {
+      await refetch();
+    }
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -91,7 +98,14 @@ export default function AdminHome() {
   }
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div ref={containerRef} className="space-y-4 md:space-y-6">
+      {/* Pull to refresh indicator */}
+      {isPulling && (
+        <div className="text-center py-2 md:hidden">
+          <RefreshCw className="h-5 w-5 animate-spin mx-auto text-primary" />
+        </div>
+      )}
+      
       {/* Refresh Button */}
       <div className="flex justify-end">
         <Button 
