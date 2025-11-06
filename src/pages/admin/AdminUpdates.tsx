@@ -91,10 +91,11 @@ export default function AdminUpdates() {
 
   return (
     <>
-      <div className="flex justify-end mb-6">
-        <Button onClick={handleCreate}>
+      <div className="flex justify-end mb-4 md:mb-6">
+        <Button onClick={handleCreate} size="sm" className="md:size-default">
           <Plus className="mr-2 h-4 w-4" />
-          Create Update
+          <span className="hidden sm:inline">Create Update</span>
+          <span className="sm:hidden">Create</span>
         </Button>
       </div>
 
@@ -111,7 +112,7 @@ export default function AdminUpdates() {
           </Button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 md:space-y-4">
           {updates.map((update) => {
             const config = categoryConfig[update.category];
             const IconComponent = update.icon_name && AVAILABLE_ICONS[update.icon_name as keyof typeof AVAILABLE_ICONS]
@@ -120,29 +121,29 @@ export default function AdminUpdates() {
             const isPast = new Date(update.published_at) <= new Date();
 
             return (
-              <div key={update.id} className="border rounded-lg p-4 hover:bg-accent/50 transition-colors">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex gap-3 flex-1">
+              <div key={update.id} className="border rounded-lg p-3 md:p-4 hover:bg-accent/50 transition-colors">
+                <div className="flex items-start justify-between gap-2 md:gap-4">
+                  <div className="flex gap-2 md:gap-3 flex-1 min-w-0">
                     {IconComponent && (
-                      <div className={`flex-shrink-0 w-10 h-10 rounded-full ${config.color} flex items-center justify-center text-white`}>
-                        <IconComponent className="h-5 w-5" />
+                      <div className={`flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full ${config.color} flex items-center justify-center text-white`}>
+                        <IconComponent className="h-4 w-4 md:h-5 md:w-5" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold">{update.title}</h3>
-                        <Badge variant="secondary">{config.label}</Badge>
-                        {update.version && <Badge variant="outline">v{update.version}</Badge>}
-                        <Badge variant={isPast ? 'default' : 'secondary'}>
+                      <div className="flex items-start flex-wrap gap-1 md:gap-2 mb-1">
+                        <h3 className="font-semibold text-sm md:text-base">{update.title}</h3>
+                        <Badge variant="secondary" className="text-xs">{config.label}</Badge>
+                        {update.version && <Badge variant="outline" className="text-xs">v{update.version}</Badge>}
+                        <Badge variant={isPast ? 'default' : 'secondary'} className="text-xs">
                           {isPast ? 'Published' : 'Scheduled'}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">{update.description}</p>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <p className="text-xs md:text-sm text-muted-foreground mb-2">{update.description}</p>
+                      <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 text-xs text-muted-foreground">
                         <span>
                           {isPast
                             ? `Published ${formatDistanceToNow(new Date(update.published_at), { addSuffix: true })}`
-                            : `Scheduled for ${new Date(update.published_at).toLocaleString()}`}
+                            : `Scheduled for ${new Date(update.published_at).toLocaleDateString()}`}
                         </span>
                         {update.link_url && (
                           <a
@@ -157,21 +158,21 @@ export default function AdminUpdates() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col md:flex-row gap-1 md:gap-2">
                     <Button size="sm" variant="outline" onClick={() => handleEdit(update)}>
-                      <Pencil className="h-4 w-4" />
+                      <Pencil className="h-3 w-3 md:h-4 md:w-4" />
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => setDeleteConfirm(update.id)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                     </Button>
                   </div>
                 </div>
                 {update.image_url && (
-                  <img src={update.image_url} alt={update.title} className="mt-3 rounded-md max-h-48 object-cover" />
+                  <img src={update.image_url} alt={update.title} className="mt-2 md:mt-3 rounded-md max-h-32 md:max-h-48 w-full object-cover" />
                 )}
               </div>
             );

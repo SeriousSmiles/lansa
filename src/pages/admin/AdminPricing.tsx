@@ -48,49 +48,49 @@ export default function AdminPricing() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
         {/* KPI Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Hit Wall (7d)</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs md:text-sm font-medium">Wall (7d)</CardTitle>
+              <Users className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.fired7d || 0}</div>
+              <div className="text-xl md:text-2xl font-bold">{stats?.fired7d || 0}</div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Hit Wall (30d)</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs md:text-sm font-medium">Wall (30d)</CardTitle>
+              <Users className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.fired30d || 0}</div>
+              <div className="text-xl md:text-2xl font-bold">{stats?.fired30d || 0}</div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Converted (30d)</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-600" />
+              <CardTitle className="text-xs md:text-sm font-medium">Converted</CardTitle>
+              <CheckCircle className="h-3 w-3 md:h-4 md:w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.converted30d || 0}</div>
+              <div className="text-xl md:text-2xl font-bold">{stats?.converted30d || 0}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                {stats?.conversionRate}% conversion rate
+                {stats?.conversionRate}%
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Ignored (30d)</CardTitle>
-              <XCircle className="h-4 w-4 text-orange-600" />
+              <CardTitle className="text-xs md:text-sm font-medium">Ignored</CardTitle>
+              <XCircle className="h-3 w-3 md:h-4 md:w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.ignored30d || 0}</div>
+              <div className="text-xl md:text-2xl font-bold">{stats?.ignored30d || 0}</div>
             </CardContent>
           </Card>
         </div>
@@ -98,43 +98,70 @@ export default function AdminPricing() {
         {/* Funnel Overview */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Certification Funnel (Last 30 Days)
+            <CardTitle className="flex items-center gap-2 text-sm md:text-base">
+              <TrendingUp className="h-4 w-4 md:h-5 md:w-5" />
+              Certification Funnel (30d)
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="w-32 text-sm font-medium">Reached Wall</div>
-                <div className="flex-1 bg-blue-100 dark:bg-blue-900/20 h-8 rounded flex items-center px-3">
-                  <span className="text-sm font-bold">{stats?.fired30d || 0}</span>
+            <div className="space-y-3 md:space-y-4">
+              <div className="flex items-center gap-2 md:gap-4">
+                <div className="w-20 md:w-32 text-xs md:text-sm font-medium">Wall</div>
+                <div className="flex-1 bg-blue-100 dark:bg-blue-900/20 h-6 md:h-8 rounded flex items-center px-2 md:px-3">
+                  <span className="text-xs md:text-sm font-bold">{stats?.fired30d || 0}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="w-32 text-sm font-medium">Converted</div>
+              <div className="flex items-center gap-2 md:gap-4">
+                <div className="w-20 md:w-32 text-xs md:text-sm font-medium">Paid</div>
                 <div 
-                  className="bg-green-100 dark:bg-green-900/20 h-8 rounded flex items-center px-3"
+                  className="bg-green-100 dark:bg-green-900/20 h-6 md:h-8 rounded flex items-center px-2 md:px-3"
                   style={{ width: `${Math.max((stats?.converted30d || 0) / (stats?.fired30d || 1) * 100, 5)}%` }}
                 >
-                  <span className="text-sm font-bold">{stats?.converted30d || 0}</span>
+                  <span className="text-xs md:text-sm font-bold">{stats?.converted30d || 0}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="w-32 text-sm font-medium">Ignored</div>
+              <div className="flex items-center gap-2 md:gap-4">
+                <div className="w-20 md:w-32 text-xs md:text-sm font-medium">Ignored</div>
                 <div 
-                  className="bg-orange-100 dark:bg-orange-900/20 h-8 rounded flex items-center px-3"
+                  className="bg-orange-100 dark:bg-orange-900/20 h-6 md:h-8 rounded flex items-center px-2 md:px-3"
                   style={{ width: `${Math.max((stats?.ignored30d || 0) / (stats?.fired30d || 1) * 100, 5)}%` }}
                 >
-                  <span className="text-sm font-bold">{stats?.ignored30d || 0}</span>
+                  <span className="text-xs md:text-sm font-bold">{stats?.ignored30d || 0}</span>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Recent Events */}
-        <Card>
+        {/* Recent Events - Mobile: Card List, Desktop: Table */}
+        <div className="md:hidden space-y-2">
+          <h3 className="font-semibold text-sm mb-2">Recent Events</h3>
+          {stats?.recentEvents.slice(0, 20).map((event) => (
+            <Card key={event.id} className="p-3">
+              <div className="flex justify-between items-start mb-2">
+                <span className={`
+                  text-sm font-medium
+                  ${event.outcome === 'paid' ? 'text-green-600' : ''}
+                  ${event.outcome === 'ignored' ? 'text-orange-600' : ''}
+                  ${event.outcome === 'dismissed' ? 'text-red-600' : ''}
+                `}>
+                  {event.outcome}
+                </span>
+                <span className="text-xs text-muted-foreground capitalize">{event.wall}</span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {new Date(event.created_at).toLocaleString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric', 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        <Card className="hidden md:block">
           <CardHeader>
             <CardTitle>Recent Pricing Wall Events</CardTitle>
           </CardHeader>

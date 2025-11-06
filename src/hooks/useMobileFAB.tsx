@@ -11,12 +11,22 @@ export function useMobileFAB() {
     });
   }, [setFabAction]);
 
+  const openQuickActions = () => {
+    setIsQuickActionsOpen(true);
+  };
+
   const closeQuickActions = () => {
     setIsQuickActionsOpen(false);
   };
 
+  const toggleQuickActions = () => {
+    setIsQuickActionsOpen(prev => !prev);
+  };
+
   return {
     isQuickActionsOpen,
-    closeQuickActions
+    openQuickActions,
+    closeQuickActions,
+    toggleQuickActions
   };
 }

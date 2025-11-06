@@ -93,47 +93,47 @@ export default function AdminUsers() {
   return (
     <>
       {/* Stats Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
-        <div className="p-3 rounded-lg border bg-card">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 md:gap-3 mb-4 md:mb-6">
+        <div className="p-2 md:p-3 rounded-lg border bg-card">
           <div className="text-xs text-muted-foreground mb-1">Total</div>
-          <div className="text-2xl font-bold">{stats?.total || 0}</div>
+          <div className="text-xl md:text-2xl font-bold">{stats?.total || 0}</div>
         </div>
-        <div className="p-3 rounded-lg border bg-card">
-          <div className="text-xs text-muted-foreground mb-1">Active (30d)</div>
-          <div className="text-2xl font-bold text-green-600">{stats?.active || 0}</div>
+        <div className="p-2 md:p-3 rounded-lg border bg-card">
+          <div className="text-xs text-muted-foreground mb-1">Active</div>
+          <div className="text-xl md:text-2xl font-bold text-green-600">{stats?.active || 0}</div>
         </div>
-        <div className="p-3 rounded-lg border bg-card">
+        <div className="p-2 md:p-3 rounded-lg border bg-card">
           <div className="text-xs text-muted-foreground mb-1">Certified</div>
-          <div className="text-2xl font-bold text-blue-600">{stats?.certified || 0}</div>
+          <div className="text-xl md:text-2xl font-bold text-blue-600">{stats?.certified || 0}</div>
         </div>
-        <div className="p-3 rounded-lg border bg-purple-50 dark:bg-purple-950/20">
+        <div className="p-2 md:p-3 rounded-lg border bg-purple-50 dark:bg-purple-950/20">
           <div className="text-xs text-purple-700 dark:text-purple-300 mb-1">Purple</div>
-          <div className="text-2xl font-bold text-purple-600">{stats?.colors.purple || 0}</div>
+          <div className="text-xl md:text-2xl font-bold text-purple-600">{stats?.colors.purple || 0}</div>
         </div>
-        <div className="p-3 rounded-lg border bg-green-50 dark:bg-green-950/20">
+        <div className="p-2 md:p-3 rounded-lg border bg-green-50 dark:bg-green-950/20">
           <div className="text-xs text-green-700 dark:text-green-300 mb-1">Green</div>
-          <div className="text-2xl font-bold text-green-600">{stats?.colors.green || 0}</div>
+          <div className="text-xl md:text-2xl font-bold text-green-600">{stats?.colors.green || 0}</div>
         </div>
-        <div className="p-3 rounded-lg border bg-orange-50 dark:bg-orange-950/20">
+        <div className="p-2 md:p-3 rounded-lg border bg-orange-50 dark:bg-orange-950/20">
           <div className="text-xs text-orange-700 dark:text-orange-300 mb-1">Orange</div>
-          <div className="text-2xl font-bold text-orange-600">{stats?.colors.orange || 0}</div>
+          <div className="text-xl md:text-2xl font-bold text-orange-600">{stats?.colors.orange || 0}</div>
         </div>
-        <div className="p-3 rounded-lg border bg-red-50 dark:bg-red-950/20">
+        <div className="p-2 md:p-3 rounded-lg border bg-red-50 dark:bg-red-950/20">
           <div className="text-xs text-red-700 dark:text-red-300 mb-1">Red</div>
-          <div className="text-2xl font-bold text-red-600">{stats?.colors.red || 0}</div>
+          <div className="text-xl md:text-2xl font-bold text-red-600">{stats?.colors.red || 0}</div>
         </div>
       </div>
 
       {/* Search and Filter */}
-      <div className="flex items-center justify-end gap-2 mb-6">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 mb-4 md:mb-6">
         <Input
           placeholder="Search users..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-64"
+          className="w-full md:w-64"
         />
         <Select value={colorFilter} onValueChange={setColorFilter}>
-          <SelectTrigger className="w-40">
+          <SelectTrigger className="w-full md:w-40">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue placeholder="Filter by color" />
           </SelectTrigger>
@@ -147,7 +147,69 @@ export default function AdminUsers() {
         </Select>
       </div>
 
-      <Card>
+      {/* Mobile: Card List, Desktop: Table */}
+      <div className="md:hidden space-y-3">
+        {users?.map((user) => {
+          const effectiveColor = getEffectiveColor(user.color_admin, user.color_auto);
+          return (
+            <Card key={user.user_id} className="p-4">
+              <div className="flex items-start gap-3 mb-3">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={user.profile_image || undefined} />
+                  <AvatarFallback>
+                    {user.name?.substring(0, 2).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">{user.name || 'Unnamed User'}</div>
+                  <div className="text-sm text-muted-foreground truncate">{user.email}</div>
+                </div>
+                {effectiveColor && <ColorChip color={effectiveColor} />}
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                <div>
+                  <span className="text-muted-foreground">Type: </span>
+                  <span>{user.title || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Certified: </span>
+                  {user.certified ? (
+                    <span className="text-green-600 font-medium">✓</span>
+                  ) : (
+                    <span className="text-muted-foreground">No</span>
+                  )}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Intent: </span>
+                  <span className={INTENT_CONFIG[user.intent || 'none'].color}>
+                    {INTENT_CONFIG[user.intent || 'none'].label}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Active: </span>
+                  <span>
+                    {user.last_active_at
+                      ? new Date(user.last_active_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                      : 'Never'}
+                  </span>
+                </div>
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => setSelectedUserId(user.user_id)}
+              >
+                View Details
+              </Button>
+            </Card>
+          );
+        })}
+      </div>
+
+      <Card className="hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="border-b">

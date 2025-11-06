@@ -31,19 +31,19 @@ export default function AdminOrganizations() {
 
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {organizations?.map((org) => (
-          <Card key={org.id} className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary/10 rounded-lg">
-                <Building2 className="h-6 w-6 text-primary" />
+          <Card key={org.id} className="p-4 md:p-6">
+            <div className="flex items-start gap-3 md:gap-4">
+              <div className="p-2 md:p-3 bg-primary/10 rounded-lg flex-shrink-0">
+                <Building2 className="h-5 w-5 md:h-6 md:w-6 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold truncate">{org.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1">
+                <h3 className="font-semibold truncate text-sm md:text-base">{org.name}</h3>
+                <p className="text-xs md:text-sm text-muted-foreground mt-1 truncate">
                   {org.industry || 'No industry set'}
                 </p>
-                <div className="mt-4 space-y-2 text-sm">
+                <div className="mt-3 md:mt-4 space-y-1.5 md:space-y-2 text-xs md:text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Members:</span>
                     <span className="font-medium">
@@ -57,7 +57,7 @@ export default function AdminOrganizations() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Created:</span>
                     <span className="font-medium">
-                      {new Date(org.created_at).toLocaleDateString()}
+                      {new Date(org.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
                     </span>
                   </div>
                 </div>

@@ -91,7 +91,7 @@ export default function AdminHome() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Refresh Button */}
       <div className="flex justify-end">
         <Button 
@@ -101,35 +101,37 @@ export default function AdminHome() {
           size="sm"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-          Refresh Colors
+          <span className="hidden sm:inline">Refresh Colors</span>
+          <span className="sm:hidden">Refresh</span>
         </Button>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+      <div className="grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="col-span-2 md:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>
+            <div className="text-xl md:text-2xl font-bold">{stats?.totalUsers || 0}</div>
           </CardContent>
         </Card>
 
           {Object.entries(COLOR_CONFIG).map(([color, config]) => (
             <Card key={color} className={config.bgClass}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">
-                  <span className="mr-2">{config.pattern}</span>
-                  {config.label}
+                <CardTitle className="text-xs md:text-sm font-medium">
+                  <span className="mr-1 md:mr-2">{config.pattern}</span>
+                  <span className="hidden sm:inline">{config.label}</span>
+                  <span className="sm:hidden">{color}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div className="text-xl md:text-2xl font-bold">
                   {stats?.colorCounts[color as keyof typeof stats.colorCounts] || 0}
                 </div>
-                <p className="text-xs mt-1 opacity-80">
+                <p className="text-xs mt-1 opacity-80 line-clamp-2">
                   {config.description}
                 </p>
               </CardContent>
@@ -138,18 +140,18 @@ export default function AdminHome() {
         </div>
 
         {/* Certification Stats */}
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-3 md:gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-sm md:text-base">
+                <Award className="h-4 w-4 md:h-5 md:w-5" />
                 Certification Status
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
+              <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span>Certified Users</span>
+                  <span>Certified</span>
                   <span className="font-bold">{stats?.certifiedCount || 0}</span>
                 </div>
                 <div className="flex justify-between">
@@ -164,19 +166,19 @@ export default function AdminHome() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-sm md:text-base">
+                <TrendingUp className="h-4 w-4 md:h-5 md:w-5" />
                 Recent Activity
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                {stats?.recentWalls?.length || 0} recent pricing wall events
+                {stats?.recentWalls?.length || 0} recent events
               </p>
               <div className="mt-4 space-y-2">
                 {stats?.recentWalls?.slice(0, 3).map((event) => (
-                  <div key={event.id} className="text-xs text-muted-foreground">
-                    {event.outcome} - {new Date(event.created_at).toLocaleString()}
+                  <div key={event.id} className="text-xs text-muted-foreground truncate">
+                    {event.outcome} - {new Date(event.created_at).toLocaleDateString()}
                   </div>
                 ))}
               </div>
