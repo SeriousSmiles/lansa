@@ -17,13 +17,48 @@ export default function AdminUsers() {
   const [colorFilter, setColorFilter] = useState<string>('all');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
-  const { data: totalCount } = useQuery({
-    queryKey: ['admin-users-count'],
+  const { data: stats } = useQuery({
+    queryKey: ['admin-users-stats'],
     queryFn: async () => {
-      const { count } = await supabase
+      // Get all user profiles for stats
+      const { data: allUsers } = await supabase
         .from('user_profiles')
-        .select('*', { count: 'exact', head: true });
-      return count || 0;
+        .select('certified, color_admin, color_auto, last_active_at');
+
+      if (!allUsers) return null;
+
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const activeUsers = allUsers.filter(u => 
+        u.last_active_at && new Date(u.last_active_at) > thirtyDaysAgo
+      ).length;
+
+      const certifiedUsers = allUsers.filter(u => u.certified).length;
+
+      const colorCounts = {
+        purple: 0,
+        green: 0,
+        orange: 0,
+        red: 0,
+        unassigned: 0
+      };
+
+      allUsers.forEach(user => {
+        const color = getEffectiveColor(user.color_admin, user.color_auto);
+        if (color) {
+          colorCounts[color as keyof typeof colorCounts]++;
+        } else {
+          colorCounts.unassigned++;
+        }
+      });
+
+      return {
+        total: allUsers.length,
+        active: activeUsers,
+        certified: certifiedUsers,
+        colors: colorCounts
+      };
     }
   });
 
@@ -57,11 +92,40 @@ export default function AdminUsers() {
 
   return (
     <>
-      <div className="flex items-center justify-between gap-2 mb-6">
-        <div className="text-sm text-muted-foreground">
-          Total Users: <span className="font-medium">{totalCount}</span>
+      {/* Stats Overview */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
+        <div className="p-3 rounded-lg border bg-card">
+          <div className="text-xs text-muted-foreground mb-1">Total</div>
+          <div className="text-2xl font-bold">{stats?.total || 0}</div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="p-3 rounded-lg border bg-card">
+          <div className="text-xs text-muted-foreground mb-1">Active (30d)</div>
+          <div className="text-2xl font-bold text-green-600">{stats?.active || 0}</div>
+        </div>
+        <div className="p-3 rounded-lg border bg-card">
+          <div className="text-xs text-muted-foreground mb-1">Certified</div>
+          <div className="text-2xl font-bold text-blue-600">{stats?.certified || 0}</div>
+        </div>
+        <div className="p-3 rounded-lg border bg-purple-50 dark:bg-purple-950/20">
+          <div className="text-xs text-purple-700 dark:text-purple-300 mb-1">Purple</div>
+          <div className="text-2xl font-bold text-purple-600">{stats?.colors.purple || 0}</div>
+        </div>
+        <div className="p-3 rounded-lg border bg-green-50 dark:bg-green-950/20">
+          <div className="text-xs text-green-700 dark:text-green-300 mb-1">Green</div>
+          <div className="text-2xl font-bold text-green-600">{stats?.colors.green || 0}</div>
+        </div>
+        <div className="p-3 rounded-lg border bg-orange-50 dark:bg-orange-950/20">
+          <div className="text-xs text-orange-700 dark:text-orange-300 mb-1">Orange</div>
+          <div className="text-2xl font-bold text-orange-600">{stats?.colors.orange || 0}</div>
+        </div>
+        <div className="p-3 rounded-lg border bg-red-50 dark:bg-red-950/20">
+          <div className="text-xs text-red-700 dark:text-red-300 mb-1">Red</div>
+          <div className="text-2xl font-bold text-red-600">{stats?.colors.red || 0}</div>
+        </div>
+      </div>
+
+      {/* Search and Filter */}
+      <div className="flex items-center justify-end gap-2 mb-6">
         <Input
           placeholder="Search users..."
           value={searchQuery}
@@ -81,7 +145,6 @@ export default function AdminUsers() {
             <SelectItem value="red">Red</SelectItem>
           </SelectContent>
         </Select>
-        </div>
       </div>
 
       <Card>
