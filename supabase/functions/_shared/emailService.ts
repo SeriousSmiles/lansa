@@ -4,9 +4,11 @@ import {
   generateRequestNotificationEmail,
   generateApprovalEmail,
   generateRejectionEmail,
+  generateSegmentChangeEmail,
   type InvitationEmailData,
   type RequestEmailData,
-  type ApprovalEmailData
+  type ApprovalEmailData,
+  type SegmentChangeEmailData
 } from "./emailTemplates.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -81,4 +83,22 @@ export async function sendRejectionEmail(organizationName: string, recipientName
   }
 
   console.log(`[emailService] Rejection email sent to ${recipientEmail}`);
+}
+
+export async function sendSegmentChangeEmail(data: SegmentChangeEmailData): Promise<void> {
+  const { subject, html } = generateSegmentChangeEmail(data);
+  
+  const { error } = await resend.emails.send({
+    from: "Lansa <noreply@lansa.app>",
+    to: [data.recipientEmail],
+    subject,
+    html,
+  });
+
+  if (error) {
+    console.error('[emailService] Failed to send segment change email:', error);
+    throw new Error(`Failed to send segment change email: ${error.message}`);
+  }
+
+  console.log(`[emailService] Segment change email sent to ${data.recipientEmail} (${data.oldSegment} → ${data.newSegment})`);
 }

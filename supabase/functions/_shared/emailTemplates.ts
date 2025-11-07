@@ -20,6 +20,14 @@ export interface ApprovalEmailData {
   dashboardUrl: string;
 }
 
+export interface SegmentChangeEmailData {
+  recipientName: string;
+  recipientEmail: string;
+  oldSegment: string | null;
+  newSegment: string;
+  dashboardUrl: string;
+}
+
 export function generateInvitationEmail(data: InvitationEmailData): { subject: string; html: string } {
   return {
     subject: `You're invited to join ${data.organizationName} on Lansa`,
@@ -183,6 +191,115 @@ export function generateRejectionEmail(organizationName: string, recipientName: 
             </div>
             <div class="footer">
               <p><strong>Lansa</strong> - The Future of Hiring</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `
+  };
+}
+
+export function generateSegmentChangeEmail(data: SegmentChangeEmailData): { subject: string; html: string } {
+  const segmentConfig = {
+    purple: {
+      title: '🎉 You\'re an Advocate!',
+      color: '#9333ea',
+      gradient: 'linear-gradient(135deg, #9333ea 0%, #7e22ce 100%)',
+      message: 'Amazing work! You\'ve become one of our top advocates. Your active engagement and diverse use of Lansa features is inspiring.',
+      tips: [
+        'Share your success story with peers',
+        'Help others by mentoring',
+        'Explore advanced features'
+      ]
+    },
+    green: {
+      title: '🌱 You\'re Engaged!',
+      color: '#10b981',
+      gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      message: 'Great to see you actively using Lansa! You\'re getting consistent value from the platform.',
+      tips: [
+        'Try new features you haven\'t explored',
+        'Complete your profile for better opportunities',
+        'Connect with more professionals'
+      ]
+    },
+    orange: {
+      title: '💡 Unlock More Potential',
+      color: '#f59e0b',
+      gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+      message: 'We\'ve noticed you\'re using some features, but there\'s so much more Lansa can offer you.',
+      tips: [
+        'Explore AI-powered profile insights',
+        'Try our job matching feature',
+        'Update your skills and experience',
+        'Complete growth prompts in your dashboard'
+      ]
+    },
+    red: {
+      title: '👋 We Miss You!',
+      color: '#ef4444',
+      gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+      message: 'It\'s been a while since we\'ve seen you on Lansa. We\'ve made improvements and would love to have you back!',
+      tips: [
+        'Check out our new features',
+        'Update your profile to attract opportunities',
+        'See personalized job recommendations',
+        'Connect with your professional network'
+      ]
+    }
+  };
+
+  const config = segmentConfig[data.newSegment as keyof typeof segmentConfig];
+  if (!config) {
+    throw new Error(`Unknown segment: ${data.newSegment}`);
+  }
+
+  const tipsHtml = config.tips.map(tip => `<li style="margin: 8px 0;">${tip}</li>`).join('');
+
+  return {
+    subject: data.newSegment === 'red' ? 'We miss you on Lansa!' : 
+             data.newSegment === 'orange' ? 'Unlock your full potential on Lansa' :
+             data.newSegment === 'green' ? 'Great progress on Lansa!' :
+             'You\'re a Lansa Advocate!',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 0 auto; }
+            .header { background: ${config.gradient}; color: white; padding: 40px 30px; text-align: center; }
+            .header h1 { margin: 0; font-size: 28px; font-weight: 700; }
+            .content { background: #ffffff; padding: 40px 30px; }
+            .content p { margin: 16px 0; font-size: 16px; }
+            .button { display: inline-block; background: ${config.color}; color: white !important; padding: 14px 32px; text-decoration: none; border-radius: 8px; margin: 24px 0; font-weight: 600; font-size: 16px; }
+            .tips-box { background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${config.color}; }
+            .tips-box h3 { margin: 0 0 12px 0; color: ${config.color}; font-size: 18px; }
+            .tips-box ul { margin: 0; padding-left: 24px; }
+            .footer { text-align: center; padding: 30px; color: #6b7280; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>${config.title}</h1>
+            </div>
+            <div class="content">
+              <p>Hi ${data.recipientName},</p>
+              <p>${config.message}</p>
+              <div class="tips-box">
+                <h3>💡 Recommended Actions:</h3>
+                <ul>
+                  ${tipsHtml}
+                </ul>
+              </div>
+              <div style="text-align: center;">
+                <a href="${data.dashboardUrl}" class="button">Go to Your Dashboard</a>
+              </div>
+            </div>
+            <div class="footer">
+              <p><strong>Lansa</strong> - The Future of Hiring</p>
+              <p>Questions? Reply to this email - we're here to help!</p>
             </div>
           </div>
         </body>
