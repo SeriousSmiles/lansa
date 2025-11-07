@@ -2463,6 +2463,12 @@ export type Database = {
         Args: { user_id_param: string }
         Returns: Database["public"]["Enums"]["user_color"]
       }
+      backfill_last_active_at: {
+        Args: never
+        Returns: {
+          users_updated: number
+        }[]
+      }
       check_org_membership: {
         Args: { _organization_id: string; _roles?: string[]; _user_id: string }
         Returns: boolean
