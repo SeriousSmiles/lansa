@@ -1,15 +1,14 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { AdminMobileHeader } from './AdminMobileHeader';
 import { AdminMobileBottomNavigation } from './AdminMobileBottomNavigation';
 import { AdminMobileActionSheet } from './AdminMobileActionSheet';
-import { useMobileFAB } from '@/hooks/useMobileFAB';
 
 interface AdminMobileLayoutProps {
   children: ReactNode;
 }
 
 export function AdminMobileLayout({ children }: AdminMobileLayoutProps) {
-  const { isQuickActionsOpen, closeQuickActions } = useMobileFAB();
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background md:hidden">
@@ -20,7 +19,7 @@ export function AdminMobileLayout({ children }: AdminMobileLayoutProps) {
       <AdminMobileBottomNavigation />
       <AdminMobileActionSheet 
         isOpen={isQuickActionsOpen}
-        onClose={closeQuickActions}
+        onClose={() => setIsQuickActionsOpen(false)}
       />
     </div>
   );
