@@ -16,7 +16,7 @@ export function AdminMobileLayout({ children }: AdminMobileLayoutProps) {
       <main className="pt-14 pb-20 px-4">
         {children}
       </main>
-      <AdminMobileBottomNavigation />
+      <AdminMobileBottomNavigation onOpenQuickActions={() => setIsQuickActionsOpen(true)} />
       <AdminMobileActionSheet 
         isOpen={isQuickActionsOpen}
         onClose={() => setIsQuickActionsOpen(false)}

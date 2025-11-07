@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, Users, Building2, Megaphone, Grid } from "lucide-react";
 import { gsap } from "gsap";
-import { useMobileFAB } from "@/hooks/useMobileFAB";
 
 interface NavItem {
   title: string;
@@ -18,9 +17,8 @@ const navItems: NavItem[] = [
   { title: "More", url: "#more", icon: Grid },
 ];
 
-export function AdminMobileBottomNavigation() {
+export function AdminMobileBottomNavigation({ onOpenQuickActions }: { onOpenQuickActions?: () => void }) {
   const location = useLocation();
-  const { openQuickActions } = useMobileFAB();
   const navRef = useRef<HTMLDivElement>(null);
   const activeIndicatorRef = useRef<HTMLDivElement>(null);
 
@@ -56,7 +54,7 @@ export function AdminMobileBottomNavigation() {
   const handleItemClick = (e: React.MouseEvent<HTMLAnchorElement>, item: NavItem) => {
     if (item.url === '#more') {
       e.preventDefault();
-      openQuickActions();
+      onOpenQuickActions?.();
       return;
     }
     
