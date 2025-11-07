@@ -1480,6 +1480,30 @@ export type Database = {
         }
         Relationships: []
       }
+      segment_email_log: {
+        Row: {
+          email_sent_at: string
+          id: string
+          new_segment: Database["public"]["Enums"]["user_color"]
+          old_segment: Database["public"]["Enums"]["user_color"] | null
+          user_id: string
+        }
+        Insert: {
+          email_sent_at?: string
+          id?: string
+          new_segment: Database["public"]["Enums"]["user_color"]
+          old_segment?: Database["public"]["Enums"]["user_color"] | null
+          user_id: string
+        }
+        Update: {
+          email_sent_at?: string
+          id?: string
+          new_segment?: Database["public"]["Enums"]["user_color"]
+          old_segment?: Database["public"]["Enums"]["user_color"] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       swipes: {
         Row: {
           context: Database["public"]["Enums"]["match_context"]
