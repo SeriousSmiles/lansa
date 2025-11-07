@@ -26,6 +26,7 @@ export function AppShell({ children }: AppShellProps) {
   const isAuthRoute = AUTH_ROUTES.includes(location.pathname);
   const isOnboardingRoute = ONBOARDING_ROUTES.includes(location.pathname);
   const isSharedProfile = location.pathname.startsWith('/profile/share/');
+  const isAdminRoute = location.pathname.startsWith('/admin');
   
   // Landing route disables transforms to preserve sticky on mobile
   const isLanding = location.pathname === "/";
@@ -42,12 +43,14 @@ export function AppShell({ children }: AppShellProps) {
     isAuthRoute, 
     isOnboardingRoute, 
     isSharedProfile,
-    showMobileNavigation: isMobile && !loading && !userStateLoading && user && userType === 'job_seeker' && !isAuthRoute && !isOnboardingRoute && !isSharedProfile 
+    isAdminRoute,
+    showMobileNavigation: isMobile && !loading && !userStateLoading && user && userType === 'job_seeker' && !isAuthRoute && !isOnboardingRoute && !isSharedProfile && !isAdminRoute
   });
   
   // CRITICAL: Only show mobile navigation for job seekers
   // Employers have their own navigation in MobileEmployerTabs
-  const showMobileNavigation = isMobile && !loading && !userStateLoading && user && userType === 'job_seeker' && !isAuthRoute && !isOnboardingRoute && !isSharedProfile;
+  // Admin routes have their own navigation in AdminMobileLayout
+  const showMobileNavigation = isMobile && !loading && !userStateLoading && user && userType === 'job_seeker' && !isAuthRoute && !isOnboardingRoute && !isSharedProfile && !isAdminRoute;
   
   // On desktop, just render children without mobile shell
   if (!isMobile) {
