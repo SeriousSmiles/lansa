@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Canvas as FabricCanvas } from 'fabric';
 import { ResumeDesign } from '@/hooks/resume/useResumeDesign';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,7 @@ export function ResumeCanvas({
 }: ResumeCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricCanvasRef = useRef<FabricCanvas | null>(null);
-  const [zoom, setZoom] = React.useState(1);
+  const [zoom, setZoom] = useState(1);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -93,5 +93,3 @@ export function ResumeCanvas({
     </div>
   );
 }
-
-import * as React from 'react';

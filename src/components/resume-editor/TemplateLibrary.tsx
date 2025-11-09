@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ResumeTemplate } from '@/hooks/resume/useResumeTemplates';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +17,7 @@ export function TemplateLibrary({
   onSelectTemplate
 }: TemplateLibraryProps) {
   const categories = ['all', 'modern', 'professional', 'creative', 'ats'] as const;
-  const [activeCategory, setActiveCategory] = React.useState<typeof categories[number]>('all');
+  const [activeCategory, setActiveCategory] = useState<typeof categories[number]>('all');
 
   const filteredTemplates = templates.filter(t =>
     activeCategory === 'all' || t.category === activeCategory
@@ -93,5 +94,3 @@ export function TemplateLibrary({
     </div>
   );
 }
-
-import * as React from 'react';
