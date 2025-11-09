@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Canvas as FabricCanvas, Rect, Textbox, Line, FabricObject } from 'fabric';
 import { ResumeDesign } from '@/hooks/resume/useResumeDesign';
+import { ProfileDataReturn } from '@/hooks/useProfileData';
 import { Button } from '@/components/ui/button';
 import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -9,12 +10,14 @@ interface ResumeCanvasProps {
   design: ResumeDesign | null;
   canvasState: any;
   onCanvasStateChange: (state: any) => void;
+  profileData: ProfileDataReturn;
 }
 
 export function ResumeCanvas({
   design,
   canvasState,
-  onCanvasStateChange
+  onCanvasStateChange,
+  profileData
 }: ResumeCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricCanvasRef = useRef<FabricCanvas | null>(null);

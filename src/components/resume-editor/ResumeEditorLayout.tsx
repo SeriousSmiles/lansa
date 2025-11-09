@@ -5,6 +5,7 @@ import { PropertiesPanel } from './PropertiesPanel';
 import { EditorToolbar } from './EditorToolbar';
 import { ResumeTemplate } from '@/hooks/resume/useResumeTemplates';
 import { ResumeDesign } from '@/hooks/resume/useResumeDesign';
+import { ProfileDataReturn } from '@/hooks/useProfileData';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -16,6 +17,7 @@ interface ResumeEditorLayoutProps {
   onSave: (design: Partial<ResumeDesign>, designId?: string) => Promise<any>;
   canvasState: any;
   onCanvasStateChange: (state: any) => void;
+  profileData: ProfileDataReturn;
 }
 
 export function ResumeEditorLayout({
@@ -24,7 +26,8 @@ export function ResumeEditorLayout({
   onDesignChange,
   onSave,
   canvasState,
-  onCanvasStateChange
+  onCanvasStateChange,
+  profileData
 }: ResumeEditorLayoutProps) {
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
@@ -98,6 +101,7 @@ export function ResumeEditorLayout({
             design={currentDesign}
             canvasState={canvasState}
             onCanvasStateChange={onCanvasStateChange}
+            profileData={profileData}
           />
         </div>
 

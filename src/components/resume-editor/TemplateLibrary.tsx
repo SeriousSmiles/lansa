@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { FileText } from 'lucide-react';
+import { getTemplateThumbnail } from '@/assets/templates';
 
 interface TemplateLibraryProps {
   templates: ResumeTemplate[];
@@ -61,12 +62,12 @@ export function TemplateLibrary({
           >
             <div className="p-3">
               {/* Thumbnail */}
-              <div className="aspect-[3/4] bg-muted rounded-md mb-3 flex items-center justify-center">
-                {template.thumbnail_url ? (
+              <div className="aspect-[3/4] bg-muted rounded-md mb-3 flex items-center justify-center overflow-hidden">
+                {getTemplateThumbnail(template.thumbnail_url) ? (
                   <img
-                    src={template.thumbnail_url}
+                    src={getTemplateThumbnail(template.thumbnail_url)!}
                     alt={template.name}
-                    className="w-full h-full object-cover rounded-md"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <FileText className="w-12 h-12 text-muted-foreground" />

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useResumeDesign } from '@/hooks/resume/useResumeDesign';
 import { useResumeTemplates } from '@/hooks/resume/useResumeTemplates';
+import { useProfileData } from '@/hooks/useProfileData';
 import { ResumeEditorLayout } from '@/components/resume-editor/ResumeEditorLayout';
 import { Loader2 } from 'lucide-react';
 
@@ -9,9 +10,10 @@ export default function ResumeEditor() {
   const { user } = useAuth();
   const { designs, currentDesign, setCurrentDesign, loading, saveDesign } = useResumeDesign(user?.id);
   const { templates, loading: templatesLoading } = useResumeTemplates();
+  const profileData = useProfileData(user?.id);
   const [canvasState, setCanvasState] = useState<any>(null);
 
-  if (loading || templatesLoading) {
+  if (loading || templatesLoading || profileData.isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
@@ -30,6 +32,7 @@ export default function ResumeEditor() {
       onSave={saveDesign}
       canvasState={canvasState}
       onCanvasStateChange={setCanvasState}
+      profileData={profileData}
     />
   );
 }
