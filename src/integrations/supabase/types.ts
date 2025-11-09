@@ -1447,6 +1447,133 @@ export type Database = {
         }
         Relationships: []
       }
+      resume_designs: {
+        Row: {
+          created_at: string | null
+          design_json: Json
+          id: string
+          is_default: boolean | null
+          name: string
+          template_id: string | null
+          thumbnail_url: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          design_json: Json
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          template_id?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          design_json?: Json
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          template_id?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resume_designs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "resume_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resume_exports: {
+        Row: {
+          created_at: string | null
+          design_id: string | null
+          expires_at: string | null
+          file_hash: string
+          file_url: string
+          format: string
+          id: string
+          options: Json | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          design_id?: string | null
+          expires_at?: string | null
+          file_hash: string
+          file_url: string
+          format: string
+          id?: string
+          options?: Json | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          design_id?: string | null
+          expires_at?: string | null
+          file_hash?: string
+          file_url?: string
+          format?: string
+          id?: string
+          options?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resume_exports_design_id_fkey"
+            columns: ["design_id"]
+            isOneToOne: false
+            referencedRelation: "resume_designs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resume_templates: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          design_json: Json
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          name: string
+          thumbnail_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          design_json: Json
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          name: string
+          thumbnail_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          design_json?: Json
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          name?: string
+          thumbnail_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       security_audit_log: {
         Row: {
           action_type: string
