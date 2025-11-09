@@ -32,6 +32,20 @@ export function ResumeEditorLayout({
 
   const handleApplyTemplate = (template: ResumeTemplate) => {
     setSelectedTemplate(template);
+    
+    // Create a design from the template
+    const newDesign: ResumeDesign = {
+      id: template.id,
+      name: template.name,
+      template_id: template.id,
+      design_json: template.design_json,
+      thumbnail_url: template.thumbnail_url,
+      is_default: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    onDesignChange(newDesign);
     onCanvasStateChange({
       ...canvasState,
       template_id: template.id,
