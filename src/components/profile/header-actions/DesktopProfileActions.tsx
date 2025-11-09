@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { PDFDownloadButton } from "../../pdf/PDFDownloadButton";
-import { IconPalette, IconShare, IconEye, IconDownload, IconMenu2, IconGlobe, IconSettings, IconBolt } from "@tabler/icons-react";
+import { IconPalette, IconShare, IconEye, IconDownload, IconMenu2, IconGlobe, IconSettings, IconBolt, IconEdit } from "@tabler/icons-react";
 import { DesignerSidebar } from "../dialogs/DesignerSidebar";
 import { ShareProfileDialog } from "../dialogs/ShareProfileDialog";
 import { ProfilePreviewModal } from "../dialogs/ProfilePreviewModal";
@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { safeHandler } from "@/config/demo";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useNavigate } from "react-router-dom";
 
 interface DesktopProfileActionsProps {
   userId?: string;
@@ -53,6 +54,7 @@ export function DesktopProfileActions({
   const { userType } = useUserType();
   const profileData = useProfileData(userId);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isProfilePublic, setIsProfilePublic] = useState(false);
   const [isUpdatingPublicStatus, setIsUpdatingPublicStatus] = useState(false);
@@ -202,6 +204,15 @@ export function DesktopProfileActions({
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />
+
+          <DropdownMenuItem onSelect={(e) => {
+            e.preventDefault();
+            setIsDropdownOpen(false);
+            navigate('/profile/resume-editor');
+          }}>
+            <IconEdit className="h-4 w-4 mr-2" />
+            Resume Editor
+          </DropdownMenuItem>
 
           <div className="p-1">
             <PDFDownloadButton

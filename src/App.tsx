@@ -27,6 +27,7 @@ import OpportunityDiscovery from "./pages/OpportunityDiscovery";
 import ProfileStarter from "./pages/ProfileStarter";
 import Profile from "./pages/Profile";
 import SharedProfile from "./pages/SharedProfile";
+import ResumeEditor from "./pages/ResumeEditor";
 import Dashboard from "./pages/Dashboard";
 import BrowseCandidates from "./pages/BrowseCandidates";
 import EmployerDashboard from "./pages/EmployerDashboard";
@@ -144,6 +145,14 @@ const App: React.FC = () => {
                       <RequireOnboarding soft={false}>
                         <RequireUserType allowedTypes={['job_seeker']}>
                           <Profile />
+                        </RequireUserType>
+                      </RequireOnboarding>
+                    } />
+                    
+                    <Route path="/profile/resume-editor" element={
+                      <RequireOnboarding soft={false}>
+                        <RequireUserType allowedTypes={['job_seeker']}>
+                          <ResumeEditor />
                         </RequireUserType>
                       </RequireOnboarding>
                     } />
