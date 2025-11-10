@@ -73,7 +73,10 @@ export function ProfessionalGoalWithAI({
       toast.success("AI suggestion generated!");
     } catch (error) {
       console.error("Error generating AI suggestion:", error);
-      toast.error("Failed to generate AI suggestion");
+      toast.error(
+        "AI enhancement temporarily unavailable. Please try again later.",
+        { description: "If this persists, contact support." }
+      );
       setShowAI(false);
     } finally {
       setIsLoadingAI(false);

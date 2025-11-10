@@ -79,13 +79,14 @@ export function DashboardTabs({
           >
             Overview
           </TabsTrigger>
-          <TabsTrigger 
+          {/* Story Builder - Hidden until feature is complete */}
+          {/* <TabsTrigger 
             value="storybuilder" 
             className="flex items-center gap-1.5 btn-animate data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground hover:text-foreground"
           >
             <span>Story Builder</span>
             <Badge variant="secondary" className="text-xs px-1.5 py-0.5 bg-primary/10 text-primary border-0">Beta</Badge>
-          </TabsTrigger>
+          </TabsTrigger> */}
           {!checkingCert && isCertified && (
             <TabsTrigger 
               value="preferences" 
@@ -107,9 +108,10 @@ export function DashboardTabs({
           />
         </TabsContent>
         
-        <TabsContent value="storybuilder" className="pt-4 animate-fade-in">
+        {/* Story Builder Tab - Hidden until feature is complete */}
+        {/* <TabsContent value="storybuilder" className="pt-4 animate-fade-in">
           <StoryBuilderTab />
-        </TabsContent>
+        </TabsContent> */}
         
         {isCertified && (
           <TabsContent value="preferences" className="pt-4 animate-fade-in">

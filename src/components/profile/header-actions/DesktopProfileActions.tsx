@@ -205,14 +205,15 @@ export function DesktopProfileActions({
 
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem onSelect={(e) => {
+          {/* Resume Editor - Hidden until feature is complete */}
+          {/* <DropdownMenuItem onSelect={(e) => {
             e.preventDefault();
             setIsDropdownOpen(false);
             navigate('/profile/resume-editor');
           }}>
             <IconEdit className="h-4 w-4 mr-2" />
             Resume Editor
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
 
           <div className="p-1">
             <PDFDownloadButton

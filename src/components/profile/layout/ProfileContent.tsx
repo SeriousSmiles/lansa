@@ -103,10 +103,10 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
           userId={profile.user?.id}
         />
         
-        {/* Open Market Button */}
-        <div className="mt-6">
+        {/* Open Market Button - Hidden until feature is complete */}
+        {/* <div className="mt-6">
           <OpenMarketButton highlightColor={profile.highlightColor} />
-        </div>
+        </div> */}
       </div>
       
       {/* Right Column - Experience & Education */}

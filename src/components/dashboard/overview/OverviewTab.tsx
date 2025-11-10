@@ -1,8 +1,8 @@
 
-import { RecommendedActions } from "./RecommendedActions";
+// import { RecommendedActions } from "./RecommendedActions";
 import { GrowthCardSection } from "./GrowthCardSection";
 import { StudentAnalyticsCard } from "./StudentAnalyticsCard";
-import { HireRateProgress } from "../HireRateProgress";
+// import { HireRateProgress } from "../HireRateProgress";
 import { CertificationCard } from "./CertificationCard";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -20,21 +20,18 @@ export function OverviewTab({ userName, role, goal, insight, highlightActions, i
 
   return (
     <div className="space-y-6">
-      {/* Analytics and Progress Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2">
-          <StudentAnalyticsCard />
-        </div>
-        <div className="space-y-4">
-          <HireRateProgress />
-          <CertificationCard />
-        </div>
+      {/* Analytics and Certification Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <StudentAnalyticsCard />
+        <CertificationCard />
       </div>
       
-      {/* Existing Overview Content */}
-      <div>
-        <RecommendedActions role={role} highlightActions={highlightActions} />
-      </div>
+      {/* Growth Card Section */}
+      <GrowthCardSection userId={user?.id} />
+      
+      {/* Hidden incomplete features */}
+      {/* <HireRateProgress /> */}
+      {/* <RecommendedActions role={role} highlightActions={highlightActions} /> */}
     </div>
   );
 }
