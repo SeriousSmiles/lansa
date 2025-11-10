@@ -1,73 +1,102 @@
 import { useState } from 'react';
-import { TemplateLibrary } from './TemplateLibrary';
 import { ResumeCanvas } from './ResumeCanvas';
 import { PropertiesPanel } from './PropertiesPanel';
 import { EditorToolbar } from './EditorToolbar';
-import { ResumeTemplate } from '@/hooks/resume/useResumeTemplates';
-import { ResumeDesign } from '@/hooks/resume/useResumeDesign';
+import { SectionLibrary } from './SectionLibrary';
+import { AddSectionModal } from './AddSectionModal';
 import { ProfileDataReturn } from '@/hooks/useProfileData';
+import { SectionInstance, GlobalStyles, SectionComponentType } from '@/types/resumeSection';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useResumeSections } from '@/hooks/resume/useResumeSections';
 
 interface ResumeEditorLayoutProps {
-  templates: ResumeTemplate[];
-  currentDesign: ResumeDesign | null;
-  onDesignChange: (design: ResumeDesign | null) => void;
-  onSave: (design: Partial<ResumeDesign>, designId?: string) => Promise<any>;
-  canvasState: any;
-  onCanvasStateChange: (state: any) => void;
   profileData: ProfileDataReturn;
+  resumeDesignId?: string;
 }
 
 export function ResumeEditorLayout({
-  templates,
-  currentDesign,
-  onDesignChange,
-  onSave,
-  canvasState,
-  onCanvasStateChange,
-  profileData
+  profileData,
+  resumeDesignId
 }: ResumeEditorLayoutProps) {
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
-  const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate | null>(null);
+  const [showAddSectionModal, setShowAddSectionModal] = useState(false);
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
 
-  const handleApplyTemplate = (template: ResumeTemplate) => {
-    setSelectedTemplate(template);
-    
-    // Create a design from the template
-    const newDesign: ResumeDesign = {
-      id: template.id,
-      name: template.name,
-      template_id: template.id,
-      design_json: template.design_json,
-      thumbnail_url: template.thumbnail_url,
-      is_default: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+  const { sectionComponents, sectionInstances, setSectionInstances } = useResumeSections(resumeDesignId);
+
+  // Global styles state
+  const [globalStyles, setGlobalStyles] = useState<GlobalStyles>({
+    fontFamily: 'Inter',
+    primaryColor: '#000000',
+    secondaryColor: '#666666',
+    baseFontSize: 12
+  });
+
+  // Initialize with header section if no sections exist
+  const sections: SectionInstance[] = sectionInstances.length > 0 
+    ? sectionInstances 
+    : [
+        {
+          id: 'header-default',
+          component_type: 'header',
+          position: 0,
+          is_visible: true,
+          layout_config: { width: 'full' }
+        }
+      ];
+
+  const handleAddSection = (componentType: SectionComponentType) => {
+    const newSection: SectionInstance = {
+      id: `section-${Date.now()}`,
+      component_type: componentType,
+      position: sections.length,
+      is_visible: true,
+      layout_config: { width: 'full' }
     };
+
+    setSectionInstances([...sections, newSection]);
+    setShowAddSectionModal(false);
+  };
+
+  const handleDeleteSection = (sectionId: string) => {
+    const updatedSections = sections
+      .filter(s => s.id !== sectionId)
+      .map((s, index) => ({ ...s, position: index }));
+    setSectionInstances(updatedSections);
+  };
+
+  const handleReorderSections = (fromIndex: number, toIndex: number) => {
+    const reordered = [...sections];
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
     
-    onDesignChange(newDesign);
-    onCanvasStateChange({
-      ...canvasState,
-      template_id: template.id,
-      design_json: template.design_json
-    });
+    const updated = reordered.map((section, index) => ({
+      ...section,
+      position: index
+    }));
+    
+    setSectionInstances(updated);
+  };
+
+  const handleSave = async () => {
+    // TODO: Implement save functionality
+    console.log('Saving resume...', sections);
   };
 
   return (
     <div className="h-screen flex flex-col bg-background">
       {/* Toolbar */}
       <EditorToolbar
-        currentDesign={currentDesign}
-        onSave={onSave}
-        canvasState={canvasState}
+        onSave={handleSave}
+        sections={sections}
       />
 
       {/* Main Editor Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Template Library */}
+        {/* Left Panel - Section Library */}
         <div
           className={cn(
             "border-r border-border bg-card transition-all duration-300",
@@ -76,10 +105,12 @@ export function ResumeEditorLayout({
         >
           {leftPanelOpen && (
             <div className="h-full overflow-y-auto p-4">
-              <TemplateLibrary
-                templates={templates}
-                selectedTemplate={selectedTemplate}
-                onSelectTemplate={handleApplyTemplate}
+              <SectionLibrary
+                sectionComponents={sectionComponents}
+                currentSections={sections}
+                onAddSectionClick={() => setShowAddSectionModal(true)}
+                onDeleteSection={handleDeleteSection}
+                onReorderSections={handleReorderSections}
               />
             </div>
           )}
@@ -98,10 +129,11 @@ export function ResumeEditorLayout({
         {/* Center Panel - Canvas */}
         <div className="flex-1 bg-muted/30 relative">
           <ResumeCanvas
-            design={currentDesign}
-            canvasState={canvasState}
-            onCanvasStateChange={onCanvasStateChange}
+            sections={sections}
+            onSectionsChange={setSectionInstances}
             profileData={profileData}
+            globalStyles={globalStyles}
+            onAddSectionClick={() => setShowAddSectionModal(true)}
           />
         </div>
 
@@ -125,13 +157,30 @@ export function ResumeEditorLayout({
           {rightPanelOpen && (
             <div className="h-full overflow-y-auto p-4">
               <PropertiesPanel
-                canvasState={canvasState}
-                onCanvasStateChange={onCanvasStateChange}
+                selectedSection={sections.find(s => s.id === selectedSectionId) || null}
+                globalStyles={globalStyles}
+                onGlobalStylesChange={setGlobalStyles}
+                onSectionUpdate={(updates) => {
+                  if (selectedSectionId) {
+                    const updated = sections.map(s => 
+                      s.id === selectedSectionId ? { ...s, ...updates } : s
+                    );
+                    setSectionInstances(updated);
+                  }
+                }}
               />
             </div>
           )}
         </div>
       </div>
+
+      {/* Add Section Modal */}
+      <AddSectionModal
+        isOpen={showAddSectionModal}
+        onClose={() => setShowAddSectionModal(false)}
+        sectionComponents={sectionComponents}
+        onSelectSection={handleAddSection}
+      />
     </div>
   );
 }

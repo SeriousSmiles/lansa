@@ -1,97 +1,81 @@
 import { useEffect, useRef, useState } from 'react';
-import { Canvas as FabricCanvas, Rect, Textbox, Line, FabricObject } from 'fabric';
-import { ResumeDesign } from '@/hooks/resume/useResumeDesign';
+import { Canvas as FabricCanvas } from 'fabric';
+import { SectionInstance, GlobalStyles } from '@/types/resumeSection';
 import { ProfileDataReturn } from '@/hooks/useProfileData';
 import { Button } from '@/components/ui/button';
-import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize2, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { mapProfileToSection, calculateSectionHeight } from '@/lib/profileToCanvasMapper';
+import { getSectionTemplate } from '@/lib/resumeSectionTemplates';
 
 interface ResumeCanvasProps {
-  design: ResumeDesign | null;
-  canvasState: any;
-  onCanvasStateChange: (state: any) => void;
+  sections: SectionInstance[];
+  onSectionsChange: (sections: SectionInstance[]) => void;
   profileData: ProfileDataReturn;
+  globalStyles: GlobalStyles;
+  onAddSectionClick: () => void;
 }
 
 export function ResumeCanvas({
-  design,
-  canvasState,
-  onCanvasStateChange,
-  profileData
+  sections,
+  onSectionsChange,
+  profileData,
+  globalStyles,
+  onAddSectionClick
 }: ResumeCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricCanvasRef = useRef<FabricCanvas | null>(null);
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(0.8);
   const { toast } = useToast();
 
-  const createFabricObject = (objData: any): FabricObject | null => {
-    try {
-      switch (objData.type) {
-        case 'rect':
-          return new Rect({
-            left: objData.left || 0,
-            top: objData.top || 0,
-            width: objData.width || 100,
-            height: objData.height || 100,
-            fill: objData.fill || '#000000',
-            selectable: objData.selectable !== false,
-          });
+  // A4 dimensions at 96 DPI
+  const CANVAS_WIDTH = 794;
+  const CANVAS_HEIGHT = 1123;
 
-        case 'textbox':
-          return new Textbox(objData.text || '', {
-            left: objData.left || 0,
-            top: objData.top || 0,
-            width: objData.width || 200,
-            fontSize: objData.fontSize || 16,
-            fontFamily: objData.fontFamily || 'Arial',
-            fontWeight: objData.fontWeight || 'normal',
-            fontStyle: objData.fontStyle || 'normal',
-            fill: objData.fill || '#000000',
-            textAlign: objData.textAlign || 'left',
-            lineHeight: objData.lineHeight || 1.16,
-            editable: objData.editable !== false,
-            selectable: objData.editable !== false,
-          });
-
-        case 'line':
-          return new Line(
-            [objData.x1 || 0, objData.y1 || 0, objData.x2 || 100, objData.y2 || 0],
-            {
-              left: objData.left || 0,
-              top: objData.top || 0,
-              stroke: objData.stroke || '#000000',
-              strokeWidth: objData.strokeWidth || 1,
-              selectable: objData.selectable !== false,
-            }
-          );
-
-        default:
-          console.warn(`Unknown object type: ${objData.type}`);
-          return null;
-      }
-    } catch (error) {
-      console.error('Error creating Fabric object:', error);
-      return null;
-    }
-  };
-
-  const renderDesignOnCanvas = (canvas: FabricCanvas, designJson: any) => {
+  const renderSectionsOnCanvas = (canvas: FabricCanvas) => {
     // Clear existing objects
     canvas.clear();
     canvas.backgroundColor = '#ffffff';
 
-    if (!designJson || !designJson.objects) {
-      console.warn('No design objects to render');
-      return;
-    }
+    let currentY = 40; // Top margin
 
-    // Create and add each object to canvas
-    designJson.objects.forEach((objData: any) => {
-      const fabricObj = createFabricObject(objData);
-      if (fabricObj) {
-        canvas.add(fabricObj);
+    // Sort sections by position
+    const sortedSections = [...sections].sort((a, b) => a.position - b.position);
+
+    sortedSections.forEach((section) => {
+      if (!section.is_visible) return;
+
+      try {
+        const template = getSectionTemplate(section.component_type);
+        const objects = mapProfileToSection(
+          section.component_type,
+          profileData,
+          template,
+          currentY
+        );
+
+        // Add all objects for this section
+        objects.forEach((obj) => {
+          canvas.add(obj);
+        });
+
+        // Calculate height for next section
+        const sectionHeight = calculateSectionHeight(
+          section.component_type,
+          profileData,
+          template
+        );
+        currentY += sectionHeight + 25; // 25px spacing between sections
+      } catch (error) {
+        console.error(`Error rendering section ${section.component_type}:`, error);
       }
     });
+
+    // Add "Add Section" button area if there's space
+    if (currentY < CANVAS_HEIGHT - 100) {
+      // This will be replaced with a proper interactive element later
+      // For now, just leave space
+    }
 
     canvas.renderAll();
   };
@@ -101,61 +85,44 @@ export function ResumeCanvas({
 
     // Initialize Fabric.js canvas
     const canvas = new FabricCanvas(canvasRef.current, {
-      width: 794, // A4 width in pixels at 96 DPI
-      height: 1123, // A4 height in pixels at 96 DPI
+      width: CANVAS_WIDTH,
+      height: CANVAS_HEIGHT,
       backgroundColor: '#ffffff',
     });
 
     fabricCanvasRef.current = canvas;
 
-    // Load design if exists
-    if (design?.design_json) {
-      try {
-        renderDesignOnCanvas(canvas, design.design_json);
-        toast({
-          title: 'Template loaded',
-          description: `Loaded template: ${design.name}`,
-        });
-      } catch (error) {
-        console.error('Error rendering design:', error);
-        toast({
-          title: 'Error loading template',
-          description: 'Failed to render template design',
-          variant: 'destructive',
-        });
-      }
-    }
+    // Initial render
+    renderSectionsOnCanvas(canvas);
 
     // Save canvas state when objects are modified
     canvas.on('object:modified', () => {
-      if (onCanvasStateChange) {
-        onCanvasStateChange(canvas.toJSON());
-      }
+      // Handle section updates here
+      console.log('Canvas modified');
     });
 
     return () => {
       canvas.dispose();
     };
-  }, [design]);
+  }, []);
+
+  // Re-render when sections or profile data changes
+  useEffect(() => {
+    if (fabricCanvasRef.current) {
+      renderSectionsOnCanvas(fabricCanvasRef.current);
+    }
+  }, [sections, profileData, globalStyles]);
 
   const handleZoomIn = () => {
-    const newZoom = Math.min(zoom + 0.1, 2);
-    setZoom(newZoom);
-    fabricCanvasRef.current?.setZoom(newZoom);
-    fabricCanvasRef.current?.renderAll();
+    setZoom((prev) => Math.min(prev + 0.1, 2));
   };
 
   const handleZoomOut = () => {
-    const newZoom = Math.max(zoom - 0.1, 0.5);
-    setZoom(newZoom);
-    fabricCanvasRef.current?.setZoom(newZoom);
-    fabricCanvasRef.current?.renderAll();
+    setZoom((prev) => Math.max(prev - 0.1, 0.3));
   };
 
   const handleResetZoom = () => {
-    setZoom(1);
-    fabricCanvasRef.current?.setZoom(1);
-    fabricCanvasRef.current?.renderAll();
+    setZoom(0.8);
   };
 
   return (
@@ -176,16 +143,44 @@ export function ResumeCanvas({
             <Maximize2 className="w-4 h-4" />
           </Button>
         </div>
+        
+        <Button size="sm" onClick={onAddSectionClick}>
+          <Plus className="w-4 h-4 mr-1" />
+          Add Section
+        </Button>
       </div>
 
-      {/* Canvas Area */}
-      <div className="flex-1 overflow-auto p-8">
+      {/* Canvas Area with Zoom Container */}
+      <div className="flex-1 overflow-auto p-8 bg-muted/30">
         <div className="flex items-center justify-center min-h-full">
-          <div className="shadow-2xl">
-            <canvas ref={canvasRef} />
+          <div
+            style={{
+              transform: `scale(${zoom})`,
+              transformOrigin: 'center center',
+              transition: 'transform 0.2s ease-out',
+            }}
+          >
+            <div className="shadow-2xl bg-white" style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
+              <canvas ref={canvasRef} />
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Empty State Helper */}
+      {sections.length === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="text-center space-y-4 max-w-md pointer-events-auto">
+            <div className="text-muted-foreground text-lg">
+              Start building your resume
+            </div>
+            <Button onClick={onAddSectionClick} size="lg">
+              <Plus className="w-5 h-5 mr-2" />
+              Add Your First Section
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

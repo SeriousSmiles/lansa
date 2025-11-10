@@ -1,47 +1,33 @@
 import { Button } from '@/components/ui/button';
-import { ResumeDesign } from '@/hooks/resume/useResumeDesign';
-import { useResumeExport } from '@/hooks/resume/useResumeExport';
-import { Save, Download, Eye, Home } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Save, Download, Home } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useNavigate } from 'react-router-dom';
+import { SectionInstance } from '@/types/resumeSection';
 
 interface EditorToolbarProps {
-  currentDesign: ResumeDesign | null;
-  onSave: (design: Partial<ResumeDesign>, designId?: string) => Promise<any>;
-  canvasState: any;
+  onSave: () => void;
+  sections: SectionInstance[];
 }
 
-export function EditorToolbar({
-  currentDesign,
-  onSave,
-  canvasState
-}: EditorToolbarProps) {
+export function EditorToolbar({ onSave, sections }: EditorToolbarProps) {
   const navigate = useNavigate();
-  const { exportResume, isExporting } = useResumeExport();
 
   const handleSave = async () => {
-    if (!canvasState) return;
-
-    await onSave(
-      {
-        name: currentDesign?.name || 'My Resume',
-        design_json: canvasState,
-      },
-      currentDesign?.id
-    );
+    try {
+      await onSave();
+    } catch (error) {
+      console.error('Error saving resume:', error);
+    }
   };
 
   const handleExport = async (format: 'pdf' | 'png' | 'jpeg') => {
-    await exportResume(currentDesign?.id, canvasState, {
-      format,
-      dpi: 300,
-      include_photo: true
-    });
+    // TODO: Implement export functionality
+    console.log(`Exporting as ${format}`, sections);
   };
 
   return (
@@ -73,7 +59,7 @@ export function EditorToolbar({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" disabled={isExporting}>
+            <Button size="sm">
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
