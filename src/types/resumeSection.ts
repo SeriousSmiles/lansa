@@ -41,17 +41,55 @@ export interface LayoutConfig {
   alignment?: 'left' | 'center' | 'right';
 }
 
+export type ZoneName = 'header' | 'leftSidebar' | 'main' | 'rightSidebar' | 'footer';
+export type LayoutStructure = 'single' | 'two-column' | 'three-column' | 'sidebar-left' | 'sidebar-right';
+
+export interface ZoneConfig {
+  width: number;
+  minWidth?: number;
+  maxWidth?: number;
+  sections: string[];
+}
+
+export interface PageLayoutConfig {
+  structure: LayoutStructure;
+  zones: {
+    header?: ZoneConfig;
+    leftSidebar?: ZoneConfig;
+    main?: ZoneConfig;
+    rightSidebar?: ZoneConfig;
+    footer?: ZoneConfig;
+  };
+}
+
 export interface SectionInstance {
   id: string;
   resume_design_id?: string;
   component_type: SectionComponentType;
   position: number;
+  zone: ZoneName;
+  width: 'full' | 'half' | 'third';
   custom_design_json?: any;
   custom_data?: any;
   is_visible: boolean;
   layout_config: LayoutConfig;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface SectionBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fabricObjects?: any[];
+}
+
+export interface ZoneBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 export interface GlobalStyles {
@@ -62,10 +100,12 @@ export interface GlobalStyles {
 }
 
 export interface LayoutSettings {
+  structure: LayoutStructure;
   columns: number;
   spacing: 'compact' | 'medium' | 'spacious';
   margins: 'narrow' | 'standard' | 'wide';
   pageSize: 'A4' | 'Letter';
+  zones?: PageLayoutConfig['zones'];
 }
 
 export interface SectionLayout {

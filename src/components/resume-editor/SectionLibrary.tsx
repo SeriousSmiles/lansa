@@ -1,23 +1,38 @@
+import { SectionInstance, SectionComponent, LayoutStructure, ZoneName } from '@/types/resumeSection';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { SectionComponent, SectionInstance } from '@/types/resumeSection';
-import { Plus, GripVertical, Trash2, Eye, EyeOff } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Plus, Trash2, Eye, EyeOff, GripVertical, MoveHorizontal } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface SectionLibraryProps {
+  sections: SectionInstance[];
   sectionComponents: SectionComponent[];
-  currentSections: SectionInstance[];
-  onAddSectionClick: () => void;
+  layoutStructure: LayoutStructure;
+  onAddSection: () => void;
   onDeleteSection: (sectionId: string) => void;
-  onReorderSections: (fromIndex: number, toIndex: number) => void;
+  onReorderSections: (sections: SectionInstance[]) => void;
+  onSectionZoneChange: (sectionId: string, newZone: string) => void;
+  selectedSectionId: string | null;
+  onSectionSelect: (sectionId: string | null) => void;
 }
 
 export function SectionLibrary({
+  sections,
   sectionComponents,
-  currentSections,
-  onAddSectionClick,
+  layoutStructure,
+  onAddSection,
   onDeleteSection,
-  onReorderSections
+  onReorderSections,
+  onSectionZoneChange,
+  selectedSectionId,
+  onSectionSelect
 }: SectionLibraryProps) {
   
   const getSectionName = (type: string) => {
@@ -25,81 +40,169 @@ export function SectionLibrary({
     return component?.name || type;
   };
 
+  const getZoneName = (zone: ZoneName) => {
+    const names: Record<ZoneName, string> = {
+      header: 'Header',
+      leftSidebar: 'Left Sidebar',
+      main: 'Main',
+      rightSidebar: 'Right Sidebar',
+      footer: 'Footer'
+    };
+    return names[zone] || zone;
+  };
+
+  const getAvailableZones = (): ZoneName[] => {
+    switch (layoutStructure) {
+      case 'single':
+        return ['header', 'main'];
+      case 'sidebar-left':
+      case 'two-column':
+        return ['header', 'leftSidebar', 'main'];
+      case 'sidebar-right':
+        return ['header', 'main', 'rightSidebar'];
+      case 'three-column':
+        return ['header', 'leftSidebar', 'main', 'rightSidebar'];
+      default:
+        return ['header', 'main'];
+    }
+  };
+
+  const sectionsByZone = sections.reduce((acc, section) => {
+    const zone = section.zone || 'main';
+    if (!acc[zone]) acc[zone] = [];
+    acc[zone].push(section);
+    return acc;
+  }, {} as Record<string, SectionInstance[]>);
+
+  const availableZones = getAvailableZones();
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Resume Sections</h2>
-        <Button onClick={onAddSectionClick} size="sm">
-          <Plus className="w-4 h-4 mr-1" />
-          Add
+    <div className="h-full flex flex-col">
+      <div className="p-4 border-b border-border">
+        <h2 className="text-lg font-semibold mb-2">Resume Sections</h2>
+        <Button onClick={onAddSection} className="w-full" size="sm">
+          <Plus className="w-4 h-4 mr-2" />
+          Add Section
         </Button>
       </div>
 
-      {/* Current Sections */}
-      <div className="space-y-2">
-        <h3 className="text-sm font-medium text-muted-foreground">Current Sections</h3>
-        <ScrollArea className="h-[calc(100vh-300px)]">
-          <div className="space-y-2">
-            {currentSections.length === 0 ? (
-              <Card className="p-4 text-center text-sm text-muted-foreground">
-                No sections yet. Click "Add" to get started.
-              </Card>
-            ) : (
-              currentSections
-                .sort((a, b) => a.position - b.position)
-                .map((section) => (
-                  <Card key={section.id} className="p-3">
-                    <div className="flex items-center gap-2">
-                      <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
-                      <div className="flex-1">
-                        <div className="font-medium text-sm">
-                          {getSectionName(section.component_type)}
+      <ScrollArea className="flex-1">
+        <div className="p-4 space-y-4">
+          {availableZones.map(zoneName => {
+            const zoneSections = sectionsByZone[zoneName] || [];
+            if (zoneSections.length === 0) return null;
+
+            return (
+              <div key={zoneName} className="space-y-2">
+                <Label className="text-xs font-semibold text-muted-foreground uppercase">
+                  {getZoneName(zoneName)}
+                </Label>
+                
+                <div className="space-y-2">
+                  {zoneSections.map((section) => (
+                    <div
+                      key={section.id}
+                      className={`group p-3 border border-border rounded-lg transition-all hover:border-primary cursor-pointer ${
+                        selectedSectionId === section.id ? 'border-primary bg-primary/5' : ''
+                      }`}
+                      onClick={() => onSectionSelect(section.id)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 flex-1">
+                          <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">
+                              {getSectionName(section.component_type)}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Width: {section.width}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          onClick={() => {
-                            // Toggle visibility
-                          }}
-                        >
-                          {section.is_visible ? (
-                            <Eye className="w-3 h-3" />
-                          ) : (
-                            <EyeOff className="w-3 h-3" />
-                          )}
-                        </Button>
-                        {section.component_type !== 'header' && (
+
+                        <div className="flex items-center gap-1">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <MoveHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {availableZones.map(zone => (
+                                <DropdownMenuItem
+                                  key={zone}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onSectionZoneChange(section.id, zone);
+                                  }}
+                                >
+                                  Move to {getZoneName(zone)}
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+
                           <Button
                             variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-destructive"
-                            onClick={() => onDeleteSection(section.id)}
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onReorderSections(
+                                sections.map(s =>
+                                  s.id === section.id
+                                    ? { ...s, is_visible: !s.is_visible }
+                                    : s
+                                )
+                              );
+                            }}
                           >
-                            <Trash2 className="w-3 h-3" />
+                            {section.is_visible ? (
+                              <Eye className="w-4 h-4" />
+                            ) : (
+                              <EyeOff className="w-4 h-4" />
+                            )}
                           </Button>
-                        )}
+
+                          {section.component_type !== 'header' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteSection(section.id);
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </Card>
-                ))
-            )}
-          </div>
-        </ScrollArea>
-      </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
 
-      {/* Quick Actions */}
-      <div className="pt-4 border-t border-border">
-        <div className="text-xs text-muted-foreground mb-2">Quick Actions</div>
-        <div className="space-y-1">
-          <Button variant="outline" size="sm" className="w-full justify-start text-xs">
-            Design & Font
-          </Button>
-          <Button variant="outline" size="sm" className="w-full justify-start text-xs">
-            Rearrange Sections
-          </Button>
+          {sections.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground text-sm">
+              No sections yet. Click "Add Section" to get started.
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+
+      <Separator />
+      
+      <div className="p-4">
+        <div className="text-xs text-muted-foreground space-y-1">
+          <div>• Click sections to edit</div>
+          <div>• Use <MoveHorizontal className="w-3 h-3 inline" /> to move between zones</div>
+          <div>• Drag sections to reorder</div>
         </div>
       </div>
     </div>

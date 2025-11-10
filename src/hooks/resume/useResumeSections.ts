@@ -57,7 +57,15 @@ export const useResumeSections = (resumeDesignId?: string) => {
 
       if (error) throw error;
 
-      setSectionInstances((data as SectionInstance[]) || []);
+      setSectionInstances((data || []).map(item => ({
+        ...item,
+        zone: (item as any).zone || 'main',
+        width: (item as any).width || 'full',
+        component_type: item.component_type as SectionComponentType,
+        layout_config: item.layout_config as any,
+        custom_design_json: item.custom_design_json as any,
+        custom_data: item.custom_data as any
+      })));
     } catch (error) {
       console.error('Error loading section instances:', error);
       toast({
@@ -86,6 +94,8 @@ export const useResumeSections = (resumeDesignId?: string) => {
             resume_design_id: designId,
             component_type: section.component_type,
             position: section.position,
+            zone: (section as any).zone || 'main',
+            width: (section as any).width || 'full',
             custom_design_json: section.custom_design_json as any,
             custom_data: section.custom_data as any,
             is_visible: section.is_visible,
