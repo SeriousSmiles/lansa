@@ -1451,8 +1451,10 @@ export type Database = {
         Row: {
           created_at: string | null
           design_json: Json
+          global_styles: Json | null
           id: string
           is_default: boolean | null
+          layout_settings: Json | null
           name: string
           template_id: string | null
           thumbnail_url: string | null
@@ -1462,8 +1464,10 @@ export type Database = {
         Insert: {
           created_at?: string | null
           design_json: Json
+          global_styles?: Json | null
           id?: string
           is_default?: boolean | null
+          layout_settings?: Json | null
           name?: string
           template_id?: string | null
           thumbnail_url?: string | null
@@ -1473,8 +1477,10 @@ export type Database = {
         Update: {
           created_at?: string | null
           design_json?: Json
+          global_styles?: Json | null
           id?: string
           is_default?: boolean | null
+          layout_settings?: Json | null
           name?: string
           template_id?: string | null
           thumbnail_url?: string | null
@@ -1529,6 +1535,101 @@ export type Database = {
           {
             foreignKeyName: "resume_exports_design_id_fkey"
             columns: ["design_id"]
+            isOneToOne: false
+            referencedRelation: "resume_designs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resume_section_components: {
+        Row: {
+          category: string
+          created_at: string
+          data_schema: Json
+          default_design_json: Json
+          description: string | null
+          icon: string
+          id: string
+          is_active: boolean
+          is_featured: boolean
+          name: string
+          thumbnail_url: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          data_schema?: Json
+          default_design_json?: Json
+          description?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          name: string
+          thumbnail_url?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          data_schema?: Json
+          default_design_json?: Json
+          description?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          name?: string
+          thumbnail_url?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      resume_sections: {
+        Row: {
+          component_type: string
+          created_at: string
+          custom_data: Json | null
+          custom_design_json: Json | null
+          id: string
+          is_visible: boolean
+          layout_config: Json
+          position: number
+          resume_design_id: string
+          updated_at: string
+        }
+        Insert: {
+          component_type: string
+          created_at?: string
+          custom_data?: Json | null
+          custom_design_json?: Json | null
+          id?: string
+          is_visible?: boolean
+          layout_config?: Json
+          position?: number
+          resume_design_id: string
+          updated_at?: string
+        }
+        Update: {
+          component_type?: string
+          created_at?: string
+          custom_data?: Json | null
+          custom_design_json?: Json | null
+          id?: string
+          is_visible?: boolean
+          layout_config?: Json
+          position?: number
+          resume_design_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resume_sections_resume_design_id_fkey"
+            columns: ["resume_design_id"]
             isOneToOne: false
             referencedRelation: "resume_designs"
             referencedColumns: ["id"]
