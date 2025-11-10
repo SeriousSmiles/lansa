@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { SectionInstance, SectionComponent, LayoutStructure, ZoneName } from '@/types/resumeSection';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -34,6 +35,8 @@ export function SectionLibrary({
   selectedSectionId,
   onSectionSelect
 }: SectionLibraryProps) {
+  const [draggedSection, setDraggedSection] = useState<string | null>(null);
+  const [dragOverSection, setDragOverSection] = useState<string | null>(null);
   
   const getSectionName = (type: string) => {
     const component = sectionComponents.find(c => c.type === type);
@@ -76,6 +79,59 @@ export function SectionLibrary({
 
   const availableZones = getAvailableZones();
 
+  const handleDragStart = (e: React.DragEvent, sectionId: string) => {
+    setDraggedSection(sectionId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, sectionId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverSection(sectionId);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetSectionId: string) => {
+    e.preventDefault();
+    
+    if (!draggedSection || draggedSection === targetSectionId) {
+      setDraggedSection(null);
+      setDragOverSection(null);
+      return;
+    }
+
+    const draggedIdx = sections.findIndex(s => s.id === draggedSection);
+    const targetIdx = sections.findIndex(s => s.id === targetSectionId);
+    
+    if (draggedIdx === -1 || targetIdx === -1) return;
+
+    // Check if both sections are in the same zone
+    const draggedSec = sections[draggedIdx];
+    const targetSec = sections[targetIdx];
+    
+    if (draggedSec.zone !== targetSec.zone) {
+      setDraggedSection(null);
+      setDragOverSection(null);
+      return;
+    }
+
+    // Reorder sections
+    const newSections = [...sections];
+    const [removed] = newSections.splice(draggedIdx, 1);
+    newSections.splice(targetIdx, 0, removed);
+    
+    // Update positions
+    const updated = newSections.map((s, idx) => ({ ...s, position: idx }));
+    
+    onReorderSections(updated);
+    setDraggedSection(null);
+    setDragOverSection(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedSection(null);
+    setDragOverSection(null);
+  };
+
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 border-b border-border">
@@ -102,14 +158,21 @@ export function SectionLibrary({
                   {zoneSections.map((section) => (
                     <div
                       key={section.id}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, section.id)}
+                      onDragOver={(e) => handleDragOver(e, section.id)}
+                      onDrop={(e) => handleDrop(e, section.id)}
+                      onDragEnd={handleDragEnd}
                       className={`group p-3 border border-border rounded-lg transition-all hover:border-primary cursor-pointer ${
                         selectedSectionId === section.id ? 'border-primary bg-primary/5' : ''
+                      } ${draggedSection === section.id ? 'opacity-50' : ''} ${
+                        dragOverSection === section.id && draggedSection !== section.id ? 'border-t-4 border-t-primary' : ''
                       }`}
                       onClick={() => onSectionSelect(section.id)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 flex-1">
-                          <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
+                          <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab active:cursor-grabbing" />
                           <div className="flex-1">
                             <div className="font-medium text-sm">
                               {getSectionName(section.component_type)}
