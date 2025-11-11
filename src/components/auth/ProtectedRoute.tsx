@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export default function ProtectedRoute() {
   const { session, loading: authLoading } = useAuth();
-  const { userType, loading: stateLoading, isRefreshing } = useUserState();
+  const { userType, loading: stateLoading, isRefreshing, hasCompletedOnboarding } = useUserState();
   const location = useLocation();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [adminCheckComplete, setAdminCheckComplete] = useState(false);
@@ -43,7 +43,7 @@ export default function ProtectedRoute() {
 
   // CRITICAL: Only show loading screen if we don't know auth status yet
   // Don't block for background refreshes (isRefreshing)
-  const shouldShowLoading = (authLoading || stateLoading || !adminCheckComplete) && !session && !isRefreshing;
+  const shouldShowLoading = (authLoading || stateLoading || !adminCheckComplete) && !isRefreshing;
 
   if (shouldShowLoading) {
     return (
@@ -67,14 +67,24 @@ export default function ProtectedRoute() {
 
   // CRITICAL: If user is authenticated but has no user_type set, force them to onboarding
   // This prevents bypassing onboarding by manually navigating to other pages
-  const isOnOnboardingPage = location.pathname === '/onboarding';
-  const isOnProfileStarterPage = location.pathname === '/profile-starter';
-  const allowedWithoutType = isOnOnboardingPage || isOnProfileStarterPage;
-  
-  // Don't redirect admins to onboarding
-  if (!userType && !allowedWithoutType && !isAdmin) {
-    console.warn("⚠️ User authenticated but missing user_type - redirecting to onboarding");
-    return <Navigate to="/onboarding" replace />;
+  // BUT: Only check after user state has fully loaded to prevent premature redirects
+  if (!stateLoading && !isRefreshing) {
+    const isOnOnboardingPage = location.pathname === '/onboarding';
+    const isOnProfileStarterPage = location.pathname === '/profile-starter';
+    const allowedWithoutType = isOnOnboardingPage || isOnProfileStarterPage;
+    
+    // Don't redirect admins to onboarding
+    if (!userType && !allowedWithoutType && !isAdmin) {
+      console.info("🔄 [ProtectedRoute] Redirecting to onboarding - missing user_type", {
+        path: location.pathname,
+        userType,
+        hasCompletedOnboarding,
+        authLoading,
+        stateLoading,
+        isRefreshing
+      });
+      return <Navigate to="/onboarding" replace />;
+    }
   }
 
   return <Outlet />;

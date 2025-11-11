@@ -38,8 +38,8 @@ export function RequireOnboarding({
   const { loading, hasCompletedOnboarding, userType, isAuthenticated, isRefreshing } = useUserState();
   const location = useLocation();
   
-  // Only show loading if we don't know auth status yet (not for background refreshes)
-  if (loading && !isAuthenticated && !isRefreshing) return <LoadingScreen />;
+  // Block until user state is fully loaded (but not for background refreshes)
+  if (loading && !isRefreshing) return <LoadingScreen />;
 
   // If user has completed onboarding, allow access
   if (hasCompletedOnboarding) return children;
@@ -50,7 +50,13 @@ export function RequireOnboarding({
   // CRITICAL: If user has no user_type, they MUST complete onboarding regardless of soft gate
   // This prevents users from bypassing onboarding
   if (!userType) {
-    console.warn("⚠️ Blocking access - user has no user_type");
+    console.info("🔄 [RequireOnboarding] Redirecting to onboarding - missing user_type", {
+      path: location.pathname,
+      userType,
+      hasCompletedOnboarding,
+      loading,
+      isRefreshing
+    });
     return <Navigate to="/onboarding" state={{ from: location }} replace />;
   }
 
@@ -122,8 +128,8 @@ export function RequireUserType({
     }
   }, [loading, userType, allowedTypes, silent, location.state]);
   
-  // Only show loading if we don't know auth status yet (not for background refreshes)
-  if (loading && !isAuthenticated && !isRefreshing) return <LoadingScreen />;
+  // Block until user state is fully loaded (but not for background refreshes)
+  if (loading && !isRefreshing) return <LoadingScreen />;
 
   if (!userType || !allowedTypes.includes(userType)) {
     return (
