@@ -17,8 +17,6 @@ import { AIOnboardingFlow } from "@/components/onboarding/AIOnboardingFlow";
 import { OnboardingErrorBoundary } from "@/components/onboarding/OnboardingErrorBoundary";
 import { getPostOnboardingDestination } from "@/services/navigation/onboardingNavigationService";
 import { useOnboardingNavigation } from "@/hooks/useOnboardingNavigation";
-import { trackOnboardingEvent } from "@/services/analytics/onboardingAnalytics";
-import { markOnboardingComplete } from "@/services/onboarding/unifiedOnboardingService";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Onboarding() {
@@ -69,12 +67,6 @@ export default function Onboarding() {
           if (answers.user_type) {
             setUserType(answers.user_type);
             
-            // Track resume event
-            await trackOnboardingEvent(user.id, 'onboarding_resumed', {
-              user_type: answers.user_type,
-              career_path: answers.career_path
-            });
-            
             // Restore user_intent from onboarding_inputs if available
             const savedIntent = answers.onboarding_inputs?.user_intent as 'job_seeker' | 'create_org' | 'join_org' | undefined;
             
@@ -93,13 +85,7 @@ export default function Onboarding() {
               // No saved intent - show type selection again
               setShowTypeSelection(true);
             }
-          } else {
-            // Track start event for new users
-            await trackOnboardingEvent(user.id, 'onboarding_started');
           }
-        } else {
-          // Track start event for completely new users
-          await trackOnboardingEvent(user.id, 'onboarding_started');
         }
         
         setIsLoading(false);
@@ -135,12 +121,6 @@ export default function Onboarding() {
         await saveUserAnswers(user.id, updatedAnswers);
         setUserAnswers(updatedAnswers);
         console.log("Saved user intent:", selectedIntent);
-        
-        // Track user type selection
-        await trackOnboardingEvent(user.id, 'user_type_selected', {
-          user_type: mappedUserType,
-          intent: selectedIntent
-        });
       } catch (error) {
         console.error("Error saving user type:", error);
         toast.error("Failed to save your selection. Please try again.");
@@ -171,7 +151,7 @@ export default function Onboarding() {
     setCareerPath(selectedPath);
     setShowCareerSegmentation(false);
     
-    // Save the career path selection AND mark onboarding complete
+    // Save the career path selection
     if (user?.id) {
       try {
         const updatedAnswers = { 
@@ -181,21 +161,6 @@ export default function Onboarding() {
         };
         await saveUserAnswers(user.id, updatedAnswers);
         setUserAnswers(updatedAnswers);
-        
-        // CRITICAL: Mark onboarding complete immediately to prevent limbo state
-        console.log('[Onboarding] Marking onboarding complete for job seeker');
-        await markOnboardingComplete(user.id, 'job_seeker');
-        
-        // Track completion event
-        await trackOnboardingEvent(user.id, 'career_path_selected', {
-          career_path: selectedPath
-        });
-        
-        await trackOnboardingEvent(user.id, 'onboarding_completed', {
-          user_type: 'job_seeker',
-          career_path: selectedPath,
-          completion_point: 'career_path_selection'
-        });
       } catch (error) {
         console.error("Error saving career path:", error);
         toast.error("Failed to save your career path selection.");
@@ -229,13 +194,8 @@ export default function Onboarding() {
       
       // Mark onboarding as complete first
       if (user?.id) {
+        const { markOnboardingComplete } = await import('@/services/onboarding/unifiedOnboardingService');
         await markOnboardingComplete(user.id, 'employer');
-        
-        // Track completion event
-        await trackOnboardingEvent(user.id, 'onboarding_completed', {
-          user_type: 'employer',
-          completion_point: userIntent === 'create_org' ? 'organization_created' : 'organization_joined'
-        });
       }
       
       await navigateAfterOnboarding('employer');
