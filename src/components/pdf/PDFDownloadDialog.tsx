@@ -79,10 +79,13 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
       
       if (exportFormat === 'jpeg') {
         // JPEG export - only works with HTML engine templates
+        if (selectedTemplateData?.engine !== 'html') {
+          throw new Error('JPEG export is only available for HTML-based templates');
+        }
         await generateJPEG(pdfData);
       } else {
-        // PDF export - professional template uses HTML engine
-        if (selectedTemplate === 'professional' || selectedTemplateData?.engine === 'html') {
+        // PDF export - route based on engine type
+        if (selectedTemplateData?.engine === 'html') {
           await generateHTMLPDF(pdfData);
         } else if (selectedTemplateData?.engine === 'react-pdf') {
           await generateReactPDF(pdfData, selectedTemplate);
@@ -100,10 +103,13 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
     try {
       if (exportFormat === 'jpeg') {
         // JPEG preview
+        if (selectedTemplateData?.engine !== 'html') {
+          throw new Error('JPEG export is only available for HTML-based templates');
+        }
         await previewJPEG();
       } else {
-        // PDF preview - professional template uses HTML engine
-        if (selectedTemplate === 'professional' || selectedTemplateData?.engine === 'html') {
+        // PDF preview - route based on engine type
+        if (selectedTemplateData?.engine === 'html') {
           await previewHTMLPDF();
         } else if (selectedTemplateData?.engine === 'react-pdf') {
           await previewReactPDF(pdfData, selectedTemplate);
@@ -239,13 +245,20 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
                   <div className="relative">
                     <Label
                       htmlFor="format-jpeg"
-                      className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                        exportFormat === 'jpeg'
-                          ? 'border-primary bg-primary/5'
-                          : 'border-muted hover:border-primary/50'
+                      className={`flex items-start gap-3 p-4 border-2 rounded-lg transition-all ${
+                        selectedTemplateData?.engine !== 'html'
+                          ? 'opacity-50 cursor-not-allowed'
+                          : exportFormat === 'jpeg'
+                          ? 'border-primary bg-primary/5 cursor-pointer'
+                          : 'border-muted hover:border-primary/50 cursor-pointer'
                       }`}
                     >
-                      <RadioGroupItem value="jpeg" id="format-jpeg" className="mt-1" />
+                      <RadioGroupItem 
+                        value="jpeg" 
+                        id="format-jpeg" 
+                        className="mt-1" 
+                        disabled={selectedTemplateData?.engine !== 'html'}
+                      />
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <ImageIcon className="w-4 h-4" />
@@ -255,6 +268,11 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
                         <p className="text-xs text-muted-foreground">
                           Print-ready A4 image at 300 DPI. Perfect quality, smaller file size.
                         </p>
+                        {selectedTemplateData?.engine !== 'html' && (
+                          <p className="text-xs text-orange-600 mt-1">
+                            JPEG export not available for this template. Use PDF instead.
+                          </p>
+                        )}
                       </div>
                     </Label>
                   </div>
@@ -468,7 +486,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
       </DialogContent>
 
       {/* Hidden preview template for HTML engine (PDF) */}
-      {(selectedTemplate === 'professional' || selectedTemplateData?.engine === 'html') && exportFormat === 'pdf' && !showPreview && (
+      {selectedTemplateData?.engine === 'html' && exportFormat === 'pdf' && !showPreview && (
         <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
           <HTMLPDFPreview 
             data={pdfData} 
@@ -479,7 +497,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
       )}
 
       {/* Always mount export template for JPEG generation (pixel-perfect) */}
-      {exportFormat === 'jpeg' && (selectedTemplate === 'professional' || selectedTemplateData?.engine === 'html') && (
+      {exportFormat === 'jpeg' && selectedTemplateData?.engine === 'html' && (
         <div style={{ position: 'absolute', left: '-9999px', top: '0' }}>
           <HTMLPDFPreview 
             data={pdfData} 

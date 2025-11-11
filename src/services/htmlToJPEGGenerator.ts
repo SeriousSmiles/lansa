@@ -40,7 +40,11 @@ export class HTMLToJPEGGenerator {
     // Get the element to convert
     const element = document.getElementById(elementId);
     if (!element) {
-      throw new Error(`Element with id "${elementId}" not found`);
+      throw new Error(
+        `Export failed: Template container not found. ` +
+        `This template may not support JPEG export. ` +
+        `Try using PDF format instead.`
+      );
     }
 
     try {

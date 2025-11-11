@@ -14,10 +14,10 @@ export function CreativeTemplate({ data }: CreativeTemplateProps) {
       id="pdf-resume-template" 
       className="mx-auto bg-white shadow-lg overflow-hidden relative flex flex-col"
       style={{
-        width: '210mm',
-        height: '297mm',
-        maxWidth: '210mm',
-        maxHeight: '297mm',
+        width: '794px',
+        height: '1123px',
+        maxWidth: '794px',
+        maxHeight: '1123px',
         fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
         fontSize: '11px',
         lineHeight: '1.5',

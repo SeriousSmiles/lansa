@@ -3,10 +3,15 @@ import { PDFResumeData, ResumeTemplate } from '@/types/pdf';
 import { ProfessionalTemplate } from './templates/ProfessionalTemplate';
 import { ProfessionalTemplateExport } from './templates/ProfessionalTemplateExport';
 import { ModernTemplate } from './templates/ModernTemplate';
+import { ModernTemplateExport } from './templates/ModernTemplateExport';
 import { CreativeTemplate } from './templates/CreativeTemplate';
+import { CreativeTemplateExport } from './templates/CreativeTemplateExport';
 import { ClassicTemplate } from './templates/ClassicTemplate';
+import { ClassicTemplateExport } from './templates/ClassicTemplateExport';
 import TimelineTemplate from './templates/TimelineTemplate';
+import { TimelineTemplateExport } from './templates/TimelineTemplateExport';
 import LogosTemplate from './templates/LogosTemplate';
+import { LogosTemplateExport } from './templates/LogosTemplateExport';
 
 interface HTMLPDFPreviewProps {
   data: PDFResumeData;
@@ -33,9 +38,24 @@ export function HTMLPDFPreview({
   }, [data, template, onReady]);
 
   const renderTemplate = () => {
-    // Use export template for JPEG generation (pixel-perfect)
-    if (forExport && template === 'professional') {
-      return <ProfessionalTemplateExport data={data} />;
+    // Use export templates for JPEG generation (pixel-perfect)
+    if (forExport) {
+      switch (template) {
+        case 'professional':
+          return <ProfessionalTemplateExport data={data} />;
+        case 'modern':
+          return <ModernTemplateExport data={data} />;
+        case 'creative':
+          return <CreativeTemplateExport data={data} />;
+        case 'classic':
+          return <ClassicTemplateExport data={data} />;
+        case 'timeline':
+          return <TimelineTemplateExport data={data} />;
+        case 'logos':
+          return <LogosTemplateExport data={data} />;
+        default:
+          return <ProfessionalTemplateExport data={data} />;
+      }
     }
 
     // Use preview templates for screen viewing

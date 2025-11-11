@@ -36,9 +36,12 @@ export const useJPEGGeneration = () => {
       
     } catch (error) {
       console.error('Error generating JPEG:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast({
-        title: "Generation Failed",
-        description: "Please try again or contact support.",
+        title: "JPEG Export Failed",
+        description: errorMessage.includes('not support') 
+          ? "This template only supports PDF export. Please select PDF format."
+          : "Please try again or contact support.",
         variant: "destructive",
       });
       throw error;
@@ -56,9 +59,12 @@ export const useJPEGGeneration = () => {
       });
     } catch (error) {
       console.error('Error previewing JPEG:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast({
-        title: "Preview Failed",
-        description: "There was an error previewing your resume image.",
+        title: "JPEG Preview Failed",
+        description: errorMessage.includes('not support')
+          ? "This template only supports PDF export. Please select PDF format."
+          : "There was an error previewing your resume image.",
         variant: "destructive",
       });
       throw error;
