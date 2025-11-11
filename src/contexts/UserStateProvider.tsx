@@ -101,22 +101,40 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
 
       // BACKWARD COMPATIBILITY: Consider onboarding complete if EITHER flag is true
       // CRITICAL: Also require user_type to be set to prevent incomplete onboarding
-      const newOnboardingComplete = !!profileResult.data?.onboarding_completed;
+      let newOnboardingComplete = !!profileResult.data?.onboarding_completed;
       const oldOnboardingComplete = !!answersResult.data?.career_path_onboarding_completed;
       const hasUserType = !!answersResult.data?.user_type;
-      const hasCompletedOnboarding = (newOnboardingComplete || oldOnboardingComplete) && hasUserType;
-
-      // Auto-migrate if old flag is true but new flag is false
-      if (oldOnboardingComplete && !newOnboardingComplete) {
-        console.log("Auto-migrating onboarding status for user:", userId);
+      
+      // AUTO-RECOVERY: Fix users stuck in onboarding limbo
+      // If user has user_type but no onboarding flags, auto-complete their onboarding
+      if (hasUserType && !newOnboardingComplete && !oldOnboardingComplete) {
+        console.log("🔧 [UserStateProvider] Auto-recovering stuck user:", userId);
+        
+        try {
+          const { markOnboardingComplete } = await import('@/services/onboarding/unifiedOnboardingService');
+          await markOnboardingComplete(userId, answersResult.data.user_type as 'job_seeker' | 'employer');
+          
+          console.log("✅ [UserStateProvider] Auto-recovery successful for user:", userId);
+          
+          // Update local flag so we consider them complete
+          newOnboardingComplete = true;
+        } catch (recoveryError) {
+          console.error("❌ [UserStateProvider] Auto-recovery failed:", recoveryError);
+          // Don't block user flow - they can still use the app
+        }
+      } else if (oldOnboardingComplete && !newOnboardingComplete) {
+        // Legacy migration: old flag is true but new flag is false
+        console.log("🔄 [UserStateProvider] Migrating legacy onboarding flag for user:", userId);
         supabase
           .from("user_profiles")
           .update({ onboarding_completed: true })
           .eq("user_id", userId)
           .then(({ error }) => {
-            if (error) console.error("Failed to auto-migrate:", error);
+            if (error) console.error("Failed to migrate:", error);
           });
       }
+      
+      const hasCompletedOnboarding = (newOnboardingComplete || oldOnboardingComplete) && hasUserType;
 
       // Check for pending org requests
       const { data: pendingRequests } = await supabase
