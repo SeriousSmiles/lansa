@@ -6,6 +6,7 @@ export interface PDFResumeData {
     title: string;
     email: string;
     phone: string;
+    location?: string;
     summary: string; // aboutText
     professionalGoal: string;
     biggestChallenge?: string;

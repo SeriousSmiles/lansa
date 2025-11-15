@@ -1,7 +1,8 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import { PDFResumeData, ResumeTemplate } from '@/types/pdf';
 import { ProfessionalTemplate } from './templates/ProfessionalTemplate';
 import { ProfessionalTemplateExport } from './templates/ProfessionalTemplateExport';
+import { ProfessionalTemplateExportMultiPage } from './templates/ProfessionalTemplateExportMultiPage';
 import { ModernTemplate } from './templates/ModernTemplate';
 import { ModernTemplateExport } from './templates/ModernTemplateExport';
 import { CreativeTemplate } from './templates/CreativeTemplate';
@@ -28,6 +29,37 @@ export function HTMLPDFPreview({
 }: HTMLPDFPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Calculate if multi-page is needed
+  const needsMultiPage = useMemo(() => {
+    const PAGE_HEIGHT = 3508;
+    const USABLE_HEIGHT = PAGE_HEIGHT - 172; // padding
+    const HEIGHTS = {
+      name: 150,
+      jobTitle: 80,
+      summary: 200,
+      sectionTitle: 90,
+      experienceItem: 280,
+      spacing: 40,
+    };
+
+    let totalHeight = HEIGHTS.name + HEIGHTS.jobTitle + HEIGHTS.spacing;
+
+    if (data.personalInfo.summary) {
+      const summaryLines = Math.ceil(data.personalInfo.summary.length / 80);
+      totalHeight += HEIGHTS.sectionTitle + (summaryLines * 55) + HEIGHTS.spacing;
+    }
+
+    if (data.experience && data.experience.length > 0) {
+      totalHeight += HEIGHTS.sectionTitle;
+      data.experience.forEach((exp: any) => {
+        const descriptionLines = exp.description ? Math.ceil(exp.description.length / 100) : 0;
+        totalHeight += HEIGHTS.experienceItem + (descriptionLines * 30);
+      });
+    }
+
+    return totalHeight > USABLE_HEIGHT;
+  }, [data]);
+
   useEffect(() => {
     // Notify parent component when template is ready
     const timer = setTimeout(() => {
@@ -42,7 +74,10 @@ export function HTMLPDFPreview({
     if (forExport) {
       switch (template) {
         case 'professional':
-          return <ProfessionalTemplateExport data={data} />;
+          // Use multi-page if content requires it
+          return needsMultiPage 
+            ? <ProfessionalTemplateExportMultiPage data={data} />
+            : <ProfessionalTemplateExport data={data} />;
         case 'modern':
           return <ModernTemplateExport data={data} />;
         case 'creative':
@@ -54,7 +89,9 @@ export function HTMLPDFPreview({
         case 'logos':
           return <LogosTemplateExport data={data} />;
         default:
-          return <ProfessionalTemplateExport data={data} />;
+          return needsMultiPage 
+            ? <ProfessionalTemplateExportMultiPage data={data} />
+            : <ProfessionalTemplateExport data={data} />;
       }
     }
 

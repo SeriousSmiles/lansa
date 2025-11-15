@@ -110,7 +110,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
       } else {
         // PDF preview - route based on engine type
         if (selectedTemplateData?.engine === 'html') {
-          await previewHTMLPDF();
+          await previewHTMLPDF(pdfData);
         } else if (selectedTemplateData?.engine === 'react-pdf') {
           await previewReactPDF(pdfData, selectedTemplate);
         } else {
