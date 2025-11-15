@@ -200,7 +200,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
                     onClick={() => handleTemplateSelect(template.id)}
                   >
                     {template.featured && (
-                      <Badge className="absolute -top-2 -right-2 bg-gradient-to-r from-primary to-primary/80 text-xs">
+                      <Badge className="absolute -top-2 -right-2 bg-gradient-to-r from-primary to-primary/80 text-white text-xs">
                         Featured
                       </Badge>
                     )}
