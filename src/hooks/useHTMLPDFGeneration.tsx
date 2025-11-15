@@ -90,7 +90,8 @@ export const useHTMLPDFGeneration = () => {
           quality: 2,
           format: 'a4',
           orientation: 'portrait'
-        }
+        },
+        needsMultiPage && useMultiPage
       );
       
       toast({
@@ -122,11 +123,15 @@ export const useHTMLPDFGeneration = () => {
         ? 'pdf-resume-export-container' 
         : 'pdf-resume-template';
 
-      await HTMLToPDFGenerator.previewPDF(templateId, {
-        quality: 2,
-        format: 'a4',
-        orientation: 'portrait'
-      });
+      await HTMLToPDFGenerator.previewPDF(
+        templateId, 
+        {
+          quality: 2,
+          format: 'a4',
+          orientation: 'portrait'
+        },
+        needsMultiPage && useMultiPage
+      );
     } catch (error) {
       console.error('Error previewing PDF:', error);
       toast({
