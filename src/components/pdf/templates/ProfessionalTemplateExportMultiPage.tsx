@@ -514,16 +514,16 @@ export function ProfessionalTemplateExportMultiPage({ data }: ProfessionalTempla
         );
 
       case 'skills':
-        if (section.data.isTitle) {
-          return <h3 key="skills-title" style={styles.experienceTitle}>Skills</h3>;
-        }
         return (
-          <div key="skills-list" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px' }}>
-            {section.data.map((skill: string, index: number) => (
-              <div key={index} style={{ ...styles.skillItem, flex: '0 0 30%' }}>
-                • {skill}
-              </div>
-            ))}
+          <div key="skills-section" style={{ marginBottom: '40px' }}>
+            <h3 style={styles.experienceTitle}>Skills</h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px' }}>
+              {section.data.map((skill: string, index: number) => (
+                <div key={index} style={{ ...styles.skillItem, flex: '0 0 30%' }}>
+                  • {skill}
+                </div>
+              ))}
+            </div>
           </div>
         );
 
@@ -537,6 +537,7 @@ export function ProfessionalTemplateExportMultiPage({ data }: ProfessionalTempla
       {pages.map((pageSections, pageIndex) => (
         <div
           key={`page-${pageIndex}`}
+          className="pdf-page"
           style={{
             ...styles.page,
             ...(pageIndex === pages.length - 1 ? styles.lastPage : {}),
