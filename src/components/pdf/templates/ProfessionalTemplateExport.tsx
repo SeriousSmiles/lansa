@@ -19,6 +19,10 @@ export function ProfessionalTemplateExport({ data }: ProfessionalTemplateExportP
   const MAIN_WIDTH = 1476; // 125mm
   const PADDING = 71; // 6mm
 
+  // HTML2CANVAS COMPENSATION APPLIED:
+  // - Reduced lineHeight values by ~0.05-0.08 to counter text shift accumulation
+  // - Added negative top margins to headings/text to compensate for downward shift
+  // - Reduced top padding to reclaim vertical space lost to rendering shifts
   const styles = {
     container: {
       width: `${TOTAL_WIDTH}px`,
@@ -26,7 +30,7 @@ export function ProfessionalTemplateExport({ data }: ProfessionalTemplateExportP
       backgroundColor: '#ffffff',
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
       fontSize: '37.5px', // 12px * 3.125
-      lineHeight: '1.4',
+      lineHeight: '1.35', // Reduced from 1.4 to compensate for html2canvas text shift
       position: 'relative' as const,
       overflow: 'hidden',
       display: 'flex',
@@ -44,6 +48,7 @@ export function ProfessionalTemplateExport({ data }: ProfessionalTemplateExportP
       backgroundColor: colors.primary,
       color: '#ffffff',
       padding: `${PADDING}px`,
+      paddingTop: `${PADDING - 16}px`, // Reduced top padding to compensate for html2canvas shift
       display: 'flex',
       flexDirection: 'column' as const,
     },
@@ -77,7 +82,8 @@ export function ProfessionalTemplateExport({ data }: ProfessionalTemplateExportP
     sectionTitle: {
       fontSize: '56px', // 18px * 3.125
       fontWeight: 'bold' as const,
-      marginBottom: '35px',
+      marginTop: '-12px', // Negative margin to compensate for html2canvas text shift
+      marginBottom: '28px', // Reduced to maintain spacing balance
       textTransform: 'uppercase' as const,
       letterSpacing: '2px',
     },
@@ -143,32 +149,39 @@ export function ProfessionalTemplateExport({ data }: ProfessionalTemplateExportP
     goalText: {
       fontSize: '44px',
       opacity: 0.9,
-      lineHeight: '1.6',
+      lineHeight: '1.52', // Reduced from 1.6 to compensate for html2canvas shift accumulation
+      marginTop: '-6px', // Negative margin to compensate for text shift
     },
     mainContent: {
       width: `${MAIN_WIDTH}px`,
       padding: '94px', // 8mm
+      paddingTop: '78px', // Reduced top padding to compensate for html2canvas shift
+      overflow: 'hidden',
     },
     name: {
       fontSize: '125px', // 4xl
       fontWeight: 'bold' as const,
       color: '#111827',
-      marginBottom: '24px',
+      marginTop: '-20px', // Negative margin to compensate for html2canvas text shift
+      marginBottom: '16px', // Reduced to maintain spacing balance
     },
     title: {
       fontSize: '66px', // xl
       color: '#4B5563',
-      marginBottom: '47px',
+      marginTop: '-8px', // Negative margin to compensate for html2canvas text shift
+      marginBottom: '37px', // Reduced to maintain spacing balance
     },
     summary: {
       fontSize: '44px',
       color: '#374151',
-      lineHeight: '1.6',
+      lineHeight: '1.52', // Reduced from 1.6 to compensate for html2canvas shift accumulation
+      marginTop: '-6px', // Negative margin to compensate for text shift
     },
     experienceTitle: {
       fontSize: '66px',
       fontWeight: 'bold' as const,
-      marginBottom: '47px',
+      marginTop: '-10px', // Negative margin to compensate for html2canvas text shift
+      marginBottom: '37px', // Reduced to maintain spacing balance
       textTransform: 'uppercase' as const,
       letterSpacing: '2px',
       borderBottom: `6px solid ${colors.primary}`,
@@ -197,7 +210,8 @@ export function ProfessionalTemplateExport({ data }: ProfessionalTemplateExportP
     experienceDescription: {
       fontSize: '44px',
       color: '#374151',
-      lineHeight: '1.6',
+      lineHeight: '1.52', // Reduced from 1.6 to compensate for html2canvas shift accumulation
+      marginTop: '-6px', // Negative margin to compensate for text shift
     },
   };
 
