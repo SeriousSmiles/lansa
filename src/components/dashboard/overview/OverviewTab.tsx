@@ -30,8 +30,10 @@ export function OverviewTab({ userName, role, goal, insight, highlightActions, i
         </div>
       </div>
       
-      {/* Growth Card Section */}
-      <GrowthCardSection userId={user?.id} />
+      {/* Growth Card Section - Hidden on desktop */}
+      <div className="lg:hidden">
+        <GrowthCardSection userId={user?.id} />
+      </div>
       
       {/* Hidden incomplete features */}
       {/* <HireRateProgress /> */}
