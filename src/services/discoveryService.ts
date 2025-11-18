@@ -14,6 +14,7 @@ export interface DiscoveryProfile {
   highlight_color?: string;
   professional_goal?: string;
   location?: string;
+  isCertified?: boolean;
   experiences?: Array<{
     title: string;
     subtitle: string;
@@ -75,55 +76,84 @@ export const discoveryService = {
       }
 
       if (publicProfiles && publicProfiles.length > 0) {
+        // Fetch certification data if certifiedOnly filter is enabled
+        let certifiedUserIds: Set<string> = new Set();
+        if (certifiedOnly) {
+          console.log('Fetching certification data for filtering...');
+          const { data: certifications, error: certError } = await supabase
+            .from('user_certifications')
+            .select('user_id, lansa_certified, verified')
+            .eq('lansa_certified', true)
+            .eq('verified', true);
+
+          if (certError) {
+            console.error('Error fetching certifications:', certError);
+          } else if (certifications) {
+            certifiedUserIds = new Set(certifications.map(cert => cert.user_id));
+            console.log(`Found ${certifiedUserIds.size} certified users`);
+          }
+        }
+
         // Convert database records to DiscoveryProfile format
-        const discoveryProfiles: DiscoveryProfile[] = publicProfiles.map(profile => ({
-          user_id: profile.user_id,
-          name: profile.name || 'Professional',
-          title: profile.title || 'Seeking Opportunities',
-          about_text: profile.about_text,
-          profile_image: profile.profile_image,
-          skills: Array.isArray(profile.skills) 
-            ? profile.skills.map((skill: any) => 
-                typeof skill === 'string' ? skill : skill?.name || skill
-              )
-            : [],
-          cover_color: profile.cover_color,
-          highlight_color: profile.highlight_color || '#FF6B4A',
-          professional_goal: profile.professional_goal,
-          location: profile.location,
-          experiences: Array.isArray(profile.experiences)
-            ? profile.experiences
-                .slice(0, 3)
-                .map((exp: any) => ({
-                  title: exp.title || '',
-                  subtitle: exp.company || '',
-                  description: exp.description || '',
-                  period: `${exp.startYear || ''} - ${exp.endYear || 'Present'}`
-                }))
-            : [],
-          education: Array.isArray(profile.education)
-            ? profile.education
-                .map((edu: any) => ({
-                  title: edu.title || '',
-                  description: edu.description || '',
-                  period: `${edu.startYear || ''} - ${edu.endYear || 'Present'}`
-                }))
-            : [],
-          languages: Array.isArray(profile.languages)
-            ? profile.languages.map((l: any) => (typeof l === 'string' ? l : l?.name)).filter(Boolean)
-            : [],
-          achievements: Array.isArray(profile.achievements) 
-            ? profile.achievements
-                .filter((a: any) => a.is_featured)
-                .slice(0, 3)
-                .map((a: any) => ({
-                  type: a.type,
-                  title: a.title,
-                  description: a.description,
-                  isFeatured: a.is_featured,
-                }))
-            : []
-        }));
+        const discoveryProfiles: DiscoveryProfile[] = publicProfiles
+          .filter(profile => {
+            // Apply certification filter at application level
+            if (certifiedOnly) {
+              return certifiedUserIds.has(profile.user_id);
+            }
+            return true;
+          })
+          .map(profile => ({
+            user_id: profile.user_id,
+            name: profile.name || 'Professional',
+            title: profile.title || 'Seeking Opportunities',
+            about_text: profile.about_text,
+            profile_image: profile.profile_image,
+            skills: Array.isArray(profile.skills) 
+              ? profile.skills.map((skill: any) => 
+                  typeof skill === 'string' ? skill : skill?.name || skill
+                )
+              : [],
+            cover_color: profile.cover_color,
+            highlight_color: profile.highlight_color || '#FF6B4A',
+            professional_goal: profile.professional_goal,
+            location: profile.location,
+            isCertified: certifiedOnly ? true : certifiedUserIds.has(profile.user_id),
+            experiences: Array.isArray(profile.experiences)
+              ? profile.experiences
+                  .slice(0, 3)
+                  .map((exp: any) => ({
+                    title: exp.title || '',
+                    subtitle: exp.company || '',
+                    description: exp.description || '',
+                    period: `${exp.startYear || ''} - ${exp.endYear || 'Present'}`
+                  }))
+              : [],
+            education: Array.isArray(profile.education)
+              ? profile.education
+                  .map((edu: any) => ({
+                    title: edu.title || '',
+                    description: edu.description || '',
+                    period: `${edu.startYear || ''} - ${edu.endYear || 'Present'}`
+                  }))
+              : [],
+            languages: Array.isArray(profile.languages)
+              ? profile.languages.map((l: any) => (typeof l === 'string' ? l : l?.name)).filter(Boolean)
+              : [],
+            achievements: Array.isArray(profile.achievements) 
+              ? profile.achievements
+                  .filter((a: any) => a.is_featured)
+                  .slice(0, 3)
+                  .map((a: any) => ({
+                    type: a.type,
+                    title: a.title,
+                    description: a.description,
+                    isFeatured: a.is_featured,
+                  }))
+              : []
+          }));
+
+        console.log(`After certification filter: ${discoveryProfiles.length} profiles`);
 
         // Apply skill filtering if provided
         let filteredProfiles = discoveryProfiles;
