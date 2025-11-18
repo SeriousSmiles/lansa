@@ -50,23 +50,11 @@ export const discoveryService = {
     certifiedOnly: boolean = false
   ): Promise<DiscoveryProfile[]> {
     try {
-      // Build query with optional certification filter
-      let query = supabase
+      // Fetch profiles from public view
+      const { data: publicProfiles, error } = await supabase
         .from('user_profiles_public')
-        .select('*');
-
-      // Filter for certified candidates only if requested
-      if (certifiedOnly) {
-        query = supabase
-          .from('user_profiles_public')
-          .select(`
-            *,
-            user_certifications!inner(lansa_certified)
-          `)
-          .eq('user_certifications.lansa_certified', true);
-      }
-
-      const { data: publicProfiles, error } = await query.limit(limit);
+        .select('*')
+        .limit(limit);
 
       if (error) {
         console.error('Error fetching discovery profiles:', error);
