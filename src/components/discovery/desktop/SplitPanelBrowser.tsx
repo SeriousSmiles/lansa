@@ -29,8 +29,7 @@ export function SplitPanelBrowser({
     currentIndex,
     totalProfiles,
     isAnimating,
-    goToNext,
-    removeCurrentProfile,
+    advanceToNext,
     setIsAnimating
   } = useCandidateNavigation(profiles);
 
@@ -60,11 +59,13 @@ export function SplitPanelBrowser({
     // Process the swipe
     await onSwipe(currentProfile, direction);
     
-    // Remove current profile and move to next
-    removeCurrentProfile();
+    // Move to next profile
+    advanceToNext();
     
-    // Allow animations to proceed
-    setIsAnimating(false);
+    // Small delay before allowing next interaction
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 100);
   };
 
   if (!currentProfile) {
