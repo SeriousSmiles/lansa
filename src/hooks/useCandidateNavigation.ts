@@ -38,12 +38,11 @@ export function useCandidateNavigation(initialProfiles: DiscoveryProfile[]) {
   }, [isAnimating, hasPrevious]);
 
   const advanceToNext = useCallback(() => {
-    // Simply move to next index without removing profiles
     setCurrentIndex(prev => {
       const nextIndex = prev + 1;
-      // If we've reached the end, stay at last profile
+      // If we've reached the end, stay at current index
       if (nextIndex >= initialProfiles.length) {
-        return Math.max(0, initialProfiles.length - 1);
+        return prev;
       }
       return nextIndex;
     });

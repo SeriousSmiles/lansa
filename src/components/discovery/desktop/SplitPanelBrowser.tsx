@@ -68,7 +68,10 @@ export function SplitPanelBrowser({
     }, 100);
   };
 
-  if (!currentProfile) {
+  // Check if we've reached the end of candidates
+  const hasReachedEnd = currentIndex >= totalProfiles - 1 && totalProfiles > 0;
+
+  if (!currentProfile && !isLoading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-300px)]">
         <div className="text-center">
@@ -84,6 +87,13 @@ export function SplitPanelBrowser({
 
   return (
     <div className="flex flex-col h-full px-4">
+      {/* Progress Counter */}
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-muted-foreground">
+          Candidate {currentIndex + 1} of {totalProfiles}
+        </p>
+      </div>
+
       {/* Split Panel Container */}
       <div className="flex-1 grid grid-cols-[40%_60%] gap-8 mb-8 overflow-hidden">
         {/* Left Panel */}
@@ -97,10 +107,22 @@ export function SplitPanelBrowser({
         </div>
       </div>
 
+      {/* End of List Message */}
+      {hasReachedEnd && (
+        <div className="text-center py-6 border-t mb-4">
+          <p className="text-base font-medium text-muted-foreground mb-1">
+            You've reviewed all available certified candidates
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Check back later for new profiles
+          </p>
+        </div>
+      )}
+
       {/* Action Buttons */}
       <ActionButtonBar
         onAction={handleAction}
-        disabled={isAnimating || isLoading}
+        disabled={isAnimating || isLoading || hasReachedEnd}
       />
     </div>
   );
