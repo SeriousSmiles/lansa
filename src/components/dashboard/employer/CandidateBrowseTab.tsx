@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { SwipeDeck } from "@/components/discovery/SwipeDeck";
+import { SplitPanelBrowser } from "@/components/discovery/desktop/SplitPanelBrowser";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { IconUsers, IconHeart, IconTrendingUp } from "@tabler/icons-react";
@@ -8,9 +9,11 @@ import { swipeService, SwipeDirection } from "@/services/swipeService";
 import { matchService } from "@/services/matchService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function CandidateBrowseTab() {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [profiles, setProfiles] = useState<DiscoveryProfile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [matchCount, setMatchCount] = useState(0);
@@ -156,14 +159,25 @@ export function CandidateBrowseTab() {
         </Card>
       </div>
 
-      {/* Swipe Interface */}
-      <div className="flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden">
-        <SwipeDeck
-          profiles={profiles}
-          onSwipe={handleSwipe}
-          onEndReached={handleEndReached}
-          isLoading={isLoading}
-        />
+      {/* Swipe Interface - Desktop shows split panel, Mobile shows swipe deck */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        {isMobile ? (
+          <div className="flex flex-col items-center justify-center h-full">
+            <SwipeDeck
+              profiles={profiles}
+              onSwipe={handleSwipe}
+              onEndReached={handleEndReached}
+              isLoading={isLoading}
+            />
+          </div>
+        ) : (
+          <SplitPanelBrowser
+            profiles={profiles}
+            onSwipe={handleSwipe}
+            onEndReached={handleEndReached}
+            isLoading={isLoading}
+          />
+        )}
       </div>
 
       {/* Instructions */}
