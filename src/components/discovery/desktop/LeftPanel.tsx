@@ -79,10 +79,12 @@ export function LeftPanel({ profile, onAnimationComplete }: LeftPanelProps) {
         <h2 className="text-2xl font-bold text-center">
           {profile.name || 'Anonymous'}
         </h2>
-        <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-white">
-          <Award className="w-3 h-3 mr-1" />
-          Certified
-        </Badge>
+        {profile.isCertified && (
+          <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-white">
+            <Award className="w-3 h-3 mr-1" />
+            Certified
+          </Badge>
+        )}
       </div>
 
       {/* Title */}
