@@ -72,9 +72,9 @@ export function SplitPanelBrowser({
       <div className="flex items-center justify-center h-[calc(100vh-300px)]">
         <div className="text-center">
           <AlertCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-xl font-semibold mb-2">No More Candidates</h3>
-          <p className="text-muted-foreground">
-            You've reviewed all available candidates. Check back later for more!
+          <h3 className="text-xl font-semibold mb-2">No Certified Candidates Available</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            All certified candidates have been reviewed. Check back later for more certified professionals!
           </p>
         </div>
       </div>

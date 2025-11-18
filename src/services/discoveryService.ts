@@ -46,14 +46,27 @@ export const discoveryService = {
     userId: string, 
     context: SwipeContext, 
     filters: DiscoveryFilters = {},
-    limit: number = 10
+    limit: number = 10,
+    certifiedOnly: boolean = false
   ): Promise<DiscoveryProfile[]> {
     try {
-      // Try to fetch from user_profiles_public table for real data
-      const { data: publicProfiles, error } = await supabase
+      // Build query with optional certification filter
+      let query = supabase
         .from('user_profiles_public')
-        .select('*')
-        .limit(limit);
+        .select('*');
+
+      // Filter for certified candidates only if requested
+      if (certifiedOnly) {
+        query = supabase
+          .from('user_profiles_public')
+          .select(`
+            *,
+            user_certifications!inner(lansa_certified)
+          `)
+          .eq('user_certifications.lansa_certified', true);
+      }
+
+      const { data: publicProfiles, error } = await query.limit(limit);
 
       if (publicProfiles && publicProfiles.length > 0) {
         // Convert database records to DiscoveryProfile format
