@@ -2,18 +2,20 @@ import { useState, useCallback, useEffect } from 'react';
 import { DiscoveryProfile } from '@/services/discoveryService';
 
 export function useCandidateNavigation(initialProfiles: DiscoveryProfile[]) {
-  const [profiles, setProfiles] = useState<DiscoveryProfile[]>(initialProfiles);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const currentProfile = profiles[currentIndex];
-  const hasNext = currentIndex < profiles.length - 1;
+  const currentProfile = initialProfiles[currentIndex];
+  const hasNext = currentIndex < initialProfiles.length - 1;
   const hasPrevious = currentIndex > 0;
 
+  // Reset index when profiles change (e.g., when new profiles load)
   useEffect(() => {
-    setProfiles(initialProfiles);
-    setCurrentIndex(0);
-  }, [initialProfiles]);
+    // Only reset if current index is out of bounds
+    if (currentIndex >= initialProfiles.length && initialProfiles.length > 0) {
+      setCurrentIndex(0);
+    }
+  }, [initialProfiles.length, currentIndex]);
 
   const goToNext = useCallback(() => {
     if (isAnimating || !hasNext) return;
@@ -22,7 +24,7 @@ export function useCandidateNavigation(initialProfiles: DiscoveryProfile[]) {
     setTimeout(() => {
       setCurrentIndex(prev => prev + 1);
       setIsAnimating(false);
-    }, 500); // Match animation duration
+    }, 500);
   }, [isAnimating, hasNext]);
 
   const goToPrevious = useCallback(() => {
@@ -35,23 +37,28 @@ export function useCandidateNavigation(initialProfiles: DiscoveryProfile[]) {
     }, 500);
   }, [isAnimating, hasPrevious]);
 
-  const removeCurrentProfile = useCallback(() => {
-    setProfiles(prev => prev.filter((_, idx) => idx !== currentIndex));
-    if (currentIndex >= profiles.length - 1) {
-      setCurrentIndex(Math.max(0, profiles.length - 2));
-    }
-  }, [currentIndex, profiles.length]);
+  const advanceToNext = useCallback(() => {
+    // Simply move to next index without removing profiles
+    setCurrentIndex(prev => {
+      const nextIndex = prev + 1;
+      // If we've reached the end, stay at last profile
+      if (nextIndex >= initialProfiles.length) {
+        return Math.max(0, initialProfiles.length - 1);
+      }
+      return nextIndex;
+    });
+  }, [initialProfiles.length]);
 
   return {
     currentProfile,
     currentIndex,
-    totalProfiles: profiles.length,
+    totalProfiles: initialProfiles.length,
     hasNext,
     hasPrevious,
     isAnimating,
     goToNext,
     goToPrevious,
-    removeCurrentProfile,
+    advanceToNext,
     setIsAnimating
   };
 }
