@@ -100,21 +100,20 @@ export const discoveryService = {
           location: profile.location,
           experiences: Array.isArray(profile.experiences)
             ? profile.experiences
-                .slice(0, 1)
+                .slice(0, 3)
                 .map((exp: any) => ({
-                  title: exp.title || exp.role,
-                  subtitle: exp.subtitle || exp.company,
+                  title: exp.title || '',
+                  subtitle: exp.company || '',
                   description: exp.description || '',
-                  period: exp.period || `${exp.start_date || ''} - ${exp.end_date || 'Present'}`
+                  period: `${exp.startYear || ''} - ${exp.endYear || 'Present'}`
                 }))
             : [],
           education: Array.isArray(profile.education)
             ? profile.education
-                .slice(0, 1)
                 .map((edu: any) => ({
-                  title: edu.title || edu.degree,
-                  description: edu.description || edu.institution,
-                  period: edu.period || `${edu.start_year || ''} - ${edu.end_year || 'Present'}`
+                  title: edu.title || '',
+                  description: edu.description || '',
+                  period: `${edu.startYear || ''} - ${edu.endYear || 'Present'}`
                 }))
             : [],
           languages: Array.isArray(profile.languages)
