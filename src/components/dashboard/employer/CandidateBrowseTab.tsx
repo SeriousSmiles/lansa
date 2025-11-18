@@ -31,7 +31,13 @@ export function CandidateBrowseTab() {
     
     setIsLoading(true);
     try {
-      const data = await discoveryService.getDiscoveryProfiles(user.id, 'employee', {}, 20);
+      const data = await discoveryService.getDiscoveryProfiles(
+        user.id, 
+        'employee', 
+        {}, 
+        20,
+        true // certifiedOnly - filter for certified candidates
+      );
       setProfiles(data);
     } catch (error) {
       console.error('Error loading profiles:', error);
