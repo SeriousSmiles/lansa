@@ -12,12 +12,17 @@ interface RightPanelProps {
 export function RightPanel({ profile }: RightPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Guard against undefined profile
+  if (!profile) {
+    return null;
+  }
+
   useEffect(() => {
-    if (containerRef.current) {
+    if (containerRef.current && profile?.user_id) {
       candidatePanelAnimations.enterRightPanel(containerRef.current);
       candidatePanelAnimations.staggerRightPanelSections(containerRef.current);
     }
-  }, [profile.user_id]);
+  }, [profile?.user_id]);
 
   const experiences = profile.experiences || [];
   const education = profile.education || [];

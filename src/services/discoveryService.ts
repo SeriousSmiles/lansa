@@ -51,10 +51,14 @@ export const discoveryService = {
   ): Promise<DiscoveryProfile[]> {
     try {
       // Fetch profiles from public view
+      console.log('Fetching profiles from user_profiles_public, certifiedOnly:', certifiedOnly);
+      
       const { data: publicProfiles, error } = await supabase
         .from('user_profiles_public')
         .select('*')
         .limit(limit);
+
+      console.log('Query result:', { data: publicProfiles, error });
 
       if (error) {
         console.error('Error fetching discovery profiles:', error);
@@ -62,6 +66,7 @@ export const discoveryService = {
       }
 
       if (!publicProfiles || publicProfiles.length === 0) {
+        console.log('No profiles returned from user_profiles_public');
         const errorMessage = certifiedOnly 
           ? 'No certified candidates found. All available certified professionals have been reviewed.'
           : 'No candidates found matching your criteria.';
