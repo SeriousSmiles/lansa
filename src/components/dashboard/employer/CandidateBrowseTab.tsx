@@ -3,7 +3,10 @@ import { SwipeDeck } from "@/components/discovery/SwipeDeck";
 import { SplitPanelBrowser } from "@/components/discovery/desktop/SplitPanelBrowser";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { IconUsers, IconHeart, IconTrendingUp } from "@tabler/icons-react";
+import { HelpCircle } from "lucide-react";
 import { discoveryService, DiscoveryProfile } from "@/services/discoveryService";
 import { swipeService, SwipeDirection } from "@/services/swipeService";
 import { matchService } from "@/services/matchService";
@@ -186,45 +189,54 @@ export function CandidateBrowseTab() {
         )}
       </div>
 
-      {/* Instructions */}
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle className="text-lg">How to Browse Candidates</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                <span className="text-red-600">❌</span>
+      {/* Help Button - Fixed in lower right corner */}
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button
+            size="icon"
+            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 bg-primary hover:bg-primary/90"
+            aria-label="Show instructions"
+          >
+            <HelpCircle className="h-6 w-6" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="bottom" className="h-auto max-h-[80vh]">
+          <SheetHeader>
+            <SheetTitle className="text-xl">How to Browse Candidates</SheetTitle>
+          </SheetHeader>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl">❌</span>
               </div>
               <div>
-                <p className="font-medium">Pass</p>
-                <p className="text-muted-foreground">Not a good fit</p>
+                <p className="font-semibold text-base">Pass</p>
+                <p className="text-muted-foreground text-sm">Not a good fit</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center">
-                <span className="text-yellow-600">⚡</span>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl">⚡</span>
               </div>
               <div>
-                <p className="font-medium">Super Interest</p>
-                <p className="text-muted-foreground">Priority candidate</p>
+                <p className="font-semibold text-base">Super Interest</p>
+                <p className="text-muted-foreground text-sm">Priority candidate</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                <span className="text-green-600">💚</span>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl">💚</span>
               </div>
               <div>
-                <p className="font-medium">Interested</p>
-                <p className="text-muted-foreground">Good potential match</p>
+                <p className="font-semibold text-base">Interested</p>
+                <p className="text-muted-foreground text-sm">Good potential match</p>
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </SheetContent>
+      </Sheet>
       </div>
     </div>
   );
