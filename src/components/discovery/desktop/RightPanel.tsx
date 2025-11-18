@@ -27,7 +27,7 @@ export function RightPanel({ profile }: RightPanelProps) {
   return (
     <div
       ref={containerRef}
-      className="bg-muted/30 rounded-lg p-8 h-full overflow-y-auto"
+      className="bg-muted/30 rounded-lg p-10 h-full overflow-y-auto"
       style={{ willChange: 'transform, opacity' }}
     >
       {/* About Section */}

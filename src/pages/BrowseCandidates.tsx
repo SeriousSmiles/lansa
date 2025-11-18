@@ -37,8 +37,10 @@ export default function BrowseCandidates() {
 
   // Desktop view - use CandidateBrowseTab with split-panel layout and certified candidates filter
   return (
-    <div className="min-h-screen bg-background">
-      <CandidateBrowseTab />
+    <div className="min-h-screen bg-background px-6 lg:px-12 py-8">
+      <div className="max-w-[1600px] mx-auto">
+        <CandidateBrowseTab />
+      </div>
     </div>
   );
 }
