@@ -18,8 +18,13 @@ export function LeftPanel({ profile, onAnimationComplete }: LeftPanelProps) {
   const [matchSummary, setMatchSummary] = useState<string>('');
   const [isLoadingSummary, setIsLoadingSummary] = useState(false);
 
+  // Guard against undefined profile
+  if (!profile) {
+    return null;
+  }
+
   useEffect(() => {
-    if (containerRef.current) {
+    if (containerRef.current && profile?.user_id) {
       // Animate in the new content
       candidatePanelAnimations.enterLeftPanel(containerRef.current);
       candidatePanelAnimations.staggerLeftPanelElements(containerRef.current);
@@ -29,11 +34,11 @@ export function LeftPanel({ profile, onAnimationComplete }: LeftPanelProps) {
         setTimeout(onAnimationComplete, 800);
       }
     }
-  }, [profile.user_id, onAnimationComplete]);
+  }, [profile?.user_id, onAnimationComplete]);
 
   // Load AI-powered match summary
   useEffect(() => {
-    if (user?.id && profile.user_id) {
+    if (user?.id && profile?.user_id) {
       setIsLoadingSummary(true);
       matchSummaryService.getMatchSummary(user.id, profile)
         .then(summary => {
