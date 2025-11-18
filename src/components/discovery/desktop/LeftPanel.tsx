@@ -18,11 +18,6 @@ export function LeftPanel({ profile, onAnimationComplete }: LeftPanelProps) {
   const [matchSummary, setMatchSummary] = useState<string>('');
   const [isLoadingSummary, setIsLoadingSummary] = useState(false);
 
-  // Guard against undefined profile
-  if (!profile) {
-    return null;
-  }
-
   useEffect(() => {
     if (containerRef.current && profile?.user_id) {
       // Animate in the new content
@@ -53,7 +48,12 @@ export function LeftPanel({ profile, onAnimationComplete }: LeftPanelProps) {
           setIsLoadingSummary(false);
         });
     }
-  }, [user?.id, profile.user_id]);
+  }, [user?.id, profile?.user_id]);
+
+  // Guard against undefined profile - after all hooks
+  if (!profile) {
+    return null;
+  }
 
   const topSkills = profile.skills?.slice(0, 5) || [];
   const initials = profile.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
