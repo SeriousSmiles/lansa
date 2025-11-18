@@ -37,7 +37,7 @@ export function ActionButtonBar({ onAction, disabled }: ActionButtonBarProps) {
             ref={passRef}
             variant="outline"
             size="lg"
-            className="flex-1 max-w-[200px] h-14 border-2 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
+            className="flex-1 max-w-[200px] h-14 border-2 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700 hover:scale-105 hover:shadow-md transition-all duration-200"
             onClick={() => handleAction('left', passRef)}
             disabled={disabled}
           >
@@ -49,7 +49,7 @@ export function ActionButtonBar({ onAction, disabled }: ActionButtonBarProps) {
           <Button
             ref={nudgeRef}
             size="lg"
-            className="flex-1 max-w-[220px] h-14 bg-yellow-500 hover:bg-yellow-600 text-white"
+            className="flex-1 max-w-[220px] h-14 bg-yellow-500 hover:bg-yellow-600 text-white hover:scale-105 hover:shadow-lg transition-all duration-200"
             onClick={() => handleAction('nudge', nudgeRef)}
             disabled={disabled}
           >
@@ -61,7 +61,7 @@ export function ActionButtonBar({ onAction, disabled }: ActionButtonBarProps) {
           <Button
             ref={likeRef}
             size="lg"
-            className="flex-1 max-w-[200px] h-14 bg-green-600 hover:bg-green-700 text-white"
+            className="flex-1 max-w-[200px] h-14 bg-green-600 hover:bg-green-700 text-white hover:scale-105 hover:shadow-lg transition-all duration-200"
             onClick={() => handleAction('right', likeRef)}
             disabled={disabled}
           >

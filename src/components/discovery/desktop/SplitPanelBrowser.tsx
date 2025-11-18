@@ -82,9 +82,9 @@ export function SplitPanelBrowser({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full px-4">
       {/* Split Panel Container */}
-      <div className="flex-1 grid grid-cols-[40%_60%] gap-6 mb-6 overflow-hidden">
+      <div className="flex-1 grid grid-cols-[40%_60%] gap-8 mb-8 overflow-hidden">
         {/* Left Panel */}
         <div ref={leftPanelRef} className="h-full overflow-hidden">
           <LeftPanel profile={currentProfile} />

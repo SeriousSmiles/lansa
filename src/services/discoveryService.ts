@@ -68,6 +68,19 @@ export const discoveryService = {
 
       const { data: publicProfiles, error } = await query.limit(limit);
 
+      if (error) {
+        console.error('Error fetching discovery profiles:', error);
+        throw new Error(`Failed to fetch candidates: ${error.message}`);
+      }
+
+      if (!publicProfiles || publicProfiles.length === 0) {
+        const errorMessage = certifiedOnly 
+          ? 'No certified candidates found. All available certified professionals have been reviewed.'
+          : 'No candidates found matching your criteria.';
+        console.log(errorMessage);
+        return [];
+      }
+
       if (publicProfiles && publicProfiles.length > 0) {
         // Convert database records to DiscoveryProfile format
         const discoveryProfiles: DiscoveryProfile[] = publicProfiles.map(profile => ({

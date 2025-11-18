@@ -10,6 +10,7 @@ import { HelpCircle } from "lucide-react";
 import { discoveryService, DiscoveryProfile } from "@/services/discoveryService";
 import { swipeService, SwipeDirection } from "@/services/swipeService";
 import { matchService } from "@/services/matchService";
+import { notificationService } from "@/services/notificationService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -83,6 +84,31 @@ export function CandidateBrowseTab() {
       await swipeService.recordSwipe(swipeData);
       setSwipeCount(prev => prev + 1);
 
+      // Create notification for candidate when showing interest
+      if (direction === 'right' || direction === 'nudge') {
+        try {
+          await notificationService.createNotification(
+            profile.user_id,
+            'match_created',
+            direction === 'nudge' 
+              ? '⚡ Super Interest from an Employer!' 
+              : '💚 An Employer is Interested!',
+            direction === 'nudge'
+              ? 'An employer showed super interest in your profile. This could be a great opportunity!'
+              : 'An employer expressed interest in your profile. Check your matches to learn more!',
+            '/dashboard/matches',
+            {
+              employer_id: user.id,
+              context: 'employee',
+              interest_level: direction === 'nudge' ? 'super' : 'standard'
+            }
+          );
+        } catch (notifError) {
+          console.error('Failed to create notification:', notifError);
+          // Don't fail the swipe if notification fails
+        }
+      }
+
       // Check for match if it was a right swipe
       if (direction === 'right') {
         const match = await swipeService.checkForMatch(
@@ -124,7 +150,7 @@ export function CandidateBrowseTab() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
