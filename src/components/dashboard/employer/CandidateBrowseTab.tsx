@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { IconUsers, IconHeart, IconTrendingUp } from "@tabler/icons-react";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle, ArrowLeft } from "lucide-react";
 import { discoveryService, DiscoveryProfile } from "@/services/discoveryService";
 import { swipeService, SwipeDirection } from "@/services/swipeService";
 import { matchService } from "@/services/matchService";
@@ -14,9 +14,11 @@ import { notificationService } from "@/services/notificationService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useNavigate } from "react-router-dom";
 
 export function CandidateBrowseTab() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [profiles, setProfiles] = useState<DiscoveryProfile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -143,9 +145,19 @@ export function CandidateBrowseTab() {
     <div className="h-full overflow-hidden">
       <div className="space-y-4 h-full">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-[#2E2E2E]">Browse Candidates</h2>
-          <p className="text-[#666666]">Swipe through talented professionals to find the perfect match</p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/employer-dashboard')}
+            aria-label="Back to dashboard"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h2 className="text-xl font-semibold text-[#2E2E2E]">Browse Candidates</h2>
+            <p className="text-[#666666]">Swipe through talented professionals to find the perfect match</p>
+          </div>
         </div>
       </div>
 
