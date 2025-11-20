@@ -1,27 +1,51 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { LoadingSpinner } from '@/components/loading/LoadingSpinner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ColorChip } from '@/components/admin/ColorChip';
-import { getEffectiveColor, INTENT_CONFIG } from '@/utils/adminColors';
-import { Filter, RefreshCw } from 'lucide-react';
+import { getEffectiveColor, INTENT_CONFIG, UserColor, IntentStage } from '@/utils/adminColors';
+import { RefreshCw, Download } from 'lucide-react';
 import { UserDrawer } from '@/components/admin/UserDrawer';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { EnhancedFiltersPanel, FilterOptions } from '@/components/admin/EnhancedFiltersPanel';
+import { BulkActionsToolbar } from '@/components/admin/BulkActionsToolbar';
+import { exportUsersToCSV, UserExportData } from '@/utils/csvExport';
+import { useToast } from '@/hooks/use-toast';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function AdminUsers() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [colorFilter, setColorFilter] = useState<string>('all');
+  const { toast } = useToast();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  
+  const [filters, setFilters] = useState<FilterOptions>({
+    search: '',
+    colorFilter: 'all',
+    userType: 'all',
+    certifiedFilter: 'all',
+    onboardingFilter: 'all',
+    intentFilter: 'all',
+    visibilityFilter: 'all',
+    dateRange: 'all',
+  });
 
   const { data: stats } = useQuery({
     queryKey: ['admin-users-stats'],
     queryFn: async () => {
-      // Get all user profiles for stats
       const { data: allUsers } = await supabase
         .from('user_profiles')
         .select('certified, color_admin, color_auto, last_active_at');
@@ -64,22 +88,66 @@ export default function AdminUsers() {
   });
 
   const { data: users, isLoading, refetch } = useQuery({
-    queryKey: ['admin-users', searchQuery, colorFilter],
+    queryKey: ['admin-users', filters],
     queryFn: async () => {
-      let query = supabase
+      const { data, error } = await supabase
         .from('user_profiles')
-        .select('*');
-
-      if (searchQuery) {
-        query = query.or(`name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`);
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      // Apply filters client-side to avoid complex query types
+      let filtered = data || [];
+      
+      if (filters.search.trim()) {
+        const search = filters.search.toLowerCase();
+        filtered = filtered.filter(u => 
+          u.name?.toLowerCase().includes(search) || 
+          u.email?.toLowerCase().includes(search)
+        );
       }
-
-      if (colorFilter !== 'all') {
-        query = query.or(`color_admin.eq.${colorFilter},color_auto.eq.${colorFilter}`);
+      
+      if (filters.colorFilter !== 'all') {
+        filtered = filtered.filter(u => 
+          u.color_admin === filters.colorFilter || u.color_auto === filters.colorFilter
+        );
       }
-
-      const { data } = await query.order('created_at', { ascending: false });
-      return data || [];
+      
+      if (filters.certifiedFilter === 'certified') {
+        filtered = filtered.filter(u => u.certified);
+      } else if (filters.certifiedFilter === 'not_certified') {
+        filtered = filtered.filter(u => !u.certified);
+      }
+      
+      if (filters.onboardingFilter === 'completed') {
+        filtered = filtered.filter(u => u.onboarding_completed);
+      } else if (filters.onboardingFilter === 'incomplete') {
+        filtered = filtered.filter(u => !u.onboarding_completed);
+      }
+      
+      if (filters.intentFilter !== 'all') {
+        if (filters.intentFilter === 'none') {
+          filtered = filtered.filter(u => !u.intent);
+        } else {
+          filtered = filtered.filter(u => u.intent === filters.intentFilter);
+        }
+      }
+      
+      if (filters.visibilityFilter === 'visible') {
+        filtered = filtered.filter(u => u.visible_to_employers);
+      } else if (filters.visibilityFilter === 'hidden') {
+        filtered = filtered.filter(u => !u.visible_to_employers);
+      }
+      
+      if (filters.dateRange !== 'all') {
+        const days = filters.dateRange === '7days' ? 7 : filters.dateRange === '30days' ? 30 : 90;
+        const dateThreshold = new Date();
+        dateThreshold.setDate(dateThreshold.getDate() - days);
+        filtered = filtered.filter(u => u.last_active_at && new Date(u.last_active_at) > dateThreshold);
+      }
+      
+      return filtered;
     }
   });
 
@@ -88,6 +156,173 @@ export default function AdminUsers() {
       await refetch();
     }
   });
+
+  const bulkUpdateMutation = useMutation({
+    mutationFn: async ({ userIds, updates }: { 
+      userIds: string[]; 
+      updates: { color_admin?: UserColor | null; intent?: IntentStage } 
+    }) => {
+      const { error } = await supabase
+        .from('user_profiles')
+        .update(updates)
+        .in('user_id', userIds);
+
+      if (error) throw error;
+
+      // Log bulk admin action
+      await supabase.rpc('log_admin_action', {
+        p_action: 'bulk_update_users',
+        p_metadata: { userIds, updates, count: userIds.length }
+      });
+    },
+    onSuccess: () => {
+      toast({ title: 'Users updated successfully' });
+      setSelectedUserIds(new Set());
+      refetch();
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: 'Error updating users', 
+        description: error.message, 
+        variant: 'destructive' 
+      });
+    }
+  });
+
+  const deleteUsersMutation = useMutation({
+    mutationFn: async (userIds: string[]) => {
+      // Delete user profiles (cascade will handle related data)
+      const { error } = await supabase
+        .from('user_profiles')
+        .delete()
+        .in('user_id', userIds);
+
+      if (error) throw error;
+
+      // Log bulk delete action
+      await supabase.rpc('log_admin_action', {
+        p_action: 'bulk_delete_users',
+        p_metadata: { userIds, count: userIds.length }
+      });
+    },
+    onSuccess: () => {
+      toast({ title: 'Users deleted successfully' });
+      setSelectedUserIds(new Set());
+      setShowDeleteDialog(false);
+      refetch();
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: 'Error deleting users', 
+        description: error.message, 
+        variant: 'destructive' 
+      });
+    }
+  });
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked && users) {
+      setSelectedUserIds(new Set(users.map(u => u.user_id)));
+    } else {
+      setSelectedUserIds(new Set());
+    }
+  };
+
+  const handleSelectUser = (userId: string, checked: boolean) => {
+    const newSelection = new Set(selectedUserIds);
+    if (checked) {
+      newSelection.add(userId);
+    } else {
+      newSelection.delete(userId);
+    }
+    setSelectedUserIds(newSelection);
+  };
+
+  const handleExportSelected = () => {
+    if (!users) return;
+    
+    const selectedUsers = users.filter(u => selectedUserIds.has(u.user_id));
+    const exportData: UserExportData[] = selectedUsers.map(user => ({
+      user_id: user.user_id,
+      name: user.name,
+      email: user.email,
+      user_type: null,
+      title: user.title,
+      location: user.location,
+      color_admin: user.color_admin,
+      color_auto: user.color_auto,
+      intent: user.intent,
+      certified: user.certified,
+      created_at: user.created_at,
+      last_active_at: user.last_active_at,
+      onboarding_completed: user.onboarding_completed,
+      visible_to_employers: user.visible_to_employers,
+      skills: user.skills,
+    }));
+
+    exportUsersToCSV(exportData);
+    toast({ title: `Exported ${selectedUsers.length} users to CSV` });
+  };
+
+  const handleExportAll = () => {
+    if (!users) return;
+    
+    const exportData: UserExportData[] = users.map(user => ({
+      user_id: user.user_id,
+      name: user.name,
+      email: user.email,
+      user_type: null,
+      title: user.title,
+      location: user.location,
+      color_admin: user.color_admin,
+      color_auto: user.color_auto,
+      intent: user.intent,
+      certified: user.certified,
+      created_at: user.created_at,
+      last_active_at: user.last_active_at,
+      onboarding_completed: user.onboarding_completed,
+      visible_to_employers: user.visible_to_employers,
+      skills: user.skills,
+    }));
+
+    exportUsersToCSV(exportData);
+    toast({ title: `Exported ${users.length} users to CSV` });
+  };
+
+  const handleAssignColor = (color: UserColor | null) => {
+    bulkUpdateMutation.mutate({
+      userIds: Array.from(selectedUserIds),
+      updates: { color_admin: color }
+    });
+  };
+
+  const handleAssignIntent = (intent: IntentStage) => {
+    bulkUpdateMutation.mutate({
+      userIds: Array.from(selectedUserIds),
+      updates: { intent }
+    });
+  };
+
+  const handleDeleteSelected = () => {
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    deleteUsersMutation.mutate(Array.from(selectedUserIds));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      search: '',
+      colorFilter: 'all',
+      userType: 'all',
+      certifiedFilter: 'all',
+      onboardingFilter: 'all',
+      intentFilter: 'all',
+      visibilityFilter: 'all',
+      dateRange: 'all',
+    });
+  };
 
   if (isLoading) {
     return (
@@ -137,36 +372,43 @@ export default function AdminUsers() {
         </div>
       </div>
 
-      {/* Search and Filter */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 mb-4 md:mb-6">
-        <Input
-          placeholder="Search users..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full md:w-64"
+      {/* Enhanced Filters */}
+      <div className="mb-4 md:mb-6">
+        <EnhancedFiltersPanel
+          filters={filters}
+          onFiltersChange={setFilters}
+          onClearFilters={clearFilters}
         />
-        <Select value={colorFilter} onValueChange={setColorFilter}>
-          <SelectTrigger className="w-full md:w-40">
-            <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Filter by color" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Colors</SelectItem>
-            <SelectItem value="purple">Purple</SelectItem>
-            <SelectItem value="green">Green</SelectItem>
-            <SelectItem value="orange">Orange</SelectItem>
-            <SelectItem value="red">Red</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
-      {/* Mobile: Card List, Desktop: Table */}
+      {/* Toolbar */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">
+            {users?.length || 0} users found
+          </span>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExportAll}
+        >
+          <Download className="h-4 w-4 mr-2" />
+          Export All CSV
+        </Button>
+      </div>
+
+      {/* Mobile: Card List */}
       <div className="md:hidden space-y-3">
         {users?.map((user) => {
           const effectiveColor = getEffectiveColor(user.color_admin, user.color_auto);
           return (
             <Card key={user.user_id} className="p-4">
               <div className="flex items-start gap-3 mb-3">
+                <Checkbox
+                  checked={selectedUserIds.has(user.user_id)}
+                  onCheckedChange={(checked) => handleSelectUser(user.user_id, !!checked)}
+                />
                 <Avatar className="h-12 w-12">
                   <AvatarImage src={user.profile_image || undefined} />
                   <AvatarFallback>
@@ -174,37 +416,24 @@ export default function AdminUsers() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{user.name || 'Unnamed User'}</div>
-                  <div className="text-sm text-muted-foreground truncate">{user.email}</div>
+                  <div className="font-medium text-sm truncate">
+                    {user.name || 'Unnamed User'}
+                  </div>
+                  <div className="text-xs text-muted-foreground truncate">
+                    {user.email}
+                  </div>
                 </div>
-                {effectiveColor && <ColorChip color={effectiveColor} />}
               </div>
               
-              <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+              <div className="grid grid-cols-2 gap-2 mb-3">
                 <div>
-                  <span className="text-muted-foreground">Type: </span>
-                  <span>{user.title || 'N/A'}</span>
+                  <div className="text-xs text-muted-foreground">Color</div>
+                  <ColorChip color={effectiveColor} showLabel={true} />
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Certified: </span>
-                  {user.certified ? (
-                    <span className="text-green-600 font-medium">✓</span>
-                  ) : (
-                    <span className="text-muted-foreground">No</span>
-                  )}
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Intent: </span>
-                  <span className={INTENT_CONFIG[user.intent || 'none'].color}>
+                  <div className="text-xs text-muted-foreground">Intent</div>
+                  <span className={`text-xs ${INTENT_CONFIG[user.intent || 'none'].color}`}>
                     {INTENT_CONFIG[user.intent || 'none'].label}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Active: </span>
-                  <span>
-                    {user.last_active_at
-                      ? new Date(user.last_active_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                      : 'Never'}
                   </span>
                 </div>
               </div>
@@ -222,57 +451,65 @@ export default function AdminUsers() {
         })}
       </div>
 
-      <Card className="hidden md:block">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="border-b">
-              <tr className="text-left">
-                <th className="p-4 font-medium">User</th>
-                <th className="p-4 font-medium">User Type</th>
-                <th className="p-4 font-medium">Color</th>
-                <th className="p-4 font-medium">Certified</th>
-                <th className="p-4 font-medium">Intent</th>
-                <th className="p-4 font-medium">Last Active</th>
-                <th className="p-4 font-medium">Actions</th>
+      {/* Desktop: Table */}
+      <div className="hidden md:block">
+        <div className="rounded-md border overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b bg-muted/50">
+                <th className="h-12 px-4 text-left align-middle font-medium">
+                  <Checkbox
+                    checked={users?.length ? selectedUserIds.size === users.length : false}
+                    onCheckedChange={handleSelectAll}
+                  />
+                </th>
+                <th className="h-12 px-4 text-left align-middle font-medium">User</th>
+                
+                <th className="h-12 px-4 text-left align-middle font-medium">Color</th>
+                <th className="h-12 px-4 text-left align-middle font-medium">Certified</th>
+                <th className="h-12 px-4 text-left align-middle font-medium">Intent</th>
+                <th className="h-12 px-4 text-left align-middle font-medium">Last Active</th>
+                <th className="h-12 px-4 text-left align-middle font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
               {users?.map((user) => {
                 const effectiveColor = getEffectiveColor(user.color_admin, user.color_auto);
                 return (
-                  <tr key={user.user_id} className="border-b hover:bg-muted/50">
+                  <tr key={user.user_id} className="border-b">
+                    <td className="p-4">
+                      <Checkbox
+                        checked={selectedUserIds.has(user.user_id)}
+                        onCheckedChange={(checked) => handleSelectUser(user.user_id, !!checked)}
+                      />
+                    </td>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <Avatar>
+                        <Avatar className="h-8 w-8">
                           <AvatarImage src={user.profile_image || undefined} />
                           <AvatarFallback>
                             {user.name?.substring(0, 2).toUpperCase() || 'U'}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-medium">{user.name || 'Unnamed User'}</div>
-                          <div className="text-sm text-muted-foreground">{user.email}</div>
+                          <div className="font-medium">
+                            {user.name || 'Unnamed User'}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {user.email}
+                          </div>
                         </div>
                       </div>
                     </td>
                     <td className="p-4">
-                      <span className="text-sm capitalize">
-                        {user.title || 'N/A'}
+                      <ColorChip color={effectiveColor} showLabel={true} />
+                    </td>
+                    <td className="p-4">
+                      <span className={`text-sm font-medium ${
+                        user.certified ? 'text-green-600' : 'text-muted-foreground'
+                      }`}>
+                        {user.certified ? 'Yes' : 'No'}
                       </span>
-                    </td>
-                    <td className="p-4">
-                      {effectiveColor ? (
-                        <ColorChip color={effectiveColor} />
-                      ) : (
-                        <span className="text-sm text-muted-foreground">Unassigned</span>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      {user.certified ? (
-                        <span className="text-sm text-green-600 font-medium">✓ Yes</span>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">No</span>
-                      )}
                     </td>
                     <td className="p-4">
                       <span className={`text-sm ${INTENT_CONFIG[user.intent || 'none'].color}`}>
@@ -283,12 +520,13 @@ export default function AdminUsers() {
                       <span className="text-sm text-muted-foreground">
                         {user.last_active_at
                           ? new Date(user.last_active_at).toLocaleDateString()
-                          : 'Never'}
+                          : 'Never'
+                        }
                       </span>
                     </td>
                     <td className="p-4">
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={() => setSelectedUserId(user.user_id)}
                       >
@@ -296,13 +534,24 @@ export default function AdminUsers() {
                       </Button>
                     </td>
                   </tr>
-                 );
-               })}
+                );
+              })}
             </tbody>
           </table>
         </div>
-      </Card>
+      </div>
 
+      {/* Bulk Actions Toolbar */}
+      <BulkActionsToolbar
+        selectedCount={selectedUserIds.size}
+        onClearSelection={() => setSelectedUserIds(new Set())}
+        onExportSelected={handleExportSelected}
+        onAssignColor={handleAssignColor}
+        onAssignIntent={handleAssignIntent}
+        onDeleteSelected={handleDeleteSelected}
+      />
+
+      {/* User Details Drawer */}
       {selectedUserId && (
         <UserDrawer
           userId={selectedUserId}
@@ -311,6 +560,24 @@ export default function AdminUsers() {
           onUpdate={refetch}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {selectedUserIds.size} user(s)? This action cannot be undone and will permanently remove all user data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>
+              Delete Users
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
