@@ -8,37 +8,17 @@ import gsap from "gsap";
 import { CategoryCard } from "./CategoryCard";
 import { StrengthsFocusCard } from "./StrengthsFocusCard";
 import { ReviewDrawer } from "./ReviewDrawer";
+import { CertResult, Certification } from "@/types/certification";
 
 interface ReflectionReportProps {
   resultId: string;
   userId: string;
 }
 
-interface Result {
-  id: string;
-  sector: string;
-  total_score: number;
-  category_scores: Record<string, number>;
-  pass_fail: boolean;
-  high_performer: boolean;
-  ai_summary_text: string;
-  strengths: string[];
-  focus_areas: string[];
-  insights: any;
-  per_question_reflections: any[];
-  created_at: string;
-}
-
-interface Certification {
-  verification_code: string;
-  level: string;
-  date_issued: string;
-}
-
 export default function ReflectionReport({ resultId, userId }: ReflectionReportProps) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [result, setResult] = useState<Result | null>(null);
+  const [result, setResult] = useState<CertResult | null>(null);
   const [certification, setCertification] = useState<Certification | null>(null);
   const [showReview, setShowReview] = useState(false);
   const [answers, setAnswers] = useState<any[]>([]);
@@ -73,11 +53,11 @@ export default function ReflectionReport({ resultId, userId }: ReflectionReportP
     setResult({
       ...resultData,
       category_scores: resultData.category_scores as Record<string, number>,
-      strengths: resultData.strengths || [],
-      focus_areas: resultData.focus_areas || [],
-      insights: resultData.insights || {},
-      per_question_reflections: Array.isArray(resultData.per_question_reflections) ? resultData.per_question_reflections : [],
-    });
+      strengths: (resultData.strengths || []) as string[],
+      focus_areas: (resultData.focus_areas || []) as string[],
+      insights: (resultData.insights || {}) as any,
+      per_question_reflections: (Array.isArray(resultData.per_question_reflections) ? resultData.per_question_reflections : []) as any[],
+    } as CertResult);
 
     // Load certification if passed
     if (resultData.pass_fail) {
@@ -87,7 +67,9 @@ export default function ReflectionReport({ resultId, userId }: ReflectionReportP
         .eq('result_id', resultId)
         .single();
 
-      setCertification(certData);
+      if (certData) {
+        setCertification(certData as any as Certification);
+      }
     }
 
     // Load all answers with questions for review mode
@@ -141,7 +123,7 @@ export default function ReflectionReport({ resultId, userId }: ReflectionReportP
 
   const sectorName = result.sector.charAt(0).toUpperCase() + result.sector.slice(1);
   const categoryCards = result.insights?.category_cards || [];
-  const miniReport = result.insights?.mini_report || {};
+  const miniReport = (result.insights?.mini_report || {}) as any;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-12 px-4">
@@ -224,7 +206,7 @@ export default function ReflectionReport({ resultId, userId }: ReflectionReportP
           <Card className="p-6 mb-6 bg-primary/5">
             <h4 className="font-bold mb-3">🏆 Certification Details</h4>
             <div className="space-y-2 text-sm">
-              <p><strong>Level:</strong> {certification.level === 'high_performer' ? 'High Performer' : 'Standard'}</p>
+              <p><strong>Level:</strong> {(certification.level as any) === 'high_performer' ? 'High Performer' : 'Standard'}</p>
               <p><strong>Verification Code:</strong> <code className="bg-background px-2 py-1 rounded">{certification.verification_code}</code></p>
               <p><strong>Issued:</strong> {new Date(certification.date_issued).toLocaleDateString()}</p>
             </div>

@@ -33,11 +33,11 @@ export function ReviewDrawer({ answers, onClose }: ReviewDrawerProps) {
 
   return (
     <div className="fixed inset-0 bg-background/95 z-50 overflow-y-auto">
-      <div className="min-h-screen py-12 px-4">
+      <div className="min-h-screen py-8 sm:py-12 px-4">
         <div className="max-w-3xl mx-auto">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold">
               Question {currentIndex + 1} of {answers.length}
             </h2>
             <Button onClick={onClose} variant="ghost" size="sm">
@@ -45,46 +45,46 @@ export function ReviewDrawer({ answers, onClose }: ReviewDrawerProps) {
             </Button>
           </div>
 
-          <Card className="p-8">
+          <Card className="p-4 sm:p-8">
             {/* Category Badge */}
             <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary mb-4">
               {current.cert_questions.category.replace(/_/g, ' ').toUpperCase()}
             </span>
 
             {/* Scenario */}
-            <h3 className="text-xl font-bold mb-6">{current.cert_questions.scenario}</h3>
+            <h3 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">{current.cert_questions.scenario}</h3>
 
             {/* Your Answer */}
-            <div className="bg-primary/5 rounded-lg p-4 mb-4">
-              <p className="text-sm font-medium text-primary mb-2">Your Answer:</p>
+            <div className="bg-primary/5 rounded-lg p-3 sm:p-4 mb-4">
+              <p className="text-xs sm:text-sm font-medium text-primary mb-2">Your Answer:</p>
               {current.written_answer_text ? (
-                <p className="text-base">{current.written_answer_text}</p>
+                <p className="text-sm sm:text-base">{current.written_answer_text}</p>
               ) : (
-                <p className="text-base">
+                <p className="text-sm sm:text-base">
                   {current.cert_questions.choices?.find((c: any) => c.id === current.selected_option_id)?.text || 'Not available'}
                 </p>
               )}
             </div>
 
             {/* Points & Badge */}
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-2xl font-bold text-primary">
+            <div className="flex items-center gap-2 sm:gap-3 mb-4">
+              <span className="text-xl sm:text-2xl font-bold text-primary">
                 {current.points_awarded}/10 points
               </span>
-              <span className={`px-3 py-1 rounded-full text-xs font-bold border-2 ${getPointColor(current.points_awarded)}`}>
+              <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-bold border-2 ${getPointColor(current.points_awarded)}`}>
                 {current.points_awarded >= 8 ? 'Excellent ✅' : 
                  current.points_awarded >= 5 ? 'Good 👍' : 'Needs Work 🎯'}
               </span>
             </div>
 
             {/* Reflection */}
-            <div className="bg-muted/50 rounded-lg p-6 mb-6">
-              <p className="text-sm font-medium text-muted-foreground mb-2">🪞 Reflection:</p>
-              <p className="leading-relaxed">{current.reflection}</p>
+            <div className="bg-muted/50 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-2">🪞 Reflection:</p>
+              <p className="text-sm sm:text-base leading-relaxed">{current.reflection}</p>
             </div>
 
             {/* Navigation */}
-            <div className="flex gap-4">
+            <div className="flex gap-3 sm:gap-4">
               <Button
                 onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
                 disabled={currentIndex === 0}
