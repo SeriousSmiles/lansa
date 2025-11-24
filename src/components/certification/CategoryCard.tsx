@@ -22,17 +22,17 @@ export function CategoryCard({ category, score, summary, nextStep }: CategoryCar
   };
 
   return (
-    <Card className={`p-6 border-2 ${getColor(score)}`}>
+    <Card className={`p-4 sm:p-6 border-2 ${getColor(score)}`}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold">{labels[category]}</h3>
-        <span className="text-3xl font-bold">{score}%</span>
+        <h3 className="text-base sm:text-lg font-bold">{labels[category]}</h3>
+        <span className="text-2xl sm:text-3xl font-bold">{score}%</span>
       </div>
       
-      <p className="text-sm leading-relaxed mb-4">{summary}</p>
+      <p className="text-xs sm:text-sm leading-relaxed mb-4">{summary}</p>
       
       <div className="bg-background/50 rounded-lg p-3">
         <p className="text-xs font-medium mb-1">💡 Next Step:</p>
-        <p className="text-sm font-medium">{nextStep}</p>
+        <p className="text-xs sm:text-sm font-medium">{nextStep}</p>
       </div>
     </Card>
   );

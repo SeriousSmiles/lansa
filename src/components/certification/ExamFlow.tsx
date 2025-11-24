@@ -7,24 +7,11 @@ import { Progress } from "@/components/ui/progress";
 import { Loader2, ArrowRight, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { WrittenQuestionCard } from "./WrittenQuestionCard";
+import { CertQuestion, ExamSector, QuestionType } from "@/types/certification";
 import gsap from "gsap";
 
-interface Question {
-  id: string;
-  scenario: string;
-  choices: Array<{ id: string; text: string; points: number }>;
-  category: string;
-  mirror_role: string;
-  mirror_context: string;
-  randomize_order: boolean;
-  question_type: string;
-  guidance: string | null;
-  max_words: number | null;
-  time_limit_seconds: number;
-}
-
 interface ExamFlowProps {
-  sector: 'office' | 'service' | 'technical' | 'digital';
+  sector: ExamSector;
   userId: string;
 }
 
@@ -37,7 +24,7 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   
   const [loading, setLoading] = useState(true);
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<CertQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -120,7 +107,7 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
 
     // Select questions with type filtering
     const categories = ['mindset', 'workplace_intelligence', 'performance_habits', 'applied_thinking'];
-    const selected: Question[] = [];
+    const selected: CertQuestion[] = [];
     
     categories.forEach(cat => {
       const catQuestions = allQuestions
@@ -128,9 +115,9 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
         .map(q => ({
           ...q,
           choices: q.choices as Array<{ id: string; text: string; points: number }>,
-          question_type: q.question_type || 'mcq',
+          question_type: (q.question_type || 'mcq') as QuestionType,
           time_limit_seconds: q.time_limit_seconds || 40,
-        }));
+        } as CertQuestion));
       
       // Filter by type based on feature flag
       const filteredQuestions = ENABLE_WRITTEN_QUESTIONS 
@@ -482,15 +469,15 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
   const isWritten = current.question_type === 'written';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-4 sm:py-8 px-3 sm:px-4">
       <div className={isWritten ? "max-w-4xl mx-auto" : "max-w-3xl mx-auto"}>
         {/* Progress Bar */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-xs sm:text-sm font-medium text-muted-foreground">
               Question {currentIndex + 1} of {questions.length}
             </span>
-            <span className="text-sm font-medium text-primary">
+            <span className="text-xs sm:text-sm font-medium text-primary">
               {Math.round(progressPercent)}%
             </span>
           </div>
@@ -498,12 +485,12 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
         </div>
 
         {/* Question Card */}
-        <Card ref={questionRef} className="p-6 md:p-8 mb-6">
-          <div className="mb-6">
+        <Card ref={questionRef} className="p-4 sm:p-6 md:p-8 mb-4 sm:mb-6">
+          <div className="mb-4 sm:mb-6">
             <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary mb-4">
               {current.category.replace(/_/g, ' ').toUpperCase()}
             </span>
-            <h2 className="text-xl md:text-2xl font-bold mb-6 max-w-prose mx-auto text-center">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 sm:mb-6 max-w-prose mx-auto text-center">
               {current.scenario}
             </h2>
           </div>
@@ -523,28 +510,28 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
           ) : (
             <>
               {/* Answer Options - 2x2 Grid on Desktop */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6">
                 {shuffledChoices.map((choice) => (
                   <button
                     key={choice.id}
                     onClick={() => setSelectedAnswer(choice.id)}
-                    className={`text-left p-4 md:p-5 rounded-lg border-2 transition-all duration-200 min-h-[100px] md:min-h-[120px] flex items-center ${
+                    className={`text-left p-3 sm:p-4 md:p-5 rounded-lg border-2 transition-all duration-200 min-h-[90px] sm:min-h-[100px] md:min-h-[120px] flex items-center ${
                       selectedAnswer === choice.id
                         ? 'border-primary bg-primary/5 shadow-md ring-2 ring-primary/20'
                         : 'border-border hover:border-primary/50 hover:bg-muted/50'
                     }`}
                   >
-                    <span className="font-medium text-sm md:text-base">{choice.text}</span>
+                    <span className="font-medium text-xs sm:text-sm md:text-base">{choice.text}</span>
                   </button>
                 ))}
               </div>
 
               {/* Timer Display */}
               <div className="flex items-center justify-center gap-2 my-4 md:my-6">
-                <Clock className={`h-5 w-5 ${
+                <Clock className={`h-4 sm:h-5 w-4 sm:w-5 ${
                   timeRemaining <= 10 ? 'text-red-500 animate-pulse' : 'text-muted-foreground'
                 }`} />
-                <span className={`text-2xl font-mono font-bold ${
+                <span className={`text-xl sm:text-2xl font-mono font-bold ${
                   timeRemaining <= 10 
                     ? 'text-red-500 animate-pulse' 
                     : timeRemaining <= 20 
@@ -561,7 +548,7 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
           <Button
             onClick={isWritten ? () => handleSubmitWrittenAnswer(writtenAnswer) : handleSubmitAnswer}
             disabled={submitting || (isWritten ? !writtenAnswer.trim() : !selectedAnswer)}
-            className="w-full mt-6"
+            className="w-full mt-4 sm:mt-6"
             size="lg"
           >
             {submitting ? (
