@@ -350,8 +350,10 @@ export type Database = {
           id: string
           points_awarded: number
           question_id: string
+          response_time_sec: number | null
           selected_option_id: string
           session_id: string
+          written_answer_text: string | null
         }
         Insert: {
           ai_mirror_text?: string | null
@@ -359,8 +361,10 @@ export type Database = {
           id?: string
           points_awarded: number
           question_id: string
+          response_time_sec?: number | null
           selected_option_id: string
           session_id: string
+          written_answer_text?: string | null
         }
         Update: {
           ai_mirror_text?: string | null
@@ -368,8 +372,10 @@ export type Database = {
           id?: string
           points_awarded?: number
           question_id?: string
+          response_time_sec?: number | null
           selected_option_id?: string
           session_id?: string
+          written_answer_text?: string | null
         }
         Relationships: [
           {
@@ -434,36 +440,48 @@ export type Database = {
           category: Database["public"]["Enums"]["exam_category"]
           choices: Json
           created_at: string
+          guidance: string | null
           id: string
+          max_words: number | null
           mirror_context: string
           mirror_role: string
+          question_type: string | null
           randomize_order: boolean
           scenario: string
           sector: Database["public"]["Enums"]["exam_sector"]
+          time_limit_seconds: number | null
           updated_at: string
         }
         Insert: {
           category: Database["public"]["Enums"]["exam_category"]
           choices: Json
           created_at?: string
+          guidance?: string | null
           id?: string
+          max_words?: number | null
           mirror_context: string
           mirror_role: string
+          question_type?: string | null
           randomize_order?: boolean
           scenario: string
           sector: Database["public"]["Enums"]["exam_sector"]
+          time_limit_seconds?: number | null
           updated_at?: string
         }
         Update: {
           category?: Database["public"]["Enums"]["exam_category"]
           choices?: Json
           created_at?: string
+          guidance?: string | null
           id?: string
+          max_words?: number | null
           mirror_context?: string
           mirror_role?: string
+          question_type?: string | null
           randomize_order?: boolean
           scenario?: string
           sector?: Database["public"]["Enums"]["exam_sector"]
+          time_limit_seconds?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -473,10 +491,15 @@ export type Database = {
           ai_summary_text: string | null
           category_scores: Json
           created_at: string
+          focus_areas: string[] | null
+          high_performer: boolean | null
           id: string
+          insights: Json | null
           pass_fail: boolean
+          per_question_reflections: Json | null
           sector: Database["public"]["Enums"]["exam_sector"]
           session_id: string
+          strengths: string[] | null
           total_score: number
           user_id: string
         }
@@ -484,10 +507,15 @@ export type Database = {
           ai_summary_text?: string | null
           category_scores: Json
           created_at?: string
+          focus_areas?: string[] | null
+          high_performer?: boolean | null
           id?: string
+          insights?: Json | null
           pass_fail: boolean
+          per_question_reflections?: Json | null
           sector: Database["public"]["Enums"]["exam_sector"]
           session_id: string
+          strengths?: string[] | null
           total_score: number
           user_id: string
         }
@@ -495,10 +523,15 @@ export type Database = {
           ai_summary_text?: string | null
           category_scores?: Json
           created_at?: string
+          focus_areas?: string[] | null
+          high_performer?: boolean | null
           id?: string
+          insights?: Json | null
           pass_fail?: boolean
+          per_question_reflections?: Json | null
           sector?: Database["public"]["Enums"]["exam_sector"]
           session_id?: string
+          strengths?: string[] | null
           total_score?: number
           user_id?: string
         }
