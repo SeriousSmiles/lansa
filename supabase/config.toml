@@ -134,3 +134,6 @@ verify_jwt = true
 [functions.generate-match-summary]
 verify_jwt = true
 
+[functions.cert-post-analysis]
+verify_jwt = true
+
