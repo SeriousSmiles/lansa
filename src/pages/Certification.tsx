@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import CertificationDashboard from "@/components/certification/CertificationDashboard";
 import ExamFlow from "@/components/certification/ExamFlow";
-import ResultPage from "@/components/certification/ResultPage";
+import ReflectionReport from "@/components/certification/ReflectionReport";
 import { Loader2 } from "lucide-react";
 
 export default function Certification() {
@@ -36,7 +36,7 @@ export default function Certification() {
 
   // Show result page if resultId is present
   if (resultId) {
-    return <ResultPage resultId={resultId} userId={userId!} />;
+    return <ReflectionReport resultId={resultId} userId={userId!} />;
   }
 
   // Show exam flow if sector is selected

@@ -4,9 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import MirrorMomentPanel from "./MirrorMomentPanel";
+import { WrittenQuestionCard } from "./WrittenQuestionCard";
 import gsap from "gsap";
 
 interface Question {
@@ -17,6 +17,10 @@ interface Question {
   mirror_role: string;
   mirror_context: string;
   randomize_order: boolean;
+  question_type: string;
+  guidance: string | null;
+  max_words: number | null;
+  time_limit_seconds: number;
 }
 
 interface ExamFlowProps {
@@ -24,20 +28,23 @@ interface ExamFlowProps {
   userId: string;
 }
 
+const ENABLE_WRITTEN_QUESTIONS = false; // Feature flag
+
 export default function ExamFlow({ sector, userId }: ExamFlowProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const questionRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [writtenAnswer, setWrittenAnswer] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [showMirror, setShowMirror] = useState(false);
-  const [mirrorText, setMirrorText] = useState("");
   const [shuffledChoices, setShuffledChoices] = useState<any[]>([]);
+  const [timeRemaining, setTimeRemaining] = useState(40);
 
   useEffect(() => {
     initializeExam();
@@ -46,13 +53,44 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
   useEffect(() => {
     if (questions.length > 0 && currentIndex < questions.length) {
       const current = questions[currentIndex];
-      if (current.randomize_order) {
-        setShuffledChoices([...current.choices].sort(() => Math.random() - 0.5));
-      } else {
-        setShuffledChoices(current.choices);
+      
+      // Shuffle choices if needed
+      if (current.question_type === 'mcq') {
+        if (current.randomize_order) {
+          setShuffledChoices([...current.choices].sort(() => Math.random() - 0.5));
+        } else {
+          setShuffledChoices(current.choices);
+        }
       }
+      
+      // Reset timer
+      const timeLimit = current.question_type === 'written' ? 60 : 40;
+      setTimeRemaining(timeLimit);
+      
+      // Clear existing timer
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      
+      // Start countdown
+      timerRef.current = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            handleAutoSubmit();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
       animateQuestionEntry();
     }
+    
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
   }, [currentIndex, questions]);
 
   const animateQuestionEntry = () => {
@@ -65,7 +103,6 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
   };
 
   const initializeExam = async () => {
-    // Fetch all questions for this sector
     const { data: allQuestions, error: qError } = await supabase
       .from('cert_questions')
       .select('*')
@@ -81,7 +118,7 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
       return;
     }
 
-    // Randomly select 15 questions (3-4 per category) and cast types
+    // Select questions with type filtering
     const categories = ['mindset', 'workplace_intelligence', 'performance_habits', 'applied_thinking'];
     const selected: Question[] = [];
     
@@ -90,18 +127,34 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
         .filter(q => q.category === cat)
         .map(q => ({
           ...q,
-          choices: q.choices as Array<{ id: string; text: string; points: number }>
+          choices: q.choices as Array<{ id: string; text: string; points: number }>,
+          question_type: q.question_type || 'mcq',
+          time_limit_seconds: q.time_limit_seconds || 40,
         }));
+      
+      // Filter by type based on feature flag
+      const filteredQuestions = ENABLE_WRITTEN_QUESTIONS 
+        ? catQuestions 
+        : catQuestions.filter(q => q.question_type !== 'written');
+      
       const count = cat === 'mindset' || cat === 'applied_thinking' ? 4 : 3;
-      const randomPicks = catQuestions
+      const randomPicks = filteredQuestions
         .sort(() => Math.random() - 0.5)
-        .slice(0, Math.min(count, catQuestions.length));
+        .slice(0, Math.min(count, filteredQuestions.length));
       selected.push(...randomPicks);
     });
 
-    // Shuffle all selected questions
-    const shuffled = selected.sort(() => Math.random() - 0.5).slice(0, 15);
-    setQuestions(shuffled);
+    // If written questions enabled, ensure mix (12 MCQ + 3 written)
+    let finalSelection;
+    if (ENABLE_WRITTEN_QUESTIONS) {
+      const written = selected.filter(q => q.question_type === 'written').slice(0, 3);
+      const mcq = selected.filter(q => q.question_type === 'mcq').slice(0, 12);
+      finalSelection = [...mcq, ...written].sort(() => Math.random() - 0.5).slice(0, 15);
+    } else {
+      finalSelection = selected.sort(() => Math.random() - 0.5).slice(0, 15);
+    }
+
+    setQuestions(finalSelection);
 
     // Create exam session
     const { data: session, error: sError } = await supabase
@@ -109,7 +162,7 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
       .insert({
         user_id: userId,
         sector,
-        selected_questions: shuffled.map(q => q.id),
+        selected_questions: finalSelection.map(q => q.id),
         status: 'in_progress',
       })
       .select()
@@ -129,6 +182,23 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
     setLoading(false);
   };
 
+  const handleAutoSubmit = () => {
+    const current = questions[currentIndex];
+    
+    if (current.question_type === 'written') {
+      handleSubmitWrittenAnswer(writtenAnswer);
+    } else {
+      if (selectedAnswer) {
+        handleSubmitAnswer();
+      } else {
+        // Auto-select first choice
+        const firstChoice = shuffledChoices[0];
+        setSelectedAnswer(firstChoice.id);
+        setTimeout(() => handleSubmitAnswer(), 100);
+      }
+    }
+  };
+
   const handleSubmitAnswer = async () => {
     if (!selectedAnswer || !sessionId) return;
 
@@ -141,7 +211,16 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
       return;
     }
 
-    // Save answer to database
+    // Stop timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+
+    // Calculate response time
+    const timeLimit = current.time_limit_seconds || 40;
+    const responseTime = timeLimit - timeRemaining;
+
+    // Save answer to database (no AI call)
     const { error: answerError } = await supabase
       .from('cert_answers')
       .insert({
@@ -149,6 +228,7 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
         question_id: current.id,
         selected_option_id: selectedAnswer,
         points_awarded: selectedChoice.points,
+        response_time_sec: responseTime,
       });
 
     if (answerError) {
@@ -161,49 +241,59 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
       return;
     }
 
-    // Call Mirror AI
-    try {
-      const { data: mirrorData, error: mirrorError } = await supabase.functions.invoke('cert-mirror-feedback', {
-        body: {
-          sector,
-          category: current.category,
-          scenario: current.scenario,
-          user_answer_text: selectedChoice.text,
-          mirror_role: current.mirror_role,
-          mirror_context: current.mirror_context,
-        },
-      });
-
-      if (mirrorError) {
-        console.error('Mirror AI error:', mirrorError);
-      }
-
-      const mirror = mirrorData?.mirror_text || "Your answer shows thoughtfulness. Keep reflecting on how your choices impact professional outcomes.";
-      
-      // Update answer with mirror text
-      await supabase
-        .from('cert_answers')
-        .update({ ai_mirror_text: mirror })
-        .eq('session_id', sessionId)
-        .eq('question_id', current.id);
-
-      setMirrorText(mirror);
-      setShowMirror(true);
-    } catch (err) {
-      console.error('Mirror generation error:', err);
-      setMirrorText("Your answer demonstrates consideration of the scenario. Continue developing your professional judgment.");
-      setShowMirror(true);
-    }
-
-    setSubmitting(false);
-  };
-
-  const handleNextQuestion = () => {
-    setShowMirror(false);
+    // Immediately advance (no mirror moment)
     setSelectedAnswer(null);
+    setSubmitting(false);
     
     if (currentIndex === questions.length - 1) {
-      // Exam complete - calculate results
+      completeExam();
+    } else {
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
+
+  const handleSubmitWrittenAnswer = async (text: string) => {
+    if (!sessionId) return;
+    setSubmitting(true);
+
+    const current = questions[currentIndex];
+
+    // Stop timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+
+    // Calculate response time
+    const timeLimit = current.time_limit_seconds || 60;
+    const responseTime = timeLimit - timeRemaining;
+
+    // Save to database (neutral score for now)
+    const { error: answerError } = await supabase
+      .from('cert_answers')
+      .insert({
+        session_id: sessionId,
+        question_id: current.id,
+        selected_option_id: null,
+        written_answer_text: text,
+        points_awarded: 7, // Neutral score until AI scoring implemented
+        response_time_sec: responseTime,
+      });
+
+    if (answerError) {
+      toast({
+        title: "Error",
+        description: "Failed to save answer.",
+        variant: "destructive",
+      });
+      setSubmitting(false);
+      return;
+    }
+
+    setWrittenAnswer("");
+    setSubmitting(false);
+
+    // Advance
+    if (currentIndex === questions.length - 1) {
       completeExam();
     } else {
       setCurrentIndex(currentIndex + 1);
@@ -274,25 +364,48 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
     const totalScore = Math.round(weightedSum / totalWeight);
     const passFail = totalScore >= 75;
 
-    // Generate AI summary
-    const allMirrorTexts = answers.map(a => a.ai_mirror_text).filter(Boolean);
-    
-    let aiSummary = "";
+    // Build payload for AI analysis
+    const allAnswers = answers.map(a => {
+      const question = questions.find(q => q.id === a.question_id);
+      const selectedChoice = question?.choices.find(c => c.id === a.selected_option_id);
+      
+      return {
+        question_id: a.question_id,
+        scenario: question?.scenario || '',
+        category: question?.category || '',
+        selected_text: a.written_answer_text || selectedChoice?.text || '',
+        points_awarded: a.points_awarded,
+      };
+    });
+
+    // Call new cert-post-analysis AI function
+    let analysisData: any = null;
     try {
-      const { data: summaryData } = await supabase.functions.invoke('cert-summary', {
+      const { data, error: analysisError } = await supabase.functions.invoke('cert-post-analysis', {
         body: {
           sector,
           category_scores: categoryScores,
-          all_mirror_texts: allMirrorTexts,
           total_score: totalScore,
-          pass_fail: passFail,
+          pass_fail: passFail ? 'PASS' : 'NEEDS_IMPROVEMENT',
+          answers: allAnswers,
         },
       });
 
-      aiSummary = summaryData?.ai_summary_text || "";
+      if (analysisError) {
+        console.error('Analysis error:', analysisError);
+      }
+      
+      analysisData = data;
     } catch (err) {
-      console.error('Summary generation error:', err);
+      console.error('Post-analysis generation error:', err);
     }
+
+    // Extract AI response
+    const strengths = analysisData?.strengths || [];
+    const focus_areas = analysisData?.focus_areas || [];
+    const per_question_reflections = analysisData?.per_question_reflections || [];
+    const category_cards = analysisData?.category_cards || [];
+    const mini_report = analysisData?.mini_report || {};
 
     // Save result
     const { data: result } = await supabase
@@ -304,7 +417,15 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
         total_score: totalScore,
         category_scores: categoryScores,
         pass_fail: passFail,
-        ai_summary_text: aiSummary,
+        high_performer: Object.values(categoryScores).every(score => score >= 80),
+        ai_summary_text: `${mini_report.overall || ''}\n\n${mini_report.categories || ''}\n\n${mini_report.forward || ''}`,
+        strengths,
+        focus_areas,
+        insights: {
+          category_cards,
+          mini_report,
+        },
+        per_question_reflections,
       })
       .select()
       .single();
@@ -356,22 +477,13 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
     );
   }
 
-  if (showMirror) {
-    return (
-      <MirrorMomentPanel
-        mirrorText={mirrorText}
-        onNext={handleNextQuestion}
-        isLastQuestion={currentIndex === questions.length - 1}
-      />
-    );
-  }
-
   const current = questions[currentIndex];
   const progressPercent = ((currentIndex + 1) / questions.length) * 100;
+  const isWritten = current.question_type === 'written';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8 px-4">
-      <div className="max-w-3xl mx-auto">
+      <div className={isWritten ? "max-w-4xl mx-auto" : "max-w-3xl mx-auto"}>
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-2">
@@ -386,42 +498,76 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
         </div>
 
         {/* Question Card */}
-        <Card ref={questionRef} className="p-8 mb-6">
+        <Card ref={questionRef} className="p-6 md:p-8 mb-6">
           <div className="mb-6">
             <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary mb-4">
               {current.category.replace(/_/g, ' ').toUpperCase()}
             </span>
-            <h2 className="text-2xl font-bold mb-4">{current.scenario}</h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-6 max-w-prose mx-auto text-center">
+              {current.scenario}
+            </h2>
           </div>
 
-          {/* Answer Options */}
-          <div className="space-y-3">
-            {shuffledChoices.map((choice) => (
-              <button
-                key={choice.id}
-                onClick={() => setSelectedAnswer(choice.id)}
-                className={`w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ${
-                  selectedAnswer === choice.id
-                    ? 'border-primary bg-primary/5 shadow-md'
-                    : 'border-border hover:border-primary/50 hover:bg-muted/50'
-                }`}
-              >
-                <span className="font-medium">{choice.text}</span>
-              </button>
-            ))}
-          </div>
+          {isWritten ? (
+            <WrittenQuestionCard
+              scenario={current.scenario}
+              guidance={current.guidance || "Be clear, professional, and solution-focused"}
+              maxWords={current.max_words || 50}
+              timeLimit={current.time_limit_seconds || 60}
+              onSubmit={(answer) => {
+                setWrittenAnswer(answer);
+                handleSubmitWrittenAnswer(answer);
+              }}
+              submitting={submitting}
+            />
+          ) : (
+            <>
+              {/* Answer Options - 2x2 Grid on Desktop */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6">
+                {shuffledChoices.map((choice) => (
+                  <button
+                    key={choice.id}
+                    onClick={() => setSelectedAnswer(choice.id)}
+                    className={`text-left p-4 md:p-5 rounded-lg border-2 transition-all duration-200 min-h-[100px] md:min-h-[120px] flex items-center ${
+                      selectedAnswer === choice.id
+                        ? 'border-primary bg-primary/5 shadow-md ring-2 ring-primary/20'
+                        : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                    }`}
+                  >
+                    <span className="font-medium text-sm md:text-base">{choice.text}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Timer Display */}
+              <div className="flex items-center justify-center gap-2 my-4 md:my-6">
+                <Clock className={`h-5 w-5 ${
+                  timeRemaining <= 10 ? 'text-red-500 animate-pulse' : 'text-muted-foreground'
+                }`} />
+                <span className={`text-2xl font-mono font-bold ${
+                  timeRemaining <= 10 
+                    ? 'text-red-500 animate-pulse' 
+                    : timeRemaining <= 20 
+                      ? 'text-orange-500' 
+                      : 'text-primary'
+                }`}>
+                  {timeRemaining}s
+                </span>
+              </div>
+            </>
+          )}
 
           {/* Submit Button */}
           <Button
-            onClick={handleSubmitAnswer}
-            disabled={!selectedAnswer || submitting}
+            onClick={isWritten ? () => handleSubmitWrittenAnswer(writtenAnswer) : handleSubmitAnswer}
+            disabled={submitting || (isWritten ? !writtenAnswer.trim() : !selectedAnswer)}
             className="w-full mt-6"
             size="lg"
           >
             {submitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Analyzing...
+                Saving...
               </>
             ) : (
               <>
