@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Briefcase, Users, Wrench, Monitor, Award, TrendingUp } from "lucide-react";
+import { Briefcase, Users, Wrench, Monitor, Award, TrendingUp, ArrowLeft } from "lucide-react";
 import gsap from "gsap";
 
 interface SectorProgress {
@@ -103,6 +103,16 @@ export default function CertificationDashboard({ userId }: CertificationDashboar
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-12 px-4">
       <div className="max-w-7xl mx-auto">
+        {/* Back Button */}
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/dashboard')}
+          className="mb-6"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Dashboard
+        </Button>
+
         {/* Header */}
         <div className="text-center mb-12">
           <Award className="h-16 w-16 mx-auto mb-4 text-primary" />
