@@ -17,7 +17,12 @@ interface ProfileLayoutProps {
   readOnly?: boolean;
   hideBackButton?: boolean;
   onOpenGuidedSetup?: () => void;
-  userProfile?: any; // Add profile data for preview
+  userProfile?: any;
+  // Palette system props
+  currentPalette?: string;
+  activePalette?: any;
+  onPaletteChange?: (paletteId: string) => Promise<void>;
+  onModeToggle?: () => Promise<void>;
 }
 
 export function ProfileLayout({ 
@@ -34,7 +39,11 @@ export function ProfileLayout({
   readOnly = false,
   hideBackButton = false,
   onOpenGuidedSetup,
-  userProfile
+  userProfile,
+  currentPalette,
+  activePalette,
+  onPaletteChange,
+  onModeToggle,
 }: ProfileLayoutProps) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -63,6 +72,10 @@ export function ProfileLayout({
         hideBackButton={hideBackButton}
         onOpenGuidedSetup={onOpenGuidedSetup}
         userProfile={userProfile}
+        currentPalette={currentPalette}
+        activePalette={activePalette}
+        onPaletteChange={onPaletteChange}
+        onModeToggle={onModeToggle}
       />
 
       <main ref={mainContentRef} className="flex-1 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12">

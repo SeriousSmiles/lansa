@@ -20,7 +20,12 @@ interface ProfileHeaderProps {
   readOnly?: boolean;
   hideBackButton?: boolean;
   onOpenGuidedSetup?: () => void;
-  userProfile?: any; // Add profile data for preview
+  userProfile?: any;
+  // Palette system props
+  currentPalette?: string;
+  activePalette?: any;
+  onPaletteChange?: (paletteId: string) => Promise<void>;
+  onModeToggle?: () => Promise<void>;
 }
 
 export function ProfileHeader({ 
@@ -35,7 +40,11 @@ export function ProfileHeader({
   readOnly = false,
   hideBackButton = false,
   onOpenGuidedSetup,
-  userProfile
+  userProfile,
+  currentPalette,
+  activePalette,
+  onPaletteChange,
+  onModeToggle,
 }: ProfileHeaderProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -89,6 +98,10 @@ export function ProfileHeader({
             isMobile={isMobile}
             onOpenGuidedSetup={onOpenGuidedSetup}
             userProfile={userProfile}
+            currentPalette={currentPalette}
+            activePalette={activePalette}
+            onPaletteChange={onPaletteChange}
+            onModeToggle={onModeToggle}
           />
         </div>
       )}

@@ -124,12 +124,19 @@ export interface ProfileDataReturn {
   biggestChallenge: string;
   location: string;
 
+  // Palette system (new)
+  currentPalette: string;
+  activePalette: any;
+
   // Update functions
   updateUserName: (name: string) => Promise<void>;
   updatePhoneNumber: (phone: string) => Promise<void>;
   updateAboutText: (text: string) => Promise<void>;
   updateCoverColor: (color: string) => Promise<void>;
   updateHighlightColor: (color: string) => Promise<void>;
+  updatePalette: (paletteId: string, customColors?: Partial<ProfilePalette>) => Promise<void>;
+  toggleMode: () => Promise<void>;
+  updateCustomColor: (colorKey: keyof ProfilePalette, value: string) => Promise<void>;
   updateUserAnswer: (field: string, value: string) => Promise<void>;
   updateUserEmail: (email: string) => Promise<void>;
   updateUserTitle: (title: string) => Promise<void>;

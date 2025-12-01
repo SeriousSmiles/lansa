@@ -32,6 +32,11 @@ interface DesktopProfileActionsProps {
   onActionComplete?: () => void;
   onOpenGuidedSetup?: () => void;
   userProfile?: any;
+  // Palette system props
+  currentPalette?: string;
+  activePalette?: any;
+  onPaletteChange?: (paletteId: string) => Promise<void>;
+  onModeToggle?: () => Promise<void>;
 }
 
 export function DesktopProfileActions({
@@ -45,7 +50,11 @@ export function DesktopProfileActions({
   onHighlightColorChange,
   onActionComplete,
   onOpenGuidedSetup,
-  userProfile
+  userProfile,
+  currentPalette,
+  activePalette,
+  onPaletteChange,
+  onModeToggle,
 }: DesktopProfileActionsProps) {
   const { user } = useAuth();
   const { userType } = useUserType();
@@ -190,20 +199,10 @@ export function DesktopProfileActions({
       <DesignerSidebar
         isOpen={isDesignerOpen}
         onClose={() => setIsDesignerOpen(false)}
-        currentMode="light"
-        currentPaletteId="coral_professional"
-        onPaletteChange={async (paletteId) => {
-          // Temporary: Map palette to highlight color for backwards compatibility
-          const palette = [...LIGHT_PALETTES, ...DARK_PALETTES].find(p => p.id === paletteId);
-          if (palette && onHighlightColorChange) {
-            await onHighlightColorChange(palette.primary);
-            await onCoverColorChange(palette.background);
-          }
-        }}
-        onModeToggle={async () => {
-          // Mode toggle will be fully implemented when palette system is integrated
-          toast("Mode toggle coming soon with full palette system");
-        }}
+        currentMode={activePalette?.mode || 'light'}
+        currentPaletteId={currentPalette || 'coral_professional'}
+        onPaletteChange={onPaletteChange || (async () => {})}
+        onModeToggle={onModeToggle || (async () => {})}
       />
 
       <DesktopQuickActionsModal

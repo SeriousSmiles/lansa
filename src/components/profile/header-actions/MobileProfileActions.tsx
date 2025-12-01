@@ -10,7 +10,12 @@ interface MobileProfileActionsProps {
   onHighlightColorChange?: (color: string) => Promise<void>;
   onActionComplete?: () => void;
   onOpenGuidedSetup?: () => void;
-  userProfile?: any; // Add profile data for preview
+  userProfile?: any;
+  // Palette system props
+  currentPalette?: string;
+  activePalette?: any;
+  onPaletteChange?: (paletteId: string) => Promise<void>;
+  onModeToggle?: () => Promise<void>;
 }
 
 export function MobileProfileActions({
@@ -22,7 +27,11 @@ export function MobileProfileActions({
   onHighlightColorChange,
   onActionComplete,
   onOpenGuidedSetup,
-  userProfile
+  userProfile,
+  currentPalette,
+  activePalette,
+  onPaletteChange,
+  onModeToggle,
 }: MobileProfileActionsProps) {
   return (
     <div className="flex flex-col w-full gap-3">
@@ -38,6 +47,10 @@ export function MobileProfileActions({
         onActionComplete={onActionComplete}
         onOpenGuidedSetup={onOpenGuidedSetup}
         userProfile={userProfile}
+        currentPalette={currentPalette}
+        activePalette={activePalette}
+        onPaletteChange={onPaletteChange}
+        onModeToggle={onModeToggle}
       />
     </div>
   );
