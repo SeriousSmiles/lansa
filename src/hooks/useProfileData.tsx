@@ -184,12 +184,19 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     biggestChallenge,
     location: profileBasics.location,
     
+    // Palette system (new)
+    currentPalette: profileBasics.currentPalette,
+    activePalette: profileBasics.activePalette,
+    
     // Update functions
     updateUserName: profileBasics.updateUserName,
     updatePhoneNumber: profileBasics.updatePhoneNumber,
     updateAboutText: profileBasics.updateAboutText,
     updateCoverColor: profileBasics.updateCoverColor,
     updateHighlightColor: profileBasics.updateHighlightColor,
+    updatePalette: profileBasics.updatePalette,
+    toggleMode: profileBasics.toggleMode,
+    updateCustomColor: profileBasics.updateCustomColor,
     updateUserAnswer: profileBasics.updateUserAnswer,
     updateUserEmail: profileBasics.updateUserEmail,
     updateUserTitle: profileBasics.updateUserTitle,

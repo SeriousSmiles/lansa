@@ -14,7 +14,12 @@ interface ProfileHeaderActionsProps {
   isMobile?: boolean;
   onActionComplete?: () => void;
   onOpenGuidedSetup?: () => void;
-  userProfile?: any; // Add profile data for preview
+  userProfile?: any;
+  // Palette system props
+  currentPalette?: string;
+  activePalette?: any;
+  onPaletteChange?: (paletteId: string) => Promise<void>;
+  onModeToggle?: () => Promise<void>;
 }
 
 export function ProfileHeaderActions({ 
@@ -29,7 +34,11 @@ export function ProfileHeaderActions({
   isMobile = false,
   onActionComplete,
   onOpenGuidedSetup,
-  userProfile
+  userProfile,
+  currentPalette,
+  activePalette,
+  onPaletteChange,
+  onModeToggle,
 }: ProfileHeaderActionsProps) {
   // Use burger menu for all device sizes now
   return (
@@ -43,6 +52,10 @@ export function ProfileHeaderActions({
       onActionComplete={onActionComplete}
       onOpenGuidedSetup={onOpenGuidedSetup}
       userProfile={userProfile}
+      currentPalette={currentPalette}
+      activePalette={activePalette}
+      onPaletteChange={onPaletteChange}
+      onModeToggle={onModeToggle}
     />
   );
 }

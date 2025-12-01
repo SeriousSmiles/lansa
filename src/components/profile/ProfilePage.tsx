@@ -121,6 +121,10 @@ export function ProfilePage() {
         mainContentRef={mainContentRef}
         onOpenGuidedSetup={() => {}}
         userProfile={profile}
+        currentPalette={profile.currentPalette}
+        activePalette={profile.activePalette}
+        onPaletteChange={profile.updatePalette}
+        onModeToggle={profile.toggleMode}
       >
         <ProfileContent 
           profile={profile}

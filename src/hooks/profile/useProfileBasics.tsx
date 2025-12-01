@@ -26,11 +26,18 @@ export function useProfileBasics(userId: string | undefined) {
     location: profileText.location,
     setLocation: profileText.setLocation,
     
-    // Color data
+    // Color data (legacy)
     coverColor: profileColors.coverColor,
     setCoverColor: profileColors.setCoverColor,
     highlightColor: profileColors.highlightColor,
     setHighlightColor: profileColors.setHighlightColor,
+    
+    // Palette system (new)
+    currentPalette: profileColors.currentPalette.palette_id,
+    activePalette: profileColors.activePalette,
+    updatePalette: profileColors.updatePalette,
+    toggleMode: profileColors.toggleMode,
+    updateCustomColor: profileColors.updateCustomColor,
     
     // Update functions
     updateUserName: profileText.updateUserName,

@@ -12,6 +12,11 @@ interface ProfileActionsMenuProps {
   onActionComplete?: () => void;
   onOpenGuidedSetup?: () => void;
   userProfile?: any;
+  // Palette system props
+  currentPalette?: string;
+  activePalette?: any;
+  onPaletteChange?: (paletteId: string) => Promise<void>;
+  onModeToggle?: () => Promise<void>;
 }
 
 export function ProfileActionsMenu(props: ProfileActionsMenuProps) {
