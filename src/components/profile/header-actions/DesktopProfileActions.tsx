@@ -120,20 +120,20 @@ export function DesktopProfileActions({
         </DropdownMenuTrigger>
         <DropdownMenuContent 
           align="end" 
-          className="w-[400px] p-4 bg-background border border-border z-50"
+          className="w-[calc(100vw-2rem)] sm:w-[400px] p-3 sm:p-4 bg-background border border-border z-50"
         >
           {/* Card-based action buttons */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
             {/* Download Resume Card */}
             <PDFDownloadDialog profileData={profileData}>
               <Card 
                 className="p-0 overflow-hidden cursor-pointer hover:shadow-lg transition-shadow border border-border"
               >
-                <div className="flex flex-col items-center gap-3 p-4">
-                  <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <IconDownload className="h-8 w-8 text-primary" />
+                <div className="flex flex-col items-center gap-2 sm:gap-3 p-3 sm:p-4">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <IconDownload className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                   </div>
-                  <span className="text-sm font-medium text-foreground">Download Resume</span>
+                  <span className="text-xs sm:text-sm font-medium text-foreground text-center">Download Resume</span>
                 </div>
               </Card>
             </PDFDownloadDialog>
@@ -146,27 +146,27 @@ export function DesktopProfileActions({
                 setIsDesignerOpen(true);
               }}
             >
-              <div className="flex flex-col items-center gap-3 p-4">
-                <div className="w-16 h-16 rounded-xl bg-secondary/10 flex items-center justify-center">
-                  <IconPalette className="h-8 w-8 text-secondary-foreground" />
+              <div className="flex flex-col items-center gap-2 sm:gap-3 p-3 sm:p-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-secondary/10 flex items-center justify-center">
+                  <IconPalette className="h-6 w-6 sm:h-8 sm:w-8 text-secondary-foreground" />
                 </div>
-                <span className="text-sm font-medium text-foreground">Open Designer</span>
+                <span className="text-xs sm:text-sm font-medium text-foreground text-center">Open Designer</span>
               </div>
             </Card>
           </div>
 
           {/* Visibility Toggle at bottom */}
-          <Card className="p-4 border border-border">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                  <IconGlobe className="h-5 w-5 text-accent-foreground" />
+          <Card className="p-3 sm:p-4 border border-border">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <IconGlobe className="h-4 w-4 sm:h-5 sm:w-5 text-accent-foreground" />
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-foreground">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs sm:text-sm font-medium text-foreground truncate">
                     Profile Visibility
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground truncate">
                     {isProfilePublic ? "Public" : "Private"} 
                     {!isLansaCertified && " • Lansa Only"}
                   </span>
@@ -178,6 +178,7 @@ export function DesktopProfileActions({
                   safeHandler(handleMakeProfilePublic, "Make Profile Public")();
                 }}
                 disabled={!isLansaCertified || isUpdatingPublicStatus}
+                className="flex-shrink-0"
               />
             </div>
           </Card>
