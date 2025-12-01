@@ -2322,6 +2322,7 @@ export type Database = {
           clerk_user_id: string | null
           color_admin: Database["public"]["Enums"]["user_color"] | null
           color_auto: Database["public"]["Enums"]["user_color"] | null
+          color_palette: Json | null
           cover_color: string | null
           created_at: string | null
           cv_imported_at: string | null
@@ -2370,6 +2371,7 @@ export type Database = {
           clerk_user_id?: string | null
           color_admin?: Database["public"]["Enums"]["user_color"] | null
           color_auto?: Database["public"]["Enums"]["user_color"] | null
+          color_palette?: Json | null
           cover_color?: string | null
           created_at?: string | null
           cv_imported_at?: string | null
@@ -2418,6 +2420,7 @@ export type Database = {
           clerk_user_id?: string | null
           color_admin?: Database["public"]["Enums"]["user_color"] | null
           color_auto?: Database["public"]["Enums"]["user_color"] | null
+          color_palette?: Json | null
           cover_color?: string | null
           created_at?: string | null
           cv_imported_at?: string | null
