@@ -8,8 +8,9 @@ import {
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { PDFDownloadDialog } from "../../pdf/PDFDownloadDialog";
-import { IconPalette, IconDownload, IconMenu2, IconGlobe } from "@tabler/icons-react";
+import { IconPalette, IconDownload, IconMenu2, IconGlobe, IconBolt } from "@tabler/icons-react";
 import { DesignerSidebar } from "../dialogs/DesignerSidebar";
+import { DesktopQuickActionsModal } from "../dialogs/DesktopQuickActionsModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserType } from "@/hooks/useUserType";
 import { useProfileData } from "@/hooks/useProfileData";
@@ -52,6 +53,7 @@ export function DesktopProfileActions({
   const [isProfilePublic, setIsProfilePublic] = useState(false);
   const [isUpdatingPublicStatus, setIsUpdatingPublicStatus] = useState(false);
   const [isDesignerOpen, setIsDesignerOpen] = useState(false);
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Check if user is Lansa certified
@@ -86,6 +88,22 @@ export function DesktopProfileActions({
 
   return (
     <div className="flex items-center gap-2">
+      {/* Quick Actions - Standalone prominent button - Hidden on mobile */}
+      {!isMobile && (
+        <Button
+          onClick={() => {
+            console.info('[DesktopProfileActions] Quick Actions clicked');
+            setIsQuickActionsOpen(true);
+          }}
+          variant="primary"
+          size="sm"
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          <IconBolt className="h-4 w-4 mr-2" />
+          Quick Actions
+        </Button>
+      )}
+
       {/* Actions Menu */}
       <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
         <DropdownMenuTrigger asChild>
@@ -174,6 +192,12 @@ export function DesktopProfileActions({
         currentHighlight={highlightColor}
         onThemeChange={onCoverColorChange}
         onHighlightChange={onHighlightColorChange || (() => Promise.resolve())}
+      />
+
+      <DesktopQuickActionsModal
+        isOpen={isQuickActionsOpen}
+        onClose={() => setIsQuickActionsOpen(false)}
+        userName={userName}
       />
     </div>
   );
