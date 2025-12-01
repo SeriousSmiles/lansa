@@ -58,6 +58,16 @@ export interface AchievementItem {
   displayOrder?: number;
 }
 
+// Define interface for profile palette
+export interface ProfilePalette {
+  mode: 'light' | 'dark';
+  palette_id: string;
+  primary?: string;
+  secondary?: string;
+  background?: string;
+  surface?: string;
+}
+
 // Define interface for profile data
 export interface UserProfile {
   user_id?: string;
@@ -66,8 +76,9 @@ export interface UserProfile {
   title?: string;
   about_text?: string;
   phone_number?: string;
-  cover_color?: string;
-  highlight_color?: string;
+  cover_color?: string; // Legacy support
+  highlight_color?: string; // Legacy support
+  color_palette?: ProfilePalette; // New palette system
   profile_image?: string;
   skills?: string[];
   languages?: LanguageItem[];

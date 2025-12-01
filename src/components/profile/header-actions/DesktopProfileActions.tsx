@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { safeHandler } from "@/config/demo";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { LIGHT_PALETTES, DARK_PALETTES } from "@/utils/colorUtils";
 
 interface DesktopProfileActionsProps {
   userId?: string;
@@ -189,10 +190,20 @@ export function DesktopProfileActions({
       <DesignerSidebar
         isOpen={isDesignerOpen}
         onClose={() => setIsDesignerOpen(false)}
-        currentTheme={coverColor}
-        currentHighlight={highlightColor}
-        onThemeChange={onCoverColorChange}
-        onHighlightChange={onHighlightColorChange || (() => Promise.resolve())}
+        currentMode="light"
+        currentPaletteId="coral_professional"
+        onPaletteChange={async (paletteId) => {
+          // Temporary: Map palette to highlight color for backwards compatibility
+          const palette = [...LIGHT_PALETTES, ...DARK_PALETTES].find(p => p.id === paletteId);
+          if (palette && onHighlightColorChange) {
+            await onHighlightColorChange(palette.primary);
+            await onCoverColorChange(palette.background);
+          }
+        }}
+        onModeToggle={async () => {
+          // Mode toggle will be fully implemented when palette system is integrated
+          toast("Mode toggle coming soon with full palette system");
+        }}
       />
 
       <DesktopQuickActionsModal
