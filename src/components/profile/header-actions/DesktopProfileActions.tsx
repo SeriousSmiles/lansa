@@ -157,8 +157,8 @@ export function DesktopProfileActions({
               }}
             >
               <div className="flex flex-col items-center gap-2 sm:gap-3 p-3 sm:p-4">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-secondary/10 flex items-center justify-center">
-                  <IconPalette className="h-6 w-6 sm:h-8 sm:w-8 text-secondary-foreground" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-violet-100 flex items-center justify-center">
+                  <IconPalette className="h-6 w-6 sm:h-8 sm:w-8 text-violet-600" />
                 </div>
                 <span className="text-xs sm:text-sm font-medium text-foreground text-center">Open Designer</span>
               </div>
