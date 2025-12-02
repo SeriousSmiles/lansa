@@ -156,53 +156,6 @@ export function DesignerSidebar({
             </div>
           </div>
 
-          {/* Dark Backgrounds Section */}
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wide mb-2">
-              Dark Backgrounds
-            </p>
-            <div className="grid grid-cols-1 gap-3">
-              {DARK_PALETTES.map((palette) => (
-                <Card
-                  key={palette.id}
-                  className={`p-4 cursor-pointer transition-all hover:shadow-md relative ${
-                    previewPaletteId === palette.id
-                      ? 'ring-2 ring-primary shadow-md'
-                      : 'hover:ring-1 hover:ring-border'
-                  }`}
-                  onClick={() => handlePaletteSelect(palette.id)}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm">{palette.name}</span>
-                      {currentPaletteId === palette.id && (
-                        <CheckCircle2 className="h-4 w-4 text-green-600 fill-green-100" />
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Color Preview */}
-                  <div className="flex gap-2 h-8">
-                    <div
-                      className="flex-1 rounded border border-border"
-                      style={{ backgroundColor: palette.primary }}
-                      title="Primary"
-                    />
-                    <div
-                      className="flex-1 rounded border border-border"
-                      style={{ backgroundColor: palette.surface }}
-                      title="Surface"
-                    />
-                    <div
-                      className="flex-1 rounded border border-border"
-                      style={{ backgroundColor: palette.background }}
-                      title="Background"
-                    />
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
         </div>
 
         <Separator className="my-6" />
