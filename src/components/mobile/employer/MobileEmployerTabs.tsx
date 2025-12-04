@@ -67,10 +67,10 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
   const [showApplicationsSheet, setShowApplicationsSheet] = useState(false);
 
   useEffect(() => {
-    if (user?.id) {
+    if (user?.id && activeOrganization?.id) {
       loadEmployerStats();
     }
-  }, [user?.id]);
+  }, [user?.id, activeOrganization?.id]);
 
   useEffect(() => {
     if (user?.id && activeTab === 'jobs') {
@@ -123,18 +123,22 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
   }, [isAtBottom]);
 
   const loadEmployerStats = async () => {
-    if (!user?.id) return;
+    if (!user?.id || !activeOrganization?.id) return;
 
     setIsRefreshingStats(true);
     try {
-      // Count active job listings from job_listings_v2
+      // ✅ FIXED: Count active job listings by organization_id (aligned with desktop)
       const { count: jobCount } = await supabase
         .from('job_listings_v2')
         .select('*', { count: 'exact', head: true })
-        .eq('created_by', user.id)
+        .eq('organization_id', activeOrganization.id)
         .eq('is_active', true);
 
-      setStats(prev => ({ ...prev, activeJobs: jobCount || 0 }));
+      // ✅ FIXED: Count organization-wide applications (aligned with desktop)
+      const { count: appCount } = await supabase
+        .from('job_applications_v2')
+        .select('*', { count: 'exact', head: true })
+        .eq('organization_id', activeOrganization.id);
 
       // Count total swipes (candidate views)
       const { count: swipeCount } = await supabase
@@ -145,11 +149,12 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
       // Get matches
       const matches = await matchService.getMatches(user.id);
 
-      setStats(prev => ({
-        ...prev,
+      setStats({
+        activeJobs: jobCount || 0,
+        totalApplications: appCount || 0,
         candidatesViewed: swipeCount || 0,
         newMatches: matches.length
-      }));
+      });
     } catch (error) {
       console.error('Error loading employer stats:', error);
     } finally {

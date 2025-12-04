@@ -93,28 +93,24 @@ Deno.serve(async (req) => {
       console.log('User preferences:', userPreferences);
     }
 
-    // Build query - LEFT join so jobs without business profiles still show
+    // ✅ FIXED: Query job_listings_v2 instead of job_listings for proper logo support
     let query = supabase
-      .from('job_listings')
+      .from('job_listings_v2')
       .select(`
         *,
-        business_profiles(
-          company_name,
+        companies(
+          id,
+          name,
+          logo_url,
           industry,
-          location,
-          website,
-          organization_id,
-          organizations(
-            logo_url,
-            name
-          )
+          location
         ),
         organizations(
           id,
           name,
           logo_url
         ),
-        job_applications!left(
+        job_applications_v2!left(
           id,
           status,
           created_at
@@ -188,12 +184,16 @@ Deno.serve(async (req) => {
       throw error;
     }
 
-    // Filter to only show user's own applications
+    // Filter to only show user's own applications and normalize structure
     const jobsWithApplications = jobs?.map(job => ({
       ...job,
-      job_applications: job.job_applications?.filter(
+      // Map job_applications_v2 to job_applications for frontend compatibility
+      job_applications: job.job_applications_v2?.filter(
         (app: any) => app && typeof app === 'object'
-      ) || []
+      ) || [],
+      // Ensure logo_url is accessible - prefer organization logo, then company logo
+      logo_url: job.organizations?.logo_url || job.companies?.logo_url || null,
+      company_name: job.companies?.name || job.organizations?.name || 'Unknown Company'
     })) || [];
 
     return new Response(
