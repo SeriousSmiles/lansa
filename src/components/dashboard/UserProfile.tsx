@@ -28,12 +28,16 @@ export function UserProfile({ userName, email, handleLogout, themeColor }: UserP
   const [profileImage, setProfileImage] = useState<string>("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  // Compute display name with proper fallback chain
+  const displayName = userName?.trim() || user?.email?.split('@')[0] || 'User';
+  const displayInitial = displayName.charAt(0).toUpperCase();
+
   useEffect(() => {
     let isMounted = true;
     const load = async () => {
       if (!user?.id) return;
       const { data, error } = await supabase
-.from("user_profiles")
+        .from("user_profiles")
         .select("profile_image")
         .eq("user_id", user.id)
         .single();
@@ -57,13 +61,13 @@ export function UserProfile({ userName, email, handleLogout, themeColor }: UserP
         >
           <Avatar className="h-10 w-10">
             {profileImage ? (
-              <AvatarImage src={profileImage} alt={`${userName} avatar`} />
+              <AvatarImage src={profileImage} alt={`${displayName} avatar`} />
             ) : (
               <AvatarFallback
-                className="text-white font-bold"
+                className="text-white font-bold text-lg"
                 style={{ backgroundColor: themeColor || "#FF6B4A" }}
               >
-                {userName?.charAt(0).toUpperCase()}
+                {displayInitial}
               </AvatarFallback>
             )}
           </Avatar>
@@ -76,7 +80,7 @@ export function UserProfile({ userName, email, handleLogout, themeColor }: UserP
         loop
       >
         <div className="px-3 py-2">
-          <p className="text-sm font-medium leading-none">{userName}</p>
+          <p className="text-sm font-medium leading-none">{displayName}</p>
           <p className="text-xs text-muted-foreground">{email}</p>
         </div>
         <DropdownMenuSeparator />

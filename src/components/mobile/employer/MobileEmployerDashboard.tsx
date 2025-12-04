@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Plus, Users, FileText, TrendingUp, Briefcase, Search, Menu, LogOut, User, Building2 } from "lucide-react";
 import { gsap } from "gsap";
 import { mobileAnimations } from "@/utils/mobileAnimations";
@@ -24,6 +25,7 @@ interface BusinessData {
   business_size: string;
   role_function: string;
   business_services: string;
+  company_logo?: string;
 }
 
 interface EmployerStats {
@@ -112,16 +114,31 @@ export function MobileEmployerDashboard({
 
   return (
     <div className="mobile-safe-top bg-gradient-to-br from-background to-muted/50 min-h-screen">
-      {/* Header */}
-      <div ref={headerRef} className="px-5 py-6">
+      {/* Header with Organization Branding */}
+      <div ref={headerRef} className="px-5 py-6 bg-gradient-to-r from-primary/5 to-secondary/5">
         <div className="flex items-center justify-between mb-2">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground leading-tight">
-              Welcome back, {businessData?.company_name || userName}
-            </h1>
-            <div className="flex items-center gap-2 mt-2">
-              <Badge variant="secondary" className="text-xs font-medium rounded-full px-3 py-1">Employer</Badge>
-              <Badge variant="outline" className="text-xs font-medium rounded-full px-3 py-1">Beta</Badge>
+          <div className="flex items-center gap-3">
+            {/* Organization Logo */}
+            <Avatar className="h-12 w-12 border-2 border-primary/20">
+              {businessData?.company_logo ? (
+                <AvatarImage src={businessData.company_logo} alt={businessData.company_name} />
+              ) : null}
+              <AvatarFallback className="bg-primary text-primary-foreground font-bold text-lg">
+                {(businessData?.company_name || userName || 'E').charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-xl font-bold text-foreground leading-tight">
+                {businessData?.company_name || userName}
+              </h1>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge className="text-[10px] font-medium rounded-full px-2 py-0.5 bg-primary/10 text-primary border-0">
+                  Employer
+                </Badge>
+                <Badge variant="outline" className="text-[10px] font-medium rounded-full px-2 py-0.5">
+                  Beta
+                </Badge>
+              </div>
             </div>
           </div>
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
@@ -129,16 +146,30 @@ export function MobileEmployerDashboard({
               <Button 
                 variant="outline" 
                 size="icon" 
-                className="rounded-full h-10 w-10 border-2"
+                className="rounded-full h-10 w-10 border-2 border-border/50"
               >
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[280px] bg-background z-50">
-              <SheetHeader>
-                <SheetTitle>Account Menu</SheetTitle>
+              <SheetHeader className="border-b pb-4">
+                {/* Organization header in menu */}
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    {businessData?.company_logo ? (
+                      <AvatarImage src={businessData.company_logo} alt={businessData.company_name} />
+                    ) : null}
+                    <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                      {(businessData?.company_name || 'E').charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="text-left">
+                    <SheetTitle className="text-base">{businessData?.company_name || 'Organization'}</SheetTitle>
+                    <p className="text-xs text-muted-foreground">{businessData?.role_function || 'Member'}</p>
+                  </div>
+                </div>
               </SheetHeader>
-              <div className="mt-6 space-y-2">
+              <div className="mt-4 space-y-1">
                 <Button
                   variant="ghost"
                   className="w-full justify-start h-12"
@@ -161,7 +192,7 @@ export function MobileEmployerDashboard({
                   <Building2 className="mr-3 h-5 w-5" />
                   Organization Settings
                 </Button>
-                <div className="border-t my-2" />
+                <div className="border-t my-3" />
                 <Button
                   variant="ghost"
                   className="w-full justify-start h-12 text-destructive hover:text-destructive hover:bg-destructive/10"
@@ -175,9 +206,9 @@ export function MobileEmployerDashboard({
           </Sheet>
         </div>
         
-        {businessData && (
-          <p className="text-sm text-muted-foreground mt-2">
-            {businessData.business_size} • {businessData.business_services}
+        {businessData && (businessData.business_size || businessData.business_services) && (
+          <p className="text-sm text-muted-foreground mt-3 ml-15">
+            {[businessData.business_size, businessData.business_services].filter(Boolean).join(' • ')}
           </p>
         )}
       </div>

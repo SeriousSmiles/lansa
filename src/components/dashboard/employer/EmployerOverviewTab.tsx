@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Building2, Users, FileText, TrendingUp, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -93,12 +94,23 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
 
   return (
     <div className="space-y-6">
-      {/* Welcome Section */}
+      {/* Welcome Section with Organization Logo */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            Welcome to Your Employer Dashboard
+          <CardTitle className="flex items-center gap-3">
+            {activeOrganization?.logo_url ? (
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={activeOrganization.logo_url} alt={activeOrganization.name} />
+                <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                  {activeOrganization.name?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Building2 className="h-5 w-5 text-primary" />
+              </div>
+            )}
+            <span>Welcome to Your Employer Dashboard</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -106,19 +118,19 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
             {activeOrganization && (
               <>
                 <div>
-                  <h3 className="font-semibold text-[#2E2E2E] mb-2">Organization Information</h3>
-                  <div className="space-y-2">
-                    <p><span className="font-medium">Name:</span> {activeOrganization.name}</p>
+                  <h3 className="font-semibold text-foreground mb-2">Organization Information</h3>
+                  <div className="space-y-2 text-sm">
+                    <p><span className="font-medium text-muted-foreground">Name:</span> <span className="text-foreground">{activeOrganization.name}</span></p>
                     {activeOrganization.size_range && (
-                      <p><span className="font-medium">Size:</span> {activeOrganization.size_range}</p>
+                      <p><span className="font-medium text-muted-foreground">Size:</span> <span className="text-foreground">{activeOrganization.size_range}</span></p>
                     )}
                     {activeOrganization.industry && (
-                      <p><span className="font-medium">Industry:</span> {activeOrganization.industry}</p>
+                      <p><span className="font-medium text-muted-foreground">Industry:</span> <span className="text-foreground">{activeOrganization.industry}</span></p>
                     )}
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-[#2E2E2E] mb-2">Your Role</h3>
+                  <h3 className="font-semibold text-foreground mb-2">Your Role</h3>
                   <Badge variant="secondary" className="text-sm capitalize">
                     {userRole}
                   </Badge>
