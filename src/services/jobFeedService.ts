@@ -21,6 +21,8 @@ export interface JobListing {
   job_type?: string;
   is_remote: boolean;
   organization_id?: string;
+  logo_url?: string;
+  company_name?: string;
   organizations?: {
     id: string;
     name: string;
@@ -79,7 +81,7 @@ export const jobFeedService = {
 
   async applyForJob(jobId: string, coverNote?: string): Promise<boolean> {
     try {
-      const { data, error } = await supabase.functions.invoke('apply-for-job', {
+      const { data, error } = await supabase.functions.invoke('apply-for-job-v2', {
         body: { jobId, coverNote },
       });
 
@@ -105,20 +107,60 @@ export const jobFeedService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
+      // Query job_applications_v2 with job_listings_v2 and companies
       const { data, error } = await supabase
-        .from('job_applications')
+        .from('job_applications_v2')
         .select(`
-          *,
-          job_listings!inner(
-            *,
-            business_profiles(company_name, industry)
+          id,
+          status,
+          created_at,
+          cover_note,
+          job_id,
+          job_listings_v2!inner(
+            id,
+            title,
+            description,
+            location,
+            category,
+            job_type,
+            is_remote,
+            salary_range,
+            company_id,
+            organization_id,
+            companies(
+              name,
+              logo_url
+            ),
+            organizations(
+              name,
+              logo_url
+            )
           )
         `)
         .eq('applicant_user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+
+      // Transform data to expected format
+      return (data || []).map((app: any) => ({
+        id: app.id,
+        status: app.status,
+        created_at: app.created_at,
+        cover_note: app.cover_note,
+        job: {
+          id: app.job_listings_v2.id,
+          title: app.job_listings_v2.title,
+          description: app.job_listings_v2.description,
+          location: app.job_listings_v2.location,
+          category: app.job_listings_v2.category,
+          job_type: app.job_listings_v2.job_type,
+          is_remote: app.job_listings_v2.is_remote,
+          salary_range: app.job_listings_v2.salary_range,
+          company_name: app.job_listings_v2.organizations?.name || app.job_listings_v2.companies?.name || 'Unknown Company',
+          company_logo: app.job_listings_v2.organizations?.logo_url || app.job_listings_v2.companies?.logo_url,
+        }
+      }));
     } catch (error) {
       console.error('Error fetching applications:', error);
       return [];
@@ -128,7 +170,7 @@ export const jobFeedService = {
   async withdrawApplication(applicationId: string): Promise<boolean> {
     try {
       const { error } = await supabase
-        .from('job_applications')
+        .from('job_applications_v2')
         .update({ status: 'withdrawn' })
         .eq('id', applicationId);
 
