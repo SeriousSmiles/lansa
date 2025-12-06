@@ -109,11 +109,6 @@ Deno.serve(async (req) => {
           id,
           name,
           logo_url
-        ),
-        job_applications_v2!left(
-          id,
-          status,
-          created_at
         )
       `, { count: 'exact' })
       .eq('is_active', true)
@@ -171,7 +166,7 @@ Deno.serve(async (req) => {
     }
 
     // Apply pagination and order
-    query = query.order('created_at', { ascending: false });
+    query = query.order('posted_at', { ascending: false });
     const from = (page - 1) * limit;
     const to = from + limit - 1;
     query = query.range(from, to);
@@ -184,17 +179,37 @@ Deno.serve(async (req) => {
       throw error;
     }
 
-    // Filter to only show user's own applications and normalize structure
-    const jobsWithApplications = jobs?.map(job => ({
-      ...job,
-      // Map job_applications_v2 to job_applications for frontend compatibility
-      job_applications: job.job_applications_v2?.filter(
-        (app: any) => app && typeof app === 'object'
-      ) || [],
-      // Ensure logo_url is accessible - prefer organization logo, then company logo
-      logo_url: job.organizations?.logo_url || job.companies?.logo_url || null,
-      company_name: job.companies?.name || job.organizations?.name || 'Unknown Company'
-    })) || [];
+    // ✅ FIXED: Separately fetch user's applications for these jobs
+    const jobIds = jobs?.map(j => j.id) || [];
+    let userApplicationsMap: Record<string, any> = {};
+    
+    if (jobIds.length > 0) {
+      const { data: userApps } = await supabase
+        .from('job_applications_v2')
+        .select('id, job_id, status, created_at')
+        .eq('applicant_user_id', user.id)
+        .in('job_id', jobIds);
+      
+      // Create a map of job_id -> application for quick lookup
+      userApps?.forEach((app) => {
+        userApplicationsMap[app.job_id] = app;
+      });
+      
+      console.log('User applications found:', Object.keys(userApplicationsMap).length);
+    }
+
+    // Normalize structure with user's applications
+    const jobsWithApplications = jobs?.map(job => {
+      const userApp = userApplicationsMap[job.id];
+      return {
+        ...job,
+        // Only include user's own application
+        job_applications: userApp ? [userApp] : [],
+        // Ensure logo_url is accessible - prefer organization logo, then company logo
+        logo_url: job.organizations?.logo_url || job.companies?.logo_url || null,
+        company_name: job.companies?.name || job.organizations?.name || 'Unknown Company'
+      };
+    }) || [];
 
     return new Response(
       JSON.stringify({
