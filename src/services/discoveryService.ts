@@ -155,6 +155,17 @@ export const discoveryService = {
 
         console.log(`After certification filter: ${discoveryProfiles.length} profiles`);
 
+        // If certifiedOnly mode returns 0 candidates, use mock data as placeholder
+        if (certifiedOnly && discoveryProfiles.length === 0) {
+          console.log('No certified candidates found, using placeholder candidates');
+          const mockWithCertification = mockFrontendCandidates.map(mock => ({
+            ...mock,
+            isCertified: true
+          }));
+          const shuffled = mockWithCertification.sort(() => Math.random() - 0.5);
+          return shuffled.slice(0, limit);
+        }
+
         // Apply skill filtering if provided
         let filteredProfiles = discoveryProfiles;
         if (filters.skills && filters.skills.length > 0) {
