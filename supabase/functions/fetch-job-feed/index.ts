@@ -165,8 +165,10 @@ Deno.serve(async (req) => {
       query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
     }
 
-    // Apply pagination and order
-    query = query.order('posted_at', { ascending: false });
+    // Apply pagination and order - prioritize organization jobs over demo/company-only jobs
+    query = query
+      .order('organization_id', { ascending: false, nullsFirst: false })
+      .order('posted_at', { ascending: false });
     const from = (page - 1) * limit;
     const to = from + limit - 1;
     query = query.range(from, to);
