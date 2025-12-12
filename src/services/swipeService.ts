@@ -12,9 +12,24 @@ export interface SwipeData {
   job_listing_id?: string;
 }
 
+// UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const isValidUUID = (id: string): boolean => UUID_REGEX.test(id);
+
 export const swipeService = {
   async recordSwipe(swipeData: SwipeData) {
     try {
+      // Skip database recording for mock candidates (non-UUID IDs)
+      if (!isValidUUID(swipeData.target_user_id)) {
+        console.log('Skipping swipe recording for mock candidate:', swipeData.target_user_id);
+        return { 
+          ...swipeData, 
+          id: `mock-swipe-${Date.now()}`, 
+          created_at: new Date().toISOString() 
+        };
+      }
+
       const { data, error } = await supabase
         .from('swipes')
         .insert([swipeData])
@@ -32,6 +47,11 @@ export const swipeService = {
 
   async checkForMatch(swiperId: string, targetId: string, context: SwipeContext, jobListingId?: string) {
     try {
+      // Skip match check for mock candidates
+      if (!isValidUUID(targetId)) {
+        return null;
+      }
+
       const { data, error } = await supabase
         .from('matches')
         .select('*')
