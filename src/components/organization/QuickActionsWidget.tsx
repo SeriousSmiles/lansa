@@ -5,9 +5,7 @@
  */
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { useOrgPermissions } from "@/hooks/useOrgPermissions";
@@ -42,16 +40,16 @@ export function QuickActionsWidget() {
       onClick: () => navigate('/organization/settings?tab=invitations'),
       show: canInviteMembers,
       color: "text-emerald-600",
-      bgColor: "bg-emerald-50 hover:bg-emerald-100",
+      bgColor: "bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/50",
     },
     {
       label: "Post New Job",
       description: "Create a job listing to find talent",
       icon: Briefcase,
-      onClick: () => navigate('/employer-dashboard'),
+      onClick: () => navigate('/employer-dashboard?tab=job-listings'),
       show: canCreateJobs,
       color: "text-blue-600",
-      bgColor: "bg-blue-50 hover:bg-blue-100",
+      bgColor: "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 dark:hover:bg-blue-900/50",
     },
     {
       label: "Organization Settings",
@@ -60,7 +58,7 @@ export function QuickActionsWidget() {
       onClick: () => navigate('/organization/settings'),
       show: canManageOrgSettings,
       color: "text-slate-600",
-      bgColor: "bg-slate-50 hover:bg-slate-100",
+      bgColor: "bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-700/50",
     },
   ].filter(action => action.show);
 
@@ -68,7 +66,7 @@ export function QuickActionsWidget() {
 
   return (
     <TooltipProvider>
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-20 right-6 z-50">
         {/* Expanded Menu */}
         {isExpanded && (
           <Card className="mb-3 p-3 shadow-xl border-border/50 animate-in fade-in slide-in-from-bottom-3 duration-200 min-w-[260px]">
@@ -77,21 +75,18 @@ export function QuickActionsWidget() {
                 <Sparkles className="h-4 w-4 text-primary" />
                 <span className="text-sm font-semibold text-foreground">Quick Actions</span>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0"
+              <button
+                className="h-6 w-6 p-0 rounded hover:bg-muted flex items-center justify-center"
                 onClick={() => setIsExpanded(false)}
               >
                 <X className="h-4 w-4" />
-              </Button>
+              </button>
             </div>
             <div className="space-y-1">
               {actions.map((action, index) => (
-                <Button
+                <button
                   key={index}
-                  variant="ghost"
-                  className={`w-full justify-start h-auto py-3 px-3 ${action.bgColor} transition-colors`}
+                  className={`w-full flex items-center justify-start h-auto py-3 px-3 rounded-md ${action.bgColor} transition-colors`}
                   onClick={() => {
                     action.onClick();
                     setIsExpanded(false);
@@ -102,7 +97,7 @@ export function QuickActionsWidget() {
                     <span className="text-sm font-medium text-foreground">{action.label}</span>
                     <span className="text-xs text-muted-foreground">{action.description}</span>
                   </div>
-                </Button>
+                </button>
               ))}
             </div>
             <p className="text-[10px] text-muted-foreground mt-3 pt-2 border-t text-center">
@@ -114,12 +109,11 @@ export function QuickActionsWidget() {
         {/* Main FAB Button */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              size="lg"
-              className={`rounded-full h-14 w-14 shadow-lg transition-all duration-200 ${
+            <button
+              className={`rounded-full h-14 w-14 shadow-lg transition-all duration-200 flex items-center justify-center ${
                 isExpanded 
                   ? 'bg-muted hover:bg-muted/80 text-muted-foreground rotate-45' 
-                  : 'bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground'
+                  : 'bg-primary hover:bg-primary/90 text-primary-foreground'
               }`}
               onClick={() => setIsExpanded(!isExpanded)}
             >
@@ -128,7 +122,7 @@ export function QuickActionsWidget() {
               ) : (
                 <Zap className="h-6 w-6" />
               )}
-            </Button>
+            </button>
           </TooltipTrigger>
           {!isExpanded && (
             <TooltipContent side="left" className="bg-foreground text-background">

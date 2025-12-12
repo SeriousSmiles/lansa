@@ -259,11 +259,11 @@ export default function EmployerDashboard() {
               <EmployerDashboardTabs businessData={businessData} />
             </div>
           </div>
-          
-          {/* Phase 4: Quick Actions Widget (desktop only) */}
-          <QuickActionsWidget />
         </DashboardLayout>
       </div>
+      
+      {/* Quick Actions Widget - placed outside DashboardLayout for proper fixed positioning */}
+      <QuickActionsWidget />
       
       {user?.id && (
         <CompanyLogoUploadModal
