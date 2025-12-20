@@ -10,6 +10,27 @@ import { convertJsonToExperienceItems, convertJsonToEducationItems } from "@/uti
  * Processed profile data for public shareable profiles
  * This is the data structure used by the SharedProfileContainer component
  */
+export interface AchievementItem {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  date_achieved?: string;
+  organization?: string;
+  credential_id?: string;
+  is_featured?: boolean;
+}
+
+export interface CertificationItem {
+  id: string;
+  title: string;
+  issuer: string;
+  issue_date?: string;
+  expiry_date?: string;
+  credential_id?: string;
+  description?: string;
+}
+
 export interface SharedProfileData {
   userProfile: UserProfile | null;
   userName: string;
@@ -30,6 +51,8 @@ export interface SharedProfileData {
   biggestChallenge: string;
   languages: LanguageItem[];
   location: string;
+  achievements: AchievementItem[];
+  certifications: CertificationItem[];
 }
 
 /**
@@ -158,6 +181,33 @@ export function useSharedProfileData(urlParam: string | undefined) {
           })) : [])
         : [];
       
+      // Process achievements data
+      const processedAchievements: AchievementItem[] = profileData?.achievements 
+        ? (Array.isArray(profileData.achievements) ? profileData.achievements.map((ach: any) => ({
+            id: ach.id,
+            type: ach.type,
+            title: ach.title,
+            description: ach.description,
+            date_achieved: ach.date_achieved,
+            organization: ach.organization,
+            credential_id: ach.credential_id,
+            is_featured: ach.is_featured
+          })) : [])
+        : [];
+      
+      // Process certifications data
+      const processedCertifications: CertificationItem[] = profileData?.certifications 
+        ? (Array.isArray(profileData.certifications) ? profileData.certifications.map((cert: any) => ({
+            id: cert.id,
+            title: cert.title,
+            issuer: cert.issuer,
+            issue_date: cert.issue_date,
+            expiry_date: cert.expiry_date,
+            credential_id: cert.credential_id,
+            description: cert.description
+          })) : [])
+        : [];
+      
       // Determine role and goal from safe sources (avoid sensitive fields)
       const role = profileData?.title || "Professional";
       const goal = profileData?.professional_goal || "Advance my career";
@@ -186,7 +236,9 @@ export function useSharedProfileData(urlParam: string | undefined) {
         professionalGoal: profileData?.professional_goal || "",
         biggestChallenge: profileData?.biggest_challenge || "",
         languages: processedLanguages,
-        location: profileData?.location || ""
+        location: profileData?.location || "",
+        achievements: processedAchievements,
+        certifications: processedCertifications
       };
       
       console.log("Processed profile data:", profile);
