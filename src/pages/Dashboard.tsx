@@ -15,12 +15,11 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { toast } from "sonner";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { useActionTracking } from "@/hooks/useActionTracking";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import { ProfileCard } from "@/components/dashboard/overview/ProfileCard";
 import { useUserType } from "@/hooks/useUserType";
 import EmployerDashboard from "./EmployerDashboard";
 import { SEOHead } from "@/components/SEOHead";
+import { LansaLoader } from "@/components/shared/LansaLoader";
 
 export default function Dashboard() {
   const [userAnswers, setUserAnswers] = useState<any>(null);
@@ -231,9 +230,5 @@ export default function Dashboard() {
 }
 
 function DashboardLoadingState() {
-  return (
-    <div className="h-screen bg-[rgba(253,248,242,1)] flex items-center justify-center">
-      <div className="text-2xl text-[#2E2E2E] animate-pulse">Loading your dashboard...</div>
-    </div>
-  );
+  return <LansaLoader />;
 }
