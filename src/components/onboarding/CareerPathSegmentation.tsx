@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Lightbulb, Briefcase, Laptop } from "lucide-react";
+import { TrendingUp, Lightbulb, Briefcase, Laptop } from "lucide-react";
 
 // Import images
 import studentPathImage from "@/assets/onboarding/student-path.jpg";
@@ -28,15 +28,15 @@ export function CareerPathSegmentation({ onSelect }: CareerPathSegmentationProps
 
   const careerPaths = {
     student: {
-      title: "Traditional Student Path",
-      description: "Follow a structured journey through education and into your first career opportunities",
+      title: "Career Advancement",
+      description: "Whether you're starting your career as a student or advancing to your next role as a professional — build the foundation for success",
       features: [
-        "Academic guidance & mentorship",
-        "Internship & job placement support", 
-        "Skill development programs",
-        "Career readiness preparation"
+        "Personalized career guidance & mentorship",
+        "Internship, job & promotion opportunities", 
+        "Skill development & professional growth",
+        "Career advancement preparation"
       ],
-      icon: GraduationCap,
+      icon: TrendingUp,
       image: studentPathImage,
       gradient: "from-secondary to-secondary/80",
       comingSoon: false
@@ -99,7 +99,7 @@ export function CareerPathSegmentation({ onSelect }: CareerPathSegmentationProps
               <div className="relative h-64 lg:h-80 overflow-hidden">
                 <img 
                   src={careerPaths.student.image} 
-                  alt="Student Path"
+                  alt="Career Advancement Path"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className={`absolute inset-0 bg-gradient-to-t ${careerPaths.student.gradient} opacity-80`} />
