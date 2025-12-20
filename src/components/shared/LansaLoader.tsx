@@ -1,42 +1,43 @@
 import React, { useState, useEffect } from "react";
 
-interface LansaLoaderProps {
-  duration?: number;
-  messages?: string[];
+interface Quote {
+  text: string;
+  author: string;
 }
 
-const defaultMessages = [
-  "Building your future...",
-  "Connecting opportunities...",
-  "Preparing your journey...",
-  "Unlocking potential...",
-  "Almost there..."
+interface LansaLoaderProps {
+  quotes?: Quote[];
+}
+
+const defaultQuotes: Quote[] = [
+  { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
+  { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
+  { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+  { text: "Your career is a journey, not a destination.", author: "Lansa" },
+  { text: "Every expert was once a beginner.", author: "Helen Hayes" },
 ];
 
-export function LansaLoader({ 
-  duration = 5000, 
-  messages = defaultMessages 
-}: LansaLoaderProps) {
-  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+export function LansaLoader({ quotes = defaultQuotes }: LansaLoaderProps) {
+  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
 
-  const messageInterval = duration / messages.length;
-
   useEffect(() => {
+    const quoteInterval = 3500;
+
     const interval = setInterval(() => {
       setIsVisible(false);
       
       setTimeout(() => {
-        setCurrentMessageIndex((prev) => (prev + 1) % messages.length);
+        setCurrentQuoteIndex((prev) => (prev + 1) % quotes.length);
         setIsVisible(true);
-      }, 300);
-    }, messageInterval);
+      }, 400);
+    }, quoteInterval);
 
     return () => clearInterval(interval);
-  }, [messages.length, messageInterval]);
+  }, [quotes.length]);
 
   return (
-    <div className="h-screen bg-[rgba(253,248,242,1)] flex flex-col items-center justify-center gap-8">
+    <div className="h-screen bg-[rgba(253,248,242,1)] flex flex-col items-center justify-center gap-10">
       {/* Animated Logo */}
       <div className="relative w-24 h-32">
         {/* Background logo (faded) */}
@@ -97,23 +98,27 @@ export function LansaLoader({
         </div>
       </div>
 
-      {/* Rotating Text */}
-      <div className="h-8 flex items-center justify-center">
-        <p 
-          className={`text-lg font-medium text-[#1A1F71] transition-all duration-300 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+      {/* Quote Container */}
+      <div className="h-28 flex flex-col items-center justify-center text-center px-8 max-w-md">
+        <p
+          className={`text-lg font-light italic text-[#1A1F71] leading-relaxed transition-all duration-300 ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
           }`}
         >
-          {messages[currentMessageIndex]}
+          "{quotes[currentQuoteIndex].text}"
         </p>
+        <span
+          className={`text-sm font-medium text-[#1A1F71]/60 mt-3 tracking-wide transition-all duration-300 delay-100 ${
+            isVisible ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          — {quotes[currentQuoteIndex].author}
+        </span>
       </div>
 
-      {/* Subtle progress indicator */}
-      <div className="w-32 h-1 bg-[#1A1F71]/10 rounded-full overflow-hidden">
-        <div 
-          className="h-full bg-[#1A1F71]/40 rounded-full animate-progress"
-          style={{ animationDuration: `${duration}ms` }}
-        />
+      {/* Progress Bar */}
+      <div className="w-48 h-1 bg-[#1A1F71]/10 rounded-full overflow-hidden">
+        <div className="h-full bg-[#1A1F71]/50 rounded-full animate-progress" />
       </div>
 
       <style>{`
@@ -150,7 +155,7 @@ export function LansaLoader({
         
         @keyframes progress {
           0% {
-            width: 0%;
+            width: 5%;
           }
           100% {
             width: 100%;
@@ -166,7 +171,7 @@ export function LansaLoader({
         }
         
         .animate-progress {
-          animation: progress linear forwards;
+          animation: progress 10s ease-out forwards;
         }
       `}</style>
     </div>
