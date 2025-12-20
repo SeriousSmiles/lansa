@@ -2473,6 +2473,7 @@ export type Database = {
           about_text: string | null
           achievements: Json | null
           biggest_challenge: string | null
+          certifications: Json | null
           cover_color: string | null
           created_at: string
           education: Json | null
@@ -2494,6 +2495,7 @@ export type Database = {
           about_text?: string | null
           achievements?: Json | null
           biggest_challenge?: string | null
+          certifications?: Json | null
           cover_color?: string | null
           created_at?: string
           education?: Json | null
@@ -2515,6 +2517,7 @@ export type Database = {
           about_text?: string | null
           achievements?: Json | null
           biggest_challenge?: string | null
+          certifications?: Json | null
           cover_color?: string | null
           created_at?: string
           education?: Json | null
