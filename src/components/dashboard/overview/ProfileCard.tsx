@@ -10,6 +10,21 @@ import { useProfileData } from "@/hooks/useProfileData";
 import { User, MapPin, Briefcase, GraduationCap, Building2, Award } from "lucide-react";
 import { PDFDownloadButton } from "@/components/pdf/PDFDownloadButton";
 
+// Utility to darken a hex color by a percentage (0-100)
+const darkenColor = (hex: string, percent: number): string => {
+  const cleanHex = hex.replace('#', '');
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+  
+  const darkenAmount = percent / 100;
+  const newR = Math.round(r * (1 - darkenAmount));
+  const newG = Math.round(g * (1 - darkenAmount));
+  const newB = Math.round(b * (1 - darkenAmount));
+  
+  return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+};
+
 interface ProfileCardProps {
   role: string;
   goal: string;
@@ -54,15 +69,19 @@ export function ProfileCard({ role, goal }: ProfileCardProps) {
     );
   }
 
+  const baseColor = coverColor || '#1A1F2C';
+  const darkColor = darkenColor(baseColor, 35);
+
   return (
     <AnimatedCard delay={0.1} className="h-auto overflow-hidden">
       <Card className="border-0 shadow-none bg-transparent">
         {/* Cover Section */}
         <div 
           className="h-24 relative"
-          style={{ backgroundColor: coverColor || '#1A1F2C' }}
+          style={{ 
+            background: `linear-gradient(to bottom right, ${baseColor}, ${darkColor})` 
+          }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent" />
           <div className="absolute top-2 left-3">
             <h3 className="text-white text-sm font-medium">Your Profile</h3>
             <p className="text-white/80 text-xs">How you appear to others</p>
