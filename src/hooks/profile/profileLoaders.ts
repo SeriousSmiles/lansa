@@ -29,6 +29,7 @@ export const populateFromExistingProfile = (
   if (profileData.about_text) profileBasics.setAboutText(profileData.about_text);
   if (profileData.cover_color) profileBasics.setCoverColor(profileData.cover_color);
   if (profileData.highlight_color) profileBasics.setHighlightColor(profileData.highlight_color);
+  if (profileData.location) profileBasics.setLocation(profileData.location);
   if (profileData.profile_image) profileImage.setProfileImage(profileData.profile_image);
   
   if (profileData.skills && Array.isArray(profileData.skills) && profileData.skills.length > 0) {

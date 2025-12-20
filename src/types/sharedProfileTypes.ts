@@ -21,6 +21,8 @@ export interface PublicProfileFields {
   phone_number: string | null;
   email: string | null;
   location: string | null;
+  achievements: any[] | null;
+  certifications: any[] | null;
   created_at: string;
   updated_at: string;
 }
