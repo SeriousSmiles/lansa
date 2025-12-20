@@ -1,30 +1,36 @@
-import React from "react";
-
-interface Quote {
-  text: string;
-  author: string;
-}
+import React, { useState, useEffect } from "react";
 
 interface LansaLoaderProps {
-  quotes?: Quote[];
+  duration?: number;
+  onComplete?: () => void;
 }
 
-const defaultQuotes: Quote[] = [
-  { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
-  { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
-  { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
-  { text: "Your career is a journey, not a destination.", author: "Lansa" },
-  { text: "Every expert was once a beginner.", author: "Helen Hayes" },
-];
+export function LansaLoader({ duration = 5000, onComplete }: LansaLoaderProps) {
+  const [isVisible, setIsVisible] = useState(true);
+  const [isExiting, setIsExiting] = useState(false);
 
-// Pick a random quote on each mount
-const getRandomIndex = (length: number) => Math.floor(Math.random() * length);
+  useEffect(() => {
+    // After duration, trigger exit animation
+    const exitTimer = setTimeout(() => {
+      setIsExiting(true);
+      // After exit animation completes (500ms), hide completely
+      setTimeout(() => {
+        setIsVisible(false);
+        onComplete?.();
+      }, 500);
+    }, duration);
 
-export function LansaLoader({ quotes = defaultQuotes }: LansaLoaderProps) {
-  const quoteIndex = getRandomIndex(quotes.length);
+    return () => clearTimeout(exitTimer);
+  }, [duration, onComplete]);
+
+  if (!isVisible) return null;
 
   return (
-    <div className="h-screen bg-[rgba(253,248,242,1)] flex flex-col items-center justify-center gap-10">
+    <div 
+      className={`fixed inset-0 z-50 bg-[rgba(253,248,242,1)] flex flex-col items-center justify-center gap-10 transition-transform duration-500 ease-out ${
+        isExiting ? '-translate-y-full' : 'translate-y-0'
+      }`}
+    >
       {/* Animated Logo */}
       <div className="relative w-24 h-32">
         {/* Background logo (faded) */}
@@ -85,19 +91,12 @@ export function LansaLoader({ quotes = defaultQuotes }: LansaLoaderProps) {
         </div>
       </div>
 
-      {/* Quote Container */}
-      <div className="h-28 flex flex-col items-center justify-center text-center px-8 max-w-md animate-fade-in">
-        <p className="text-lg font-light italic text-[#1A1F71] leading-relaxed">
-          "{quotes[quoteIndex].text}"
-        </p>
-        <span className="text-sm font-medium text-[#1A1F71]/60 mt-3 tracking-wide">
-          — {quotes[quoteIndex].author}
-        </span>
-      </div>
-
       {/* Progress Bar */}
       <div className="w-48 h-1 bg-[#1A1F71]/10 rounded-full overflow-hidden">
-        <div className="h-full bg-[#1A1F71]/50 rounded-full animate-progress" />
+        <div 
+          className="h-full bg-[#1A1F71]/50 rounded-full animate-progress" 
+          style={{ animationDuration: `${duration}ms` }}
+        />
       </div>
 
       <style>{`
@@ -150,7 +149,7 @@ export function LansaLoader({ quotes = defaultQuotes }: LansaLoaderProps) {
         }
         
         .animate-progress {
-          animation: progress 10s ease-out forwards;
+          animation: progress 5s ease-out forwards;
         }
       `}</style>
     </div>

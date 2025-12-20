@@ -176,14 +176,13 @@ export default function Dashboard() {
     loadDashboard();
   }, [user?.id, hasInitialized, track]);
   
-  if (isLoading || isLoadingUserType || isCheckingProfile) {
-    return <DashboardLoadingState />;
-  }
-
   // Redirect employers to their dedicated dashboard
-  if (userType === 'employer') {
+  if (!isLoading && !isLoadingUserType && !isCheckingProfile && userType === 'employer') {
     return <EmployerDashboard />;
   }
+
+  // Show loader as overlay while content loads behind
+  const showLoader = isLoading || isLoadingUserType || isCheckingProfile;
 
   // Defensive fallbacks to avoid rendering issues when answers are missing
   const role = getProfileRole(userAnswers?.identity, userAnswers?.career_path) || "Professional seeking clarity";
@@ -195,6 +194,9 @@ export default function Dashboard() {
   
   return (
     <>
+      {/* Loader overlay - renders on top while loading */}
+      {showLoader && <LansaLoader duration={5000} />}
+      
       <SEOHead
         title="Dashboard | Lansa - AI-Powered Career Builder"
         description="Access your personalized career dashboard with AI insights, profile management, and growth tracking tools."
@@ -227,8 +229,4 @@ export default function Dashboard() {
       </DashboardLayout>
     </>
   );
-}
-
-function DashboardLoadingState() {
-  return <LansaLoader />;
 }
