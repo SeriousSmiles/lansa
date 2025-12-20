@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 
 interface Quote {
   text: string;
@@ -17,24 +17,11 @@ const defaultQuotes: Quote[] = [
   { text: "Every expert was once a beginner.", author: "Helen Hayes" },
 ];
 
+// Pick a random quote on each mount
+const getRandomIndex = (length: number) => Math.floor(Math.random() * length);
+
 export function LansaLoader({ quotes = defaultQuotes }: LansaLoaderProps) {
-  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
-
-  useEffect(() => {
-    const quoteInterval = 3500;
-
-    const interval = setInterval(() => {
-      setIsVisible(false);
-      
-      setTimeout(() => {
-        setCurrentQuoteIndex((prev) => (prev + 1) % quotes.length);
-        setIsVisible(true);
-      }, 400);
-    }, quoteInterval);
-
-    return () => clearInterval(interval);
-  }, [quotes.length]);
+  const quoteIndex = getRandomIndex(quotes.length);
 
   return (
     <div className="h-screen bg-[rgba(253,248,242,1)] flex flex-col items-center justify-center gap-10">
@@ -99,20 +86,12 @@ export function LansaLoader({ quotes = defaultQuotes }: LansaLoaderProps) {
       </div>
 
       {/* Quote Container */}
-      <div className="h-28 flex flex-col items-center justify-center text-center px-8 max-w-md">
-        <p
-          className={`text-lg font-light italic text-[#1A1F71] leading-relaxed transition-all duration-300 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-          }`}
-        >
-          "{quotes[currentQuoteIndex].text}"
+      <div className="h-28 flex flex-col items-center justify-center text-center px-8 max-w-md animate-fade-in">
+        <p className="text-lg font-light italic text-[#1A1F71] leading-relaxed">
+          "{quotes[quoteIndex].text}"
         </p>
-        <span
-          className={`text-sm font-medium text-[#1A1F71]/60 mt-3 tracking-wide transition-all duration-300 delay-100 ${
-            isVisible ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          — {quotes[currentQuoteIndex].author}
+        <span className="text-sm font-medium text-[#1A1F71]/60 mt-3 tracking-wide">
+          — {quotes[quoteIndex].author}
         </span>
       </div>
 
