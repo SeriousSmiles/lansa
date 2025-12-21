@@ -16,13 +16,32 @@ const darkenColor = (hex: string, percent: number): string => {
   const r = parseInt(cleanHex.substring(0, 2), 16);
   const g = parseInt(cleanHex.substring(2, 4), 16);
   const b = parseInt(cleanHex.substring(4, 6), 16);
-  
+
   const darkenAmount = percent / 100;
   const newR = Math.round(r * (1 - darkenAmount));
   const newG = Math.round(g * (1 - darkenAmount));
   const newB = Math.round(b * (1 - darkenAmount));
-  
+
   return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+};
+
+const hexToRgb = (hex: string) => {
+  const h = hex.replace('#', '');
+  const clean = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+  const r = parseInt(clean.substring(0, 2), 16);
+  const g = parseInt(clean.substring(2, 4), 16);
+  const b = parseInt(clean.substring(4, 6), 16);
+  return { r, g, b };
+};
+
+const relativeLuminance = ({ r, g, b }: { r: number; g: number; b: number }) => {
+  const srgb = [r, g, b].map((v) => v / 255).map((v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
+  return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
+};
+
+const hexToRgba = (hex: string, alpha: number) => {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
 interface ProfileCardProps {
@@ -71,6 +90,10 @@ export function ProfileCard({ role, goal }: ProfileCardProps) {
 
   const baseColor = coverColor || '#1A1F2C';
   const darkColor = darkenColor(baseColor, 35);
+  const baseLum = relativeLuminance(hexToRgb(baseColor));
+  // Make the tint visibly present even for very light cover colors
+  const contentTintAlpha = baseLum > 0.72 ? 0.18 : 0.08;
+  const contentBg = hexToRgba(baseColor, contentTintAlpha);
 
   return (
     <AnimatedCard delay={0.1} className="h-auto overflow-hidden">
@@ -90,7 +113,7 @@ export function ProfileCard({ role, goal }: ProfileCardProps) {
 
         <CardContent 
           className="p-4 pt-2"
-          style={{ backgroundColor: `${baseColor}12` }}
+          style={{ backgroundColor: contentBg }}
         >
           {/* Profile Header */}
           <div className="flex items-start gap-3 mb-4">
