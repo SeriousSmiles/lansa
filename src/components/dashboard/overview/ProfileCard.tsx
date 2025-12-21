@@ -88,7 +88,10 @@ export function ProfileCard({ role, goal }: ProfileCardProps) {
           </div>
         </div>
 
-        <CardContent className="p-4 pt-2">
+        <CardContent 
+          className="p-4 pt-2"
+          style={{ backgroundColor: `${baseColor}12` }}
+        >
           {/* Profile Header */}
           <div className="flex items-start gap-3 mb-4">
             <div className="relative">
