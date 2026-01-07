@@ -53,7 +53,8 @@ Good vs Bad Examples:
 - "I want to get a job in 90 days" → Score: 5/10 - "A recruiter will hear determination, but 90 days without more detail may sound unrealistic"
 - "I want to improve communication" → Score: 8/10 - "Recruiters value this because communication directly impacts teamwork and leadership potential"
 
-Respond with JSON:
+IMPORTANT: Respond ONLY with valid JSON (no markdown, no extra text). The "interpretation" field must be a single string, not a nested object.
+
 {
   "recruiter_perspective": "To a recruiter, this sounds...",
   "score": 0-10,
@@ -64,7 +65,7 @@ Respond with JSON:
     "professional_impression": 0-2
   },
   "coaching_nudge": "One sentence suggesting how to improve",
-  "interpretation": "Quote their exact words and explain what it reveals",
+  "interpretation": "A single string that quotes their words and explains what it reveals about their mindset",
   "initiative_type": "creative, operational, marketing, support, leadership, analytical, or learning-focused",
   "clarity_level": "very-clear, clear, somewhat-clear, or needs-refinement"
 }`;
@@ -98,25 +99,43 @@ Respond with JSON:
     
     let analysis;
     try {
-      analysis = JSON.parse(content);
+      // Clean the response - remove markdown code blocks if present
+      let cleanContent = content.trim();
+      if (cleanContent.startsWith('```')) {
+        cleanContent = cleanContent.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+      }
+      analysis = JSON.parse(cleanContent);
     } catch (parseError) {
       console.error('Failed to parse AI response:', content);
       console.error('Parse error details:', parseError);
-      // Create fallback that references their actual goal
-      analysis = {
-        recruiter_perspective: `To a recruiter, reading "${goalStatement}" shows forward-planning mindset, though more specifics would strengthen the impression.`,
-        score: 6,
-      score_breakdown: {
-        clarity: goalStatement.length > 50 ? 2 : 1,
-        relevance: 2,
-        realism: 1,
-        tone: 1
-      },
-        coaching_nudge: "Add specific steps or measurable outcomes to make your 90-day goal more compelling.",
-        interpretation: `When I read your goal of "${goalStatement}", I can see you're thinking ahead about making a contribution.`,
-        initiative_type: "operational",
-        clarity_level: goalStatement.length > 50 ? "clear" : "somewhat-clear"
-      };
+      
+      // Try to extract JSON from response using regex
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          analysis = JSON.parse(jsonMatch[0]);
+        } catch (e) {
+          console.error('Secondary parse also failed');
+        }
+      }
+      
+      // Fallback that references their actual goal
+      if (!analysis) {
+        analysis = {
+          recruiter_perspective: `To a recruiter, reading "${goalStatement}" shows forward-planning mindset, though more specifics would strengthen the impression.`,
+          score: 6,
+          score_breakdown: {
+            clarity: goalStatement.length > 50 ? 2 : 1,
+            relevance: 2,
+            realism: 1,
+            professional_impression: 1
+          },
+          coaching_nudge: "Add specific steps or measurable outcomes to make your 90-day goal more compelling.",
+          interpretation: `When I read your goal, I can see you're thinking ahead about making a contribution.`,
+          initiative_type: "operational",
+          clarity_level: goalStatement.length > 50 ? "clear" : "somewhat-clear"
+        };
+      }
     }
 
     return new Response(JSON.stringify({ analysis }), {
