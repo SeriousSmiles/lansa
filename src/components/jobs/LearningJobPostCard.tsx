@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Building2, MapPin, Clock, Sparkles, Bookmark, ThumbsUp, MessageSquare, Share2 } from "lucide-react";
+import { Building2, MapPin, Clock, Sparkles, Bookmark } from "lucide-react";
 import { LearningJobListing, learningJobFeedService } from "@/services/learningJobFeedService";
 import { formatDistanceToNow } from "date-fns";
 import { useEffect, useRef, useState } from "react";
@@ -216,33 +216,7 @@ export function LearningJobPostCard({ job, onApply, onViewDetails, disableApply 
           <span>{job.application_count ?? 0} {(job.application_count ?? 0) === 1 ? 'application' : 'applications'}</span>
         </div>
         
-        <div className="grid grid-cols-3 gap-2 pb-3 border-b border-border">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-2 hover:bg-accent w-full justify-center text-muted-foreground hover:text-foreground"
-          >
-            <ThumbsUp className="w-4 h-4" />
-            <span className="hidden sm:inline">Like</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-2 hover:bg-accent w-full justify-center text-muted-foreground hover:text-foreground"
-          >
-            <MessageSquare className="w-4 h-4" />
-            <span className="hidden sm:inline">Comment</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-2 hover:bg-accent w-full justify-center text-muted-foreground hover:text-foreground"
-          >
-            <Share2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Share</span>
-          </Button>
         </div>
-      </div>
 
       {/* Action Buttons */}
       <div className="px-4 sm:px-6 pb-4 sm:pb-6">
