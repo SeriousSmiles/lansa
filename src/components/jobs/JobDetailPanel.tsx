@@ -1,13 +1,74 @@
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LearningJobListing, learningJobFeedService } from "@/services/learningJobFeedService";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { useMemo } from "react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Building2, MapPin, Clock, Sparkles, Bookmark, Eye, Users } from "lucide-react";
+import { Building2, MapPin, Clock, Sparkles, Bookmark, Eye, Users, Briefcase, DollarSign, BarChart3, Laptop } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+
+/** Parses structured fields from job description text */
+function parseJobDescription(description: string) {
+  const fields: { key: string; value: string }[] = [];
+  let cleanDescription = description;
+
+  const patterns = [
+    { regex: /\*\*Requirements:?\*\*\s*([\s\S]*?)(?=\n\*\*[A-Z]|\n\n(?=[A-Z])|\s*$)/i, key: 'Requirements' },
+    { regex: /\*\*Compensation:?\*\*\s*(.*?)(?=\n\*\*|\n\n|\s*$)/i, key: 'Compensation' },
+    { regex: /\*\*Experience\s*Level:?\*\*\s*(.*?)(?=\n\*\*|\n\n|\s*$)/i, key: 'Experience Level' },
+    { regex: /\*\*Work\s*Type:?\*\*\s*(.*?)(?=\n\*\*|\n\n|\s*$)/i, key: 'Work Type' },
+  ];
+
+  for (const { regex, key } of patterns) {
+    const match = description.match(regex);
+    if (match) {
+      fields.push({ key, value: match[1].trim() });
+      cleanDescription = cleanDescription.replace(match[0], '');
+    }
+  }
+
+  cleanDescription = cleanDescription.replace(/\n{3,}/g, '\n\n').trim();
+  return { fields, cleanDescription };
+}
+
+function JobDescriptionSection({ description }: { description: string }) {
+  const { fields, cleanDescription } = useMemo(() => parseJobDescription(description), [description]);
+
+  const iconMap: Record<string, React.ReactNode> = {
+    'Requirements': <Briefcase className="w-4 h-4 text-primary" />,
+    'Compensation': <DollarSign className="w-4 h-4 text-primary" />,
+    'Experience Level': <BarChart3 className="w-4 h-4 text-primary" />,
+    'Work Type': <Laptop className="w-4 h-4 text-primary" />,
+  };
+
+  return (
+    <div className="space-y-4">
+      {fields.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          {fields.map(({ key, value }) => (
+            <div key={key} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-border">
+              <div className="mt-0.5 flex-shrink-0">{iconMap[key]}</div>
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-muted-foreground">{key}</p>
+                <p className="text-sm font-semibold text-foreground mt-0.5 leading-snug">{value}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {cleanDescription && (
+        <div>
+          <h3 className="text-sm font-semibold text-foreground mb-2">About this role</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{cleanDescription}</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface JobDetailPanelProps {
   job: LearningJobListing | null;
@@ -150,11 +211,8 @@ function JobDetailContent({ job, onApply, disableApply, onClose }: Omit<JobDetai
             </div>
           </div>
 
-          {/* Description */}
-          <div>
-            <h3 className="text-sm font-semibold text-foreground mb-2">About this role</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{job.description}</p>
-          </div>
+          {/* Structured Job Info */}
+          <JobDescriptionSection description={job.description} />
 
           {/* Skills */}
           {job.skills_required && job.skills_required.length > 0 && (
