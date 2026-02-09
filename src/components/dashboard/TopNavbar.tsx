@@ -40,7 +40,7 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
 
   return (
     <header
-      className="sticky top-0 z-40 w-full border-b bg-background"
+      className="w-full border-b bg-background"
       style={themeColor ? { borderColor: `${themeColor}30` } : {}}
     >
       <div className="flex w-full max-w-[1440px] mx-auto flex-wrap items-center justify-between px-4 sm:px-6 md:px-8 lg:px-12 h-14 gap-2 sm:gap-4">
