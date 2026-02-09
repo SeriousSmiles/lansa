@@ -49,7 +49,7 @@ function JobDescriptionSection({ description }: { description: string }) {
       {fields.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           {fields.map(({ key, value }) => (
-            <div key={key} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-border">
+            <div key={key} className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/15">
               <div className="mt-0.5 flex-shrink-0">{iconMap[key]}</div>
               <div className="min-w-0">
                 <p className="text-xs font-medium text-muted-foreground">{key}</p>
