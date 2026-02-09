@@ -1,4 +1,4 @@
-import { Home, Users, Building2, DollarSign, TrendingUp, BarChart3, Clock, FileText, HelpCircle, Settings, Search, Megaphone } from 'lucide-react';
+import { Home, Users, Building2, DollarSign, TrendingUp, BarChart3, Clock, FileText, HelpCircle, Settings, Search, Megaphone, Video } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import {
   Sidebar,
@@ -23,6 +23,7 @@ const menuItems = [
   { title: 'Users', url: '/admin/users', icon: Users },
   { title: 'Organizations', url: '/admin/organizations', icon: Building2 },
   { title: 'Product Updates', url: '/admin/updates', icon: Megaphone },
+  { title: 'Content', url: '/admin/content', icon: Video },
   { title: 'Pricing Wall', url: '/admin/pricing', icon: DollarSign },
   { title: 'Trends', url: '/admin/trends', icon: TrendingUp },
   { title: 'Analytics', url: '/admin/analytics', icon: BarChart3 },
