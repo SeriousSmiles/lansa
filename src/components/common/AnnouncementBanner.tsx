@@ -8,7 +8,14 @@ interface AnnouncementBannerProps {
 export function AnnouncementBanner({
   message = "You are seeing an early version of Lansa. What you see is subject to change.",
 }: AnnouncementBannerProps) {
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(
+    () => sessionStorage.getItem("banner_dismissed") === "true"
+  );
+
+  const handleDismiss = () => {
+    sessionStorage.setItem("banner_dismissed", "true");
+    setDismissed(true);
+  };
 
   if (dismissed) return null;
 
@@ -23,7 +30,7 @@ export function AnnouncementBanner({
           <Info className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
           <span>{message}</span>
           <button
-            onClick={() => setDismissed(true)}
+            onClick={handleDismiss}
             className="absolute right-0 p-1 rounded-full hover:bg-primary/10 transition-colors"
             aria-label="Dismiss notice"
           >
