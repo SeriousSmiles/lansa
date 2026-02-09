@@ -7,7 +7,7 @@ type UserState = {
   loading: boolean;
   userId?: string;
   isAuthenticated: boolean;
-  userType?: 'job_seeker' | 'employer';
+  userType?: 'job_seeker' | 'employer' | 'mentor';
   careerPath?: CareerPath;
   hasCompletedOnboarding: boolean;
   lansaCertified: boolean;
@@ -42,7 +42,7 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
   // Ref to track if we've completed initial load
   const initializedRef = useRef(false);
   // CRITICAL: Preserve userType during refresh to prevent race condition
-  const previousUserTypeRef = useRef<'job_seeker' | 'employer'>();
+  const previousUserTypeRef = useRef<'job_seeker' | 'employer' | 'mentor'>();
 
   // Function to fetch user state from database
   const fetchUserState = useCallback(async () => {
@@ -134,8 +134,8 @@ export function UserStateProvider({ children }: { children: React.ReactNode }) {
         hasPendingOrgRequest: !!pendingRequests
       });
 
-      // CRITICAL: Use previous userType as fallback during refresh to prevent race condition
-      const currentUserType = answersResult.data?.user_type as 'job_seeker' | 'employer' | undefined;
+  // CRITICAL: Use previous userType as fallback during refresh to prevent race condition
+      const currentUserType = answersResult.data?.user_type as 'job_seeker' | 'employer' | 'mentor' | undefined;
       const finalUserType = currentUserType || previousUserTypeRef.current;
       
       setState({

@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Clock, GraduationCap, Sparkles, Youtube, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Clock, GraduationCap, Sparkles, Youtube, Upload, ExternalLink } from "lucide-react";
 import { type ContentVideo, formatDuration, extractYouTubeId } from "@/hooks/useContentVideos";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -99,6 +100,18 @@ export function VideoDetail({ video }: VideoDetailProps) {
           </div>
           <p className="text-sm leading-relaxed">{video.transformation_promise}</p>
         </div>
+      )}
+
+      {/* External Link for Mentor videos */}
+      {(video as any).external_link && (video as any).mentor_id && (
+        <Button
+          variant="outline"
+          className="w-full gap-2"
+          onClick={() => window.open((video as any).external_link, '_blank')}
+        >
+          <ExternalLink className="h-4 w-4" />
+          Visit Mentor's Platform
+        </Button>
       )}
     </div>
   );

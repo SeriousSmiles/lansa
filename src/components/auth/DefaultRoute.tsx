@@ -29,6 +29,12 @@ export function DefaultRoute() {
       return;
     }
 
+    if (userType === 'mentor') {
+      console.info("🔄 [DefaultRoute] Redirecting to mentor dashboard", { userType });
+      navigate('/mentor-dashboard', { replace: true, state: { fromRedirect: true } });
+      return;
+    }
+
     if (userType === 'job_seeker') {
       console.info("🔄 [DefaultRoute] Redirecting to job seeker dashboard", { userType });
       navigate('/dashboard', { replace: true, state: { fromRedirect: true } });

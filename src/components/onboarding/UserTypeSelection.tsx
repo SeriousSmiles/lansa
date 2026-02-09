@@ -1,24 +1,24 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Building2, ChevronDown, Sparkles, UsersRound } from "lucide-react";
+import { Users, Building2, ChevronDown, Sparkles, UsersRound, GraduationCap } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface UserTypeSelectionProps {
-  onSelect: (userType: 'job_seeker' | 'create_org' | 'join_org') => void;
+  onSelect: (userType: 'job_seeker' | 'create_org' | 'join_org' | 'mentor') => void;
 }
 
 export function UserTypeSelection({ onSelect }: UserTypeSelectionProps) {
-  const [selectedType, setSelectedType] = useState<'job_seeker' | 'create_org' | 'join_org' | null>(null);
-  const [expandedCard, setExpandedCard] = useState<'job_seeker' | 'create_org' | 'join_org' | null>(null);
+  const [selectedType, setSelectedType] = useState<'job_seeker' | 'create_org' | 'join_org' | 'mentor' | null>(null);
+  const [expandedCard, setExpandedCard] = useState<'job_seeker' | 'create_org' | 'join_org' | 'mentor' | null>(null);
   const isMobile = useIsMobile();
 
-  const handleSelect = (type: 'job_seeker' | 'create_org' | 'join_org') => {
+  const handleSelect = (type: 'job_seeker' | 'create_org' | 'join_org' | 'mentor') => {
     setSelectedType(type);
     setTimeout(() => onSelect(type), 300);
   };
 
-  const handleCardClick = (type: 'job_seeker' | 'create_org' | 'join_org') => {
+  const handleCardClick = (type: 'job_seeker' | 'create_org' | 'join_org' | 'mentor') => {
     if (isMobile) {
       if (expandedCard === type) {
         handleSelect(type);
@@ -48,7 +48,7 @@ export function UserTypeSelection({ onSelect }: UserTypeSelectionProps) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6 max-w-7xl mx-auto">
           {/* Job Seeker Card */}
           <Card 
             className={`group cursor-pointer transition-all duration-500 hover:shadow-2xl border-2 overflow-hidden ${
@@ -302,6 +302,92 @@ export function UserTypeSelection({ onSelect }: UserTypeSelectionProps) {
                   }}
                 >
                   {selectedType === 'join_org' ? '✓ Selected' : 'Join Team'}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Mentor Card */}
+          <Card 
+            className={`group cursor-pointer transition-all duration-500 hover:shadow-2xl border-2 overflow-hidden ${
+              selectedType === 'mentor' 
+                ? 'border-primary bg-primary/5 shadow-xl scale-105' 
+                : 'border-border hover:border-primary/50'
+            } ${expandedCard === 'mentor' ? 'md:scale-100' : ''}`}
+            onClick={() => handleCardClick('mentor')}
+          >
+            <div className={`relative ${isMobile ? 'aspect-square' : 'h-48'} bg-gradient-to-br from-emerald-600 to-emerald-500 overflow-hidden`}>
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 to-emerald-500/5" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center text-white p-4">
+                  <div className="relative">
+                    <GraduationCap className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} mx-auto mb-2 drop-shadow-lg`} />
+                  </div>
+                  <h3 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold mb-1`}>Mentor</h3>
+                  <p className={`text-white/90 ${isMobile ? 'text-sm' : 'text-base'}`}>Teach & share knowledge</p>
+                </div>
+              </div>
+            </div>
+            
+            <CardContent className="p-4 md:p-6">
+              {isMobile ? (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-base font-semibold text-foreground">Perfect if you're:</h4>
+                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${expandedCard === 'mentor' ? 'rotate-180' : ''}`} />
+                  </div>
+                  {expandedCard !== 'mentor' ? (
+                    <p className="text-sm text-muted-foreground mb-4">Teaching & coaching...</p>
+                  ) : (
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-emerald-600" />
+                        <span className="text-muted-foreground text-sm">Sharing video courses</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-emerald-600" />
+                        <span className="text-muted-foreground text-sm">Coaching professionals</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-emerald-600" />
+                        <span className="text-muted-foreground text-sm">Growing your reach</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <h4 className="text-lg font-semibold text-foreground mb-3">Perfect if you're:</h4>
+                  <div className="space-y-2 mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-emerald-600" />
+                      <span className="text-muted-foreground text-sm">Sharing video courses</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-emerald-600" />
+                      <span className="text-muted-foreground text-sm">Coaching professionals</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-emerald-600" />
+                      <span className="text-muted-foreground text-sm">Growing your audience</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {(expandedCard === 'mentor' || !isMobile) && (
+                <Button 
+                  className={`w-full py-3 md:py-4 text-sm font-semibold transition-all duration-300 ${
+                    selectedType === 'mentor' 
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white' 
+                      : 'bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-700 border border-emerald-600'
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelect('mentor');
+                  }}
+                >
+                  {selectedType === 'mentor' ? '✓ Selected' : 'Start Teaching'}
                 </Button>
               )}
             </CardContent>

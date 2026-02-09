@@ -10,7 +10,7 @@ interface RouteGuardProps {
   children: JSX.Element;
   requireAuth?: boolean;
   requireOnboarding?: boolean;
-  allowedUserTypes?: Array<'job_seeker' | 'employer'>;
+  allowedUserTypes?: Array<'job_seeker' | 'employer' | 'mentor'>;
   requireAdmin?: boolean;
 }
 

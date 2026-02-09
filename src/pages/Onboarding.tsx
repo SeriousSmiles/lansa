@@ -12,6 +12,7 @@ import { BusinessOnboardingForm } from "@/components/onboarding/BusinessOnboardi
 import { OrganizationOnboardingForm } from "@/components/onboarding/OrganizationOnboardingForm";
 import { JoinOrganizationFlow } from "@/components/onboarding/JoinOrganizationFlow";
 import { StudentOnboardingContainer } from "@/components/onboarding/student/StudentOnboardingContainer";
+import { MentorOnboarding } from "@/components/mentor/MentorOnboarding";
 import { CareerPathSegmentation, type CareerPath } from "@/components/onboarding/CareerPathSegmentation";
 import { AIOnboardingFlow } from "@/components/onboarding/AIOnboardingFlow";
 import { OnboardingErrorBoundary } from "@/components/onboarding/OnboardingErrorBoundary";
@@ -22,8 +23,9 @@ import { supabase } from "@/integrations/supabase/client";
 export default function Onboarding() {
   const [isLoading, setIsLoading] = useState(true);
   const [userAnswers, setUserAnswers] = useState<any>({});
-  const [userType, setUserType] = useState<'job_seeker' | 'employer' | null>(null);
-  const [userIntent, setUserIntent] = useState<'job_seeker' | 'create_org' | 'join_org' | null>(null);
+  const [userType, setUserType] = useState<'job_seeker' | 'employer' | 'mentor' | null>(null);
+  const [userIntent, setUserIntent] = useState<'job_seeker' | 'create_org' | 'join_org' | 'mentor' | null>(null);
+  const [showMentorOnboarding, setShowMentorOnboarding] = useState(false);
   const [careerPath, setCareerPath] = useState<CareerPath | null>(null);
   const [showTypeSelection, setShowTypeSelection] = useState(true);
   const [showCareerSegmentation, setShowCareerSegmentation] = useState(false);
@@ -41,10 +43,11 @@ export default function Onboarding() {
 
     if (contextUserType === 'employer') {
       navigate('/employer-dashboard', { replace: true, state: { fromRedirect: true } });
+    } else if (contextUserType === 'mentor') {
+      navigate('/mentor-dashboard', { replace: true, state: { fromRedirect: true } });
     } else if (contextUserType === 'job_seeker') {
       navigate('/dashboard', { replace: true, state: { fromRedirect: true } });
     } else {
-      // Fallback
       navigate('/', { replace: true, state: { fromRedirect: true } });
     }
   }, [userStateLoading, hasCompletedOnboarding, contextUserType, navigate]);
@@ -99,12 +102,12 @@ export default function Onboarding() {
     loadUserAnswers();
   }, [user, navigate]);
 
-  const handleUserTypeSelect = async (selectedIntent: 'job_seeker' | 'create_org' | 'join_org') => {
+  const handleUserTypeSelect = async (selectedIntent: 'job_seeker' | 'create_org' | 'join_org' | 'mentor') => {
     setUserIntent(selectedIntent);
     setShowTypeSelection(false);
     
     // Map intent to user_type for database
-    const mappedUserType = selectedIntent === 'job_seeker' ? 'job_seeker' : 'employer';
+    const mappedUserType = selectedIntent === 'job_seeker' ? 'job_seeker' : selectedIntent === 'mentor' ? 'mentor' : 'employer';
     setUserType(mappedUserType);
     
     // Save user_type AND user_intent to database immediately
@@ -129,14 +132,13 @@ export default function Onboarding() {
     
     // Handle different intents
     if (selectedIntent === 'job_seeker') {
-      // Show career segmentation for job seekers
       setShowCareerSegmentation(true);
+    } else if (selectedIntent === 'mentor') {
+      setShowMentorOnboarding(true);
     } else if (selectedIntent === 'create_org') {
-      // Go directly to organization creation flow
-      // This will render the OrganizationOnboardingForm (to be created)
+      // Organization creation flow
     } else if (selectedIntent === 'join_org') {
-      // Go directly to join organization flow
-      // This will render the JoinOrganizationFlow (to be created)
+      // Join organization flow
     }
   };
 
@@ -236,6 +238,13 @@ export default function Onboarding() {
             <UserTypeSelection onSelect={handleUserTypeSelect} />
           ) : showCareerSegmentation ? (
             <CareerPathSegmentation onSelect={handleCareerPathSelect} />
+          ) : showMentorOnboarding ? (
+            <MentorOnboarding onComplete={async () => {
+              if ((window as any).__userStateRefresh) {
+                await (window as any).__userStateRefresh();
+              }
+              navigate('/mentor-dashboard', { replace: true });
+            }} />
           ) : userIntent === 'create_org' ? (
             <OrganizationOnboardingForm onComplete={handleBusinessOnboardingComplete} />
           ) : userIntent === 'join_org' ? (
