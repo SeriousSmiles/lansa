@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Youtube, Upload, Clock } from "lucide-react";
+import { Youtube, Upload, Clock, GraduationCap, Star } from "lucide-react";
 import { type ContentVideo, formatDuration, extractYouTubeId, getYouTubeThumbnail } from "@/hooks/useContentVideos";
 import { cn } from "@/lib/utils";
 
@@ -64,14 +64,23 @@ export function VideoCardList({ videos, selectedId, onSelect }: VideoCardListPro
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium text-sm leading-tight line-clamp-2">{video.title}</h3>
-                <div className="flex items-center gap-2 mt-1.5">
-                  {video.source_type === "youtube" ? (
+                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                  {(video as any).mentor_id ? (
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 gap-0.5 text-emerald-700 border-emerald-300 bg-emerald-50">
+                      <GraduationCap className="h-2.5 w-2.5" /> Mentor
+                    </Badge>
+                  ) : video.source_type === "youtube" ? (
                     <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 gap-0.5">
                       <Youtube className="h-2.5 w-2.5" /> YouTube
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 gap-0.5 text-green-700 border-green-300 bg-green-50">
                       <Upload className="h-2.5 w-2.5" /> Uploaded
+                    </Badge>
+                  )}
+                  {(video as any).is_promoted && (
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 gap-0.5 text-amber-700 border-amber-300 bg-amber-50">
+                      <Star className="h-2.5 w-2.5" /> Featured
                     </Badge>
                   )}
                   {video.category && (

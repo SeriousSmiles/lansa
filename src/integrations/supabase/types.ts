@@ -702,8 +702,11 @@ export type Database = {
           description: string | null
           duration_seconds: number | null
           education_type: string | null
+          external_link: string | null
           id: string
+          is_promoted: boolean
           is_published: boolean
+          mentor_id: string | null
           source_type: Database["public"]["Enums"]["video_source_type"]
           storage_path: string | null
           thumbnail_url: string | null
@@ -719,8 +722,11 @@ export type Database = {
           description?: string | null
           duration_seconds?: number | null
           education_type?: string | null
+          external_link?: string | null
           id?: string
+          is_promoted?: boolean
           is_published?: boolean
+          mentor_id?: string | null
           source_type?: Database["public"]["Enums"]["video_source_type"]
           storage_path?: string | null
           thumbnail_url?: string | null
@@ -736,8 +742,11 @@ export type Database = {
           description?: string | null
           duration_seconds?: number | null
           education_type?: string | null
+          external_link?: string | null
           id?: string
+          is_promoted?: boolean
           is_published?: boolean
+          mentor_id?: string | null
           source_type?: Database["public"]["Enums"]["video_source_type"]
           storage_path?: string | null
           thumbnail_url?: string | null
@@ -1193,6 +1202,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      mentor_profiles: {
+        Row: {
+          bio: string | null
+          created_at: string
+          display_name: string
+          external_url: string | null
+          id: string
+          mentor_type: Database["public"]["Enums"]["mentor_type"]
+          profile_image: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          display_name: string
+          external_url?: string | null
+          id?: string
+          mentor_type?: Database["public"]["Enums"]["mentor_type"]
+          profile_image?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          display_name?: string
+          external_url?: string | null
+          id?: string
+          mentor_type?: Database["public"]["Enums"]["mentor_type"]
+          profile_image?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mentor_subscriptions: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          price_xcg: number
+          started_at: string
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          price_xcg?: number
+          started_at?: string
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          price_xcg?: number
+          started_at?: string
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          user_id?: string
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
@@ -2814,6 +2892,7 @@ export type Database = {
           users_updated: number
         }[]
       }
+      check_mentor_video_limit: { Args: { _user_id: string }; Returns: boolean }
       check_org_membership: {
         Args: { _organization_id: string; _roles?: string[]; _user_id: string }
         Returns: boolean
@@ -2903,6 +2982,7 @@ export type Database = {
       interaction_type: "view" | "save" | "apply" | "ignore" | "share"
       job_type: "full_time" | "part_time" | "contract" | "internship"
       match_context: "employee" | "internship"
+      mentor_type: "teacher" | "coach" | "organization"
       notification_type:
         | "org_request_received"
         | "org_request_approved"
@@ -2915,6 +2995,7 @@ export type Database = {
         | "match_created"
         | "message_received"
         | "system_update"
+      subscription_tier: "free" | "starter" | "pro"
       swipe_direction: "right" | "left" | "nudge"
       user_color: "purple" | "green" | "orange" | "red"
       video_source_type: "youtube" | "native"
@@ -3077,6 +3158,7 @@ export const Constants = {
       interaction_type: ["view", "save", "apply", "ignore", "share"],
       job_type: ["full_time", "part_time", "contract", "internship"],
       match_context: ["employee", "internship"],
+      mentor_type: ["teacher", "coach", "organization"],
       notification_type: [
         "org_request_received",
         "org_request_approved",
@@ -3090,6 +3172,7 @@ export const Constants = {
         "message_received",
         "system_update",
       ],
+      subscription_tier: ["free", "starter", "pro"],
       swipe_direction: ["right", "left", "nudge"],
       user_color: ["purple", "green", "orange", "red"],
       video_source_type: ["youtube", "native"],

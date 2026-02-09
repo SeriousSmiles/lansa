@@ -101,7 +101,7 @@ export function RequireUserType({
   silent = false
 }: { 
   children: JSX.Element; 
-  allowedTypes: Array<'job_seeker' | 'employer'>;
+  allowedTypes: Array<'job_seeker' | 'employer' | 'mentor'>;
   silent?: boolean;
 }) {
   const { loading, userType, careerPath, isAuthenticated, isRefreshing } = useUserState();

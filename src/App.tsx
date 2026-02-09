@@ -34,6 +34,7 @@ import EmployerDashboard from "./pages/EmployerDashboard";
 import OrganizationSettings from "./pages/OrganizationSettings";
 import Resources from "./pages/Resources";
 import ContentLibrary from "./pages/ContentLibrary";
+import MentorDashboard from "./pages/MentorDashboard";
 import Card from "./pages/Card";
 import JobFeed from "./pages/JobFeed";
 import LearningJobFeed from "./pages/LearningJobFeed";
@@ -183,9 +184,18 @@ const App: React.FC = () => {
                     <Route path="/notifications" element={<Notifications />} />
                     
                     <Route path="/content" element={
-                      <RequireUserType allowedTypes={['job_seeker']}>
+                      <RequireUserType allowedTypes={['job_seeker', 'mentor']}>
                         <ContentLibrary />
                       </RequireUserType>
+                    } />
+
+                    {/* Mentor Routes */}
+                    <Route path="/mentor-dashboard" element={
+                      <RequireOnboarding soft={false}>
+                        <RequireUserType allowedTypes={['mentor']}>
+                          <MentorDashboard />
+                        </RequireUserType>
+                      </RequireOnboarding>
                     } />
                     
                     {/* Certification Routes - Protected by user type */}
