@@ -1,61 +1,58 @@
 
 
-# Fix Mentor Onboarding: Duplicate Error and Stuck on Onboarding Page
+# Redesign Job Cards + Slide-in Job Detail Panel
 
-## Root Cause
+## What Changes
 
-Two issues were found:
+### 1. Simplified Job Card
+Strip the current card down to only essential elements:
+- **Header**: Organization logo + job title + company name + location + posted time
+- **Image**: The job post image (if present)
+- **Badges**: Job type (Full-time, etc.), category (Design, etc.), Remote
+- **Salary range** (if present)
+- Remove: description, skills section, engagement counters, all buttons (Save, View Details, Apply Now)
 
-1. **Database constraint blocks mentors**: The `user_answers` table has a CHECK constraint that only allows `user_type` values of `'job_seeker'` or `'employer'`. When the mentor onboarding tries to save `user_type: 'mentor'`, the database silently rejects it. Without a `user_answers` row, the system never recognizes the user as having completed onboarding.
+The entire card becomes tappable/clickable -- tapping it opens the detail panel.
 
-2. **No retry protection**: The `useCreateMentorProfile` hook uses `.insert()` instead of `.upsert()`. If a user retries after a partial failure, they get a "duplicate key" error because the mentor profile already exists from the first attempt.
+### 2. New Job Detail Panel (Desktop: Slide from Right, Mobile: Slide from Bottom)
+- **Desktop**: Uses the existing `Sheet` component (Radix Dialog-based) sliding in from the right side of the page
+- **Mobile**: Uses the existing `Drawer` component (vaul-based) sliding up from the bottom, draggable to close
 
-## What Happens Today (Broken Flow)
+The panel contains all the detailed info that was removed from the card: description, skills, company info, engagement metrics, plus the action buttons (Save for Later, Apply Now).
+
+### 3. Component Architecture
 
 ```text
-User selects "Mentor" --> Completes Steps 1 & 2 --> handleComplete runs:
-  1. INSERT mentor_profiles   --> OK (row created)
-  2. INSERT mentor_subscriptions --> OK (row created)  
-  3. UPSERT user_answers with user_type='mentor' --> FAILS (CHECK constraint)
-  4. UPDATE user_profiles.onboarding_completed=true --> OK
-  5. onComplete() fires, navigates to /mentor-dashboard
-
-But on refresh:
-  UserStateProvider reads user_answers --> no row found --> hasUserType=false
-  hasCompletedOnboarding = (true) && (false) = false
-  --> User is redirected back to /onboarding
-
-On retry:
-  INSERT mentor_profiles --> FAILS (duplicate key) --> toast error shown
+LearningJobFeed.tsx
+  +-- LearningJobPostCard.tsx  (simplified, clickable)
+  +-- JobDetailPanel.tsx       (NEW - replaces JobDetailModal usage)
+       +-- Sheet (desktop)
+       +-- Drawer (mobile)
+       +-- Full job details + Apply Now + Save buttons
 ```
 
-## Fix (4 changes)
+## Technical Details
 
-### 1. Database migration: Add 'mentor' to the CHECK constraint
-Add a SQL migration to update the `user_answers_user_type_check` constraint to allow `'mentor'` as a valid value.
+### File: `src/components/jobs/LearningJobPostCard.tsx`
+- Remove: description text, skills badges, engagement counters, Save/View Details/Apply Now buttons, save/apply state management
+- Keep: header with logo, image, type/category badges, salary range, view tracking (IntersectionObserver), image modal
+- Make card clickable: `onClick={() => onViewDetails(job)}` on the Card root
+- Add `cursor-pointer` styling
+- Remove `onApply` and `disableApply` props (moved to panel)
 
-### 2. Fix the stuck user's data
-Include a data repair statement in the migration to insert the missing `user_answers` row for the existing mentor user (user_id `450c2e39-fd9e-42f2-8ec8-14c2d565aff9`).
+### File: `src/components/jobs/JobDetailPanel.tsx` (NEW)
+- Accept `job`, `isOpen`, `onClose`, `onApply`, `disableApply` props
+- Use `useIsMobile()` hook to conditionally render:
+  - Desktop: `<Sheet>` with `side="right"` and appropriate width (~480px)
+  - Mobile: `<Drawer>` from vaul, snapping from bottom, draggable to dismiss
+- Content includes: full header, image, badges, description, skills, salary, company info, engagement stats
+- Sticky footer with "Apply Now" button (primary) and "Save for Later"
 
-### 3. Make mentor profile + subscription creation idempotent
-In `src/hooks/useMentorProfile.ts`, change `useCreateMentorProfile` from `.insert()` to `.upsert()` with `onConflict: 'user_id'`. Same change in `src/hooks/useMentorSubscription.ts` for `useCreateMentorSubscription`.
+### File: `src/pages/LearningJobFeed.tsx`
+- Replace `JobDetailModal` import with new `JobDetailPanel`
+- Pass `onApply`, `disableApply`, and `onClose` to the panel
+- Move apply logic handling to the panel level
 
-This prevents the "duplicate key" error when a user retries the onboarding after a partial failure.
-
-### 4. Better error handling in MentorOnboarding
-In `src/components/mentor/MentorOnboarding.tsx`, update `handleComplete` to properly check and surface the error from the `user_answers` upsert (currently it could fail silently). Also ensure the `user_answers` upsert includes `career_path_onboarding_completed: true` for backward compatibility.
-
-## Files Changed
-
-- **New migration SQL** -- ALTER CHECK constraint, repair existing user data
-- `src/hooks/useMentorProfile.ts` -- `.insert()` to `.upsert({ onConflict: 'user_id' })`
-- `src/hooks/useMentorSubscription.ts` -- `.insert()` to `.upsert({ onConflict: 'user_id' })`
-- `src/components/mentor/MentorOnboarding.tsx` -- Add `career_path_onboarding_completed: true` to user_answers upsert, improve error surfacing
-
-## Impact
-
-- Zero impact on job_seeker and employer flows (they already satisfy the existing constraint)
-- Mentors will be able to complete onboarding and land on their dashboard
-- Retries will work gracefully without duplicate errors
-- The stuck user's data will be repaired automatically by the migration
-
+### Files unchanged
+- `src/services/learningJobFeedService.ts` -- no data changes needed
+- `src/components/jobs/JobImageModal.tsx` -- still used within the panel
