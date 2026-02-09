@@ -4,7 +4,7 @@
  * Makes routing logic testable, maintainable, and extensible
  */
 
-export type UserType = 'job_seeker' | 'employer' | 'freelancer' | 'visionary' | 'business';
+export type UserType = 'job_seeker' | 'employer' | 'freelancer' | 'visionary' | 'business' | 'mentor';
 export type CareerPath = 'student' | 'professional' | 'career_changer' | 'entrepreneur';
 
 /**
@@ -28,6 +28,11 @@ export function getPostOnboardingDestination(
     // if (careerPath === 'student') return '/student-dashboard';
     // if (careerPath === 'professional') return '/professional-dashboard';
     return '/profile';
+  }
+
+  // Mentor users go to mentor dashboard
+  if (userType === 'mentor') {
+    return '/mentor-dashboard';
   }
 
   // Future user types
@@ -54,7 +59,8 @@ export function getDestinationLabel(userType: UserType): string {
     business: 'Business Dashboard',
     job_seeker: 'Your Profile',
     freelancer: 'Freelancer Hub',
-    visionary: 'Visionary Space'
+    visionary: 'Visionary Space',
+    mentor: 'Mentor Dashboard'
   };
 
   return labels[userType] || 'Dashboard';
@@ -65,6 +71,6 @@ export function getDestinationLabel(userType: UserType): string {
  * Future: Add business logic for restricted user types
  */
 export function canCompleteOnboarding(userType: UserType): boolean {
-  const allowedTypes: UserType[] = ['job_seeker', 'employer', 'business'];
+  const allowedTypes: UserType[] = ['job_seeker', 'employer', 'business', 'mentor'];
   return allowedTypes.includes(userType);
 }

@@ -37,6 +37,19 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
           icon: IconUser,
         },
       ]
+    : userType === 'mentor'
+    ? [
+        {
+          title: "Dashboard",
+          url: "/mentor-dashboard",
+          icon: IconHome,
+        },
+        {
+          title: "Content Library",
+          url: "/content",
+          icon: IconVideo,
+        },
+      ]
     : [
         {
           title: "Dashboard",
