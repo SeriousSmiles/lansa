@@ -1,58 +1,41 @@
 
 
-# Redesign Job Cards + Slide-in Job Detail Panel
+# Replace Purple Hover State with Lansa-Brand-Aligned Color
 
-## What Changes
+## Problem
+The design system's `--accent` color is set to a purple (`280 65% 55%`), which creates a visually jarring purple background on hover states across buttons, badges, navigation menus, and toggles. This clashes with Lansa's warm orange brand identity.
 
-### 1. Simplified Job Card
-Strip the current card down to only essential elements:
-- **Header**: Organization logo + job title + company name + location + posted time
-- **Image**: The job post image (if present)
-- **Badges**: Job type (Full-time, etc.), category (Design, etc.), Remote
-- **Salary range** (if present)
-- Remove: description, skills section, engagement counters, all buttons (Save, View Details, Apply Now)
+## Solution
+Change the `--accent` CSS variable in `src/index.css` from purple to a warm, subtle cream/orange tone that complements the Lansa brand palette. This single change cascades across the entire project for all user types (job seekers, employers, mentors) because all hover states reference `--accent`.
 
-The entire card becomes tappable/clickable -- tapping it opens the detail panel.
+### Color Change
 
-### 2. New Job Detail Panel (Desktop: Slide from Right, Mobile: Slide from Bottom)
-- **Desktop**: Uses the existing `Sheet` component (Radix Dialog-based) sliding in from the right side of the page
-- **Mobile**: Uses the existing `Drawer` component (vaul-based) sliding up from the bottom, draggable to close
+| Token | Current (Purple) | New (Warm Cream) |
+|---|---|---|
+| `--accent` (light) | `280 65% 55%` | `25 60% 95%` (soft warm peach) |
+| `--accent-foreground` (light) | `0 0% 100%` | `14 60% 30%` (dark warm brown for contrast) |
+| `--accent` (dark) | `280 65% 55%` | `14 40% 20%` (dark warm tone) |
+| `--accent-foreground` (dark) | `0 0% 100%` | `14 60% 90%` (light warm text) |
+| `--accent` (employer light) | `280 65% 55%` | `215 50% 94%` (soft blue tint matching employer blue brand) |
+| `--accent-foreground` (employer light) | `0 0% 100%` | `215 40% 25%` (dark blue text) |
+| `--accent` (employer dark) | `280 65% 55%` | `215 30% 22%` (dark blue tone) |
+| `--accent-foreground` (employer dark) | `0 0% 100%` | `215 40% 90%` (light blue text) |
 
-The panel contains all the detailed info that was removed from the card: description, skills, company info, engagement metrics, plus the action buttons (Save for Later, Apply Now).
-
-### 3. Component Architecture
-
-```text
-LearningJobFeed.tsx
-  +-- LearningJobPostCard.tsx  (simplified, clickable)
-  +-- JobDetailPanel.tsx       (NEW - replaces JobDetailModal usage)
-       +-- Sheet (desktop)
-       +-- Drawer (mobile)
-       +-- Full job details + Apply Now + Save buttons
-```
+## What This Affects
+All hover states project-wide that use `hover:bg-accent`, including:
+- Ghost and outline button variants
+- Outline badge variant
+- Navigation menu triggers
+- Toggle outline variant
 
 ## Technical Details
 
-### File: `src/components/jobs/LearningJobPostCard.tsx`
-- Remove: description text, skills badges, engagement counters, Save/View Details/Apply Now buttons, save/apply state management
-- Keep: header with logo, image, type/category badges, salary range, view tracking (IntersectionObserver), image modal
-- Make card clickable: `onClick={() => onViewDetails(job)}` on the Card root
-- Add `cursor-pointer` styling
-- Remove `onApply` and `disableApply` props (moved to panel)
+**File to edit:** `src/index.css`
 
-### File: `src/components/jobs/JobDetailPanel.tsx` (NEW)
-- Accept `job`, `isOpen`, `onClose`, `onApply`, `disableApply` props
-- Use `useIsMobile()` hook to conditionally render:
-  - Desktop: `<Sheet>` with `side="right"` and appropriate width (~480px)
-  - Mobile: `<Drawer>` from vaul, snapping from bottom, draggable to dismiss
-- Content includes: full header, image, badges, description, skills, salary, company info, engagement stats
-- Sticky footer with "Apply Now" button (primary) and "Save for Later"
+1. In `:root` -- update `--accent` and `--accent-foreground` to warm cream tones
+2. In `.dark` -- update to corresponding dark-mode warm tones
+3. In `.employer-theme` -- update to soft blue tones matching employer branding
+4. In `.dark .employer-theme` -- update to dark blue tones
 
-### File: `src/pages/LearningJobFeed.tsx`
-- Replace `JobDetailModal` import with new `JobDetailPanel`
-- Pass `onApply`, `disableApply`, and `onClose` to the panel
-- Move apply logic handling to the panel level
+This is a single-file, 8-line change that globally resolves the purple hover issue across all pages and user types.
 
-### Files unchanged
-- `src/services/learningJobFeedService.ts` -- no data changes needed
-- `src/components/jobs/JobImageModal.tsx` -- still used within the panel
