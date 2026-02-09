@@ -212,8 +212,8 @@ export function LearningJobPostCard({ job, onApply, onViewDetails, disableApply 
       {/* LinkedIn-style Engagement Bar */}
       <div className="px-4 sm:px-6 pb-3 border-t border-border pt-3">
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground mb-3">
-          <span>47 people viewed this</span>
-          <span>12 applications</span>
+          <span>{job.view_count ?? 0} {(job.view_count ?? 0) === 1 ? 'person' : 'people'} viewed this</span>
+          <span>{job.application_count ?? 0} {(job.application_count ?? 0) === 1 ? 'application' : 'applications'}</span>
         </div>
         
         <div className="grid grid-cols-3 gap-2 pb-3 border-b border-border">
