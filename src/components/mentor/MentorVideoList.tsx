@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMentorVideos, useDeleteMentorVideo } from "@/hooks/useMentorVideos";
 import { useMentorSubscription, TIER_CONFIG } from "@/hooks/useMentorSubscription";
+import { useMentorProfile } from "@/hooks/useMentorProfile";
 import { formatDuration, extractYouTubeId, getYouTubeThumbnail } from "@/hooks/useContentVideos";
-import { Youtube, Upload, Trash2, Edit, Plus, Loader2, Clock } from "lucide-react";
+import { Youtube, Upload, Trash2, Edit, Plus, Loader2, Clock, ShieldAlert } from "lucide-react";
 import { TierBadge } from "./TierBadge";
 import { MentorVideoUpload } from "./MentorVideoUpload";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -13,6 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 export function MentorVideoList() {
   const { data: videos = [], isLoading } = useMentorVideos();
   const { data: subscription } = useMentorSubscription();
+  const { data: profile } = useMentorProfile();
   const deleteVideo = useDeleteMentorVideo();
   const [showUpload, setShowUpload] = useState(false);
 
@@ -20,6 +22,7 @@ export function MentorVideoList() {
   const config = TIER_CONFIG[tier];
   const videoCount = videos.length;
   const canUpload = videoCount < config.maxVideos;
+  const isApproved = profile?.approval_status === "approved";
 
   if (showUpload) {
     return <MentorVideoUpload onBack={() => setShowUpload(false)} />;
@@ -35,14 +38,23 @@ export function MentorVideoList() {
             <TierBadge tier={tier} className="ml-2" />
           </p>
         </div>
-        <Button onClick={() => setShowUpload(true)} disabled={!canUpload} className="gap-1">
+        <Button onClick={() => setShowUpload(true)} disabled={!canUpload || !isApproved} className="gap-1">
           <Plus className="h-4 w-4" /> Add Video
         </Button>
       </div>
 
-      {!canUpload && (
-        <Card className="border-amber-200 bg-amber-50">
-          <CardContent className="py-3 text-sm text-amber-800">
+      {!isApproved && (
+        <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+          <CardContent className="py-3 text-sm flex items-center gap-2">
+            <ShieldAlert className="h-4 w-4 text-amber-600 flex-shrink-0" />
+            <span>Your account must be approved before you can upload or publish content.</span>
+          </CardContent>
+        </Card>
+      )}
+
+      {isApproved && !canUpload && (
+        <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+          <CardContent className="py-3 text-sm">
             You've reached your video limit. Upgrade your tier to upload more videos.
           </CardContent>
         </Card>

@@ -1205,6 +1205,9 @@ export type Database = {
       }
       mentor_profiles: {
         Row: {
+          approval_status: string
+          approved_at: string | null
+          approved_by: string | null
           bio: string | null
           created_at: string
           display_name: string
@@ -1212,10 +1215,14 @@ export type Database = {
           id: string
           mentor_type: Database["public"]["Enums"]["mentor_type"]
           profile_image: string | null
+          rejected_reason: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           bio?: string | null
           created_at?: string
           display_name: string
@@ -1223,10 +1230,14 @@ export type Database = {
           id?: string
           mentor_type?: Database["public"]["Enums"]["mentor_type"]
           profile_image?: string | null
+          rejected_reason?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string
@@ -1234,6 +1245,7 @@ export type Database = {
           id?: string
           mentor_type?: Database["public"]["Enums"]["mentor_type"]
           profile_image?: string | null
+          rejected_reason?: string | null
           updated_at?: string
           user_id?: string
         }

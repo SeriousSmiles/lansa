@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MentorVideoList } from "@/components/mentor/MentorVideoList";
 import { MentorProfileForm } from "@/components/mentor/MentorProfileForm";
 import { MentorSubscriptionPanel } from "@/components/mentor/MentorSubscriptionPanel";
+import { MentorApprovalBanner } from "@/components/mentor/MentorApprovalBanner";
 import { useMentorProfile } from "@/hooks/useMentorProfile";
 import { useMentorSubscription } from "@/hooks/useMentorSubscription";
 import { TierBadge } from "@/components/mentor/TierBadge";
@@ -18,10 +19,14 @@ export default function MentorDashboard() {
 
   const userName = profile?.display_name || user?.email?.split("@")[0] || "Mentor";
   const tier = subscription?.tier || "free";
+  const isApproved = profile?.approval_status === "approved";
 
   return (
     <DashboardLayout userName={userName} email={user?.email || ""}>
       <div className="p-4 md:p-6 space-y-6">
+        {/* Approval Banner */}
+        <MentorApprovalBanner profile={profile} />
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div>
@@ -34,7 +39,7 @@ export default function MentorDashboard() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="videos">
+        <Tabs defaultValue={isApproved ? "videos" : "profile"}>
           <TabsList className={isMobile ? "w-full grid grid-cols-3" : ""}>
             <TabsTrigger value="videos" className="gap-1.5">
               <Video className="h-3.5 w-3.5" />
