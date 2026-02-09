@@ -10,8 +10,9 @@ import { useCreateMentorProfile } from "@/hooks/useMentorProfile";
 import { useCreateMentorSubscription, TIER_CONFIG, type SubscriptionTier } from "@/hooks/useMentorSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Check, Crown, Star, Zap, ArrowRight, GraduationCap } from "lucide-react";
+import { Loader2, Check, Crown, Star, Zap, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import AnimatedLogo from "@/components/AnimatedLogo";
 
 interface MentorOnboardingProps {
   onComplete: () => void;
@@ -83,13 +84,15 @@ export function MentorOnboarding({ onComplete }: MentorOnboardingProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-background px-4 py-8">
+    <div className="min-h-screen bg-[rgba(253,248,242,1)] px-4 py-8">
+      {/* Lansa Logo */}
+      <div className="flex justify-center mb-6">
+        <AnimatedLogo size={36} className="select-none" />
+      </div>
+
       <div className="max-w-lg mx-auto space-y-6">
         {/* Header */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-4">
-            <GraduationCap className="h-7 w-7 text-primary" />
-          </div>
           <h1 className="text-2xl font-bold">Set Up Your Mentor Profile</h1>
           <p className="text-muted-foreground mt-1">Step {step} of 2</p>
           {/* Progress */}
