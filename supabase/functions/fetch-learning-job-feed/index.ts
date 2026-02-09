@@ -178,10 +178,35 @@ Deno.serve(async (req) => {
 
     const appMap = new Map(userApps?.map(a => [a.job_id, a]) || []);
 
+    // Get view counts per job from job_interactions
+    const { data: viewCounts } = await supabase
+      .from('job_interactions')
+      .select('job_id')
+      .in('job_id', jobIds)
+      .eq('type', 'view');
+
+    const viewCountMap = new Map<string, number>();
+    viewCounts?.forEach(v => {
+      viewCountMap.set(v.job_id, (viewCountMap.get(v.job_id) || 0) + 1);
+    });
+
+    // Get application counts per job
+    const { data: appCounts } = await supabase
+      .from('job_applications_v2')
+      .select('job_id')
+      .in('job_id', jobIds);
+
+    const appCountMap = new Map<string, number>();
+    appCounts?.forEach(a => {
+      appCountMap.set(a.job_id, (appCountMap.get(a.job_id) || 0) + 1);
+    });
+
     const jobsWithStatus = paginatedJobs.map(job => ({
       ...job,
       user_application_status: appMap.get(job.id)?.status || null,
       user_applied_at: appMap.get(job.id)?.created_at || null,
+      view_count: viewCountMap.get(job.id) || 0,
+      application_count: appCountMap.get(job.id) || 0,
     }));
 
     console.log(`Returning ${jobsWithStatus.length} jobs, teaser: ${teaser}`);
