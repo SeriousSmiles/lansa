@@ -4,7 +4,6 @@ import { Building2, MapPin, Clock } from "lucide-react";
 import { LearningJobListing, learningJobFeedService } from "@/services/learningJobFeedService";
 import { formatDistanceToNow } from "date-fns";
 import { useEffect, useRef, useState } from "react";
-import { JobImageModal } from "./JobImageModal";
 
 interface LearningJobPostCardProps {
   job: LearningJobListing;
@@ -14,7 +13,6 @@ interface LearningJobPostCardProps {
 export function LearningJobPostCard({ job, onViewDetails }: LearningJobPostCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [hasRecordedView, setHasRecordedView] = useState(false);
-  const [showImageModal, setShowImageModal] = useState(false);
 
   // Record view interaction when card is in viewport
   useEffect(() => {
@@ -99,13 +97,7 @@ export function LearningJobPostCard({ job, onViewDetails }: LearningJobPostCardP
       {/* Job Image */}
       {job.image_url && (
         <div className="px-4 sm:px-5 pb-3">
-          <div
-            className="w-full aspect-square rounded-lg overflow-hidden bg-muted border border-border"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowImageModal(true);
-            }}
-          >
+          <div className="w-full aspect-square rounded-lg overflow-hidden bg-muted border border-border">
             <img
               src={job.image_url}
               alt={job.title}
@@ -131,16 +123,6 @@ export function LearningJobPostCard({ job, onViewDetails }: LearningJobPostCardP
           <p className="text-sm font-semibold text-foreground">{job.salary_range}</p>
         )}
       </div>
-
-      {/* Image Modal */}
-      {job.image_url && (
-        <JobImageModal
-          isOpen={showImageModal}
-          onClose={() => setShowImageModal(false)}
-          imageUrl={job.image_url}
-          jobTitle={job.title}
-        />
-      )}
     </Card>
   );
 }

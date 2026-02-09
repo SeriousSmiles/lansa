@@ -9,6 +9,7 @@ import { Building2, MapPin, Clock, Sparkles, Bookmark, Eye, Users, Briefcase, Do
 import { formatDistanceToNow } from "date-fns";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { JobImageModal } from "./JobImageModal";
 
 /** Parses structured fields from job description text */
 function parseJobDescription(description: string) {
@@ -116,6 +117,7 @@ function JobDetailContent({ job, onApply, disableApply, onClose }: Omit<JobDetai
   const [isSaved, setIsSaved] = useState(false);
   const [hasApplied, setHasApplied] = useState(!!job.user_application_status);
   const [applicationStatus, setApplicationStatus] = useState(job.user_application_status);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   useEffect(() => {
     setHasApplied(!!job.user_application_status);
@@ -211,7 +213,10 @@ function JobDetailContent({ job, onApply, disableApply, onClose }: Omit<JobDetai
         {/* Image */}
         {job.image_url && (
           <div className="px-5 sm:px-6 pt-4">
-            <div className="w-full aspect-square rounded-lg overflow-hidden bg-muted border border-border">
+            <div
+              className="w-full aspect-square rounded-lg overflow-hidden bg-muted border border-border cursor-pointer hover:opacity-95 transition-opacity"
+              onClick={() => setShowImageModal(true)}
+            >
               <img src={job.image_url} alt={job.title} className="w-full h-full object-cover" />
             </div>
           </div>
@@ -301,6 +306,16 @@ function JobDetailContent({ job, onApply, disableApply, onClose }: Omit<JobDetai
           {isSaved ? 'Saved' : 'Save for later'}
         </Button>
       </div>
+
+      {/* Image Modal */}
+      {job.image_url && (
+        <JobImageModal
+          isOpen={showImageModal}
+          onClose={() => setShowImageModal(false)}
+          imageUrl={job.image_url}
+          jobTitle={job.title}
+        />
+      )}
     </div>
   );
 }
