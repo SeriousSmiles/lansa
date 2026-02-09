@@ -48,17 +48,17 @@ export function UserTypeSelection({ onSelect }: UserTypeSelectionProps) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 max-w-7xl mx-auto">
           {/* Job Seeker Card */}
           <Card 
-            className={`group cursor-pointer transition-all duration-500 hover:shadow-2xl border-2 overflow-hidden ${
+            className={`group cursor-pointer transition-all duration-500 hover:shadow-2xl border-2 overflow-hidden lg:col-span-2 ${
               selectedType === 'job_seeker' 
                 ? 'border-primary bg-primary/5 shadow-xl scale-105' 
                 : 'border-border hover:border-primary/50'
             } ${expandedCard === 'job_seeker' ? 'md:scale-100' : ''}`}
             onClick={() => handleCardClick('job_seeker')}
           >
-            <div className={`relative ${isMobile ? 'aspect-square' : 'h-48'} bg-gradient-to-br from-primary to-primary/80 overflow-hidden`}>
+            <div className={`relative ${isMobile ? 'aspect-square' : 'h-56'} bg-gradient-to-br from-primary to-primary/80 overflow-hidden`}>
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center text-white p-4">
@@ -309,14 +309,14 @@ export function UserTypeSelection({ onSelect }: UserTypeSelectionProps) {
 
           {/* Mentor Card */}
           <Card 
-            className={`group cursor-pointer transition-all duration-500 hover:shadow-2xl border-2 overflow-hidden ${
+            className={`group cursor-pointer transition-all duration-500 hover:shadow-2xl border-2 overflow-hidden lg:col-span-2 ${
               selectedType === 'mentor' 
                 ? 'border-primary bg-primary/5 shadow-xl scale-105' 
                 : 'border-border hover:border-primary/50'
             } ${expandedCard === 'mentor' ? 'md:scale-100' : ''}`}
             onClick={() => handleCardClick('mentor')}
           >
-            <div className={`relative ${isMobile ? 'aspect-square' : 'h-48'} bg-gradient-to-br from-emerald-600 to-emerald-500 overflow-hidden`}>
+            <div className={`relative ${isMobile ? 'aspect-square' : 'h-56'} bg-gradient-to-br from-emerald-600 to-emerald-500 overflow-hidden`}>
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 to-emerald-500/5" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center text-white p-4">
