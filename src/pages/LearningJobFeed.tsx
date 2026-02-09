@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { LearningJobPostCard } from "@/components/jobs/LearningJobPostCard";
 import { CertificationTeaserBanner } from "@/components/jobs/CertificationTeaserBanner";
-import { JobDetailModal } from "@/components/jobs/JobDetailModal";
+import { JobDetailPanel } from "@/components/jobs/JobDetailPanel";
 import { LearningJobFilters } from "@/components/jobs/LearningJobFilters";
 import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles } from "lucide-react";
@@ -152,9 +152,7 @@ export default function LearningJobFeed() {
               <LearningJobPostCard
                 key={job.id}
                 job={job}
-                onApply={handleApply}
                 onViewDetails={setSelectedJob}
-                disableApply={!isCertified}
               />
             ))}
           </div>
@@ -176,15 +174,14 @@ export default function LearningJobFeed() {
           </div>
         )}
 
-        {/* Job Detail Modal */}
-        {selectedJob && (
-          <JobDetailModal
-            job={selectedJob as any}
-            isOpen={!!selectedJob}
-            onClose={() => setSelectedJob(null)}
-            onApply={handleApply}
-          />
-        )}
+        {/* Job Detail Panel */}
+        <JobDetailPanel
+          job={selectedJob}
+          isOpen={!!selectedJob}
+          onClose={() => setSelectedJob(null)}
+          onApply={handleApply}
+          disableApply={!isCertified}
+        />
       </div>
     </DashboardLayout>
   );
