@@ -58,15 +58,18 @@ export function MentorOnboarding({ onComplete }: MentorOnboardingProps) {
       });
 
       // Save user_type as 'mentor' in user_answers
-      await supabase.from("user_answers").upsert({
+      const { error: answersError } = await supabase.from("user_answers").upsert({
         user_id: user.id,
         user_type: "mentor",
+        career_path_onboarding_completed: true,
       }, { onConflict: "user_id" });
+      if (answersError) throw answersError;
 
       // Mark onboarding complete
-      await supabase.from("user_profiles").update({
+      const { error: profileError } = await supabase.from("user_profiles").update({
         onboarding_completed: true,
       }).eq("user_id", user.id);
+      if (profileError) throw profileError;
 
       toast.success("Welcome to Lansa as a Mentor!");
       onComplete();

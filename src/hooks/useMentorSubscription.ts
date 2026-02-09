@@ -53,7 +53,7 @@ export function useCreateMentorSubscription() {
     }) => {
       const { data, error } = await supabase
         .from("mentor_subscriptions")
-        .insert(sub)
+        .upsert(sub, { onConflict: "user_id" })
         .select()
         .single();
       if (error) throw error;

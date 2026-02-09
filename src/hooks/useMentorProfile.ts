@@ -52,7 +52,7 @@ export function useCreateMentorProfile() {
     }) => {
       const { data, error } = await supabase
         .from("mentor_profiles")
-        .insert(profile)
+        .upsert(profile, { onConflict: "user_id" })
         .select()
         .single();
       if (error) throw error;
