@@ -1,47 +1,49 @@
 
+# Mentor Dashboard Branding and Onboarding Flow Polish
 
-# Bento Grid Redesign for User Type Selection (Desktop)
+## Problems Found
 
-## Current State
-The 4 cards ("Seeking Opportunities", "Building Teams", "Join Existing Team", "Mentor") are laid out in a uniform `grid-cols-4` on desktop -- all equal size. This doesn't communicate visual hierarchy or guide users toward the most common paths.
+1. **Wrong nav items for mentors**: DashboardLayout only has branches for `employer` and `else` (job seeker). Mentors see job seeker nav items (Jobs, Resources, Content Library) which are irrelevant.
+2. **Mentor onboarding lacks Lansa branding**: Uses generic `bg-background` instead of the warm cream (`rgba(253,248,242,1)`) used everywhere else. Missing the Lansa logo header shown in all other onboarding flows.
+3. **No branded loader on mentor dashboard**: Job seeker dashboard shows a `LansaLoader` during load; mentor dashboard shows nothing.
+4. **Navigation service incomplete**: `onboardingNavigationService.ts` doesn't list `'mentor'` as a valid `UserType`, making the shared navigation helper incomplete.
 
-## Proposed Bento Layout (Desktop Only)
+## Changes
 
-The desktop grid will use a 2-row, asymmetric bento layout to give visual prominence to the most popular user types:
+### 1. DashboardLayout -- Add mentor nav items
+**File**: `src/components/dashboard/DashboardLayout.tsx`
 
-```text
-+-------------------------------+-------------------+
-|                               |                   |
-|   Seeking Opportunities       |  Building Teams   |
-|   (spans 2 cols, tall)        |  (1 col)          |
-|                               |                   |
-+---------------+---------------+-------------------+
-|               |                                   |
-| Join Existing |          Mentor                    |
-|    Team       |     (spans 2 cols)                 |
-|   (1 col)     |                                   |
-+---------------+-----------------------------------+
-```
+Add a third branch for `userType === 'mentor'` with relevant menu items:
+- Dashboard (`/mentor-dashboard`, IconHome)
+- Content Library (`/content`, IconVideo) -- mentors can browse other content
+- Profile (`/mentor-dashboard` with profile tab, or dedicated route)
 
-- **Row 1**: "Seeking Opportunities" takes 2 columns (largest, most common user type). "Building Teams" takes 1 column.
-- **Row 2**: "Join Existing Team" takes 1 column. "Mentor" takes 2 columns (second most prominent).
-- This creates a visually dynamic bento grid where the eye naturally flows to the larger cards first.
+This ensures mentors see their own contextually relevant navigation.
 
-## Mobile Behavior
-No changes to mobile -- cards remain stacked vertically in a single column with the existing expand/collapse interaction.
+### 2. Mentor onboarding -- Apply Lansa branding
+**File**: `src/components/mentor/MentorOnboarding.tsx`
+
+- Change outer div from `bg-background` to `bg-[rgba(253,248,242,1)]` to match the warm cream theme
+- Add the Lansa logo header at the top (same logo image and layout used in other onboarding flows)
+- Update the header icon from `GraduationCap` to match Lansa's visual identity (keep the step indicator and progress bar)
+
+### 3. Mentor dashboard -- Add LansaLoader
+**File**: `src/pages/MentorDashboard.tsx`
+
+- Add the `LansaLoader` component as a loading overlay while profile/subscription data loads (matching the pattern used in the job seeker dashboard)
+- Add `SEOHead` with mentor-specific meta tags
+
+### 4. Navigation service -- Add mentor type
+**File**: `src/services/navigation/onboardingNavigationService.ts`
+
+- Add `'mentor'` to the `UserType` union
+- Add mentor routing: `getPostOnboardingDestination` returns `/mentor-dashboard`
+- Add mentor label: `'Mentor Dashboard'`
+- Add `'mentor'` to `canCompleteOnboarding` allowed types
 
 ## Technical Details
 
-**File modified:** `src/components/onboarding/UserTypeSelection.tsx`
-
-Changes to the grid container and individual card classes:
-
-1. **Grid container**: Change from `grid-cols-1 lg:grid-cols-4` to `grid-cols-1 lg:grid-cols-3` (3-column base grid)
-2. **Seeking Opportunities card**: Add `lg:col-span-2` to span 2 columns
-3. **Building Teams card**: Keep at 1 column (default)
-4. **Join Existing Team card**: Keep at 1 column (default)
-5. **Mentor card**: Add `lg:col-span-2` to span 2 columns
-6. Adjust the colored header section heights for the larger cards to feel proportional (e.g., taller hero area on span-2 cards)
-
-No new files, dependencies, or database changes required.
-
+- No new files or dependencies needed
+- No database changes
+- All changes are UI/routing only
+- Mobile layout unaffected -- DashboardLayout already handles mobile responsively through `TopNavbar` and `AnimatedTabNav`
