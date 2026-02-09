@@ -12,11 +12,18 @@ import { toast } from "sonner";
 
 /** Parses structured fields from job description text */
 function parseJobDescription(description: string) {
-  const fields: { key: string; value: string }[] = [];
+  const inlineFields: { key: string; value: string }[] = [];
+  let requirements: string | null = null;
   let cleanDescription = description;
 
+  // Extract requirements separately (can be multi-line)
+  const reqMatch = description.match(/\*\*Requirements:?\*\*\s*([\s\S]*?)(?=\n\*\*[A-Z]|\n\n(?=[A-Z])|\s*$)/i);
+  if (reqMatch) {
+    requirements = reqMatch[1].trim();
+    cleanDescription = cleanDescription.replace(reqMatch[0], '');
+  }
+
   const patterns = [
-    { regex: /\*\*Requirements:?\*\*\s*([\s\S]*?)(?=\n\*\*[A-Z]|\n\n(?=[A-Z])|\s*$)/i, key: 'Requirements' },
     { regex: /\*\*Compensation:?\*\*\s*(.*?)(?=\n\*\*|\n\n|\s*$)/i, key: 'Compensation' },
     { regex: /\*\*Experience\s*Level:?\*\*\s*(.*?)(?=\n\*\*|\n\n|\s*$)/i, key: 'Experience Level' },
     { regex: /\*\*Work\s*Type:?\*\*\s*(.*?)(?=\n\*\*|\n\n|\s*$)/i, key: 'Work Type' },
@@ -25,30 +32,39 @@ function parseJobDescription(description: string) {
   for (const { regex, key } of patterns) {
     const match = description.match(regex);
     if (match) {
-      fields.push({ key, value: match[1].trim() });
+      inlineFields.push({ key, value: match[1].trim() });
       cleanDescription = cleanDescription.replace(match[0], '');
     }
   }
 
   cleanDescription = cleanDescription.replace(/\n{3,}/g, '\n\n').trim();
-  return { fields, cleanDescription };
+  return { inlineFields, requirements, cleanDescription };
 }
 
 function JobDescriptionSection({ description }: { description: string }) {
-  const { fields, cleanDescription } = useMemo(() => parseJobDescription(description), [description]);
+  const { inlineFields, requirements, cleanDescription } = useMemo(() => parseJobDescription(description), [description]);
 
   const iconMap: Record<string, React.ReactNode> = {
-    'Requirements': <Briefcase className="w-4 h-4 text-primary" />,
     'Compensation': <DollarSign className="w-4 h-4 text-primary" />,
     'Experience Level': <BarChart3 className="w-4 h-4 text-primary" />,
     'Work Type': <Laptop className="w-4 h-4 text-primary" />,
   };
 
+  /** Parse bullet lines from requirements text */
+  const requirementItems = useMemo(() => {
+    if (!requirements) return [];
+    return requirements
+      .split('\n')
+      .map(line => line.replace(/^[\s·•\-*]+/, '').trim())
+      .filter(Boolean);
+  }, [requirements]);
+
   return (
     <div className="space-y-4">
-      {fields.length > 0 && (
+      {/* Inline info cards (Compensation, Experience, Work Type) */}
+      {inlineFields.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          {fields.map(({ key, value }) => (
+          {inlineFields.map(({ key, value }) => (
             <div key={key} className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/15">
               <div className="mt-0.5 flex-shrink-0">{iconMap[key]}</div>
               <div className="min-w-0">
@@ -57,6 +73,24 @@ function JobDescriptionSection({ description }: { description: string }) {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Requirements - full-width list style */}
+      {requirementItems.length > 0 && (
+        <div className="rounded-lg border border-primary/15 bg-primary/5 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Briefcase className="w-4 h-4 text-primary" />
+            <p className="text-xs font-medium text-muted-foreground">Requirements</p>
+          </div>
+          <ul className="space-y-1.5">
+            {requirementItems.map((item, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm text-foreground leading-snug">
+                <span className="text-primary mt-1 flex-shrink-0">•</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
