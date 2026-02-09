@@ -1,110 +1,101 @@
-
+import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { getUserAnswers } from "@/services/question";
-import { useEffect, useState } from "react";
-import { Video, Clock, Play } from "lucide-react";
+import { usePublishedVideos, type ContentVideo } from "@/hooks/useContentVideos";
+import { VideoCardList } from "@/components/content/VideoCardList";
+import { VideoDetail } from "@/components/content/VideoDetail";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 export default function ContentLibrary() {
   const { user } = useAuth();
-  const [userAnswers, setUserAnswers] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const userName = user?.email ? user.email.split('@')[0] : "Lansa User";
-  
-  useEffect(() => {
-    async function loadContent() {
-      if (!user?.id) return;
-      
-      const answers = await getUserAnswers(user.id);
-      if (answers) {
-        setUserAnswers(answers);
-      }
-      
-      setIsLoading(false);
-    }
-    
-    loadContent();
-  }, [user]);
-  
-  // Sample content library filtered by user interests
-  // In a real app, this would be dynamically filtered based on the user's answers
-  const contentItems = [
-    {
-      title: "Finding Your Professional Voice",
-      type: "Video",
-      duration: "18 min",
-      category: "Communication",
-      description: "Learn how to communicate your value clearly and confidently."
-    },
-    {
-      title: "Building an Effective LinkedIn Profile",
-      type: "Video",
-      duration: "22 min",
-      category: "Online Presence",
-      description: "Step-by-step guide to create a LinkedIn profile that gets noticed."
-    },
-    {
-      title: "Clarity Exercise: Vision Mapping",
-      type: "Workshop",
-      duration: "45 min",
-      category: "Clarity",
-      description: "Map out your professional goals and the path to achieve them."
-    },
-    {
-      title: "Getting Noticed in a Crowded Market",
-      type: "Video",
-      duration: "26 min",
-      category: "Visibility",
-      description: "Strategies to stand out in your industry and get recognized for your work."
-    }
-  ];
-  
+  const { data: videos = [], isLoading } = usePublishedVideos();
+  const [selectedVideo, setSelectedVideo] = useState<ContentVideo | null>(null);
+  const isMobile = useIsMobile();
+  const userName = user?.email ? user.email.split("@")[0] : "Lansa User";
+
   if (isLoading) {
     return (
       <DashboardLayout userName={userName} email={user?.email || ""}>
         <div className="p-6 flex justify-center items-center h-[calc(100vh-100px)]">
-          <p className="text-xl">Loading content...</p>
+          <p className="text-xl text-muted-foreground">Loading content...</p>
         </div>
       </DashboardLayout>
     );
   }
-  
+
+  // Mobile: show detail view or list
+  if (isMobile) {
+    if (selectedVideo) {
+      return (
+        <DashboardLayout userName={userName} email={user?.email || ""}>
+          <div className="p-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mb-3 gap-1"
+              onClick={() => setSelectedVideo(null)}
+            >
+              <ArrowLeft className="h-4 w-4" /> Back to videos
+            </Button>
+            <VideoDetail video={selectedVideo} />
+          </div>
+        </DashboardLayout>
+      );
+    }
+
+    return (
+      <DashboardLayout userName={userName} email={user?.email || ""}>
+        <div className="p-4">
+          <h1 className="text-2xl font-bold mb-1">Content Library</h1>
+          <p className="text-sm text-muted-foreground mb-4">
+            Watch and learn from curated video content
+          </p>
+          <VideoCardList
+            videos={videos}
+            selectedId={null}
+            onSelect={(v) => setSelectedVideo(v)}
+          />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Desktop: 2-column layout
   return (
     <DashboardLayout userName={userName} email={user?.email || ""}>
-      <div className="p-6">
-        <h1 className="text-3xl font-bold mb-2">Content Library</h1>
-        <p className="text-gray-500 mb-6">Recommended content based on your interests</p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {contentItems.map((item, index) => (
-            <Card key={index}>
-              <div className="relative">
-                <div className="h-48 bg-gray-200 flex items-center justify-center">
-                  <Video className="h-12 w-12 text-gray-400" />
-                </div>
-                <div className="absolute bottom-3 right-3 bg-white rounded-md px-2 py-1 text-xs flex items-center">
-                  <Clock className="h-3 w-3 mr-1" />
-                  {item.duration}
-                </div>
+      <div className="p-6 h-[calc(100vh-80px)] flex flex-col">
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold">Content Library</h1>
+          <p className="text-sm text-muted-foreground">
+            Watch and learn from curated video content
+          </p>
+        </div>
+
+        <div className="flex-1 flex gap-6 min-h-0">
+          {/* Left: Video list */}
+          <div className="w-[340px] flex-shrink-0 overflow-y-auto pr-2">
+            <VideoCardList
+              videos={videos}
+              selectedId={selectedVideo?.id || null}
+              onSelect={(v) => setSelectedVideo(v)}
+            />
+          </div>
+
+          {/* Right: Detail panel */}
+          <div className="flex-1 overflow-y-auto">
+            {selectedVideo ? (
+              <VideoDetail video={selectedVideo} />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <p className="text-lg font-medium">Select a video</p>
+                <p className="text-sm mt-1">
+                  Choose a video from the list to see its details
+                </p>
               </div>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-xl">{item.title}</CardTitle>
-                </div>
-                <CardDescription>{item.type} • {item.category}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm">{item.description}</p>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full flex items-center justify-center gap-2">
-                  <Play className="h-4 w-4" /> Watch Now
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+            )}
+          </div>
         </div>
       </div>
     </DashboardLayout>

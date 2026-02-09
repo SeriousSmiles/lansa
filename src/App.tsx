@@ -52,6 +52,7 @@ import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminHistorical from "./pages/admin/AdminHistorical";
 import AdminDocuments from "./pages/admin/AdminDocuments";
 import AdminSupport from "./pages/admin/AdminSupport";
+import AdminContent from "./pages/admin/AdminContent";
 import { AuthProvider } from "./contexts/AuthContext";
 import { UserStateProvider } from "./contexts/UserStateProvider";
 import { OrganizationProvider } from "./contexts/OrganizationContext";
@@ -258,6 +259,7 @@ const App: React.FC = () => {
                     <Route path="historical" element={<AdminHistorical />} />
                     <Route path="documents" element={<AdminDocuments />} />
                     <Route path="support" element={<AdminSupport />} />
+                    <Route path="content" element={<AdminContent />} />
                     <Route path="settings" element={<AdminSettings />} />
                   </Route>
                   

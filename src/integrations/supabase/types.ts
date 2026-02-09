@@ -694,6 +694,60 @@ export type Database = {
         }
         Relationships: []
       }
+      content_videos: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duration_seconds: number | null
+          education_type: string | null
+          id: string
+          is_published: boolean
+          source_type: Database["public"]["Enums"]["video_source_type"]
+          storage_path: string | null
+          thumbnail_url: string | null
+          title: string
+          transformation_promise: string | null
+          updated_at: string
+          youtube_url: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_seconds?: number | null
+          education_type?: string | null
+          id?: string
+          is_published?: boolean
+          source_type?: Database["public"]["Enums"]["video_source_type"]
+          storage_path?: string | null
+          thumbnail_url?: string | null
+          title: string
+          transformation_promise?: string | null
+          updated_at?: string
+          youtube_url?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_seconds?: number | null
+          education_type?: string | null
+          id?: string
+          is_published?: boolean
+          source_type?: Database["public"]["Enums"]["video_source_type"]
+          storage_path?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          transformation_promise?: string | null
+          updated_at?: string
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
       growth_prompts: {
         Row: {
           action_label: string
@@ -2863,6 +2917,7 @@ export type Database = {
         | "system_update"
       swipe_direction: "right" | "left" | "nudge"
       user_color: "purple" | "green" | "orange" | "red"
+      video_source_type: "youtube" | "native"
       wall_outcome: "fired" | "info_opened" | "paid" | "dismissed" | "ignored"
       wall_type: "certification"
     }
@@ -3037,6 +3092,7 @@ export const Constants = {
       ],
       swipe_direction: ["right", "left", "nudge"],
       user_color: ["purple", "green", "orange", "red"],
+      video_source_type: ["youtube", "native"],
       wall_outcome: ["fired", "info_opened", "paid", "dismissed", "ignored"],
       wall_type: ["certification"],
     },
