@@ -1,49 +1,61 @@
 
-# Mentor Dashboard Branding and Onboarding Flow Polish
 
-## Problems Found
+# Fix Mentor Onboarding: Duplicate Error and Stuck on Onboarding Page
 
-1. **Wrong nav items for mentors**: DashboardLayout only has branches for `employer` and `else` (job seeker). Mentors see job seeker nav items (Jobs, Resources, Content Library) which are irrelevant.
-2. **Mentor onboarding lacks Lansa branding**: Uses generic `bg-background` instead of the warm cream (`rgba(253,248,242,1)`) used everywhere else. Missing the Lansa logo header shown in all other onboarding flows.
-3. **No branded loader on mentor dashboard**: Job seeker dashboard shows a `LansaLoader` during load; mentor dashboard shows nothing.
-4. **Navigation service incomplete**: `onboardingNavigationService.ts` doesn't list `'mentor'` as a valid `UserType`, making the shared navigation helper incomplete.
+## Root Cause
 
-## Changes
+Two issues were found:
 
-### 1. DashboardLayout -- Add mentor nav items
-**File**: `src/components/dashboard/DashboardLayout.tsx`
+1. **Database constraint blocks mentors**: The `user_answers` table has a CHECK constraint that only allows `user_type` values of `'job_seeker'` or `'employer'`. When the mentor onboarding tries to save `user_type: 'mentor'`, the database silently rejects it. Without a `user_answers` row, the system never recognizes the user as having completed onboarding.
 
-Add a third branch for `userType === 'mentor'` with relevant menu items:
-- Dashboard (`/mentor-dashboard`, IconHome)
-- Content Library (`/content`, IconVideo) -- mentors can browse other content
-- Profile (`/mentor-dashboard` with profile tab, or dedicated route)
+2. **No retry protection**: The `useCreateMentorProfile` hook uses `.insert()` instead of `.upsert()`. If a user retries after a partial failure, they get a "duplicate key" error because the mentor profile already exists from the first attempt.
 
-This ensures mentors see their own contextually relevant navigation.
+## What Happens Today (Broken Flow)
 
-### 2. Mentor onboarding -- Apply Lansa branding
-**File**: `src/components/mentor/MentorOnboarding.tsx`
+```text
+User selects "Mentor" --> Completes Steps 1 & 2 --> handleComplete runs:
+  1. INSERT mentor_profiles   --> OK (row created)
+  2. INSERT mentor_subscriptions --> OK (row created)  
+  3. UPSERT user_answers with user_type='mentor' --> FAILS (CHECK constraint)
+  4. UPDATE user_profiles.onboarding_completed=true --> OK
+  5. onComplete() fires, navigates to /mentor-dashboard
 
-- Change outer div from `bg-background` to `bg-[rgba(253,248,242,1)]` to match the warm cream theme
-- Add the Lansa logo header at the top (same logo image and layout used in other onboarding flows)
-- Update the header icon from `GraduationCap` to match Lansa's visual identity (keep the step indicator and progress bar)
+But on refresh:
+  UserStateProvider reads user_answers --> no row found --> hasUserType=false
+  hasCompletedOnboarding = (true) && (false) = false
+  --> User is redirected back to /onboarding
 
-### 3. Mentor dashboard -- Add LansaLoader
-**File**: `src/pages/MentorDashboard.tsx`
+On retry:
+  INSERT mentor_profiles --> FAILS (duplicate key) --> toast error shown
+```
 
-- Add the `LansaLoader` component as a loading overlay while profile/subscription data loads (matching the pattern used in the job seeker dashboard)
-- Add `SEOHead` with mentor-specific meta tags
+## Fix (4 changes)
 
-### 4. Navigation service -- Add mentor type
-**File**: `src/services/navigation/onboardingNavigationService.ts`
+### 1. Database migration: Add 'mentor' to the CHECK constraint
+Add a SQL migration to update the `user_answers_user_type_check` constraint to allow `'mentor'` as a valid value.
 
-- Add `'mentor'` to the `UserType` union
-- Add mentor routing: `getPostOnboardingDestination` returns `/mentor-dashboard`
-- Add mentor label: `'Mentor Dashboard'`
-- Add `'mentor'` to `canCompleteOnboarding` allowed types
+### 2. Fix the stuck user's data
+Include a data repair statement in the migration to insert the missing `user_answers` row for the existing mentor user (user_id `450c2e39-fd9e-42f2-8ec8-14c2d565aff9`).
 
-## Technical Details
+### 3. Make mentor profile + subscription creation idempotent
+In `src/hooks/useMentorProfile.ts`, change `useCreateMentorProfile` from `.insert()` to `.upsert()` with `onConflict: 'user_id'`. Same change in `src/hooks/useMentorSubscription.ts` for `useCreateMentorSubscription`.
 
-- No new files or dependencies needed
-- No database changes
-- All changes are UI/routing only
-- Mobile layout unaffected -- DashboardLayout already handles mobile responsively through `TopNavbar` and `AnimatedTabNav`
+This prevents the "duplicate key" error when a user retries the onboarding after a partial failure.
+
+### 4. Better error handling in MentorOnboarding
+In `src/components/mentor/MentorOnboarding.tsx`, update `handleComplete` to properly check and surface the error from the `user_answers` upsert (currently it could fail silently). Also ensure the `user_answers` upsert includes `career_path_onboarding_completed: true` for backward compatibility.
+
+## Files Changed
+
+- **New migration SQL** -- ALTER CHECK constraint, repair existing user data
+- `src/hooks/useMentorProfile.ts` -- `.insert()` to `.upsert({ onConflict: 'user_id' })`
+- `src/hooks/useMentorSubscription.ts` -- `.insert()` to `.upsert({ onConflict: 'user_id' })`
+- `src/components/mentor/MentorOnboarding.tsx` -- Add `career_path_onboarding_completed: true` to user_answers upsert, improve error surfacing
+
+## Impact
+
+- Zero impact on job_seeker and employer flows (they already satisfy the existing constraint)
+- Mentors will be able to complete onboarding and land on their dashboard
+- Retries will work gracefully without duplicate errors
+- The stuck user's data will be repaired automatically by the migration
+
