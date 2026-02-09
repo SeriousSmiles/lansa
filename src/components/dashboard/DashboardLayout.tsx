@@ -92,14 +92,16 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
 
   return (
     <div className="flex min-h-screen w-full bg-[rgba(253,248,242,1)] flex-col">
-      <AnnouncementBanner />
-      <TopNavbar 
-        items={menuItems}
-        userName={userName}
-        email={email}
-        onLogout={handleLogout}
-        themeColor={themeColor}
-      />
+      <div className="sticky top-0 z-40">
+        <AnnouncementBanner />
+        <TopNavbar 
+          items={menuItems}
+          userName={userName}
+          email={email}
+          onLogout={handleLogout}
+          themeColor={themeColor}
+        />
+      </div>
       <main className="flex-1">
         <div ref={mainContentRef} className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 pt-2 md:pt-3">
           {children}
