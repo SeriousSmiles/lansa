@@ -11,6 +11,10 @@ export interface MentorProfile {
   mentor_type: "teacher" | "coach" | "organization";
   external_url: string | null;
   profile_image: string | null;
+  approval_status: "pending" | "approved" | "rejected";
+  rejected_reason: string | null;
+  approved_at: string | null;
+  approved_by: string | null;
   created_at: string;
   updated_at: string;
 }

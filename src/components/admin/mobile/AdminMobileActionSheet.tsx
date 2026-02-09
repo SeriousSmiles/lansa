@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { X, DollarSign, TrendingUp, BarChart3, Clock, FileText, HelpCircle, Settings, Video } from 'lucide-react';
+import { X, DollarSign, TrendingUp, BarChart3, Clock, FileText, HelpCircle, Settings, Video, GraduationCap } from 'lucide-react';
 import { gsap } from 'gsap';
 
 interface AdminMobileActionSheetProps {
@@ -10,6 +10,7 @@ interface AdminMobileActionSheetProps {
 
 const actionItems = [
   { title: 'Content', url: '/admin/content', icon: Video, description: 'Manage video content' },
+  { title: 'Mentors', url: '/admin/mentors', icon: GraduationCap, description: 'Approve mentor accounts' },
   { title: 'Pricing Wall', url: '/admin/pricing', icon: DollarSign, description: 'Manage pricing events' },
   { title: 'Trends', url: '/admin/trends', icon: TrendingUp, description: 'View trend analysis' },
   { title: 'Analytics', url: '/admin/analytics', icon: BarChart3, description: 'User analytics' },
