@@ -6,10 +6,11 @@ import { MentorVideoList } from "@/components/mentor/MentorVideoList";
 import { MentorProfileForm } from "@/components/mentor/MentorProfileForm";
 import { MentorSubscriptionPanel } from "@/components/mentor/MentorSubscriptionPanel";
 import { MentorApprovalBanner } from "@/components/mentor/MentorApprovalBanner";
+import { MentorOverviewSection } from "@/components/mentor/MentorOverviewSection";
 import { useMentorProfile } from "@/hooks/useMentorProfile";
 import { useMentorSubscription } from "@/hooks/useMentorSubscription";
 import { TierBadge } from "@/components/mentor/TierBadge";
-import { Video, User, CreditCard } from "lucide-react";
+import { LayoutDashboard, Video, User, CreditCard } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SEOHead } from "@/components/SEOHead";
 import { LansaLoader } from "@/components/shared/LansaLoader";
@@ -51,8 +52,12 @@ export default function MentorDashboard() {
           </div>
 
           {/* Tabs */}
-          <Tabs defaultValue={isApproved ? "videos" : "profile"}>
-            <TabsList className={isMobile ? "w-full grid grid-cols-3" : ""}>
+          <Tabs defaultValue="overview">
+            <TabsList className={isMobile ? "w-full grid grid-cols-4" : ""}>
+              <TabsTrigger value="overview" className="gap-1.5">
+                <LayoutDashboard className="h-3.5 w-3.5" />
+                {!isMobile && "Overview"}
+              </TabsTrigger>
               <TabsTrigger value="videos" className="gap-1.5">
                 <Video className="h-3.5 w-3.5" />
                 {!isMobile && "My Videos"}
@@ -67,6 +72,9 @@ export default function MentorDashboard() {
               </TabsTrigger>
             </TabsList>
 
+            <TabsContent value="overview" className="mt-4">
+              <MentorOverviewSection />
+            </TabsContent>
             <TabsContent value="videos" className="mt-4">
               <MentorVideoList />
             </TabsContent>
