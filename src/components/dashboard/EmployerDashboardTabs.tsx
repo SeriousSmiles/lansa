@@ -1,12 +1,13 @@
 import { useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, FileText, BarChart3, Settings } from "lucide-react";
+import { Building2, FileText, BarChart3, Settings, CreditCard } from "lucide-react";
 import { gsap } from "gsap";
 import { useNavigate } from "react-router-dom";
 import { useOrgPermissions } from "@/hooks/useOrgPermissions";
 import { EmployerOverviewTab } from "./employer/EmployerOverviewTab";
 import { JobManagementTab } from "./employer/JobManagementTab";
 import { EmployerAnalyticsTab } from "./employer/EmployerAnalyticsTab";
+import { EmployerSubscriptionPanel } from "@/components/employer/EmployerSubscriptionPanel";
 
 interface BusinessData {
   company_name: string;
@@ -34,11 +35,13 @@ export function EmployerDashboardTabs({ businessData }: EmployerDashboardTabsPro
       });
     }
   }, []);
+
+  const tabCount = 4 + (canManageOrgSettings ? 1 : 0);
   
   return (
     <div ref={tabsRef}>
       <Tabs defaultValue="overview" className="mb-6">
-        <TabsList className={`grid w-full ${canManageOrgSettings ? 'grid-cols-4' : 'grid-cols-3'}`}>
+        <TabsList className={`grid w-full grid-cols-${tabCount}`}>
           <TabsTrigger value="overview" className="flex items-center gap-1.5 transition-colors hover:bg-muted">
             <Building2 className="h-4 w-4" />
             Overview
@@ -50,6 +53,10 @@ export function EmployerDashboardTabs({ businessData }: EmployerDashboardTabsPro
           <TabsTrigger value="analytics" className="flex items-center gap-1.5 transition-colors hover:bg-muted">
             <BarChart3 className="h-4 w-4" />
             Analytics
+          </TabsTrigger>
+          <TabsTrigger value="subscription" className="flex items-center gap-1.5 transition-colors hover:bg-muted">
+            <CreditCard className="h-4 w-4" />
+            Plan
           </TabsTrigger>
           {canManageOrgSettings && (
             <TabsTrigger 
@@ -73,6 +80,10 @@ export function EmployerDashboardTabs({ businessData }: EmployerDashboardTabsPro
         
         <TabsContent value="analytics" className="pt-4 animate-fade-in">
           <EmployerAnalyticsTab />
+        </TabsContent>
+
+        <TabsContent value="subscription" className="pt-4 animate-fade-in">
+          <EmployerSubscriptionPanel />
         </TabsContent>
       </Tabs>
     </div>

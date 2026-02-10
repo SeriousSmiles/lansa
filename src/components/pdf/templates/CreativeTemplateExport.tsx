@@ -20,7 +20,7 @@ export function CreativeTemplateExport({ data }: CreativeTemplateExportProps) {
       height: `${TOTAL_HEIGHT}px`,
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
       fontSize: `${11 * SCALE_FACTOR}px`,
-      lineHeight: 1.5,
+      lineHeight: 1.45,
       backgroundColor: '#ffffff',
       position: 'relative' as const,
       overflow: 'hidden' as const,
@@ -87,7 +87,7 @@ export function CreativeTemplateExport({ data }: CreativeTemplateExportProps) {
       <div style={{ flex: 1, paddingTop: `${48 * SCALE_FACTOR}px`, paddingLeft: `${32 * SCALE_FACTOR}px`, paddingRight: `${32 * SCALE_FACTOR}px` }}>
         {/* Name and Title */}
         <div style={{ textAlign: 'center', marginBottom: `${32 * SCALE_FACTOR}px` }}>
-          <h1 style={{ fontSize: `${30 * SCALE_FACTOR}px`, fontWeight: 'bold', color: '#111827', marginBottom: `${8 * SCALE_FACTOR}px` }}>
+          <h1 style={{ fontSize: `${30 * SCALE_FACTOR}px`, fontWeight: 'bold', color: '#111827', marginBottom: `${8 * SCALE_FACTOR}px`, marginTop: `-${6 * SCALE_FACTOR}px` }}>
             {personalInfo.name}
           </h1>
           <h2 style={{ fontSize: `${18 * SCALE_FACTOR}px`, fontWeight: 500, color: colors.primary }}>
