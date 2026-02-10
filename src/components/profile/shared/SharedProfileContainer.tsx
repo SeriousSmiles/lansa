@@ -45,6 +45,7 @@ export function SharedProfileContainer({ profileData, urlParam }: SharedProfileC
           biggestChallenge={profileData.biggestChallenge}
           languages={profileData.languages}
           location={profileData.location}
+          certifications={profileData.certifications}
         />
         
         <SharedProfileContent 

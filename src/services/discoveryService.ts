@@ -76,10 +76,9 @@ export const discoveryService = {
       }
 
       if (publicProfiles && publicProfiles.length > 0) {
-        // Fetch certification data if certifiedOnly filter is enabled
+        // Always fetch certification data so we can show badges
         let certifiedUserIds: Set<string> = new Set();
-        if (certifiedOnly) {
-          console.log('Fetching certification data for filtering...');
+        {
           const { data: certifications, error: certError } = await supabase
             .from('user_certifications')
             .select('user_id, lansa_certified, verified')
@@ -90,7 +89,6 @@ export const discoveryService = {
             console.error('Error fetching certifications:', certError);
           } else if (certifications) {
             certifiedUserIds = new Set(certifications.map(cert => cert.user_id));
-            console.log(`Found ${certifiedUserIds.size} certified users`);
           }
         }
 
