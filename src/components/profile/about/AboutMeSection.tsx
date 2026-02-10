@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Pencil, Sparkles } from "lucide-react";
@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AIModal } from "@/components/ai/AIModal";
 import { fetchAISuggestion } from "@/lib/aiHelpers";
 import { toast as sonnerToast } from "sonner";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AboutMeSectionProps {
   role: string;
@@ -30,14 +31,25 @@ export function AboutMeSection({
   const [showAI, setShowAI] = useState(false);
   const [aiResult, setAiResult] = useState<any>(null);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const [aiUsed, setAiUsed] = useState(false);
+  const [lastAIContent, setLastAIContent] = useState<string>("");
   const { toast } = useToast();
   
-  // Generate default about text based on role and goal
   const defaultAboutText = `Based on your onboarding answers, you identified as a ${role.toLowerCase()} 
   who wants to ${goal.toLowerCase()}. You're at the beginning of your 
   clarity journey, and we're here to help you achieve your goals.`;
 
   const displayAboutText = aboutText || defaultAboutText;
+
+  // Reset aiUsed when content changes from what AI was applied to
+  useEffect(() => {
+    if (aiUsed && displayAboutText !== lastAIContent) {
+      setAiUsed(false);
+      setAiResult(null);
+    }
+  }, [displayAboutText, aiUsed, lastAIContent]);
+
+  const isAIDisabled = aiUsed && displayAboutText === lastAIContent;
   
   const handleSaveAbout = async () => {
     if (onUpdateAbout) {
@@ -92,6 +104,8 @@ export function AboutMeSection({
     if (onUpdateAbout) {
       try {
         await onUpdateAbout(suggestion);
+        setAiUsed(true);
+        setLastAIContent(suggestion);
         sonnerToast.success("About section updated with AI suggestion!");
       } catch (error) {
         console.error("Error updating about section:", error);
@@ -100,16 +114,11 @@ export function AboutMeSection({
     }
   };
   
-  // Get contrast text color for the highlight
   const getContrastTextColor = (hexColor: string): string => {
-    // Convert hex to RGB
     const r = parseInt(hexColor.slice(1, 3), 16);
     const g = parseInt(hexColor.slice(3, 5), 16);
     const b = parseInt(hexColor.slice(5, 7), 16);
-    
-    // Calculate luminance
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    
     return luminance > 0.5 ? "#000000" : "#FFFFFF";
   };
   
@@ -119,16 +128,30 @@ export function AboutMeSection({
         <h2 className="text-2xl font-bold">About Me</h2>
         <div className="flex gap-2">
           {userId && displayAboutText && !isEditingAbout && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleAIEnhance}
-              className="gap-1.5 text-muted-foreground hover:text-primary"
-              title="Enhance with AI"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>AI</span>
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleAIEnhance}
+                      className="gap-1.5 text-muted-foreground hover:text-primary"
+                      title="Enhance with AI"
+                      disabled={isAIDisabled}
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      <span>AI</span>
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {isAIDisabled && (
+                  <TooltipContent>
+                    <p>Edit your content to use AI enhancement again</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           )}
           {onUpdateAbout && (
             <Button 
@@ -185,6 +208,7 @@ export function AboutMeSection({
         aiResult={aiResult}
         isLoading={isLoadingAI}
         onEnhance={handleApplySuggestion}
+        disabled={isAIDisabled}
       />
     </>
   );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,6 +8,7 @@ import { getContrastTextColor } from "@/utils/colorUtils";
 import { AIModal } from "@/components/ai/AIModal";
 import { fetchAISuggestion } from "@/lib/aiHelpers";
 import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ProfessionalGoalWithAIProps {
   goal: string;
@@ -28,7 +29,18 @@ export function ProfessionalGoalWithAI({
   const [showAI, setShowAI] = useState(false);
   const [aiResult, setAiResult] = useState<any>(null);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const [aiUsed, setAiUsed] = useState(false);
+  const [lastAIContent, setLastAIContent] = useState<string>("");
   const { toast: toastHook } = useToast();
+
+  useEffect(() => {
+    if (aiUsed && goal !== lastAIContent) {
+      setAiUsed(false);
+      setAiResult(null);
+    }
+  }, [goal, aiUsed, lastAIContent]);
+
+  const isAIDisabled = aiUsed && goal === lastAIContent;
 
   const handleSave = async () => {
     if (onUpdate) {
@@ -87,6 +99,8 @@ export function ProfessionalGoalWithAI({
     if (onUpdate) {
       try {
         await onUpdate(suggestion);
+        setAiUsed(true);
+        setLastAIContent(suggestion);
         toast.success("Professional goal updated with AI suggestion!");
       } catch (error) {
         console.error("Error updating goal:", error);
@@ -105,16 +119,30 @@ export function ProfessionalGoalWithAI({
             <h3 className="text-lg font-semibold" style={{ color: highlightColor }}>Professional Goal</h3>
             <div className="flex gap-2">
               {userId && goal && !isEditing && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleAIEnhance}
-                  className="gap-1.5 text-muted-foreground hover:text-primary"
-                  title="Enhance with AI"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span>AI</span>
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleAIEnhance}
+                          className="gap-1.5 text-muted-foreground hover:text-primary"
+                          title="Enhance with AI"
+                          disabled={isAIDisabled}
+                        >
+                          <Sparkles className="w-4 h-4" />
+                          <span>AI</span>
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {isAIDisabled && (
+                      <TooltipContent>
+                        <p>Edit your content to use AI enhancement again</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
               )}
               {onUpdate && (
                 <Button 
@@ -175,6 +203,7 @@ export function ProfessionalGoalWithAI({
         aiResult={aiResult}
         isLoading={isLoadingAI}
         onEnhance={handleApplySuggestion}
+        disabled={isAIDisabled}
       />
     </>
   );

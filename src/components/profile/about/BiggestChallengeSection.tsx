@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Pencil, Sparkles } from "lucide-react";
@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AIModal } from "@/components/ai/AIModal";
 import { fetchAISuggestion } from "@/lib/aiHelpers";
 import { toast as sonnerToast } from "sonner";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface BiggestChallengeSectionProps {
   blocker: string;
@@ -26,7 +27,18 @@ export function BiggestChallengeSection({
   const [showAI, setShowAI] = useState(false);
   const [aiResult, setAiResult] = useState<any>(null);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const [aiUsed, setAiUsed] = useState(false);
+  const [lastAIContent, setLastAIContent] = useState<string>("");
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (aiUsed && blocker !== lastAIContent) {
+      setAiUsed(false);
+      setAiResult(null);
+    }
+  }, [blocker, aiUsed, lastAIContent]);
+
+  const isAIDisabled = aiUsed && blocker === lastAIContent;
   
   const handleSave = async () => {
     if (onUpdate) {
@@ -78,6 +90,8 @@ export function BiggestChallengeSection({
     if (onUpdate) {
       try {
         await onUpdate(suggestion);
+        setAiUsed(true);
+        setLastAIContent(suggestion);
         sonnerToast.success("Challenge updated with AI suggestion!");
       } catch (error) {
         console.error("Error updating challenge:", error);
@@ -86,16 +100,11 @@ export function BiggestChallengeSection({
     }
   };
   
-  // Get contrast text color for the highlight
   const getContrastTextColor = (hexColor: string): string => {
-    // Convert hex to RGB
     const r = parseInt(hexColor.slice(1, 3), 16);
     const g = parseInt(hexColor.slice(3, 5), 16);
     const b = parseInt(hexColor.slice(5, 7), 16);
-    
-    // Calculate luminance
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    
     return luminance > 0.5 ? "#000000" : "#FFFFFF";
   };
   
@@ -105,16 +114,30 @@ export function BiggestChallengeSection({
         <h3 className="text-lg font-semibold">My Biggest Challenge</h3>
         <div className="flex gap-2">
           {userId && blocker && !isEditing && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleAIEnhance}
-              className="gap-1.5 text-muted-foreground hover:text-primary"
-              title="Enhance with AI"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>AI</span>
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleAIEnhance}
+                      className="gap-1.5 text-muted-foreground hover:text-primary"
+                      title="Enhance with AI"
+                      disabled={isAIDisabled}
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      <span>AI</span>
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {isAIDisabled && (
+                  <TooltipContent>
+                    <p>Edit your content to use AI enhancement again</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           )}
           {onUpdate && (
             <Button 
@@ -176,6 +199,7 @@ export function BiggestChallengeSection({
         aiResult={aiResult}
         isLoading={isLoadingAI}
         onEnhance={handleApplySuggestion}
+        disabled={isAIDisabled}
       />
     </>
   );
