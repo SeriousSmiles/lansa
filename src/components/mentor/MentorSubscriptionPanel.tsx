@@ -1,19 +1,35 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useMentorSubscription, TIER_CONFIG, type SubscriptionTier } from "@/hooks/useMentorSubscription";
 import { TierBadge } from "./TierBadge";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PaymentModal } from "@/components/certification/PaymentModal";
 
 export function MentorSubscriptionPanel() {
-  const { data: subscription, isLoading } = useMentorSubscription();
+  const { data: subscription, isLoading, refetch } = useMentorSubscription();
   const currentTier = subscription?.tier || "free";
+  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [selectedTier, setSelectedTier] = useState<SubscriptionTier | null>(null);
 
   const tiers: { key: SubscriptionTier; config: (typeof TIER_CONFIG)[SubscriptionTier] }[] = [
     { key: "free", config: TIER_CONFIG.free },
     { key: "starter", config: TIER_CONFIG.starter },
     { key: "pro", config: TIER_CONFIG.pro },
   ];
+
+  const handleUpgrade = (tier: SubscriptionTier) => {
+    setSelectedTier(tier);
+    setPaymentOpen(true);
+  };
+
+  const handlePaymentComplete = () => {
+    refetch();
+    setSelectedTier(null);
+  };
+
+  const selectedConfig = selectedTier ? TIER_CONFIG[selectedTier] : null;
 
   return (
     <div className="space-y-6">
@@ -27,6 +43,7 @@ export function MentorSubscriptionPanel() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {tiers.map(({ key, config }) => {
           const isCurrent = key === currentTier;
+          const isUpgrade = config.price > (TIER_CONFIG[currentTier]?.price || 0);
           return (
             <Card
               key={key}
@@ -58,9 +75,13 @@ export function MentorSubscriptionPanel() {
                   Promotional appearances
                 </FeatureRow>
 
-                {!isCurrent && (
-                  <Button className="w-full mt-4" variant={key === "pro" ? "primary" : "outline"} disabled>
-                    {key === "free" ? "Downgrade" : "Upgrade"} — Coming Soon
+                {!isCurrent && isUpgrade && (
+                  <Button
+                    className="w-full mt-4"
+                    variant={key === "pro" ? "primary" : "outline"}
+                    onClick={() => handleUpgrade(key)}
+                  >
+                    Upgrade to {config.label}
                   </Button>
                 )}
               </CardContent>
@@ -69,9 +90,21 @@ export function MentorSubscriptionPanel() {
         })}
       </div>
 
-      <p className="text-xs text-muted-foreground text-center">
-        Payment integration coming soon. Contact support to change your tier.
-      </p>
+      {selectedTier && selectedConfig && (
+        <PaymentModal
+          open={paymentOpen}
+          onOpenChange={setPaymentOpen}
+          paymentType="mentor_subscription"
+          amountCents={selectedConfig.price * 100}
+          metadata={{
+            tierName: selectedConfig.label,
+            price: String(selectedConfig.price),
+            tier: selectedTier,
+            maxVideos: String(selectedConfig.maxVideos === Infinity ? 'Unlimited' : selectedConfig.maxVideos),
+          }}
+          onPaymentComplete={handlePaymentComplete}
+        />
+      )}
     </div>
   );
 }
@@ -80,7 +113,7 @@ function FeatureRow({ active, children }: { active: boolean; children: React.Rea
   return (
     <div className="flex items-center gap-2 text-sm">
       {active ? (
-        <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+        <Check className="h-4 w-4 text-primary flex-shrink-0" />
       ) : (
         <X className="h-4 w-4 text-muted-foreground flex-shrink-0" />
       )}

@@ -18,7 +18,7 @@ export function TimelineTemplateExport({ data }: TimelineTemplateExportProps) {
       height: `${TOTAL_HEIGHT}px`,
       fontFamily: 'Urbanist, Public Sans, sans-serif',
       fontSize: `${11 * SCALE_FACTOR}px`,
-      lineHeight: 1.5,
+      lineHeight: 1.45,
       backgroundColor: '#ffffff',
       position: 'relative',
       overflow: 'hidden',
@@ -38,7 +38,7 @@ export function TimelineTemplateExport({ data }: TimelineTemplateExportProps) {
         background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primary}dd 100%)`,
         color: '#ffffff',
       }}>
-        <h1 style={{ fontSize: `${30 * SCALE_FACTOR}px`, fontWeight: 'bold', marginBottom: `${8 * SCALE_FACTOR}px` }}>{personalInfo.name}</h1>
+        <h1 style={{ fontSize: `${30 * SCALE_FACTOR}px`, fontWeight: 'bold', marginBottom: `${8 * SCALE_FACTOR}px`, marginTop: `-${6 * SCALE_FACTOR}px` }}>{personalInfo.name}</h1>
         <h2 style={{ fontSize: `${18 * SCALE_FACTOR}px`, opacity: 0.9, marginBottom: `${12 * SCALE_FACTOR}px` }}>{personalInfo.title}</h2>
         <div style={{ display: 'flex', gap: `${16 * SCALE_FACTOR}px`, fontSize: `${14 * SCALE_FACTOR}px` }}>
           {personalInfo.email && <span>{personalInfo.email}</span>}

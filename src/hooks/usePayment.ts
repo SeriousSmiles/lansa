@@ -16,7 +16,7 @@ export function usePayment() {
   const createPayment = async (
     type: 'certification_exam' | 'employer_subscription' | 'mentor_subscription',
     amountCents: number,
-    metadata?: { sector?: string }
+    metadata?: { sector?: string; tier?: string }
   ): Promise<PaymentResult | null> => {
     setIsProcessing(true);
     try {
@@ -31,6 +31,7 @@ export function usePayment() {
           type,
           amount: amountCents,
           sector: metadata?.sector,
+          tier: metadata?.tier,
         },
       });
 
@@ -47,7 +48,6 @@ export function usePayment() {
       }
 
       if (result.redirect_url) {
-        // Redirect to Sentoo payment page
         window.location.href = result.redirect_url;
         return result;
       }
@@ -71,20 +71,22 @@ export function usePayment() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return false;
 
-      // Check for completed payment for this sector
       const { data } = await supabase
         .from('payments')
-        .select('id')
+        .select('id, metadata')
         .eq('payment_type', 'certification_exam')
         .eq('status', 'completed')
-        .not('metadata', 'is', null)
+        .eq('user_id', session.user.id)
         .limit(100);
 
-      // Filter client-side for the sector in metadata
       if (data) {
         return data.some((p: any) => {
-          // metadata is stored as jsonb, check if sector matches
-          return true; // In test mode, allow access
+          try {
+            const meta = typeof p.metadata === 'string' ? JSON.parse(p.metadata) : p.metadata;
+            return meta?.sector === sector;
+          } catch {
+            return false;
+          }
         });
       }
 

@@ -20,7 +20,7 @@ export function ModernTemplateExport({ data }: ModernTemplateExportProps) {
       height: `${TOTAL_HEIGHT}px`,
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
       fontSize: `${11 * SCALE_FACTOR}px`,
-      lineHeight: 1.5,
+      lineHeight: 1.45,
       backgroundColor: '#ffffff',
       position: 'relative' as const,
       overflow: 'hidden' as const,
@@ -79,7 +79,7 @@ export function ModernTemplateExport({ data }: ModernTemplateExportProps) {
         <div style={styles.headerOverlay}></div>
         <div style={styles.headerContent}>
           <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: `${30 * SCALE_FACTOR}px`, fontWeight: 'bold', marginBottom: `${4 * SCALE_FACTOR}px` }}>
+            <h1 style={{ fontSize: `${30 * SCALE_FACTOR}px`, fontWeight: 'bold', marginBottom: `${4 * SCALE_FACTOR}px`, marginTop: `-${6 * SCALE_FACTOR}px` }}>
               {personalInfo.name}
             </h1>
             <h2 style={{ fontSize: `${18 * SCALE_FACTOR}px`, opacity: 0.9 }}>

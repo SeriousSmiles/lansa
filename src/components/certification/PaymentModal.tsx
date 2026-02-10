@@ -9,38 +9,92 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Award, CreditCard, Shield, Loader2 } from "lucide-react";
+import { Award, CreditCard, Shield, Loader2, Sparkles, Building2 } from "lucide-react";
 import { usePayment } from "@/hooks/usePayment";
+
+export type PaymentType = 'certification_exam' | 'mentor_subscription' | 'employer_subscription';
+
+interface PaymentConfig {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  priceDisplay: string;
+  priceSuffix?: string;
+  benefits: string[];
+}
+
+const PAYMENT_CONFIGS: Record<PaymentType, (meta?: Record<string, string>) => PaymentConfig> = {
+  certification_exam: (meta) => ({
+    title: `Unlock ${meta?.sectorName || 'Certification'} Exam`,
+    description: 'Complete this certification to stand out to employers and earn your Lansa Certified badge.',
+    icon: <Award className="h-5 w-5 text-primary" />,
+    priceDisplay: '25',
+    benefits: [
+      'AI-powered feedback on your performance',
+      'Verified certification badge on your profile',
+      'Priority visibility to employers',
+      'Shareable verification code',
+    ],
+  }),
+  mentor_subscription: (meta) => ({
+    title: `Upgrade to ${meta?.tierName || 'Premium'}`,
+    description: 'Unlock more video uploads, external links, and promotional appearances.',
+    icon: <Sparkles className="h-5 w-5 text-primary" />,
+    priceDisplay: meta?.price || '30',
+    priceSuffix: '/month',
+    benefits: [
+      `${meta?.maxVideos || 'More'} video uploads`,
+      'External platform link on your content',
+      'Promotional appearances in the feed',
+      'Priority mentor badge',
+    ],
+  }),
+  employer_subscription: (meta) => ({
+    title: `Upgrade to ${meta?.tierName || 'Premium'}`,
+    description: 'Get unlimited access to browse, swipe, and connect with top candidates.',
+    icon: <Building2 className="h-5 w-5 text-primary" />,
+    priceDisplay: meta?.price || '75',
+    priceSuffix: '/month',
+    benefits: [
+      'Unlimited candidate browsing and swipes',
+      'Access to Lansa Certified candidates',
+      'AI-powered match summaries',
+      'Priority job listing visibility',
+    ],
+  }),
+};
 
 interface PaymentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  sector: string;
-  sectorName: string;
+  paymentType: PaymentType;
+  amountCents: number;
+  metadata?: Record<string, string>;
   onPaymentComplete: () => void;
 }
-
-const EXAM_PRICE_CENTS = 2500; // 25 XCG
-const EXAM_PRICE_DISPLAY = "25";
 
 export function PaymentModal({
   open,
   onOpenChange,
-  sector,
-  sectorName,
+  paymentType,
+  amountCents,
+  metadata = {},
   onPaymentComplete,
 }: PaymentModalProps) {
   const { isProcessing, createPayment } = usePayment();
+  const config = PAYMENT_CONFIGS[paymentType](metadata);
 
   const handlePayment = async () => {
-    const result = await createPayment('certification_exam', EXAM_PRICE_CENTS, { sector });
-    
+    const result = await createPayment(paymentType, amountCents, {
+      sector: metadata.sector,
+      tier: metadata.tier,
+    });
+
     if (result) {
       if (result.already_paid || result.status === 'completed') {
         onPaymentComplete();
         onOpenChange(false);
       }
-      // If redirect_url, the hook already redirects
     }
   };
 
@@ -49,42 +103,33 @@ export function PaymentModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Award className="h-5 w-5 text-primary" />
-            Unlock {sectorName} Exam
+            {config.icon}
+            {config.title}
           </DialogTitle>
-          <DialogDescription>
-            Complete this certification to stand out to employers and earn your Lansa Certified badge.
-          </DialogDescription>
+          <DialogDescription>{config.description}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          {/* Price Display */}
           <div className="bg-muted/50 rounded-lg p-4 text-center">
-            <p className="text-sm text-muted-foreground mb-1">One-time exam fee</p>
-            <p className="text-3xl font-bold text-foreground">
-              XCG {EXAM_PRICE_DISPLAY}
+            <p className="text-sm text-muted-foreground mb-1">
+              {config.priceSuffix ? 'Monthly subscription' : 'One-time fee'}
             </p>
+            <p className="text-3xl font-bold text-foreground">
+              XCG {config.priceDisplay}
+            </p>
+            {config.priceSuffix && (
+              <p className="text-xs text-muted-foreground mt-1">{config.priceSuffix}</p>
+            )}
             <p className="text-xs text-muted-foreground mt-1">Caribbean Guilder</p>
           </div>
 
-          {/* Benefits */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <Shield className="h-4 w-4 text-green-600 flex-shrink-0" />
-              <span>AI-powered feedback on your performance</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Shield className="h-4 w-4 text-green-600 flex-shrink-0" />
-              <span>Verified certification badge on your profile</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Shield className="h-4 w-4 text-green-600 flex-shrink-0" />
-              <span>Priority visibility to employers</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Shield className="h-4 w-4 text-green-600 flex-shrink-0" />
-              <span>Shareable verification code</span>
-            </div>
+            {config.benefits.map((benefit, i) => (
+              <div key={i} className="flex items-center gap-2 text-sm">
+                <Shield className="h-4 w-4 text-primary flex-shrink-0" />
+                <span>{benefit}</span>
+              </div>
+            ))}
           </div>
 
           <Badge variant="outline" className="w-full justify-center py-1 text-xs">
@@ -93,18 +138,10 @@ export function PaymentModal({
         </div>
 
         <DialogFooter className="flex-col sm:flex-row gap-2">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isProcessing}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isProcessing}>
             Cancel
           </Button>
-          <Button
-            onClick={handlePayment}
-            disabled={isProcessing}
-            className="flex-1"
-          >
+          <Button onClick={handlePayment} disabled={isProcessing} className="flex-1">
             {isProcessing ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -113,7 +150,7 @@ export function PaymentModal({
             ) : (
               <>
                 <CreditCard className="h-4 w-4 mr-2" />
-                Pay XCG {EXAM_PRICE_DISPLAY}
+                Pay XCG {config.priceDisplay}
               </>
             )}
           </Button>

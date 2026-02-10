@@ -270,8 +270,9 @@ export default function CertificationDashboard({ userId }: CertificationDashboar
         <PaymentModal
           open={paymentModal.open}
           onOpenChange={(open) => setPaymentModal(prev => ({ ...prev, open }))}
-          sector={paymentModal.sectorId}
-          sectorName={paymentModal.sectorName}
+          paymentType="certification_exam"
+          amountCents={2500}
+          metadata={{ sector: paymentModal.sectorId, sectorName: paymentModal.sectorName }}
           onPaymentComplete={handlePaymentComplete}
         />
       </div>
