@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Plus, X, Sparkles } from "lucide-react";
 import { AIModal } from "@/components/ai/AIModal";
 import { fetchAISuggestion } from "@/lib/aiHelpers";
 import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SkillsListProps {
   skills: string[];
@@ -29,6 +30,19 @@ export function SkillsList({
   const [showAI, setShowAI] = useState(false);
   const [aiResult, setAiResult] = useState<any>(null);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const [aiUsed, setAiUsed] = useState(false);
+  const [lastAIContent, setLastAIContent] = useState<string>("");
+
+  const currentSkillsString = skills.join(', ');
+
+  useEffect(() => {
+    if (aiUsed && currentSkillsString !== lastAIContent) {
+      setAiUsed(false);
+      setAiResult(null);
+    }
+  }, [currentSkillsString, aiUsed, lastAIContent]);
+
+  const isAIDisabled = aiUsed && currentSkillsString === lastAIContent;
 
   const handleAddSkill = async () => {
     if (newSkill.trim() && onAddSkill) {
@@ -72,24 +86,23 @@ export function SkillsList({
   };
 
   const handleApplySuggestion = async (suggestion: string) => {
-    // Parse the suggested skills (comma-separated)
     const newSkills = suggestion.split(',').map(s => s.trim()).filter(s => s);
     
     try {
-      // First, remove all existing skills
       for (const oldSkill of skills) {
         if (onRemoveSkill) {
           await onRemoveSkill(oldSkill);
         }
       }
       
-      // Then, add the new AI-suggested skills
       for (const skill of newSkills) {
         if (onAddSkill) {
           await onAddSkill(skill);
         }
       }
       
+      setAiUsed(true);
+      setLastAIContent(newSkills.join(', '));
       toast.success("Skills replaced with AI suggestions!");
     } catch (error) {
       console.error("Error updating skills:", error);
@@ -104,16 +117,30 @@ export function SkillsList({
           <h3 className="text-lg font-semibold" style={{ color: highlightColor }}>Skills</h3>
           <div className="flex gap-2">
             {userId && skills.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleAIEnhance}
-                className="gap-1.5 text-muted-foreground hover:text-primary"
-                title="Enhance with AI"
-              >
-                <Sparkles className="w-4 h-4" />
-                <span>AI</span>
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleAIEnhance}
+                        className="gap-1.5 text-muted-foreground hover:text-primary"
+                        title="Enhance with AI"
+                        disabled={isAIDisabled}
+                      >
+                        <Sparkles className="w-4 h-4" />
+                        <span>AI</span>
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {isAIDisabled && (
+                    <TooltipContent>
+                      <p>Edit your skills to use AI enhancement again</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             )}
             {onAddSkill && !isAdding && (
               <Button 
@@ -206,6 +233,7 @@ export function SkillsList({
         aiResult={aiResult}
         isLoading={isLoadingAI}
         onEnhance={handleApplySuggestion}
+        disabled={isAIDisabled}
       />
     </Card>
   );

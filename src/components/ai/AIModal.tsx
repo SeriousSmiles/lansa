@@ -5,6 +5,7 @@ import { X, Sparkles, CheckCircle, AlertCircle, Info, ChevronDown, ChevronUp, Mi
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
 interface AIModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -22,7 +23,9 @@ interface AIModalProps {
     };
   } | null;
   isLoading?: boolean;
+  disabled?: boolean;
 }
+
 export function AIModal({
   isOpen,
   onClose,
@@ -30,11 +33,12 @@ export function AIModal({
   data,
   onEnhance,
   aiResult,
-  isLoading = false
+  isLoading = false,
+  disabled = false
 }: AIModalProps) {
   const [isReasoningOpen, setIsReasoningOpen] = useState(false);
   const handleApply = () => {
-    if (aiResult?.suggested_rewrite) {
+    if (aiResult?.suggested_rewrite && !disabled) {
       onEnhance(aiResult.suggested_rewrite);
       onClose();
     }
@@ -81,7 +85,7 @@ export function AIModal({
           type: 'spring',
           damping: 25,
           stiffness: 300
-        }} className="pointer-events-auto w-full max-w-3xl max-h-[90vh] overflow-hidden bg-background rounded-2xl shadow-2xl border border-border flex flex-col">
+        }} className="pointer-events-auto w-full max-w-5xl max-h-[90vh] overflow-hidden bg-background rounded-2xl shadow-2xl border border-border flex flex-col">
                 {/* Header */}
                 <div className="flex justify-between items-center px-6 py-4 border-b border-border">
                   <div className="flex items-center gap-3">
@@ -135,7 +139,18 @@ export function AIModal({
                 })()}
                       </div>
 
-                      {/* Action Blocks - Show what changed */}
+                      {/* Suggested Rewrite for non-Skills sections */}
+                      {section !== 'Skills' && aiResult.suggested_rewrite && (
+                        <div className="bg-green-500/5 rounded-xl p-4 border border-green-500/20">
+                          <div className="flex items-center gap-2 mb-2">
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <span className="text-xs font-medium text-green-700 uppercase tracking-wide">Suggested</span>
+                          </div>
+                          <p className="text-sm leading-relaxed text-foreground">{aiResult.suggested_rewrite}</p>
+                        </div>
+                      )}
+
+                      {/* Action Blocks - Show what changed (Skills only) */}
                       {changes && <div className="space-y-3">
                           <h4 className="text-sm font-semibold">Changes Made</h4>
                           
@@ -185,16 +200,18 @@ export function AIModal({
                           </div>
                         </CollapsibleContent>
                       </Collapsible>
-
-                      {/* Enhanced Version Display */}
-                      
                     </> : null}
                 </div>
 
                 {/* Footer Actions */}
                 <div className="flex justify-end gap-3 px-6 py-4 border-t border-border">
                   <Button variant="outline" onClick={onClose}>Cancel</Button>
-                  {aiResult && <Button onClick={handleApply} className="gap-2">
+                  {aiResult && <Button 
+                    onClick={handleApply} 
+                    className="gap-2"
+                    disabled={disabled}
+                    title={disabled ? "Edit your content to use AI enhancement again" : undefined}
+                  >
                       <Sparkles className="w-4 h-4" />
                       Apply Enhancement
                     </Button>}
