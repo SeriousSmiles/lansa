@@ -10,6 +10,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { JobImageModal } from "./JobImageModal";
+import { getJobLogo } from "@/utils/getJobLogo";
 
 /** Parses structured fields from job description text */
 function parseJobDescription(description: string) {
@@ -166,9 +167,9 @@ function JobDetailContent({ job, onApply, disableApply, onClose }: Omit<JobDetai
         {/* Header */}
         <div className="p-5 sm:p-6 border-b border-border">
           <div className="flex items-start gap-3 sm:gap-4">
-            {job.companies?.logo_url ? (
+            {getJobLogo(job) ? (
               <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-muted border border-border">
-                <img src={job.companies.logo_url} alt={job.companies.name} className="w-full h-full object-cover" />
+                <img src={getJobLogo(job)!} alt={job.organizations?.name || job.companies?.name || 'Company'} className="w-full h-full object-cover" />
               </div>
             ) : (
               <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-border">
@@ -178,7 +179,7 @@ function JobDetailContent({ job, onApply, disableApply, onClose }: Omit<JobDetai
             <div className="flex-1 min-w-0">
               <h2 className="font-bold text-lg sm:text-xl text-foreground line-clamp-2">{job.title}</h2>
               <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2 text-sm text-muted-foreground mt-1">
-                <span className="font-medium">{job.companies?.name || 'Company'}</span>
+                <span className="font-medium">{job.organizations?.name || job.companies?.name || 'Company'}</span>
                 {job.location && (
                   <>
                     <span className="hidden sm:inline">•</span>

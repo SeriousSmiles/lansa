@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { JobListing } from "@/services/jobFeedService";
 import { useState } from "react";
 import { JobImageModal } from "./JobImageModal";
+import { getJobLogo } from "@/utils/getJobLogo";
 
 interface JobPostCardProps {
   job: JobListing;
@@ -12,20 +13,8 @@ interface JobPostCardProps {
   onViewDetails: (job: JobListing) => void;
 }
 
-// Helper function to get company logo with proper fallback
-const getCompanyLogo = (job: JobListing): string | null => {
-  // Priority 1: Organization logo (new system)
-  if (job.organizations?.logo_url) {
-    return job.organizations.logo_url;
-  }
-  
-  // Priority 2: Business profile organization logo (if available)
-  if (job.business_profiles?.organizations?.logo_url) {
-    return job.business_profiles.organizations.logo_url;
-  }
-  
-  return null;
-};
+// Use shared logo resolution helper
+const getCompanyLogo = (job: JobListing): string | null => getJobLogo(job);
 
 export function JobPostCard({ job, onApply, onViewDetails }: JobPostCardProps) {
   const applied = job.job_applications && job.job_applications.length > 0;

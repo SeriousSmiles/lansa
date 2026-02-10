@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { JobListing } from "@/services/jobFeedService";
 import { useState } from "react";
 import { JobImageModal } from "./JobImageModal";
+import { getJobLogo } from "@/utils/getJobLogo";
 import { formatDistanceToNow } from "date-fns";
 
 interface JobDetailModalProps {
@@ -29,11 +30,11 @@ export function JobDetailModal({ job, isOpen, onClose, onApply }: JobDetailModal
         {/* Sticky Header with Close Button */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b bg-card/95 backdrop-blur-sm">
           <div className="flex items-center gap-3">
-            {job.business_profiles && 'logo_url' in job.business_profiles && job.business_profiles.logo_url ? (
+            {getJobLogo(job) ? (
               <div className="w-10 h-10 rounded-lg overflow-hidden border">
                 <img 
-                  src={String(job.business_profiles.logo_url)}
-                  alt={job.business_profiles.company_name}
+                  src={getJobLogo(job)!}
+                  alt={job.organizations?.name || job.business_profiles?.company_name || 'Company'}
                   className="w-full h-full object-cover"
                 />
               </div>
