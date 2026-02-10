@@ -238,7 +238,7 @@ export function ResumeCanvas({
               transition: 'transform 0.2s ease-out',
             }}
           >
-            <div className="shadow-2xl bg-white" style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
+            <div data-resume-canvas className="shadow-2xl bg-white" style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
               <canvas ref={canvasRef} />
             </div>
           </div>

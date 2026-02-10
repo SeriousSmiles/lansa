@@ -137,3 +137,12 @@ verify_jwt = true
 [functions.cert-post-analysis]
 verify_jwt = true
 
+[functions.create-payment]
+verify_jwt = false
+
+[functions.payment-webhook]
+verify_jwt = false
+
+[functions.manage-subscription]
+verify_jwt = false
+

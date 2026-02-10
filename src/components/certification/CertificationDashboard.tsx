@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Briefcase, Users, Wrench, Monitor, Award, TrendingUp, ArrowLeft } from "lucide-react";
 import gsap from "gsap";
+import { PaymentModal } from "./PaymentModal";
 
 interface SectorProgress {
   sector: string;
@@ -52,6 +53,9 @@ export default function CertificationDashboard({ userId }: CertificationDashboar
   const navigate = useNavigate();
   const [progress, setProgress] = useState<Record<string, SectorProgress>>({});
   const [loading, setLoading] = useState(true);
+  const [paymentModal, setPaymentModal] = useState<{ open: boolean; sectorId: string; sectorName: string }>({
+    open: false, sectorId: '', sectorName: ''
+  });
 
   useEffect(() => {
     loadProgress();
@@ -91,8 +95,14 @@ export default function CertificationDashboard({ userId }: CertificationDashboar
     setLoading(false);
   };
 
-  const handleStartExam = (sectorId: string) => {
-    navigate(`/certification/${sectorId}`);
+  const handleStartExam = async (sectorId: string) => {
+    const sector = SECTORS.find(s => s.id === sectorId);
+    // Show payment modal - in test mode (no Sentoo key), payment auto-completes
+    setPaymentModal({ open: true, sectorId, sectorName: sector?.name || sectorId });
+  };
+
+  const handlePaymentComplete = () => {
+    navigate(`/certification/${paymentModal.sectorId}`);
   };
 
   const getProgressRing = (score: number | null) => {
@@ -255,6 +265,15 @@ export default function CertificationDashboard({ userId }: CertificationDashboar
             Complete your certification and share your verified professional readiness with employers across the Caribbean.
           </p>
         </Card>
+
+        {/* Payment Modal */}
+        <PaymentModal
+          open={paymentModal.open}
+          onOpenChange={(open) => setPaymentModal(prev => ({ ...prev, open }))}
+          sector={paymentModal.sectorId}
+          sectorName={paymentModal.sectorName}
+          onPaymentComplete={handlePaymentComplete}
+        />
       </div>
     </div>
   );

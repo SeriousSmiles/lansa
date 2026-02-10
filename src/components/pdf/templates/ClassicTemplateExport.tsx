@@ -20,7 +20,7 @@ export function ClassicTemplateExport({ data }: ClassicTemplateExportProps) {
       height: `${TOTAL_HEIGHT}px`,
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
       fontSize: `${12 * SCALE_FACTOR}px`,
-      lineHeight: 1.6,
+      lineHeight: 1.5, // Reduced from 1.6 to compensate for html2canvas text shift
       backgroundColor: '#ffffff',
       position: 'relative' as const,
       overflow: 'hidden' as const,
@@ -54,6 +54,7 @@ export function ClassicTemplateExport({ data }: ClassicTemplateExportProps) {
             fontWeight: 'bold',
             color: '#111827',
             marginBottom: `${8 * SCALE_FACTOR}px`,
+            marginTop: `-${8 * SCALE_FACTOR}px`, // html2canvas compensation
             letterSpacing: '0.05em',
             textTransform: 'uppercase',
           }}>
@@ -94,7 +95,7 @@ export function ClassicTemplateExport({ data }: ClassicTemplateExportProps) {
             </h3>
             <p style={{
               color: '#374151',
-              lineHeight: 1.6,
+              lineHeight: 1.5,
               textAlign: 'justify',
             }}>
               {personalInfo.summary}
@@ -134,7 +135,7 @@ export function ClassicTemplateExport({ data }: ClassicTemplateExportProps) {
                         )}
                       </div>
                       {exp.description && (
-                        <p style={{ color: '#374151', lineHeight: 1.6, textAlign: 'justify' }}>
+                        <p style={{ color: '#374151', lineHeight: 1.5, textAlign: 'justify' }}>
                           {exp.description}
                         </p>
                       )}
@@ -173,7 +174,7 @@ export function ClassicTemplateExport({ data }: ClassicTemplateExportProps) {
                         )}
                       </div>
                       {edu.description && (
-                        <p style={{ color: '#374151', lineHeight: 1.6 }}>
+                        <p style={{ color: '#374151', lineHeight: 1.5 }}>
                           {edu.description}
                         </p>
                       )}
@@ -272,7 +273,7 @@ export function ClassicTemplateExport({ data }: ClassicTemplateExportProps) {
                     <li key={index} style={{
                       fontSize: `${14 * SCALE_FACTOR}px`,
                       color: '#374151',
-                      lineHeight: 1.6,
+                      lineHeight: 1.5,
                       marginBottom: `${4 * SCALE_FACTOR}px`,
                     }}>
                       • {skill}
@@ -353,7 +354,7 @@ export function ClassicTemplateExport({ data }: ClassicTemplateExportProps) {
                 }}>
                   Career Objective
                 </h3>
-                <p style={{ fontSize: `${14 * SCALE_FACTOR}px`, color: '#374151', lineHeight: 1.6, textAlign: 'justify' }}>
+                <p style={{ fontSize: `${14 * SCALE_FACTOR}px`, color: '#374151', lineHeight: 1.5, textAlign: 'justify' }}>
                   {personalInfo.professionalGoal}
                 </p>
               </div>
@@ -374,7 +375,7 @@ export function ClassicTemplateExport({ data }: ClassicTemplateExportProps) {
                 }}>
                   Key Challenge
                 </h3>
-                <p style={{ fontSize: `${14 * SCALE_FACTOR}px`, color: '#374151', lineHeight: 1.6, textAlign: 'justify' }}>
+                <p style={{ fontSize: `${14 * SCALE_FACTOR}px`, color: '#374151', lineHeight: 1.5, textAlign: 'justify' }}>
                   {personalInfo.biggestChallenge}
                 </p>
               </div>

@@ -18,7 +18,7 @@ export function LogosTemplateExport({ data }: LogosTemplateExportProps) {
       height: `${TOTAL_HEIGHT}px`,
       fontFamily: 'Urbanist, Public Sans, sans-serif',
       fontSize: `${11 * SCALE_FACTOR}px`,
-      lineHeight: 1.5,
+      lineHeight: 1.45, // Reduced from 1.5 to compensate for html2canvas text shift
       backgroundColor: '#ffffff',
       position: 'relative',
       overflow: 'hidden',
