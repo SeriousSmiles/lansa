@@ -1546,6 +1546,54 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount_cents: number
+          completed_at: string | null
+          created_at: string
+          currency: string
+          expires_at: string | null
+          id: string
+          metadata: Json | null
+          payment_type: string
+          provider: string
+          provider_metadata: Json | null
+          provider_payment_id: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          expires_at?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_type: string
+          provider?: string
+          provider_metadata?: Json | null
+          provider_payment_id?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          expires_at?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_type?: string
+          provider?: string
+          provider_metadata?: Json | null
+          provider_payment_id?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pricing_wall_events: {
         Row: {
           created_at: string
@@ -1905,6 +1953,45 @@ export type Database = {
           id?: string
           new_segment?: Database["public"]["Enums"]["user_color"]
           old_segment?: Database["public"]["Enums"]["user_color"] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          amount_cents: number
+          cancelled_at: string | null
+          created_at: string
+          currency: string
+          current_period_end: string
+          current_period_start: string
+          id: string
+          plan_type: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          cancelled_at?: string | null
+          created_at?: string
+          currency?: string
+          current_period_end: string
+          current_period_start?: string
+          id?: string
+          plan_type: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          cancelled_at?: string | null
+          created_at?: string
+          currency?: string
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          plan_type?: string
+          status?: string
           user_id?: string
         }
         Relationships: []
