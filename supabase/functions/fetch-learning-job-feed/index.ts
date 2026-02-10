@@ -88,7 +88,8 @@ Deno.serve(async (req) => {
       .from('job_listings_v2')
       .select(`
         *,
-        companies(name, logo_url, industry, location)
+        companies(name, logo_url, industry, location),
+        organizations(id, name, logo_url)
       `)
       .eq('is_active', true)
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
@@ -207,6 +208,7 @@ Deno.serve(async (req) => {
       user_applied_at: appMap.get(job.id)?.created_at || null,
       view_count: viewCountMap.get(job.id) || 0,
       application_count: appCountMap.get(job.id) || 0,
+      logo_url: job.organizations?.logo_url || job.companies?.logo_url || null,
     }));
 
     console.log(`Returning ${jobsWithStatus.length} jobs, teaser: ${teaser}`);

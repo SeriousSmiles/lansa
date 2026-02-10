@@ -4,6 +4,7 @@ import { Building2, MapPin, Clock } from "lucide-react";
 import { LearningJobListing, learningJobFeedService } from "@/services/learningJobFeedService";
 import { formatDistanceToNow } from "date-fns";
 import { useEffect, useRef, useState } from "react";
+import { getJobLogo } from "@/utils/getJobLogo";
 
 interface LearningJobPostCardProps {
   job: LearningJobListing;
@@ -59,11 +60,11 @@ export function LearningJobPostCard({ job, onViewDetails }: LearningJobPostCardP
       {/* Company Header */}
       <div className="p-4 sm:p-5">
         <div className="flex items-start gap-3">
-          {job.companies?.logo_url ? (
+          {getJobLogo(job) ? (
             <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden bg-muted border border-border">
               <img
-                src={job.companies.logo_url}
-                alt={job.companies.name}
+                src={getJobLogo(job)!}
+                alt={job.organizations?.name || job.companies?.name || 'Company'}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -75,7 +76,7 @@ export function LearningJobPostCard({ job, onViewDetails }: LearningJobPostCardP
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-base sm:text-lg mb-0.5 text-foreground line-clamp-2">{job.title}</h3>
             <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2 text-sm text-muted-foreground">
-              <span className="font-medium">{job.companies?.name || 'Company'}</span>
+              <span className="font-medium">{job.organizations?.name || job.companies?.name || 'Company'}</span>
               {job.location && (
                 <>
                   <span className="hidden sm:inline">•</span>
