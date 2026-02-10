@@ -1,5 +1,6 @@
 import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
 import type { PDFResumeData } from '@/types/pdf';
+import { getPublicAssetUrl, BADGE_PATH } from '../../helpers/pdfUtils';
 
 function createStyles(colors: { primary: string; secondary: string }) {
   return StyleSheet.create({
@@ -11,22 +12,8 @@ function createStyles(colors: { primary: string; secondary: string }) {
       position: 'absolute',
       bottom: 15,
       right: 15,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-      paddingVertical: 4,
-      paddingHorizontal: 8,
-      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-      borderRadius: 50,
-    },
-    badgeIcon: {
-      width: 12,
-      height: 12,
-    },
-    badgeText: {
-      fontSize: 8,
-      fontWeight: 'medium' as any,
-      color: '#1A1F71',
+      width: 90,
+      opacity: 0.9,
     },
     // Header
     header: {
@@ -378,11 +365,7 @@ export default function LogosDoc({ data }: { data: PDFResumeData }) {
           </View>
         </View>
 
-        {/* Badge */}
-        <View style={s.badge}>
-          <Image src="/lansa-icon.svg" style={s.badgeIcon} />
-          <Text style={s.badgeText}>Powered by Lansa</Text>
-        </View>
+        <Image style={s.badge} src={getPublicAssetUrl(BADGE_PATH)} />
       </Page>
     </Document>
   );

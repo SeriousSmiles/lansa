@@ -1,5 +1,6 @@
 import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
 import type { PDFResumeData } from '@/types/pdf';
+import { getPublicAssetUrl, BADGE_PATH } from '../../helpers/pdfUtils';
 
 function hexToRgb(hex: string) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -282,8 +283,8 @@ export default function CreativeDoc({ data }: { data: PDFResumeData }) {
 
         {/* Contact Bar */}
         <View style={s.contactBar} wrap={false}>
-          {personalInfo.phone && <Text style={s.contactText}>📞 {personalInfo.phone}</Text>}
-          {personalInfo.email && <Text style={s.contactText}>✉️ {personalInfo.email}</Text>}
+          {personalInfo.phone && <Text style={s.contactText}>{personalInfo.phone}</Text>}
+          {personalInfo.email && <Text style={s.contactText}>{personalInfo.email}</Text>}
         </View>
 
         {/* Two-Column Layout */}
@@ -434,7 +435,7 @@ export default function CreativeDoc({ data }: { data: PDFResumeData }) {
           </View>
         </View>
 
-        <Image style={s.badge} src="/powered-by-lansa-badge.png" />
+        <Image style={s.badge} src={getPublicAssetUrl(BADGE_PATH)} />
       </Page>
     </Document>
   );

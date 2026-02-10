@@ -1,5 +1,6 @@
 import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
 import type { PDFResumeData } from '@/types/pdf';
+import { getPublicAssetUrl, BADGE_PATH } from '../../helpers/pdfUtils';
 
 const styles = StyleSheet.create({
   page: {
@@ -349,7 +350,7 @@ export default function ClassicDoc({ data }: { data: PDFResumeData }) {
           </View>
         </View>
 
-        <Image style={styles.badge} src="/powered-by-lansa-badge.png" />
+        <Image style={styles.badge} src={getPublicAssetUrl(BADGE_PATH)} />
       </Page>
     </Document>
   );
