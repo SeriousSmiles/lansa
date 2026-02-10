@@ -1,88 +1,69 @@
 
 
-# Combined Fix: AI Modal Visual + Missing Content + Usage Limit Rule
+# Fix Organization Logos in Job Feed
 
-## Part 1: Fix Modal Width and Missing Suggested Rewrite
+## Root Causes Found
 
-### Problem
-- The modal uses `max-w-3xl` but appears too wide/full-screen in some contexts
-- For non-Skills sections (About Me, Biggest Challenge, Professional Goal), the AI-generated `suggested_rewrite` text is never rendered -- the code has an empty comment placeholder at line 189 of `AIModal.tsx`
+### Root Cause 1: `fetch-job-feed` edge function uses ANON key (RLS blocks organizations)
+**File:** `supabase/functions/fetch-job-feed/index.ts` (line 15)
 
-### Fix (in `src/components/ai/AIModal.tsx`)
-1. Change `max-w-3xl` to `max-w-5xl` on the modal container for better width constraint (~1024px)
-2. Add a "SUGGESTED" display block after the quality badge and before the reasoning collapsible, which renders `aiResult.suggested_rewrite` in a green-bordered card for all non-Skills sections
+The function creates its Supabase client with `SUPABASE_ANON_KEY`. Since the `organizations` table only allows SELECT for the `authenticated` role, the join to `organizations` silently returns `null` -- the logo data exists in the database but RLS blocks the anon role from reading it.
 
----
+Compare with `fetch-learning-job-feed` which correctly uses `SUPABASE_SERVICE_ROLE_KEY` (line 20).
 
-## Part 2: One AI Enhancement Per Edit (Usage Limit Rule)
-
-### How It Works
-
-Each section tracks two pieces of state:
-- **`contentHash`**: A snapshot of the content at the time AI was last used
-- **`aiUsed`**: Whether the AI enhancement has been applied for this version of the content
-
-```text
-User writes/edits content
-        |
-        v
-  AI button becomes available (content changed from last AI use)
-        |
-        v
-  User clicks AI --> suggestion generated and shown
-        |
-        v
-  User clicks "Apply Enhancement"
-        |
-        v
-  aiUsed = true, contentHash = current content
-  AI button becomes disabled (greyed out with tooltip: "Edit your content to unlock AI again")
-        |
-        v
-  User edits the section content
-        |
-        v
-  Content differs from contentHash --> aiUsed resets to false
-  AI button becomes available again
-```
-
-### Implementation
-
-**New prop on AIModal**: `disabled` -- when true, the "Apply Enhancement" button is disabled
-
-**Each section component** (5 files) gets:
-- `aiUsed` state (boolean) -- tracks if AI was applied for current content
-- `lastAIContent` state (string) -- stores the content snapshot when AI was applied
-- On content save/edit: compare new content to `lastAIContent`, if different, reset `aiUsed = false`
-- On AI apply: set `aiUsed = true` and `lastAIContent = current content`
-- AI button: disabled when `aiUsed === true` AND content hasn't changed
-
-**Affected files:**
-- `src/components/ai/AIModal.tsx` -- width fix + suggested rewrite display
-- `src/components/profile/about/AboutMeSection.tsx` -- usage limit
-- `src/components/profile/about/BiggestChallengeSection.tsx` -- usage limit
-- `src/components/profile/sidebar/SkillsList.tsx` -- usage limit
-- `src/components/profile/sidebar/BiggestChallengeWithAI.tsx` -- usage limit
-- `src/components/profile/sidebar/ProfessionalGoalWithAI.tsx` -- usage limit
-
-### UX Details
-
-- When AI has been used and content hasn't changed, the AI button shows as **disabled** with reduced opacity
-- A **tooltip** on hover explains: "Edit your content to use AI enhancement again"
-- The cached AI result is also cleared when content changes, so opening the modal after editing always triggers a fresh AI call
-- This is purely client-side state -- no database changes needed. State resets on page reload (intentional, since it's per-session usage gating)
+**Fix:** Change `SUPABASE_ANON_KEY` to `SUPABASE_SERVICE_ROLE_KEY` on line 15. The function already validates the user's JWT manually (lines 27-36), so service role is safe here.
 
 ---
 
-## Technical Summary
+### Root Cause 2: `fetch-learning-job-feed` never joins the `organizations` table
+**File:** `supabase/functions/fetch-learning-job-feed/index.ts` (lines 88-92)
 
-| Change | File | What |
+The query only joins `companies(name, logo_url, industry, location)`. It does NOT join `organizations`. From the database, the `companies` table has `logo_url = NULL` for existing records, while the actual logos are stored on the `organizations` table. So `job.companies.logo_url` is always null.
+
+**Fix:** Add `organizations(id, name, logo_url)` to the select query. Then in the response mapping (line 204), add a top-level `logo_url` field that prefers organization logo over company logo.
+
+---
+
+### Root Cause 3: UI components don't check for organization logo
+Multiple UI components only check `job.companies?.logo_url` and miss the organization logo entirely:
+
+| Component | What it checks | What it should also check |
 |---|---|---|
-| Width fix | AIModal.tsx | `max-w-3xl` to `max-w-5xl` |
-| Show suggested rewrite | AIModal.tsx | Add render block for `suggested_rewrite` for non-Skills sections |
-| Usage limit | AboutMeSection.tsx | Track `aiUsed` + `lastAIContent`, disable AI button after apply |
-| Usage limit | BiggestChallengeSection.tsx | Same pattern |
-| Usage limit | BiggestChallengeWithAI.tsx | Same pattern |
-| Usage limit | ProfessionalGoalWithAI.tsx | Same pattern |
-| Usage limit | SkillsList.tsx | Same pattern (tracks skills join string) |
+| `LearningJobPostCard.tsx` (line 62) | `job.companies?.logo_url` | `job.organizations?.logo_url` (fallback) |
+| `JobDetailPanel.tsx` (line 169) | `job.companies?.logo_url` | `job.organizations?.logo_url` (fallback) |
+| `JobDetailModal.tsx` (line 32) | `job.business_profiles.logo_url` (doesn't exist in response) | `job.organizations?.logo_url` or top-level `job.logo_url` |
+| `JobPostCard.tsx` (line 16-28) | `job.organizations?.logo_url` then `job.business_profiles?.organizations?.logo_url` | Already correct for org logo, but should also check top-level `job.logo_url` |
+
+**Fix:** Create a shared `getJobLogo` helper that checks: `job.organizations?.logo_url` -> `job.companies?.logo_url` -> `job.logo_url` -> `null`. Use it in all four components.
+
+---
+
+## Implementation Plan
+
+### Step 1: Fix `fetch-job-feed` edge function
+- Change `SUPABASE_ANON_KEY` to `SUPABASE_SERVICE_ROLE_KEY` (line 15)
+
+### Step 2: Fix `fetch-learning-job-feed` edge function
+- Add `organizations(id, name, logo_url)` to the select query (line 89-92)
+- In the response mapping (line 204), add `logo_url: job.organizations?.logo_url || job.companies?.logo_url || null`
+
+### Step 3: Fix UI components (4 files)
+- Add a shared logo resolution helper to each component (or a shared util)
+- Update `LearningJobPostCard.tsx` to check organizations logo first
+- Update `JobDetailPanel.tsx` to check organizations logo first  
+- Update `JobDetailModal.tsx` to replace the broken `business_profiles.logo_url` check
+- Update `JobPostCard.tsx` to also fall back to top-level `job.logo_url`
+
+### Step 4: Deploy edge functions and test
+
+### Files Changed
+
+| File | Change |
+|---|---|
+| `supabase/functions/fetch-job-feed/index.ts` | Use service role key |
+| `supabase/functions/fetch-learning-job-feed/index.ts` | Add organizations join + map logo_url |
+| `src/components/jobs/LearningJobPostCard.tsx` | Check org logo with fallback |
+| `src/components/jobs/JobDetailPanel.tsx` | Check org logo with fallback |
+| `src/components/jobs/JobDetailModal.tsx` | Fix broken logo check |
+| `src/components/jobs/JobPostCard.tsx` | Add top-level logo_url fallback |
 
