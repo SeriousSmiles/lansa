@@ -1,125 +1,74 @@
 
 
-# react-pdf Preserves ALL Template Designs -- Here's How
+# Fix PDF Generation Failures
 
-## The Concern
+## Root Causes Found
 
-You're worried that moving from HTML/CSS templates to react-pdf will lose the unique visual identity of each template design (gradients, colored sidebars, rounded badges, progress bars, timeline dots, etc.).
+Three distinct bugs are causing the PDF generation to fail silently after showing "Generating...":
 
-## The Short Answer
+### Bug 1: Invalid `border` shorthand in ProfessionalDoc.tsx
 
-**Every single design element in your HTML templates has a direct equivalent in react-pdf.** The existing `ProfessionalDoc.tsx` already proves this -- it recreates the Professional template's colored sidebar, progress bars, rounded badges, and two-column layout using react-pdf primitives.
-
-## Design Element Mapping (HTML to react-pdf)
-
-Here is exactly how each visual feature translates:
-
-| HTML/CSS Design Feature | react-pdf Equivalent | Already Proven? |
-|---|---|---|
-| Colored sidebar background (`bg-gray-50`, inline `backgroundColor`) | `View` with `backgroundColor` style | Yes -- ProfessionalDoc sidebar |
-| Gradient header (`linear-gradient(45deg, ...)`) | `View` with `linearGradient` style or two layered `View` elements | Needs implementation |
-| Rounded profile photo with border (`rounded-full border-4`) | `View` with `borderRadius: 48, border: '4px solid #FFF'` + `Image` | Yes -- ProfessionalDoc |
-| Skill badges/pills (`rounded-full px-3 py-1 text-white`) | `View` with `borderRadius, paddingHorizontal, backgroundColor` + `Text` | Yes -- ProfessionalDoc language badges |
-| Language progress bars (`h-2 bg-gray-200 rounded-full`) | `View` with `height: 6, borderRadius: 3, backgroundColor` nested Views | Yes -- ProfessionalDoc |
-| Timeline dots (`w-3 h-3 rounded-full`) | `View` with `width: 3, height: 3, borderRadius: 1.5` | Straightforward |
-| Two-column grid layout (`grid-cols-12 gap-6`) | `View` with `flexDirection: 'row'` + percentage widths | Yes -- ProfessionalDoc 35%/65% split |
-| Decorative divider lines (`w-12 h-1`) | `View` with `width: 40, height: 3, backgroundColor` | Straightforward |
-| Bordered cards (`border rounded-lg p-3`) | `View` with `border: '1px solid', borderRadius: 6, padding: 8` | Yes -- ProfessionalDoc certification cards |
-| Contact bar pill (`rounded-full py-3 text-white`) | `View` with `borderRadius: 20, backgroundColor, padding` + `Text` | Straightforward |
-| Custom fonts (Urbanist, Public Sans) | `Font.register({ family: 'Urbanist', src: url })` | Needs font URLs |
-| Section heading underlines (`border-b-2`) | `View` with `borderBottomWidth: 2, borderBottomColor` | Yes -- ProfessionalDoc |
-| User's accent colors (`colors.primary`, `colors.secondary`) | Passed as props, applied inline: `{ backgroundColor: colors.primary }` | Yes -- ProfessionalDoc |
-| Opacity overlays (`bg-white/90`, `primary + '20'`) | `opacity` style or computed hex with alpha | Yes -- ProfessionalDoc uses `rgba()` |
-
-## Template-by-Template Design Preservation
-
-### Classic Template
-- Centered header with name in uppercase, horizontal border -- mapped to centered `View` + `Text` with `textTransform: 'uppercase'` and `borderBottom`
-- 2-column grid (66% main / 33% sidebar) -- mapped to `flexDirection: 'row'` with `width: '66%'` and `width: '34%'`
-- Simple bordered certification cards -- mapped to `View` with `border` and `borderRadius`
-
-### Creative Template
-- Gradient header banner -- mapped to `View` with gradient background (using `linearGradient` or two overlapping colored Views)
-- Circular profile photo centered on header edge -- mapped to absolute-positioned `View` with `borderRadius` + `Image`
-- Colored contact bar pill -- mapped to `View` with `borderRadius: 20`, full-width, background color
-- Dot-prefixed experience items -- mapped to `View` with small `borderRadius` circle next to text
-- Colored date badges -- mapped to `View` with `backgroundColor: colors.secondary`, `borderRadius`, white `Text`
-
-### Logos Template
-- Header with photo on right, name on left, colored border below -- mapped to `flexDirection: 'row'` View with `borderBottom`
-- Left gray sidebar (`bg-gray-50`) -- mapped to `View` with `backgroundColor: '#F9FAFB'`
-- Skill tag pills with translucent background (`primary + '20'`) -- mapped to `View` with computed background color
-- Bordered certification cards -- mapped to `View` with border styles
-
-### Modern Template
-- Colored header bar -- mapped to full-width `View` with `backgroundColor`
-- Light gray sidebar -- mapped to `View` with `backgroundColor: '#F3F4F6'`
-- Dot-prefixed timeline items -- same pattern as Creative
-
-### Timeline Template
-- Vertical timeline line on left side -- mapped to `View` with `position: 'absolute', width: 2, backgroundColor`
-- Dot markers along the line -- mapped to small `View` circles with `borderRadius`
-- Date labels alongside timeline -- standard `Text` positioning with `flexDirection: 'row'`
-
-## What About Custom Fonts?
-
-The HTML templates use `Urbanist` and `Public Sans`. react-pdf supports custom fonts via `Font.register()`:
+`@react-pdf/renderer` does not support CSS shorthand for borders. Two lines in `ProfessionalDoc.tsx` use the invalid format:
 
 ```text
-Font.register({
-  family: 'Urbanist',
-  src: 'https://fonts.gstatic.com/s/urbanist/v15/L0x...'
-});
+border: '4px solid #FFFFFF'           --> line 28
+border: '1px solid rgba(...)          --> line 106
 ```
 
-Each template's `StyleSheet` then references `fontFamily: 'Urbanist'`. If a Google Font URL is unavailable, we fall back to `Helvetica` (clean sans-serif, already used in the 3 existing react-pdf templates) with no visual degradation.
+These must be split into separate `borderWidth`, `borderStyle`, and `borderColor` properties.
 
-## Implementation Approach
+### Bug 2: Invalid `fontWeight: 'medium'` across 5 templates
 
-For each of the 5 templates:
+`@react-pdf/renderer` with the built-in Helvetica font only supports `'normal'` and `'bold'` as fontWeight values. The value `'medium'` (used ~10 times across ClassicDoc, CreativeDoc, LogosDoc, ModernDoc, and TimelineDoc) causes the renderer to crash.
 
-1. Take the HTML template's visual structure as the exact reference
-2. Translate every CSS class and inline style to react-pdf's `StyleSheet.create()` using point-based measurements
-3. Preserve all color variable usage (`colors.primary`, `colors.secondary`) for user customization
-4. Preserve all conditional rendering (show photo if available, show languages if provided, etc.)
-5. Add `wrap` prop handling so content flows to additional pages automatically when needed
+All instances of `fontWeight: 'medium' as any` must be changed to `fontWeight: 'normal'`.
 
-The result will look identical to the HTML preview -- same colors, same layout proportions, same typography hierarchy, same badges, same progress bars -- but rendered as native PDF vector content with zero text shift.
+### Bug 3: Template name not passed to `useHTMLPDFGeneration`
 
-## Technical Details
+In `PDFDownloadDialog.tsx`, when templates with `engine: 'html'` are selected, the download call is:
+```text
+await generateHTMLPDF(pdfData);   // no template parameter!
+```
 
-### Files to Create
+The `generateHTMLPDF` function signature accepts template as the 4th argument, defaulting to `'professional'`. So selecting Classic, Modern, Creative, Timeline, or Logos all silently generate the Professional template instead.
 
-| File | Description |
-|---|---|
-| `src/components/pdf/templates/pdf/ClassicDoc.tsx` | Classic design: centered header, 2-column, bordered cards |
-| `src/components/pdf/templates/pdf/CreativeDoc.tsx` | Creative design: gradient header, profile circle, colored pills |
-| `src/components/pdf/templates/pdf/LogosDoc.tsx` | Logos design: header with photo, gray sidebar, skill tags |
-| `src/components/pdf/templates/pdf/ModernDoc.tsx` | Modern design: colored header bar, gray sidebar, timeline dots |
-| `src/components/pdf/templates/pdf/TimelineDoc.tsx` | Timeline design: vertical line with dot markers |
-| `src/services/resumeExportService.ts` | Unified export routing for all templates |
+Additionally, the template registry still marks these 5 templates as `engine: 'html'` even though `useHTMLPDFGeneration` now routes through the react-pdf pipeline. The registry should be updated so all templates use `engine: 'react-pdf'`.
 
-### Files to Update
+## Fix Plan
+
+### Step 1: Fix ProfessionalDoc.tsx border shorthand (2 locations)
+
+Replace:
+- `border: '4px solid #FFFFFF'` with `borderWidth: 4, borderColor: '#FFFFFF'`
+- `border: '1px solid rgba(255, 255, 255, 0.2)'` with `borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.2)'`
+
+### Step 2: Fix fontWeight: 'medium' across all templates
+
+Replace every `fontWeight: 'medium' as any` with `fontWeight: 'normal'` in:
+- ClassicDoc.tsx (3 instances)
+- CreativeDoc.tsx (4 instances)
+- LogosDoc.tsx (1 instance)
+- ModernDoc.tsx (1 instance)
+- TimelineDoc.tsx (1 instance)
+
+### Step 3: Update template registry to use react-pdf engine for all templates
+
+Change `engine: 'html'` to `engine: 'react-pdf'` for: professional, modern, creative, classic, timeline, logos. Update their `component` references to point to the new `pdf/` Doc files.
+
+### Step 4: Fix PDFDownloadDialog template routing
+
+Update the download handler so the selected template name is passed correctly to whichever generation hook is called. With all templates on `engine: 'react-pdf'`, the routing simplifies to always using `generateReactPDF(pdfData, selectedTemplate)`.
+
+## Files to Change
 
 | File | Change |
 |---|---|
-| `src/components/pdf/reactPdfFactory.tsx` | Add 5 new template routes to the factory switch |
-| `src/hooks/useHTMLPDFGeneration.tsx` | Route all exports through react-pdf pipeline, remove html2canvas logic |
-| `src/components/resume-editor/EditorToolbar.tsx` | Wire export button to new service |
-
-### Pagination (Overflow Prevention)
-
-Each react-pdf document component will use:
-- `wrap={true}` on the root page content so sections flow to new pages automatically
-- `break={false}` on individual experience/education cards to keep them together
-- No fixed `height` on the page content -- react-pdf handles A4 boundaries natively
-
-This means if a user has 10 experience entries, the PDF will cleanly flow to page 2 with the same sidebar/header design repeated, rather than cutting off at the bottom.
-
-### What Gets Removed After Migration
-
-- 6 HTML export templates (`*TemplateExport.tsx`) -- no longer needed
-- html2canvas text-shift hacks (negative margins, lineHeight tweaks) -- no longer needed
-- `htmlToPDFGenerator.ts` for resume use -- replaced by react-pdf
-- JPEG resume export -- trade-off for pixel-perfect PDF quality
+| `src/components/pdf/templates/pdf/ProfessionalDoc.tsx` | Fix 2 border shorthands |
+| `src/components/pdf/templates/pdf/ClassicDoc.tsx` | Fix 3 fontWeight: 'medium' |
+| `src/components/pdf/templates/pdf/CreativeDoc.tsx` | Fix 4 fontWeight: 'medium' |
+| `src/components/pdf/templates/pdf/LogosDoc.tsx` | Fix 1 fontWeight: 'medium' |
+| `src/components/pdf/templates/pdf/ModernDoc.tsx` | Fix 1 fontWeight: 'medium' |
+| `src/components/pdf/templates/pdf/TimelineDoc.tsx` | Fix 1 fontWeight: 'medium' |
+| `src/components/pdf/templateRegistry.ts` | Set all templates to engine: 'react-pdf' |
+| `src/components/pdf/PDFDownloadDialog.tsx` | Simplify routing to always use react-pdf with correct template |
 
