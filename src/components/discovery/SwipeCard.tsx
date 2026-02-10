@@ -159,6 +159,14 @@ export function SwipeCard({ profile, onSwipe, isActive, zIndex }: SwipeCardProps
       )}
       
       <CardContent className="p-0 h-full flex flex-col relative overflow-hidden">
+        {/* Certified Badge */}
+        {profile.isCertified && (
+          <div className="absolute top-3 right-3 z-20 flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-600 text-white text-xs font-semibold shadow-lg">
+            <Award className="w-3 h-3" />
+            Lansa Certified
+          </div>
+        )}
+        
         {/* Cover header with gradient */}
         <div 
           className="relative p-6 pb-16"

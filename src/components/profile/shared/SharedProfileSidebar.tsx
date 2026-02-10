@@ -1,7 +1,9 @@
 
 import { Card } from "@/components/ui/card";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Mail, Phone, MapPin, Award } from "lucide-react";
 import { LanguageItem } from "@/hooks/profile/profileTypes";
+import { CertificationItem } from "@/hooks/useSharedProfileData";
 
 interface SharedProfileSidebarProps {
   userName: string;
@@ -19,6 +21,7 @@ interface SharedProfileSidebarProps {
   biggestChallenge?: string;
   languages?: LanguageItem[];
   location?: string;
+  certifications?: CertificationItem[];
 }
 
 export function SharedProfileSidebar({
@@ -37,7 +40,11 @@ export function SharedProfileSidebar({
   biggestChallenge,
   languages,
   location,
+  certifications = [],
 }: SharedProfileSidebarProps) {
+  const hasLansaCertification = certifications.some(
+    c => c.issuer?.toLowerCase().includes('lansa')
+  );
   return (
     <div className="lg:col-span-4 space-y-4 lg:space-y-6">
       <Card className="bg-white rounded-xl shadow overflow-hidden">
@@ -66,6 +73,13 @@ export function SharedProfileSidebar({
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight break-words px-2">
               {userName}
             </h1>
+            
+            {hasLansaCertification && (
+              <Badge className="bg-green-600 hover:bg-green-700 text-white mt-1">
+                <Award className="w-3 h-3 mr-1" />
+                Lansa Certified
+              </Badge>
+            )}
             
             <div className="flex flex-col items-center gap-1">
               <p className="font-medium text-lg sm:text-xl" style={{ color: highlightColor }}>
