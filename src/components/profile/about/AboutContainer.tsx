@@ -44,7 +44,6 @@ export function AboutContainer({
           blocker={blocker}
           onUpdate={onUpdateBiggestChallenge}
           highlightColor={highlightColor}
-          userId={userId}
         />
       </CardContent>
     </Card>
