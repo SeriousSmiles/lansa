@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   itemDate: {
     fontSize: 9,
     color: '#6b7280',
-    fontWeight: 'medium' as any,
+    fontWeight: 'normal',
   },
   itemDescription: {
     fontSize: 10,
@@ -119,12 +119,12 @@ const styles = StyleSheet.create({
   },
   languageName: {
     fontSize: 9,
-    fontWeight: 'medium' as any,
+    fontWeight: 'normal',
     color: '#1f2937',
   },
   languageBadge: {
     fontSize: 8,
-    fontWeight: 'medium' as any,
+    fontWeight: 'normal',
     paddingHorizontal: 5,
     paddingVertical: 1,
     borderRadius: 3,

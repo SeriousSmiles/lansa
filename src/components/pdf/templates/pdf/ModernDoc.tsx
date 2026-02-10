@@ -121,7 +121,7 @@ function createStyles(colors: { primary: string; secondary: string }) {
     },
     languageName: {
       fontSize: 8,
-      fontWeight: 'medium' as any,
+      fontWeight: 'normal',
       color: '#1f2937',
     },
     languagePercent: {
