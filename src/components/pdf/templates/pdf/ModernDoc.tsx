@@ -1,5 +1,6 @@
 import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
 import type { PDFResumeData } from '@/types/pdf';
+import { getPublicAssetUrl, BADGE_PATH } from '../../helpers/pdfUtils';
 
 function createStyles(colors: { primary: string; secondary: string }) {
   return StyleSheet.create({
@@ -390,7 +391,7 @@ export default function ModernDoc({ data }: { data: PDFResumeData }) {
           </View>
         </View>
 
-        <Image style={s.badge} src="/powered-by-lansa-badge.png" />
+        <Image style={s.badge} src={getPublicAssetUrl(BADGE_PATH)} />
       </Page>
     </Document>
   );

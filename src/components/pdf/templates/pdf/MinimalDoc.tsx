@@ -1,5 +1,6 @@
 import { Page, Text, View, Document, StyleSheet, Font, Image } from '@react-pdf/renderer';
 import type { PDFResumeData } from '@/types/pdf';
+import { getPublicAssetUrl, BADGE_PATH } from '../../helpers/pdfUtils';
 
 // Register Public Sans and Urbanist fonts (you'll need to add these font files to your public folder)
 // For now, using default fonts
@@ -185,7 +186,7 @@ export default function MinimalDoc({ data }: { data: PDFResumeData }) {
         )}
 
         {/* Powered by Lansa Badge */}
-        <Image style={styles.badge} src="/powered-by-lansa-badge.png" />
+        <Image style={styles.badge} src={getPublicAssetUrl(BADGE_PATH)} />
       </Page>
     </Document>
   );

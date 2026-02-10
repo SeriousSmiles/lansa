@@ -1,5 +1,6 @@
 import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
 import type { PDFResumeData } from '@/types/pdf';
+import { getPublicAssetUrl, BADGE_PATH } from '../../helpers/pdfUtils';
 
 const styles = StyleSheet.create({
   page: { 
@@ -254,10 +255,10 @@ export default function ProfessionalDoc({ data }: { data: PDFResumeData }) {
           <View style={styles.sidebarSection}>
             <Text style={styles.sidebarHeading}>CONTACT</Text>
             {personalInfo.email && (
-              <Text style={styles.contactItem}>📧 {personalInfo.email}</Text>
+              <Text style={styles.contactItem}>{personalInfo.email}</Text>
             )}
             {personalInfo.phone && (
-              <Text style={styles.contactItem}>📞 {personalInfo.phone}</Text>
+              <Text style={styles.contactItem}>{personalInfo.phone}</Text>
             )}
           </View>
 
@@ -392,7 +393,7 @@ export default function ProfessionalDoc({ data }: { data: PDFResumeData }) {
         </View>
 
         {/* Powered by Lansa Badge */}
-        <Image style={styles.badge} src="/powered-by-lansa-badge.png" />
+        <Image style={styles.badge} src={getPublicAssetUrl(BADGE_PATH)} />
       </Page>
     </Document>
   );
