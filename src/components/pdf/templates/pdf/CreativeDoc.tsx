@@ -68,7 +68,7 @@ function createStyles(colors: { primary: string; secondary: string }) {
     },
     title: {
       fontSize: 12,
-      fontWeight: 'medium' as any,
+      fontWeight: 'normal',
       color: colors.primary,
     },
     // Contact bar
@@ -137,7 +137,7 @@ function createStyles(colors: { primary: string; secondary: string }) {
     },
     skillText: {
       fontSize: 8,
-      fontWeight: 'medium' as any,
+      fontWeight: 'normal',
       color: '#FFFFFF',
       textAlign: 'center',
     },
@@ -152,12 +152,12 @@ function createStyles(colors: { primary: string; secondary: string }) {
     },
     languageName: {
       fontSize: 8,
-      fontWeight: 'medium' as any,
+      fontWeight: 'normal',
       color: '#1f2937',
     },
     languageBadge: {
       fontSize: 7,
-      fontWeight: 'medium' as any,
+      fontWeight: 'normal',
       paddingHorizontal: 5,
       paddingVertical: 1,
       borderRadius: 3,
