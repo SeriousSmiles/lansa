@@ -1,254 +1,276 @@
 
-# LANSA -- Application State Report
-## Vision, Current Status, and Path to MVP
+# Three-Track MVP Sprint: Certification + Payment + Resume Export
+
+## Track 1: Unhide and Activate the Certification System
+
+### Current State
+- The `/certification` route is fully functional with 4 sector exams (Office, Service, Technical, Digital)
+- Routes are already registered in App.tsx and protected by RequireUserType
+- CertificationCard component exists on the dashboard but navigation to it may be suppressed
+- The onboarding page should link directly to this same `/certification` flow
+- `lansa_certified` flag in `user_certifications` table tracks certification status
+- `cert_certifications` table stores per-sector results with verification codes
+- Employers already filter candidates by `lansa_certified = true AND verified = true`
+- Public profile sync trigger already includes `user_profile_certifications` data
+- BUT: the `lansa_certified` flag in `user_certifications` is separate from `cert_certifications` -- these need to sync when a user passes an exam
+
+### Changes Required
+
+**1.1 Ensure CertificationCard is visible on the dashboard**
+- File: `src/components/dashboard/overview/OverviewTab.tsx`
+- Verify `CertificationCard` is rendered (not commented out)
+- If hidden, unhide it so seekers see "Get Certified" / "View Dashboard" on their Overview tab
+
+**1.2 Add "Get Certified" CTA to onboarding completion**
+- File: `src/components/onboarding/` (the seeker completion step)
+- After onboarding completes, show a prominent card linking to `/certification`
+- This uses the same 4-sector system -- no separate assessment
+
+**1.3 Sync certification pass to `user_certifications.lansa_certified`**
+- Currently the exam writes to `cert_results` and `cert_certifications`, but nothing sets `user_certifications.lansa_certified = true`
+- Create a database trigger: when a row is inserted into `cert_certifications` with `pass_fail = true`, upsert into `user_certifications` setting `lansa_certified = true` and `verified = true`
+- This makes the certified badge automatically appear in employer browsing (discoveryService already filters on this)
+
+**1.4 Add Lansa Certified badge to candidate cards**
+- File: `src/components/discovery/SwipeDeck.tsx` and `src/components/discovery/desktop/SplitPanelBrowser.tsx`
+- The `DiscoveryProfile` type needs a `lansa_certified` field
+- Render a green "Lansa Certified" badge on candidate cards when `lansa_certified === true`
+- File: `src/services/discoveryService.ts` -- ensure certification status is included in the profile data returned
+
+**1.5 Add certification badge to shared public profiles**
+- File: `src/pages/SharedProfile.tsx` (or the shared profile components)
+- Check `user_profiles_public.lansa_certified` or check `user_certifications` table
+- Display a verified certification badge with sector name and score
+- The sync trigger already includes `user_profile_certifications` data in `user_profiles_public.certifications`
+
+**1.6 Payment gate before exam (see Track 2)**
 
 ---
 
-## 1. WHAT IS LANSA
+## Track 2: Sentoo Payment Integration Architecture
 
-Lansa is a career platform for the Curacao market serving three user types:
+### Sentoo Overview
+Sentoo is a Caribbean A2A (Account-to-Account) payment gateway. The flow is:
+1. Merchant creates a payment request via REST API
+2. Customer is redirected to their bank's online/mobile banking
+3. Customer authorizes the payment in their secure bank environment
+4. Sentoo sends a webhook/callback confirming payment success
+5. Funds settle immediately to merchant bank account
 
-- **Job Seekers (Opportunity Seekers):** Build professional profiles, browse job listings, get AI-enhanced resumes, earn certifications, and discover career opportunities.
-- **Employers:** Create organizations, post jobs, browse/swipe candidates, manage applications, and invite team members.
-- **Mentors:** Upload educational video content, build profiles, and monetize through tiered subscriptions (Free / Starter / Pro).
+Key facts:
+- Supports XCG, AWG, USD currencies
+- Works with MCB Curacao, Banco di Caribe, CMB, Orco Bank, WIB, and others
+- Pricing: 1% per transaction, capped at $1.50
+- No monthly fees, no contractual period
+- API docs are private (provided after Merchant Agreement signing)
 
-The platform is monetized through:
-- Certification exam fees for job seekers (XCG 25-50 per attempt)
-- Tiered subscriptions for employers (candidate browsing access)
-- Tiered subscriptions for mentors (video upload limits + promotional features)
+### Architecture Plan (Pre-API-Docs)
 
-Currency: XCG (Caribbean Guilder)
+Since you're in the process of signing up, we will build the complete payment infrastructure with a clean abstraction layer. Once you receive the Sentoo Merchant Key and API docs, we simply implement the adapter.
 
----
+**2.1 Database: Payment tables**
 
-## 2. WHAT IS BUILT (Current State)
+New migration creating:
+```
+payments (
+  id uuid PK,
+  user_id uuid FK,
+  payment_type text ('certification_exam' | 'employer_subscription' | 'mentor_subscription'),
+  amount_cents integer,
+  currency text DEFAULT 'XCG',
+  status text ('pending' | 'processing' | 'completed' | 'failed' | 'refunded'),
+  provider text DEFAULT 'sentoo',
+  provider_payment_id text,
+  provider_metadata jsonb,
+  metadata jsonb, -- e.g. { sector: 'office' } for exams
+  created_at timestamptz,
+  completed_at timestamptz,
+  expires_at timestamptz
+)
 
-### Authentication and Routing
-- Email/password signup and login -- WORKING
-- Password reset flow -- WORKING
-- Role-based route guards (job_seeker, employer, mentor) -- WORKING
-- Onboarding enforcement before dashboard access -- WORKING
-- Admin route with separate layout and guard -- WORKING
+subscriptions (
+  id uuid PK,
+  user_id uuid FK,
+  plan_type text ('employer_basic' | 'employer_premium' | 'mentor_starter' | 'mentor_pro'),
+  status text ('active' | 'cancelled' | 'expired' | 'past_due'),
+  current_period_start timestamptz,
+  current_period_end timestamptz,
+  amount_cents integer,
+  currency text DEFAULT 'XCG',
+  created_at timestamptz,
+  cancelled_at timestamptz
+)
+```
 
-### Onboarding
-- User type selection (4 paths: job seeker, create org, join org, mentor) -- WORKING
-- Job seeker onboarding with career path segmentation (student, visionary, entrepreneur, freelancer, business) -- WORKING
-- Employer/organization onboarding -- WORKING
-- Mentor onboarding -- WORKING
-- Join organization via invitation flow -- WORKING
-- AI-generated onboarding insight card -- WORKING
+RLS policies: users can read their own payments/subscriptions. Insert/update only via edge functions (service role).
 
-### Job Seeker Dashboard
-- Dashboard layout with top navbar and role-specific navigation -- WORKING
-- Overview tab with profile card, discovery preview, recommended actions -- WORKING
-- Growth Card system (AI-powered career growth cards) -- WORKING
-- Job feed (/jobs) with card-based listings, filters, and detail panel (Sheet on desktop, Drawer on mobile) -- WORKING (logo fix just deployed)
-- Legacy job feed (/jobs/legacy) -- EXISTS but secondary
-- Profile editor with sections: About Me, Skills, Experience, Education, Achievements, Languages, Professional Goals, Biggest Challenge -- WORKING
-- AI enhancement for About Me, Skills, and Professional Goals -- WORKING (just fixed)
-- Profile sharing via public URL and QR code -- WORKING
-- Content Library (mentor videos) -- WORKING
-- Resources page -- EXISTS
-- Notifications page -- EXISTS
-- Profile designer (color palette/theme customization) -- WORKING
+**2.2 Edge function: `create-payment`**
 
-### Employer Dashboard
-- Organization overview with stats (active jobs, applications, candidates viewed) -- WORKING
-- Job posting dialog/wizard -- WORKING
-- Job management tab -- WORKING
-- Applications sheet with applicant profiles -- WORKING
-- Candidate browsing with desktop split-panel layout (GSAP animations) and mobile swipe deck -- WORKING
-- AI-generated match summaries for candidates -- WORKING
-- Organization settings page -- WORKING
-- Organization member invitation system -- WORKING
-- Company logo upload -- WORKING
-- Mobile employer dashboard with Lansa branding -- WORKING
+Handles one-time payments (certification exams):
+- Receives: `{ type: 'certification_exam', sector: 'office', amount: 2500 }` (amount in cents, 25 XCG)
+- Creates a `payments` record with status 'pending'
+- Calls Sentoo API to create payment request (placeholder until API docs received)
+- Returns: `{ payment_id, redirect_url }` -- redirect_url sends user to bank authorization
 
-### Mentor Dashboard
-- Mentor profile form -- WORKING
-- Video upload and management -- WORKING
-- Subscription panel showing tier comparison (Free/Starter/Pro) -- WORKING (UI only, no payment)
-- Approval banner (admin approval gate) -- WORKING
-- Content Library integration -- WORKING
+**2.3 Edge function: `payment-webhook`**
 
-### Admin Panel
-- User management -- EXISTS
-- Organization management -- EXISTS
-- Content management -- EXISTS
-- Mentor management -- EXISTS
-- Analytics, trends, historical data -- EXISTS
-- Pricing management -- EXISTS
-- Support, documents, updates -- EXISTS
-- Settings -- EXISTS
+Receives callbacks from Sentoo when payment completes:
+- Validates the webhook signature (Sentoo authentication)
+- Updates payment status to 'completed'
+- For certification payments: unlocks the exam for the user (stores in `payment_unlocks` or checks payment status before allowing exam start)
 
-### Shared Infrastructure
-- Supabase auth, database, edge functions, storage
-- 45+ edge functions deployed
-- i18n setup (internationalization)
-- Hotjar analytics, cookie consent
-- Add-to-home-screen prompt (PWA-like)
-- Announcement banner system
-- GSAP animation library throughout
+**2.4 Edge function: `manage-subscription`**
 
----
+Handles recurring subscriptions:
+- Create, cancel, check status
+- Since Sentoo may not support automatic recurring billing, the subscription system will:
+  - Track subscription periods manually
+  - Send reminder emails before period end
+  - Require user to manually renew (re-authorize payment) each period
+  - This matches the "we might have to build the automatic system ourselves" requirement
 
-## 3. WHAT IS INCOMPLETE OR HIDDEN
+**2.5 Frontend: Payment flow for certification**
+- When user clicks "Start Exam" on CertificationDashboard, check if they have an active payment for that sector
+- If no payment: show a payment modal with price (25 XCG), Sentoo button
+- On click: call `create-payment` edge function, redirect to Sentoo/bank
+- On return: verify payment status, allow exam start
+- File changes: `src/components/certification/CertificationDashboard.tsx` -- add payment check before `handleStartExam`
 
-These features have infrastructure but are explicitly hidden from users or not production-ready:
+**2.6 Frontend: Subscription UI for employers and mentors**
+- Employer dashboard: update subscription panel with real payment buttons
+- Mentor dashboard: connect tier upgrade buttons to payment flow
+- Both use the same `create-payment` / `manage-subscription` edge functions
 
-| Feature | Status | Detail |
-|---|---|---|
-| Resume Editor | HIDDEN from UI | Component-based builder exists, but PDF/JPEG export is broken across templates. Only Professional template has a dedicated export version. Other templates have sizing/rendering issues. |
-| Certification Exam | HIDDEN from UI | Full exam flow, question system, and reflection report exist. No payment gateway. "Get Certified" button removed from profile and dashboard. |
-| Story Builder | HIDDEN from UI | Tab exists but was explicitly removed from dashboard navigation. |
-| Hire Rate Progress | HIDDEN from UI | Component exists with AI scoring logic but was removed from dashboard as incomplete. |
-| Recommended Actions | HIDDEN from UI | Component exists on dashboard but was hidden per user request. |
+**2.7 Sentoo adapter pattern**
 
----
+All Sentoo-specific API calls go through a single file:
+```
+supabase/functions/_shared/sentoo-client.ts
+```
 
-## 4. WHAT IS POORLY IMPLEMENTED
+This file exports:
+- `createPayment(amount, currency, description, returnUrl, webhookUrl)`
+- `getPaymentStatus(paymentId)`
+- `validateWebhook(headers, body)`
 
-### User Journey Issues
-
-**A. Job Seeker Journey Gaps**
-- No clear "what to do next" guidance after onboarding completes. Users land on a dashboard with Growth Cards but no structured onboarding-to-action path.
-- Profile completion has no progress indicator visible on the dashboard (the progress hook exists but is not prominently surfaced).
-- Discovery/Opportunity Discovery page exists but its purpose and relationship to the job feed is unclear -- two separate pages for similar goals.
-- Job application status tracking exists but is not surfaced prominently to users.
-
-**B. Employer Journey Gaps**
-- No payment system for employer subscriptions (tiered candidate browsing access is planned but not implemented).
-- Job posting has no preview-before-publish flow that mirrors what seekers see.
-- No notification system for new applications (the notification infrastructure exists but employer-specific notifications are not connected).
-
-**C. Mentor Journey Gaps**
-- No payment processing for subscription tiers. The UI shows XCG 30/month and XCG 75/month but clicking upgrade does nothing.
-- Admin approval gate exists but the admin panel's mentor approval workflow may not be fully connected.
-- External upsell link feature (for Starter/Pro tiers) is in the data model but unclear if it renders in the Content Library for seekers.
-
-### Data Infrastructure Issues
-
-**A. Table Fragmentation**
-- `job_listings` (deprecated) and `job_listings_v2` coexist. The legacy table caused a critical bug where the `fetch-job-feed` edge function was querying the wrong table.
-- `job_applications` and `job_applications_v2` similarly coexist.
-- `companies` table has `logo_url` columns that are all NULL -- the actual logos live on `organizations`. This caused the logo display bug just fixed.
-- `UserAnswers` type in code only lists `job_seeker | employer` for `user_type` but the system supports `mentor` as a third type, creating a type mismatch.
-
-**B. Public Profile Sync**
-- `user_profiles_public` table exists for shareable profiles but requires a trigger update to aggregate certifications from `user_profile_certifications`. This was flagged but may not be resolved.
-- Professional title synchronization between private editor and public profile has had issues (system-generated vs user-set titles).
-
-**C. Edge Function Inconsistencies**
-- `fetch-job-feed` was using ANON key (just fixed to SERVICE_ROLE_KEY), while `fetch-learning-job-feed` already used SERVICE_ROLE_KEY. Inconsistent patterns across functions.
-- Some edge functions use OpenAI directly (OPENAI_API_KEY), others use the Lovable AI Gateway. No unified AI strategy.
-- 45+ edge functions with no clear naming convention or documentation. Many appear to be one-off AI features (ai-90day-planner, ai-clarity-critic, ai-power-mirror, ai-profile-stylist, ai-skill-reframer) whose status and integration is unclear.
-
-### System Infrastructure Issues
-
-**A. Duplicate/Parallel Systems**
-- Two job feed pages: `/jobs` (LearningJobFeed) and `/jobs/legacy` (JobFeed) with separate edge functions, components, and data flows.
-- `BiggestChallengeSection.tsx` and `BiggestChallengeWithAI.tsx` -- two components for the same concept in different locations (about/ vs sidebar/).
-- `ProfessionalGoalWithAI.tsx` in sidebar alongside the main profile sections -- unclear separation of concerns.
-
-**B. Resume Export**
-- PDF export is broken across most templates. Only the Professional template has a dedicated export version.
-- JPEG export is hardcoded for only one template.
-- HTML templates use CSS mm units instead of pixel-perfect A4 sizing.
-- react-pdf templates cannot export as JPEG.
-- This is a core free-user feature that is completely non-functional.
-
-**C. AI Implementation**
-- No unified AI service layer. Each feature calls its own edge function with different patterns.
-- Some AI features work (profile enhancement, match summaries, growth cards), others are unclear (story builder, 90-day planner, clarity critic, power mirror).
-- The "one enhancement per edit" rule is purely client-side state that resets on page reload -- no persistence.
+When you receive the API docs, we only need to fill in this one file. Everything else is already wired up.
 
 ---
 
-## 5. PROMISES VS REALITY BY USER TYPE
+## Track 3: Resume PDF Export Fix
 
-### Job Seekers
+### Current State
+- 6 HTML export templates exist: Classic, Creative, Logos, Modern, Professional, Timeline
+- Professional also has a multi-page variant
+- 3 react-pdf templates: Academic, Minimal, Professional
+- `HTMLToPDFGenerator` uses html2canvas + jsPDF to capture HTML templates
+- HTML templates use pixel-perfect A4 sizing (2480x3508px at 300 DPI)
+- The Professional template has extensive html2canvas text-shift compensation hacks
+- The `useHTMLPDFGeneration` hook hardcodes template IDs (`pdf-resume-template` or `pdf-resume-export-container`)
+- The Resume Editor (`ResumeEditorLayout`) has `handleExport` as a TODO stub
 
-| Promise | Reality |
+### Core Problems
+1. **Resume Editor export is a TODO** -- the `EditorToolbar.tsx` export buttons log to console and do nothing
+2. **Template selection is not connected to export** -- `useHTMLPDFGeneration` always looks for element ID `pdf-resume-template`, but doesn't know which template the user selected
+3. **react-pdf templates work differently** -- they use `@react-pdf/renderer` and generate PDFs natively (no html2canvas), but the export flow doesn't route to them
+4. **html2canvas text shifting** -- the Professional template has negative margin hacks, but other templates don't, causing inconsistent output
+
+### Fix Strategy
+
+**3.1 Unified export service**
+
+Create `src/services/resumeExportService.ts` that:
+- Accepts template name and resume data
+- Routes to the correct export method:
+  - HTML templates (Classic, Creative, Logos, Modern, Professional, Timeline) -> html2canvas + jsPDF
+  - react-pdf templates (Academic, Minimal, Professional) -> `@react-pdf/renderer` blob generation
+- Each HTML export template already has pixel-perfect 2480x3508 sizing -- this is correct
+
+**3.2 Fix html2canvas rendering for all HTML templates**
+
+Apply the same text-shift compensation pattern from ProfessionalTemplateExport to all HTML export templates:
+- `ClassicTemplateExport.tsx` -- add lineHeight reduction and negative margins
+- `CreativeTemplateExport.tsx` -- same
+- `LogosTemplateExport.tsx` -- same
+- `ModernTemplateExport.tsx` -- same
+- `TimelineTemplateExport.tsx` -- same
+
+These are small CSS adjustments per template (reduce lineHeight from 1.6 to ~1.5, add -6px to -12px marginTop on headings).
+
+**3.3 Fix react-pdf export path**
+
+The `reactPdfFactory.tsx` already has the routing. Create a unified function:
+- Import `pdf()` from `@react-pdf/renderer`
+- Generate a blob directly from the react-pdf Document component
+- Download it as PDF
+- No html2canvas needed -- react-pdf generates native PDF
+
+**3.4 Wire the Resume Editor export**
+
+Update `EditorToolbar.tsx`:
+- Replace the TODO `handleExport` with actual export logic
+- Call the unified export service with current template + data
+- Show loading state during generation
+
+**3.5 Template rendering for export**
+
+The export templates need to be rendered off-screen in the DOM for html2canvas to capture them. Create a hidden container component that:
+- Mounts the selected HTML export template with the user's data
+- Gives it the correct element ID
+- Triggers html2canvas capture
+- Unmounts after export completes
+
+This pattern already exists partially (the `pdf-resume-template` ID convention) but needs to be formalized for all templates.
+
+---
+
+## Files to Change Summary
+
+### Track 1 -- Certification
+| File | Change |
 |---|---|
-| Build a professional profile | DELIVERED -- full profile editor with sections |
-| AI-enhanced profile content | DELIVERED -- just fixed for all sections |
-| Browse job listings | DELIVERED -- working with filters and detail panels |
-| Apply to jobs | DELIVERED -- application system functional |
-| Get certified to stand out | NOT DELIVERED -- exam exists but is hidden, no payment |
-| Build and export resumes | NOT DELIVERED -- editor exists but export is broken |
-| Share profile via link/QR | DELIVERED -- public profile working |
-| Career coaching / AI coach | PARTIAL -- Growth Cards exist, but Story Builder and Hire Rate hidden |
-| Content Library (learning) | DELIVERED -- mentor videos visible |
+| `src/components/dashboard/overview/OverviewTab.tsx` | Ensure CertificationCard is rendered |
+| `src/components/onboarding/` (completion step) | Add "Get Certified" CTA linking to /certification |
+| New migration | Trigger: cert_certifications insert -> upsert user_certifications.lansa_certified |
+| `src/services/discoveryService.ts` | Include lansa_certified in profile data |
+| `src/components/discovery/SwipeDeck.tsx` | Render certified badge on cards |
+| `src/components/discovery/desktop/SplitPanelBrowser.tsx` | Render certified badge on desktop cards |
+| `src/pages/SharedProfile.tsx` | Display certification badge on public profile |
 
-### Employers
-
-| Promise | Reality |
+### Track 2 -- Payment
+| File | Change |
 |---|---|
-| Create organization | DELIVERED |
-| Post job listings | DELIVERED |
-| Browse/swipe candidates | DELIVERED -- desktop split-panel + mobile swipe |
-| AI match summaries | DELIVERED |
-| Manage applications | DELIVERED |
-| Invite team members | DELIVERED |
-| Organization branding (logo) | DELIVERED |
-| Tiered subscription access | NOT DELIVERED -- no payment system |
-| Certified-only candidate pools | NOT DELIVERED -- certification system hidden |
+| New migration | Create `payments` and `subscriptions` tables with RLS |
+| `supabase/functions/_shared/sentoo-client.ts` | Sentoo API adapter (placeholder) |
+| `supabase/functions/create-payment/index.ts` | New edge function for payment creation |
+| `supabase/functions/payment-webhook/index.ts` | New edge function for payment callbacks |
+| `supabase/functions/manage-subscription/index.ts` | New edge function for subscriptions |
+| `src/components/certification/CertificationDashboard.tsx` | Payment gate before exam start |
+| `src/components/certification/PaymentModal.tsx` | New payment UI component |
+| `src/hooks/usePayment.ts` | New hook for payment state management |
+| `src/components/dashboard/employer/SubscriptionPanel.tsx` | Wire real payment buttons |
+| `src/components/dashboard/mentor/MentorSubscriptionPanel.tsx` | Wire real payment buttons |
 
-### Mentors
-
-| Promise | Reality |
+### Track 3 -- Resume Export
+| File | Change |
 |---|---|
-| Upload educational videos | DELIVERED |
-| Tiered subscription monetization | NOT DELIVERED -- UI shows tiers, no payment processing |
-| External upsell link | UNCLEAR -- data model supports it, rendering unverified |
-| Promotional appearances | NOT DELIVERED -- no promotion system visible |
-| Admin approval workflow | PARTIAL -- banner exists, admin flow unclear |
+| `src/services/resumeExportService.ts` | New unified export routing service |
+| `src/components/pdf/templates/ClassicTemplateExport.tsx` | Add text-shift compensation |
+| `src/components/pdf/templates/CreativeTemplateExport.tsx` | Add text-shift compensation |
+| `src/components/pdf/templates/LogosTemplateExport.tsx` | Add text-shift compensation |
+| `src/components/pdf/templates/ModernTemplateExport.tsx` | Add text-shift compensation |
+| `src/components/pdf/templates/TimelineTemplateExport.tsx` | Add text-shift compensation |
+| `src/components/resume-editor/EditorToolbar.tsx` | Replace TODO with real export logic |
+| `src/hooks/useHTMLPDFGeneration.tsx` | Support template selection parameter |
+| `src/components/resume-editor/ExportContainer.tsx` | New hidden render container for export |
 
 ---
 
-## 6. CRITICAL PATH TO MVP
+## Implementation Order
 
-Priority items to reach a presentable MVP, ordered by impact:
+1. **Track 1 first** (Certification unhide + badge sync) -- purely frontend/DB, no external dependency
+2. **Track 2 database + architecture** (Payment tables, edge functions with placeholder Sentoo adapter) -- ready to wire when API docs arrive
+3. **Track 3** (Resume export fixes) -- independent, can be done in parallel
+4. **Track 2 completion** (Sentoo adapter fill-in) -- blocked on receiving API docs from Sentoo
 
-### Must-Have (Blocking MVP)
-
-1. **Payment Integration** -- Without payments, neither certification exams, employer subscriptions, nor mentor tiers generate revenue. This is the single biggest gap. Stripe or a local payment provider must be integrated.
-
-2. **Resume PDF Export Fix** -- This is a core promise to free users. All templates must export cleanly to PDF. JPEG is secondary.
-
-3. **Certification Exam Unhide + Payment Gate** -- The exam infrastructure works. Wire it to payment, unhide the button, and make certified badges visible to employers.
-
-4. **Deprecate Legacy Tables** -- Remove or migrate away from `job_listings` and `job_applications` (v1). The coexistence creates bugs.
-
-### Should-Have (Strengthens MVP)
-
-5. **Employer Notifications** -- Employers need to know when someone applies. Basic email or in-app notification on new application.
-
-6. **Profile Completion Guidance** -- A visible progress bar or checklist on the dashboard showing what's incomplete (bio, skills, experience, etc.).
-
-7. **Public Profile Certification Sync** -- Ensure certifications earned show on the shareable public profile.
-
-8. **Unified AI Strategy** -- Consolidate AI calls through the Lovable AI Gateway. Remove OpenAI dependency where possible. Document which AI features are active vs experimental.
-
-### Nice-to-Have (Polish for MVP)
-
-9. **Clean Up Duplicate Pages** -- Remove `/jobs/legacy`, consolidate the two job feed systems.
-
-10. **Story Builder Decision** -- Either finish it or remove it entirely. Currently it's dead code.
-
-11. **Hire Rate / Recommended Actions** -- Either bring back with improvements or permanently remove.
-
-12. **Admin Panel Polish** -- Ensure mentor approval, content moderation, and user management flows are complete end-to-end.
-
----
-
-## 7. TECHNICAL DEBT SUMMARY
-
-- 45+ edge functions with no documentation or clear active/deprecated status
-- Deprecated v1 database tables still referenced in some code paths
-- `UserAnswers` TypeScript type does not include `mentor` as a user_type
-- Mixed AI provider strategy (OpenAI API vs Lovable AI Gateway)
-- Client-side only usage gating for AI (resets on reload)
-- Resume export architecture needs complete rework per template
-- Two parallel job feed systems with separate edge functions
-- Console.log statements in production App.tsx (lines 68-69)
+This order maximizes what we can ship immediately while the Sentoo merchant agreement processes.
