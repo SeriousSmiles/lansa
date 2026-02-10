@@ -36,7 +36,7 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
   const [isOpen, setIsOpen] = useState(false);
   const [htmlPreviewReady, setHtmlPreviewReady] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const [exportFormat, setExportFormat] = useState<'pdf' | 'jpeg'>('pdf');
+  const [exportFormat, setExportFormat] = useState<'pdf' | 'jpeg'>('jpeg');
   const [optionsExpanded, setOptionsExpanded] = useState(false);
   const isMobile = useIsMobile();
 
@@ -77,8 +77,22 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
     try {
       const currentOptions = { ...options, template: selectedTemplate };
       
-      // All templates now use react-pdf
-      await generateReactPDF(pdfData, selectedTemplate);
+      if (exportFormat === 'jpeg') {
+        // JPEG export - only works with HTML engine templates
+        if (selectedTemplateData?.engine !== 'html') {
+          throw new Error('JPEG export is only available for HTML-based templates');
+        }
+        await generateJPEG(pdfData);
+      } else {
+        // PDF export - route based on engine type
+        if (selectedTemplateData?.engine === 'html') {
+          await generateHTMLPDF(pdfData);
+        } else if (selectedTemplateData?.engine === 'react-pdf') {
+          await generateReactPDF(pdfData, selectedTemplate);
+        } else {
+          await generatePDF(pdfData, selectedTemplate);
+        }
+      }
       setIsOpen(false);
     } catch (error) {
       console.error('Failed to download resume:', error);
@@ -87,8 +101,22 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
 
   const handlePreview = async () => {
     try {
-      // All templates now use react-pdf
-      await previewReactPDF(pdfData, selectedTemplate);
+      if (exportFormat === 'jpeg') {
+        // JPEG preview
+        if (selectedTemplateData?.engine !== 'html') {
+          throw new Error('JPEG export is only available for HTML-based templates');
+        }
+        await previewJPEG();
+      } else {
+        // PDF preview - route based on engine type
+        if (selectedTemplateData?.engine === 'html') {
+          await previewHTMLPDF(pdfData);
+        } else if (selectedTemplateData?.engine === 'react-pdf') {
+          await previewReactPDF(pdfData, selectedTemplate);
+        } else {
+          await previewPDF(pdfData, selectedTemplate);
+        }
+      }
     } catch (error) {
       console.error('Failed to preview resume:', error);
     }

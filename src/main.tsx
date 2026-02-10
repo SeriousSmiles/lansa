@@ -1,5 +1,3 @@
-import { Buffer } from 'buffer';
-globalThis.Buffer = Buffer;
 
 import * as React from 'react'
 import * as ReactDOM from 'react-dom/client'

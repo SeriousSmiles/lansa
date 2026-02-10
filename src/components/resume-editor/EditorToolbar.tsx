@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
 import { SectionInstance } from '@/types/resumeSection';
+import { HTMLToPDFGenerator } from '@/services/htmlToPDFGenerator';
 import { useToast } from '@/hooks/use-toast';
 
 interface EditorToolbarProps {
@@ -29,18 +30,10 @@ export function EditorToolbar({ onSave, sections }: EditorToolbarProps) {
     }
   };
 
-  const handleExport = async () => {
+  const handleExport = async (format: 'pdf' | 'png' | 'jpeg') => {
     setIsExporting(true);
     try {
-      toast({
-        title: 'Generating PDF...',
-        description: 'Creating your pixel-perfect resume via react-pdf.',
-      });
-
-      // Dynamic import to keep bundle small
-      const { ResumeExportService } = await import('@/services/resumeExportService');
-
-      // Get profile data from canvas data attribute if available
+      // Find the resume canvas element
       const canvasElement = document.querySelector('[data-resume-canvas]') as HTMLElement;
       if (!canvasElement) {
         toast({
@@ -51,9 +44,11 @@ export function EditorToolbar({ onSave, sections }: EditorToolbarProps) {
         return;
       }
 
-      // The resume data and template should be passed from parent context.
-      // For now, trigger the legacy canvas-based export as fallback for editor canvas.
-      // The primary react-pdf export is used from the profile/template-based export flow.
+      toast({
+        title: 'Generating PDF...',
+        description: 'Please wait while we create your resume.',
+      });
+
       const { default: html2canvas } = await import('html2canvas');
       const canvas = await html2canvas(canvasElement, {
         scale: 2,
@@ -64,22 +59,34 @@ export function EditorToolbar({ onSave, sections }: EditorToolbarProps) {
         height: canvasElement.scrollHeight,
       });
 
-      const { default: jsPDF } = await import('jspdf');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
+      if (format === 'pdf') {
+        const { default: jsPDF } = await import('jspdf');
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4',
+        });
 
-      const imgData = canvas.toDataURL('image/png', 1.0);
-      const imgWidth = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, Math.min(imgHeight, 297));
-      pdf.save('resume.pdf');
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        const imgWidth = 210; // A4 width in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, Math.min(imgHeight, 297));
+
+        pdf.save('resume.pdf');
+      } else {
+        // PNG or JPEG
+        const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
+        const dataUrl = canvas.toDataURL(mimeType, 0.95);
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = `resume.${format}`;
+        link.click();
+      }
 
       toast({
         title: 'Export Complete!',
-        description: 'Your resume has been exported as PDF.',
+        description: `Your resume has been exported as ${format.toUpperCase()}.`,
       });
     } catch (error) {
       console.error('Export error:', error);
@@ -120,14 +127,29 @@ export function EditorToolbar({ onSave, sections }: EditorToolbarProps) {
           Save
         </Button>
 
-        <Button size="sm" disabled={isExporting} onClick={handleExport}>
-          {isExporting ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          ) : (
-            <Download className="w-4 h-4 mr-2" />
-          )}
-          Export PDF
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" disabled={isExporting}>
+              {isExporting ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4 mr-2" />
+              )}
+              Export
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleExport('pdf')}>
+              Export as PDF
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExport('png')}>
+              Export as PNG
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExport('jpeg')}>
+              Export as JPEG
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

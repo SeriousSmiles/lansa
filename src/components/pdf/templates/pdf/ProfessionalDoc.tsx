@@ -1,6 +1,5 @@
 import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
 import type { PDFResumeData } from '@/types/pdf';
-import { getPublicAssetUrl, BADGE_PATH } from '../../helpers/pdfUtils';
 
 const styles = StyleSheet.create({
   page: { 
@@ -25,8 +24,7 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    borderWidth: 4,
-    borderColor: '#FFFFFF',
+    border: '4px solid #FFFFFF',
     marginBottom: 24,
     alignSelf: 'center',
     overflow: 'hidden',
@@ -104,8 +102,7 @@ const styles = StyleSheet.create({
     paddingTop: 6,
     paddingBottom: 6,
     marginBottom: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
     borderRadius: 6,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
@@ -257,10 +254,10 @@ export default function ProfessionalDoc({ data }: { data: PDFResumeData }) {
           <View style={styles.sidebarSection}>
             <Text style={styles.sidebarHeading}>CONTACT</Text>
             {personalInfo.email && (
-              <Text style={styles.contactItem}>{personalInfo.email}</Text>
+              <Text style={styles.contactItem}>📧 {personalInfo.email}</Text>
             )}
             {personalInfo.phone && (
-              <Text style={styles.contactItem}>{personalInfo.phone}</Text>
+              <Text style={styles.contactItem}>📞 {personalInfo.phone}</Text>
             )}
           </View>
 
@@ -395,7 +392,7 @@ export default function ProfessionalDoc({ data }: { data: PDFResumeData }) {
         </View>
 
         {/* Powered by Lansa Badge */}
-        <Image style={styles.badge} src={getPublicAssetUrl(BADGE_PATH)} />
+        <Image style={styles.badge} src="/powered-by-lansa-badge.png" />
       </Page>
     </Document>
   );
