@@ -165,15 +165,6 @@ export function ExperienceSection({
             </div>
           ))}
           
-          {experiences.length > 0 && <Separator />}
-          
-          <StaticExperienceCard
-            title="Career Explorer"
-            period="Past"
-            subtitle="Self-Discovery"
-            description="Explored various professional paths and opportunities to better understand strengths, weaknesses, and career aspirations."
-            highlightColor={highlightColor}
-          />
         </div>
       </CardContent>
     </Card>
