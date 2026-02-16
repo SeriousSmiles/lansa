@@ -1,89 +1,91 @@
 
-# Next Sprint: Resume Export Completion + Subscription Payment Wiring
 
-## Priority 1: Complete Resume PDF Export Fixes (Track 3 Remaining)
+# Full Rebuild: Mobile Swipeable Candidate Browser
 
-### 1.1 Fix remaining HTML export templates
-The Classic and Logos templates already received text-shift compensation. Three templates still need it:
+## Overview
+A complete rebuild of the mobile employer candidate browsing experience. The current implementation works but feels basic -- this rebuild will create a polished, Tinder-caliber swipe experience with better card design, smoother animations, overlay feedback, match celebrations, an undo feature, and a bottom-sheet detail view.
 
-- **CreativeTemplateExport.tsx** -- Reduce lineHeight from current value to ~1.45, add negative marginTop on heading elements
-- **ModernTemplateExport.tsx** -- Same pattern
-- **TimelineTemplateExport.tsx** -- Already has lineHeight 1.5 but needs heading margin compensation
+## What Changes
 
-Each fix is a small CSS adjustment (2-4 lines per template) following the exact pattern already applied to ClassicTemplateExport.
+### 1. New Swipe Card Component
+Replace `SwipeCard` with a reimagined card optimized for the mobile swipe context:
+- Full-viewport stacked card layout (top card active, 2 cards visible behind with depth/scale)
+- Gradient cover header with avatar, name, title, location, and certification badge
+- Scrollable body showing top 5 skills as colored chips, short bio snippet, and latest experience
+- Real-time directional overlay: dragging right shows a green "INTERESTED" label with heart icon; dragging left shows a red "PASS" label with X icon; the overlay opacity scales with drag distance
+- Card rotation follows drag direction (max 12 degrees) with subtle scale reduction
 
-### 1.2 Create unified resumeExportService.ts
-A single service that:
-- Accepts a template name + PDFResumeData
-- Routes HTML templates (Classic, Creative, Logos, Modern, Professional, Timeline) through html2canvas + jsPDF
-- Routes react-pdf templates (Academic, Minimal) through @react-pdf/renderer blob generation
-- Handles off-screen rendering: mounts the export template in a hidden container, captures it, then cleans up
-- Returns a downloadable file
+### 2. Rebuilt Swipe Engine
+Replace the current GSAP Draggable-based `SwipeableContainer` with a custom pointer-event-driven swipe engine (similar to the existing `SwipeCard` approach but improved):
+- Velocity-aware flick detection: fast flicks trigger swipe even at short distances
+- Spring-back animation using GSAP `back.out` easing when threshold not met
+- Exit animation: card flies off-screen with rotation and opacity fade (300ms)
+- Entry animation: next card scales up from the stack with a subtle bounce (250ms)
+- Haptic feedback on swipe completion (using existing `mobileUtils.hapticFeedback`)
 
-### 1.3 Improve EditorToolbar export
-The current implementation captures whatever `[data-resume-canvas]` points to. This works for the component-based editor but does not integrate with the template preview system. Update to:
-- Use the unified export service when a template is selected
-- Fall back to canvas capture for the freeform editor
+### 3. Bottom-Sheet Candidate Detail
+Add a "tap to expand" interaction on the card that opens a Vaul Drawer (already installed) showing the full candidate profile:
+- Full bio, complete experience timeline, education, languages, all achievements
+- AI Match Summary section (using the existing `matchSummaryService` edge function)
+- Action buttons (Pass / Interested / Super Interest) inside the sheet so users can act from the detail view
+- Drag handle at top, 90% screen height, smooth slide-up animation
 
----
+### 4. Match Celebration Overlay
+When a mutual match is detected (from `swipeService.checkForMatch`):
+- Full-screen overlay with confetti-style animation
+- Shows both user avatars side by side
+- "It's a Match!" headline with the candidate's name
+- Two action buttons: "Send Message" (navigates to chat) and "Keep Browsing" (dismisses)
+- Auto-dismisses after 5 seconds if no interaction
 
-## Priority 2: Wire Subscription Panels to Payment System
+### 5. Undo Last Swipe
+- Floating "Undo" button appears for 4 seconds after each swipe (left passes only)
+- Reverses the card exit animation, bringing the previous candidate back
+- Calls `swipeService` to remove the last swipe record (requires a new delete method)
+- Only stores last 1 swipe for undo (not a full history)
 
-### 2.1 MentorSubscriptionPanel.tsx
-Currently shows tier cards (Free / Starter at XCG 30 / Pro at XCG 75) with "Upgrade" buttons that do nothing. Changes:
-- Import and use `usePayment` hook
-- On "Upgrade" click, call `create-payment` with `type: 'mentor_subscription'` and the selected plan
-- Show PaymentModal with tier-specific pricing
-- On payment completion, update the `mentor_subscriptions` table tier
-- In test mode (no Sentoo key), auto-complete as already implemented
+### 6. Improved Filter Experience
+Convert the current Dialog-based filter into a proper bottom-sheet (Vaul Drawer):
+- Certification filter toggle (on by default for certified-only browsing)
+- Skill chips with autocomplete from common skills
+- Location and availability filters
+- Active filter count shown as badge on the filter icon in the header
 
-### 2.2 Employer Subscription UI
-The employer dashboard needs a subscription panel. Changes:
-- Create or update an employer subscription component showing tiered access (Basic / Premium)
-- Wire upgrade buttons to `create-payment` with `type: 'employer_subscription'`
-- Gate candidate browsing features behind active subscription status
-- Show PaymentModal with employer-specific pricing
+### 7. Progress and Stats Header
+Redesign the sticky header:
+- Compact single-row layout: back arrow, "Browse Candidates" title, filter icon with active count badge
+- Below: minimal stat row showing "X matches" and "Y reviewed today" as small pills
+- Counter showing current position (e.g., "3 of 18")
 
-### 2.3 Shared PaymentModal enhancements
-The current PaymentModal is hardcoded for certification exams (XCG 25, exam-specific copy). Generalize it:
-- Accept `paymentType` prop (certification, mentor_subscription, employer_subscription)
-- Dynamic pricing display based on type
-- Dynamic benefit list based on type
-- Reuse across all three payment flows
+## Data Flow (No RLS Changes Needed)
 
----
+All existing RLS policies support this feature:
+- **Read candidates**: `user_profiles_public` (public view, no RLS restrictions for authenticated users)
+- **Certification check**: `user_certifications` cross-referenced at application level (existing pattern)
+- **Record swipes**: `swipes` table -- insert policy requires `swiper_user_id = auth.uid()`
+- **Check matches**: `matches` table -- select policy allows participants (`user_a` or `user_b = auth.uid()`)
+- **Swipe history**: `swipes` table -- select filtered by `swiper_user_id = auth.uid()`
+- **AI match summary**: existing `generate-match-summary` edge function with JWT auth
 
-## Priority 3: Legacy Table Deprecation (if time permits)
+## Technical Details
 
-### 3.1 Audit v1 table references
-Search all edge functions and frontend code for references to `job_listings` (not v2) and `job_applications` (not v2). Document every reference.
+### Files Modified
+- `src/components/mobile/employer/MobileCandidateBrowser.tsx` -- Full rebuild with new layout, bottom-sheet detail, undo, match celebration
+- `src/components/mobile/employer/EnhancedCandidateCard.tsx` -- Redesigned for swipe context (more compact, overlay indicators)
+- `src/components/mobile/SwipeableContainer.tsx` -- Rebuilt swipe engine with velocity detection and better animations
+- `src/components/mobile/employer/MobileFilterModal.tsx` -- Convert to Vaul Drawer bottom-sheet
 
-### 3.2 Migration plan
-- Update any remaining code paths to use v2 tables exclusively
-- Add database views or redirects if needed for backward compatibility
-- Mark v1 tables as deprecated with a migration comment
+### New Files
+- `src/components/mobile/employer/MatchCelebration.tsx` -- Full-screen match overlay component
+- `src/components/mobile/employer/CandidateDetailSheet.tsx` -- Bottom-sheet with full profile + AI summary
+- `src/components/mobile/employer/SwipeOverlayIndicator.tsx` -- The LIKE/PASS directional overlay
 
----
+### Services Modified
+- `src/services/swipeService.ts` -- Add `deleteLastSwipe()` method for undo functionality (delete from `swipes` where `swiper_user_id = auth.uid()`, ordered by `created_at desc`, limit 1)
 
-## Files to Change
+### Dependencies Used (Already Installed)
+- `gsap` -- Card animations, transitions, spring physics
+- `vaul` -- Bottom sheet for candidate detail and filters
+- `framer-motion` -- Match celebration overlay entrance animation
+- `lucide-react` -- Icons for action buttons and indicators
 
-| File | Change |
-|---|---|
-| `src/components/pdf/templates/CreativeTemplateExport.tsx` | Text-shift compensation (lineHeight + marginTop) |
-| `src/components/pdf/templates/ModernTemplateExport.tsx` | Text-shift compensation |
-| `src/components/pdf/templates/TimelineTemplateExport.tsx` | Heading margin compensation |
-| `src/services/resumeExportService.ts` | New unified export routing service |
-| `src/components/resume-editor/EditorToolbar.tsx` | Integrate unified export service |
-| `src/components/certification/PaymentModal.tsx` | Generalize for multiple payment types |
-| `src/components/mentor/MentorSubscriptionPanel.tsx` | Wire upgrade buttons to payment flow |
-| `src/hooks/usePayment.ts` | Support subscription payment types |
-| New: `src/components/employer/EmployerSubscriptionPanel.tsx` | Employer subscription UI with payment |
-| Employer dashboard page | Add subscription tab/panel |
-
-## Implementation Order
-1. Template text-shift fixes (quick wins, 3 files)
-2. Unified export service + editor integration
-3. Generalize PaymentModal for all payment types
-4. Wire MentorSubscriptionPanel to payments
-5. Create and wire EmployerSubscriptionPanel
-6. Legacy table audit (if time permits)
