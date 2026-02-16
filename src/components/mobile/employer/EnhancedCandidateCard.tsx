@@ -1,212 +1,170 @@
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Briefcase, GraduationCap, Award, User } from "lucide-react";
+import { MapPin, Briefcase, Award, User, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DiscoveryProfile } from "@/services/discoveryService";
+import { SwipeOverlayIndicator } from "./SwipeOverlayIndicator";
 
 interface EnhancedCandidateCardProps {
   profile: DiscoveryProfile;
   className?: string;
+  swipeDirection?: 'left' | 'right' | null;
+  swipeProgress?: number;
+  onTapExpand?: () => void;
+  stackPosition?: number; // 0 = top, 1 = behind, 2 = furthest
 }
 
-export function EnhancedCandidateCard({ profile, className }: EnhancedCandidateCardProps) {
-  // Normalize skills and languages to arrays of strings (handles DB JSON objects)
+export function EnhancedCandidateCard({
+  profile,
+  className,
+  swipeDirection = null,
+  swipeProgress = 0,
+  onTapExpand,
+  stackPosition = 0,
+}: EnhancedCandidateCardProps) {
   const skillNames: string[] = Array.isArray(profile.skills)
-    ? profile.skills.map((s: any) => (typeof s === 'string' ? s : s?.name)).filter(Boolean)
-    : [];
-  const languageNames: string[] = Array.isArray(profile.languages)
-    ? profile.languages.map((l: any) => (typeof l === 'string' ? l : l?.name)).filter(Boolean)
+    ? profile.skills.map((s: any) => (typeof s === 'string' ? s : s?.name)).filter(Boolean).slice(0, 5)
     : [];
 
+  const accentColor = profile.highlight_color || 'hsl(var(--primary))';
+  const coverColor = profile.cover_color || accentColor;
+
+  // Stack visual offsets
+  const stackScale = 1 - stackPosition * 0.04;
+  const stackY = stackPosition * 8;
+  const stackOpacity = stackPosition === 0 ? 1 : stackPosition === 1 ? 0.7 : 0.4;
+
   return (
-    <div 
+    <div
       className={cn(
-        "w-full h-full flex flex-col overflow-hidden rounded-2xl bg-card",
+        "absolute inset-0 rounded-2xl shadow-xl overflow-hidden bg-card border border-border/30 flex flex-col select-none",
+        stackPosition === 0 && "z-10",
+        stackPosition === 1 && "z-[5]",
+        stackPosition === 2 && "z-0",
         className
       )}
+      style={{
+        transform: `translateY(${stackY}px) scale(${stackScale})`,
+        opacity: stackOpacity,
+        pointerEvents: stackPosition === 0 ? 'auto' : 'none',
+      }}
     >
-      {/* Cover header with gradient */}
-      <div 
-        className="relative p-6 pb-16 flex-shrink-0"
-        style={{ 
-          background: profile.cover_color 
-            ? `linear-gradient(135deg, ${profile.cover_color}, ${profile.highlight_color || '#FF6B4A'})` 
-            : 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary)))'
+      {/* Swipe overlay indicator - only on top card */}
+      {stackPosition === 0 && (
+        <SwipeOverlayIndicator direction={swipeDirection} progress={swipeProgress} />
+      )}
+
+      {/* Cover header */}
+      <div
+        className="relative p-5 pb-14 flex-shrink-0"
+        style={{
+          background: `linear-gradient(135deg, ${coverColor}, ${accentColor})`,
         }}
       >
-        <div className="flex flex-col items-start text-left">
-          <Avatar className="w-16 h-16 ring-4 ring-white/30 shadow-lg flex-shrink-0">
+        {/* Certification badge */}
+        {profile.isCertified && (
+          <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
+            <Award className="w-3.5 h-3.5 text-white" />
+            <span className="text-[10px] font-bold text-white tracking-wide">CERTIFIED</span>
+          </div>
+        )}
+
+        <div className="flex items-start gap-4">
+          <Avatar className="w-16 h-16 ring-3 ring-white/30 shadow-lg flex-shrink-0">
             <AvatarImage src={profile.profile_image} alt={profile.name} />
-            <AvatarFallback 
-              style={{ backgroundColor: profile.highlight_color || '#FF6B4A' }}
+            <AvatarFallback
+              style={{ backgroundColor: accentColor }}
               className="text-white text-xl font-semibold"
             >
               {profile.name?.charAt(0) || <User className="w-8 h-8" />}
             </AvatarFallback>
           </Avatar>
-          
-          <div className="mt-3 text-white">
-            <h2 className="text-2xl font-bold mb-1 break-words">{profile.name}</h2>
-            <p className="text-white/90 text-lg mb-2 break-words">{profile.title}</p>
+
+          <div className="flex-1 min-w-0 text-white">
+            <h2 className="text-xl font-bold truncate">{profile.name}</h2>
+            <p className="text-white/90 text-sm truncate">{profile.title}</p>
             {profile.location && (
-              <p className="text-white/80 text-sm flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5" />
-                {profile.location}
+              <p className="text-white/70 text-xs flex items-center gap-1 mt-1">
+                <MapPin className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">{profile.location}</span>
               </p>
-            )}
-            {profile.professional_goal && (
-              <p className="text-white/80 text-sm font-medium mt-2">{profile.professional_goal}</p>
             )}
           </div>
         </div>
       </div>
 
-      {/* Main scrollable content */}
-      <div className="flex-1 overflow-y-auto bg-background relative -mt-8 rounded-t-3xl">
-        <div className="p-6 space-y-6">
-          {/* About section */}
-          {profile.about_text && (
-            <div>
-              <h4 className="font-semibold text-foreground mb-3 text-lg">About</h4>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {profile.about_text}
-              </p>
-            </div>
-          )}
-
-          {/* Skills section */}
+      {/* Content body */}
+      <div className="flex-1 relative -mt-6 rounded-t-2xl bg-card overflow-y-auto">
+        <div className="p-5 space-y-4">
+          {/* Skills chips */}
           {skillNames.length > 0 && (
-            <div>
-              <h4 className="font-semibold text-foreground text-lg mb-3">Skills</h4>
-              <div className="flex flex-wrap gap-2">
-                {skillNames.map((skill, index) => (
-                  <Badge 
-                    key={index} 
-                    variant="secondary" 
-                    className="text-xs font-medium"
-                    style={{ 
-                      backgroundColor: `${profile.highlight_color || '#FF6B4A'}15`,
-                      borderColor: `${profile.highlight_color || '#FF6B4A'}30`,
-                      color: profile.highlight_color || '#FF6B4A'
-                    }}
-                  >
-                    {skill}
-                  </Badge>
-                ))}
-              </div>
+            <div className="flex flex-wrap gap-1.5">
+              {skillNames.map((skill, i) => (
+                <Badge
+                  key={i}
+                  variant="secondary"
+                  className="text-[11px] font-medium px-2.5 py-0.5"
+                  style={{
+                    backgroundColor: `${accentColor}12`,
+                    borderColor: `${accentColor}25`,
+                    color: accentColor,
+                  }}
+                >
+                  {skill}
+                </Badge>
+              ))}
             </div>
           )}
 
-          {/* Latest Experience */}
+          {/* Bio snippet */}
+          {profile.about_text && (
+            <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">
+              {profile.about_text}
+            </p>
+          )}
+
+          {/* Professional goal */}
+          {profile.professional_goal && (
+            <div className="bg-muted/40 rounded-xl p-3">
+              <p className="text-xs font-medium text-muted-foreground mb-0.5">Goal</p>
+              <p className="text-sm text-foreground line-clamp-2">{profile.professional_goal}</p>
+            </div>
+          )}
+
+          {/* Latest experience */}
           {profile.experiences && profile.experiences.length > 0 && (
-            <div className="pt-4 border-t border-border/50">
-              <h4 className="font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
-                <div 
-                  className="w-6 h-6 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: `${profile.highlight_color || '#FF6B4A'}20` }}
-                >
-                  <Briefcase 
-                    className="w-3.5 h-3.5" 
-                    style={{ color: profile.highlight_color || '#FF6B4A' }}
-                  />
-                </div>
-                Latest Experience
-              </h4>
-              {profile.experiences.slice(0, 1).map((exp, index) => (
-                <div key={index} className="p-3 rounded-lg bg-muted/30">
-                  <p className="text-sm font-semibold text-foreground">{exp.title}</p>
-                  <p className="text-xs text-muted-foreground">{exp.subtitle}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{exp.period}</p>
-                  {exp.description && (
-                    <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{exp.description}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Education */}
-          {profile.education && profile.education.length > 0 && (
-            <div className="pt-4 border-t border-border/50">
-              <h4 className="font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
-                <div 
-                  className="w-6 h-6 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: `${profile.highlight_color || '#FF6B4A'}20` }}
-                >
-                  <GraduationCap 
-                    className="w-3.5 h-3.5" 
-                    style={{ color: profile.highlight_color || '#FF6B4A' }}
-                  />
-                </div>
-                Education
-              </h4>
-              {profile.education.slice(0, 1).map((edu, index) => (
-                <div key={index} className="p-3 rounded-lg bg-muted/30">
-                  <p className="text-sm font-semibold text-foreground">{edu.title}</p>
-                  <p className="text-xs text-muted-foreground">{edu.description}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{edu.period}</p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Featured Achievements */}
-          {profile.achievements && profile.achievements.filter(a => a.isFeatured).length > 0 && (
-            <div className="pt-4 border-t border-border/50">
-              <h4 className="font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
-                <div 
-                  className="w-6 h-6 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: `${profile.highlight_color || '#FF6B4A'}20` }}
-                >
-                  <Award 
-                    className="w-3.5 h-3.5" 
-                    style={{ color: profile.highlight_color || '#FF6B4A' }}
-                  />
-                </div>
-                Key Achievements
-              </h4>
-              <div className="space-y-2">
-                {profile.achievements.filter(a => a.isFeatured).slice(0, 2).map((achievement, index) => (
-                  <div 
-                    key={index} 
-                    className="flex items-start gap-2 p-2 rounded-lg bg-background/50"
-                  >
-                    <div 
-                      className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
-                      style={{ backgroundColor: profile.highlight_color || '#FF6B4A' }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-foreground line-clamp-1">
-                        {achievement.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground line-clamp-1">
-                        {achievement.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+            <div className="flex items-start gap-2.5">
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                style={{ backgroundColor: `${accentColor}18` }}
+              >
+                <Briefcase className="w-3.5 h-3.5" style={{ color: accentColor }} />
               </div>
-            </div>
-          )}
-
-          {/* Languages (if available) */}
-          {languageNames.length > 0 && (
-            <div className="pt-4 border-t border-border/50">
-              <h4 className="font-semibold text-foreground text-sm mb-3">Languages</h4>
-              <div className="flex flex-wrap gap-2">
-                {languageNames.map((lang, index) => (
-                  <Badge 
-                    key={index} 
-                    variant="outline" 
-                    className="text-xs"
-                  >
-                    {lang}
-                  </Badge>
-                ))}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {profile.experiences[0].title}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {profile.experiences[0].subtitle}
+                </p>
               </div>
             </div>
           )}
         </div>
+
+        {/* Tap to expand hint */}
+        {onTapExpand && stackPosition === 0 && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onTapExpand();
+            }}
+            className="w-full py-3 flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors border-t border-border/30"
+          >
+            <ChevronUp className="w-3.5 h-3.5" />
+            Tap to see full profile
+          </button>
+        )}
       </div>
     </div>
   );
