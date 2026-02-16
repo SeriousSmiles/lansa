@@ -82,5 +82,33 @@ export const swipeService = {
       console.error('Error fetching swipe history:', error);
       return [];
     }
+  },
+
+  async deleteLastSwipe(userId: string, context: SwipeContext) {
+    try {
+      // Get the most recent swipe
+      const { data: lastSwipe, error: fetchError } = await supabase
+        .from('swipes')
+        .select('id')
+        .eq('swiper_user_id', userId)
+        .eq('context', context)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (fetchError) throw fetchError;
+      if (!lastSwipe) return null;
+
+      const { error: deleteError } = await supabase
+        .from('swipes')
+        .delete()
+        .eq('id', lastSwipe.id);
+
+      if (deleteError) throw deleteError;
+      return lastSwipe.id;
+    } catch (error) {
+      console.error('Error deleting last swipe:', error);
+      return null;
+    }
   }
 };
