@@ -2583,6 +2583,7 @@ export type Database = {
           phone_number: string | null
           privacy_settings: Json | null
           professional_goal: string | null
+          professional_stage: string | null
           profile_image: string | null
           score_breakdown: Json | null
           skills: string[] | null
@@ -2632,6 +2633,7 @@ export type Database = {
           phone_number?: string | null
           privacy_settings?: Json | null
           professional_goal?: string | null
+          professional_stage?: string | null
           profile_image?: string | null
           score_breakdown?: Json | null
           skills?: string[] | null
@@ -2681,6 +2683,7 @@ export type Database = {
           phone_number?: string | null
           privacy_settings?: Json | null
           professional_goal?: string | null
+          professional_stage?: string | null
           profile_image?: string | null
           score_breakdown?: Json | null
           skills?: string[] | null

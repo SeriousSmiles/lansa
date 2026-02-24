@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +48,7 @@ export function EnhancedCVAnalysisResults({
   onRetry,
   isLoading = false
 }: EnhancedCVAnalysisResultsProps) {
+  const navigate = useNavigate();
   const [selections, setSelections] = useState<SectionSelection>({
     personalInfo: true,
     skills: true,
@@ -153,7 +155,7 @@ export function EnhancedCVAnalysisResults({
               No worries - we'll help you create a consistent narrative that showcases your growth!
             </p>
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" className="border-red-200 text-red-700 hover:bg-red-50">
+              <Button size="sm" variant="outline" className="border-red-200 text-red-700 hover:bg-red-50" onClick={() => navigate('/profile')}>
                 Review Profile
               </Button>
             </div>

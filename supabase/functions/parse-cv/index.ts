@@ -145,7 +145,7 @@ Focus on:
     // --- Cross-reference with existing profile for suggestions ---
     const { data: userProfile } = await supabase
       .from("user_profiles")
-      .select("*")
+      .select("*, professional_stage")
       .eq("user_id", userId)
       .maybeSingle();
 
@@ -170,29 +170,38 @@ Focus on:
     const gapAnalysis: string[] = [];
     const improvements: string[] = [];
 
+    const professionalStage = userProfile?.professional_stage;
+
     if (userAnswers) {
       const userCareerGoal =
         userAnswers.career_path || userAnswers.desired_outcome;
       const cvTitle = extractedData.personalInfo?.title?.toLowerCase();
 
+      // Only warn about career goal mismatch if both exist and are meaningfully different
       if (
         userCareerGoal &&
         cvTitle &&
         !cvTitle.includes(userCareerGoal.toLowerCase()) &&
         !userCareerGoal.toLowerCase().includes(cvTitle)
       ) {
-        mismatchWarnings.push(
-          `CV shows "${extractedData.personalInfo?.title}" but your career goal is "${userCareerGoal}"`
-        );
+        if (professionalStage === 'working_professional') {
+          mismatchWarnings.push(
+            `Your CV title "${extractedData.personalInfo?.title}" differs from your stated career goal "${userCareerGoal}". Consider aligning them.`
+          );
+        } else if (professionalStage === 'student') {
+          mismatchWarnings.push(
+            `CV shows "${extractedData.personalInfo?.title}" — make sure this aligns with your career intention as a student.`
+          );
+        }
       }
 
-      const onboardingInputs = userAnswers.onboarding_inputs as Record<string, unknown> | null;
+      // Only warn about extensive experience for actual students
       if (
-        onboardingInputs?.academic_status === "student" &&
+        professionalStage === "student" &&
         (extractedData.experience?.length ?? 0) > 2
       ) {
         mismatchWarnings.push(
-          'CV shows extensive work experience but you selected "student" status'
+          'Your CV shows extensive work experience but you selected "Student" status. If you\'re now working, consider updating your professional stage.'
         );
       }
 
