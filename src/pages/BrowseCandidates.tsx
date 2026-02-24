@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserType } from "@/hooks/useUserType";
+import { useUserState } from "@/contexts/UserStateProvider";
 import { Navigate, useNavigate } from "react-router-dom";
 import { CandidateBrowseTab } from "@/components/dashboard/employer/CandidateBrowseTab";
 import { MobileCandidateBrowser } from "@/components/mobile/employer/MobileCandidateBrowser";
@@ -8,7 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function BrowseCandidates() {
   const { user } = useAuth();
-  const { userType, isLoading: userTypeLoading } = useUserType();
+  const { userType, loading: userTypeLoading } = useUserState();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 

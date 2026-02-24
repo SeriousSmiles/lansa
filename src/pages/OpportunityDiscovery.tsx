@@ -10,11 +10,11 @@ import { swipeService, SwipeDirection, SwipeContext } from "@/services/swipeServ
 import { matchService } from "@/services/matchService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { useUserType } from "@/hooks/useUserType";
+import { useUserState } from "@/contexts/UserStateProvider";
 
 export default function OpportunityDiscovery() {
   const { user } = useAuth();
-  const { userType } = useUserType();
+  const { userType } = useUserState();
   const [activeTab, setActiveTab] = useState<'networking' | 'jobs'>('jobs'); // Default to jobs for students
   const [profiles, setProfiles] = useState<DiscoveryProfile[]>([]);
   const [isLoading, setIsLoading] = useState(false);

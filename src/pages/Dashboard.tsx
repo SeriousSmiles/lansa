@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { useActionTracking } from "@/hooks/useActionTracking";
 import { ProfileCard } from "@/components/dashboard/overview/ProfileCard";
-import { useUserType } from "@/hooks/useUserType";
+import { useUserState } from "@/contexts/UserStateProvider";
 import EmployerDashboard from "./EmployerDashboard";
 import { SEOHead } from "@/components/SEOHead";
 import { LansaLoader } from "@/components/shared/LansaLoader";
@@ -32,7 +32,7 @@ export default function Dashboard() {
   const { session, user } = useAuth();
   const navigate = useNavigate();
   const { track } = useActionTracking();
-  const { userType, isLoading: isLoadingUserType } = useUserType();
+  const { userType, loading: isLoadingUserType } = useUserState();
   const mountedRef = useRef(true);
   const initializingRef = useRef(false);
   

@@ -12,7 +12,7 @@ import { IconPalette, IconDownload, IconMenu2, IconGlobe, IconBolt } from "@tabl
 import { DesignerSidebar } from "../dialogs/DesignerSidebar";
 import { DesktopQuickActionsModal } from "../dialogs/DesktopQuickActionsModal";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserType } from "@/hooks/useUserType";
+import { useUserState } from "@/contexts/UserStateProvider";
 import { useProfileData } from "@/hooks/useProfileData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -57,7 +57,7 @@ export function DesktopProfileActions({
   onModeToggle,
 }: DesktopProfileActionsProps) {
   const { user } = useAuth();
-  const { userType } = useUserType();
+  const { userType } = useUserState();
   const profileData = useProfileData(userId);
   const isMobile = useIsMobile();
   const [isProfilePublic, setIsProfilePublic] = useState(false);
