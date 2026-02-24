@@ -7,84 +7,6 @@ import { EnhancedCVAnalysisResults } from "./EnhancedCVAnalysisResults";
 import { CVLoadingProgress } from "./CVLoadingProgress";
 import { FileText, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import * as pdfjs from 'pdfjs-dist';
-
-// Set the worker source for PDF.js
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-
-// Convert file to images (PDF pages or direct image)
-const convertFileToImages = async (file: File): Promise<string[]> => {
-  const images: string[] = [];
-  
-  if (file.type === 'application/pdf') {
-    // Convert PDF pages to images
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjs.getDocument(arrayBuffer).promise;
-    const maxPages = Math.min(pdf.numPages, 10); // Limit to 10 pages
-    
-    for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
-      const page = await pdf.getPage(pageNum);
-      const viewport = page.getViewport({ scale: 2.0 }); // High resolution
-      
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d')!;
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
-      
-      await page.render({
-        canvasContext: context,
-        viewport: viewport,
-        canvas: canvas
-      }).promise;
-      
-      // Compress the image to reduce size
-      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.7); // Use JPEG with 70% quality for compression
-      images.push(imageDataUrl);
-    }
-  } else if (file.type.startsWith('image/')) {
-    // Convert image file to data URL with compression
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d')!;
-    const img = new Image();
-    
-    const imageDataUrl = await new Promise<string>((resolve, reject) => {
-      img.onload = () => {
-        // Calculate compression dimensions (max 1024px)
-        const maxSize = 1024;
-        let { width, height } = img;
-        
-        if (width > maxSize || height > maxSize) {
-          if (width > height) {
-            height = (height * maxSize) / width;
-            width = maxSize;
-          } else {
-            width = (width * maxSize) / height;
-            height = maxSize;
-          }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(img, 0, 0, width, height);
-        
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-        resolve(compressedDataUrl);
-      };
-      img.onerror = reject;
-      
-      const reader = new FileReader();
-      reader.onload = () => img.src = reader.result as string;
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-    
-    images.push(imageDataUrl);
-  } else {
-    throw new Error('Unsupported file type. Please upload a PDF or image file.');
-  }
-  
-  return images;
-};
 
 interface CVUploadModalProps {
   open: boolean;
@@ -140,7 +62,7 @@ export function CVUploadModal({ open, onOpenChange, onComplete }: CVUploadModalP
         throw new Error("User not authenticated");
       }
 
-      console.log(`Processing ${file.name} via Railway microservice`);
+      console.log(`Processing ${file.name} via Lovable AI`);
 
       // Import the CV data service and parse the CV
       const { CVDataService } = await import("@/services/cvDataService");

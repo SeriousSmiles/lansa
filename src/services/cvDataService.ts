@@ -49,18 +49,17 @@ export interface CVAnalysisResult {
 
 export class CVDataService {
   /**
-   * Upload and parse a CV file using Railway microservice
+   * Upload and parse a CV file using Lovable AI (vision-based)
    */
   static async uploadAndParseCV(file: File, userId: string): Promise<CVAnalysisResult> {
     try {
-      // Prepare FormData for Railway microservice
-      const formData = new FormData();
-      formData.append('pdf', file);
-      formData.append('userId', userId);
+      // Convert file to images client-side
+      const { convertFileToImages } = await import("@/utils/pdfToImages");
+      const imageDataUrls = await convertFileToImages(file);
 
-      // Call the parse-cv-railway edge function
-      const { data, error } = await supabase.functions.invoke('parse-cv-railway', {
-        body: formData
+      // Call the parse-cv edge function with image data
+      const { data, error } = await supabase.functions.invoke('parse-cv', {
+        body: { imageDataUrls, fileName: file.name, userId }
       });
 
       if (error) {
