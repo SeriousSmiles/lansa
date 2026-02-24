@@ -1,42 +1,69 @@
 
-# Architectural Audit: Auth, Routing, and Onboarding System
+# Fix 3: Dead Code Cleanup, AppShell Re-render Optimization, and DB Trigger Error
 
-## ✅ COMPLETED — Phases 1–4 Implemented
+## Fix 1: Dead Code Cleanup (Phase 5)
 
-All critical phases have been implemented in a single deployment:
+The following files are **no longer imported anywhere** and can be safely deleted:
 
-### What Changed
+### Files to Delete
+- `src/components/auth/ProtectedRoute.tsx` -- replaced by `Guard`
+- `src/components/auth/RouteGuard.tsx` -- replaced by `Guard`
+- `src/components/auth/RouteGuards.tsx` -- replaced by `Guard`
+- `src/components/onboarding/SimplifiedOnboardingForm.tsx` -- not imported
+- `src/components/onboarding/EnhancedOnboardingForm.tsx` -- not imported
+- `src/components/onboarding/MultiStepForm.tsx` -- not imported
+- `src/hooks/useSimplifiedOnboarding.ts` -- only imported by `SimplifiedOnboardingForm` (also being deleted)
 
-| Phase | Status | Description |
-|-------|--------|-------------|
-| Phase 1 | ✅ Done | Unified `AuthContext` + `UserStateProvider` into `UnifiedAuthProvider.tsx` — single `onAuthStateChange`, single `getSession()`, single `Promise.all` batch (5 queries instead of 9) |
-| Phase 2 | ✅ Done | Replaced `ProtectedRoute` + `RouteGuards` + `RouteGuard` with single `<Guard>` component in `App.tsx` |
-| Phase 3 | ✅ Done | `DefaultRoute` now shows loader while auth resolves — no landing page flash |
-| Phase 4 | ✅ Done | Removed `window.__userStateRefresh` global — `OrganizationContext` and `Onboarding.tsx` now use `refreshUserState` from `useUserState()` hook |
-| Phase 5 | 🔲 Next | Dead code cleanup (RouteGuard.tsx, useUserType.tsx, old onboarding forms) — safe to do anytime |
+### Files to Update (replace `useUserType` hook with `useUserState`)
+The `useUserType` hook (`src/hooks/useUserType.tsx`) makes its own database call on every mount, duplicating what `useUserState()` already provides. Six files still import it:
 
-### New Architecture
+1. `src/pages/Dashboard.tsx` -- change `useUserType()` to `useUserState()`
+2. `src/pages/BrowseCandidates.tsx` -- same
+3. `src/pages/OpportunityDiscovery.tsx` -- same
+4. `src/components/dashboard/TopNavbar.tsx` -- same
+5. `src/components/dashboard/UserProfile.tsx` -- same
+6. `src/components/profile/header-actions/DesktopProfileActions.tsx` -- same
 
-- **`UnifiedAuthProvider.tsx`** — single source of truth for auth, user data, admin role, org membership
-- **`AuthContext.tsx`** — re-exports `useAuth()` from unified provider (backward compatible)
-- **`UserStateProvider.tsx`** — re-exports `useUserState()` from unified provider (backward compatible)
-- **`Guard.tsx`** — single route guard: `<Guard auth onboarding types={['job_seeker']}>`
-- **`DefaultRoute.tsx`** — shows loader until auth resolves, then renders landing page or redirects
+After updating all 6 consumers, delete `src/hooks/useUserType.tsx`.
 
-### DB Calls on Login: 9 → 6
+**Impact**: Eliminates 6 redundant database queries per page load across the app.
 
-Single batch via `Promise.all`:
-1. `user_profiles` (onboarding_completed, name)
-2. `user_answers` (user_type, career_path)
-3. `organization_memberships` (active)
-4. `user_certifications`
-5. `user_roles` (admin)
-6. `organization_memberships` (pending) — sequential after batch
+---
 
-### Phase 5 Candidates (Dead Code)
+## Fix 2: AppShell Re-render Optimization
 
-- `src/components/auth/RouteGuard.tsx` — superseded by Guard
-- `src/components/auth/ProtectedRoute.tsx` — superseded by Guard
-- `src/components/auth/RouteGuards.tsx` — superseded by Guard
-- `src/hooks/useUserType.tsx` — duplicates unified provider
-- `src/hooks/useAdminAuth.tsx` — duplicates unified provider
+`AppShell.tsx` currently has a `console.log` on every render (line 36-48) that fires ~10 times during load. Two changes:
+
+1. **Remove the verbose `console.log`** -- it served its debugging purpose during development
+2. **Memoize the `showMobileNavigation` computation** with `useMemo` so the derived boolean only recalculates when its dependencies actually change, preventing unnecessary child re-renders
+
+---
+
+## Fix 3: Database Trigger Error (`schema "net" does not exist`)
+
+A trigger called `send_segment_email_on_color_change` is attached to the `user_profiles` table. It fires the function `trigger_segment_change_email`, which calls `net.http_post()` -- but the `pg_net` extension is **not enabled** on this Supabase project. Every time a user's `color_auto` field changes, the trigger fires and throws `schema "net" does not exist`.
+
+**Fix**: Create a migration that drops the broken trigger and its function:
+
+```sql
+DROP TRIGGER IF EXISTS send_segment_email_on_color_change ON user_profiles;
+DROP FUNCTION IF EXISTS trigger_segment_change_email();
+```
+
+This trigger was meant to send segment-change emails via an edge function. If this functionality is needed later, it should be re-implemented using a Supabase webhook or by enabling the `pg_net` extension -- but right now it only generates errors.
+
+---
+
+## Summary
+
+```text
+Change                                  | Type       | Risk
+---------------------------------------------------------
+Delete 7 unused files                   | Deletion   | None (no imports)
+Update 6 files to use useUserState      | Refactor   | Low (same data, different source)
+Delete useUserType hook                 | Deletion   | None (after consumer update)
+Remove console.log + add useMemo        | Optimize   | None
+Drop broken DB trigger                  | Migration  | None (trigger only throws errors)
+```
+
+Total: 7 files deleted, 7 files edited, 1 migration created.
