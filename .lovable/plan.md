@@ -1,91 +1,85 @@
 
 
-# Full Rebuild: Mobile Swipeable Candidate Browser
+# Fix CV Parser and Rebuild with Lovable AI
 
-## Overview
-A complete rebuild of the mobile employer candidate browsing experience. The current implementation works but feels basic -- this rebuild will create a polished, Tinder-caliber swipe experience with better card design, smoother animations, overlay feedback, match celebrations, an undo feature, and a bottom-sheet detail view.
+## Problem Diagnosis
 
-## What Changes
+Two issues are causing the CV parser to fail:
 
-### 1. New Swipe Card Component
-Replace `SwipeCard` with a reimagined card optimized for the mobile swipe context:
-- Full-viewport stacked card layout (top card active, 2 cards visible behind with depth/scale)
-- Gradient cover header with avatar, name, title, location, and certification badge
-- Scrollable body showing top 5 skills as colored chips, short bio snippet, and latest experience
-- Real-time directional overlay: dragging right shows a green "INTERESTED" label with heart icon; dragging left shows a red "PASS" label with X icon; the overlay opacity scales with drag distance
-- Card rotation follows drag direction (max 12 degrees) with subtle scale reduction
+### Issue 1: Edge function not registered in config.toml
+The `parse-cv-railway` edge function is not listed in `supabase/config.toml`. Without a config entry, the function may not deploy or may reject requests due to JWT verification defaults.
 
-### 2. Rebuilt Swipe Engine
-Replace the current GSAP Draggable-based `SwipeableContainer` with a custom pointer-event-driven swipe engine (similar to the existing `SwipeCard` approach but improved):
-- Velocity-aware flick detection: fast flicks trigger swipe even at short distances
-- Spring-back animation using GSAP `back.out` easing when threshold not met
-- Exit animation: card flies off-screen with rotation and opacity fade (300ms)
-- Entry animation: next card scales up from the stack with a subtle bounce (250ms)
-- Haptic feedback on swipe completion (using existing `mobileUtils.hapticFeedback`)
+### Issue 2: Railway microservice dependency
+The current flow calls an external Railway microservice at `https://mcb-ai-parser-1-production.up.railway.app/upload`. If that service is down, unreachable, or has changed its API, parsing fails silently. This is an external dependency outside your control.
 
-### 3. Bottom-Sheet Candidate Detail
-Add a "tap to expand" interaction on the card that opens a Vaul Drawer (already installed) showing the full candidate profile:
-- Full bio, complete experience timeline, education, languages, all achievements
-- AI Match Summary section (using the existing `matchSummaryService` edge function)
-- Action buttons (Pass / Interested / Super Interest) inside the sheet so users can act from the detail view
-- Drag handle at top, 90% screen height, smooth slide-up animation
+There is also a second unused edge function (`parse-cv-resume`) that uses OpenAI directly for vision-based parsing, but it's not wired up to the frontend -- the frontend only calls `parse-cv-railway`.
 
-### 4. Match Celebration Overlay
-When a mutual match is detected (from `swipeService.checkForMatch`):
-- Full-screen overlay with confetti-style animation
-- Shows both user avatars side by side
-- "It's a Match!" headline with the candidate's name
-- Two action buttons: "Send Message" (navigates to chat) and "Keep Browsing" (dismisses)
-- Auto-dismisses after 5 seconds if no interaction
+---
 
-### 5. Undo Last Swipe
-- Floating "Undo" button appears for 4 seconds after each swipe (left passes only)
-- Reverses the card exit animation, bringing the previous candidate back
-- Calls `swipeService` to remove the last swipe record (requires a new delete method)
-- Only stores last 1 swipe for undo (not a full history)
+## Solution: Replace Railway with Lovable AI
 
-### 6. Improved Filter Experience
-Convert the current Dialog-based filter into a proper bottom-sheet (Vaul Drawer):
-- Certification filter toggle (on by default for certified-only browsing)
-- Skill chips with autocomplete from common skills
-- Location and availability filters
-- Active filter count shown as badge on the filter icon in the header
+Replace the external Railway dependency with the built-in Lovable AI gateway. The approach:
 
-### 7. Progress and Stats Header
-Redesign the sticky header:
-- Compact single-row layout: back arrow, "Browse Candidates" title, filter icon with active count badge
-- Below: minimal stat row showing "X matches" and "Y reviewed today" as small pills
-- Counter showing current position (e.g., "3 of 18")
+1. **Client-side PDF-to-image conversion** -- already implemented in `CVUploadModal.tsx` using `pdfjs-dist`. This code converts PDF pages to JPEG base64 images. Currently unused in the Railway flow.
 
-## Data Flow (No RLS Changes Needed)
+2. **New edge function `parse-cv`** -- sends those images to Lovable AI (Gemini vision model) for structured extraction. No external dependencies.
 
-All existing RLS policies support this feature:
-- **Read candidates**: `user_profiles_public` (public view, no RLS restrictions for authenticated users)
-- **Certification check**: `user_certifications` cross-referenced at application level (existing pattern)
-- **Record swipes**: `swipes` table -- insert policy requires `swiper_user_id = auth.uid()`
-- **Check matches**: `matches` table -- select policy allows participants (`user_a` or `user_b = auth.uid()`)
-- **Swipe history**: `swipes` table -- select filtered by `swiper_user_id = auth.uid()`
-- **AI match summary**: existing `generate-match-summary` edge function with JWT auth
+3. **Update `cvDataService.ts`** -- switch from sending a FormData file to sending base64 image arrays.
+
+---
+
+## Implementation Steps
+
+### Step 1: Create new edge function `parse-cv`
+A single edge function that:
+- Receives `{ imageDataUrls: string[], fileName: string, userId: string }`
+- Calls `https://ai.gateway.lovable.dev/v1/chat/completions` with `google/gemini-2.5-flash` (vision-capable, fast, cost-effective)
+- Uses the extraction prompt already written in `parse-cv-resume/index.ts` (proven to work)
+- Stores results in `user_resumes` table
+- Returns structured `CVAnalysisResult` with extractedData, suggestions, and metadata
+- Handles 429/402 rate limit errors gracefully
+
+### Step 2: Update `cvDataService.ts`
+- Replace `uploadAndParseCV` to:
+  1. Convert file to images client-side using the existing `convertFileToImages` function from `CVUploadModal.tsx`
+  2. Call `supabase.functions.invoke('parse-cv', { body: { imageDataUrls, fileName, userId } })`
+  3. Return the same `CVAnalysisResult` shape
+
+### Step 3: Extract and share the image conversion utility
+- Move `convertFileToImages` from `CVUploadModal.tsx` into a shared utility (e.g., `src/utils/pdfToImages.ts`) so both the modal and the service can use it
+
+### Step 4: Update CVUploadModal.tsx
+- Remove the Railway-specific log message
+- Use the updated `CVDataService.uploadAndParseCV` (which now handles conversion internally)
+
+### Step 5: Register in config.toml
+- Add `[functions.parse-cv]` with `verify_jwt = false` (auth validated in code)
+
+### Step 6: Clean up
+- The old `parse-cv-railway` and `parse-cv-resume` functions can remain for now but won't be called
+
+---
 
 ## Technical Details
 
+### Edge Function: `supabase/functions/parse-cv/index.ts`
+- Uses `LOVABLE_API_KEY` (already configured as a secret)
+- Model: `google/gemini-2.5-flash` (supports vision, fast, cheap)
+- System prompt: reuses the proven extraction prompt from `parse-cv-resume`
+- Stores parsing record in `user_resumes` table with `parsing_source: 'lovable-ai'`
+- Cross-references with `user_profiles` and `user_answers` for gap analysis and suggestions
+- Returns rate limit errors (429/402) to client for proper toast display
+
 ### Files Modified
-- `src/components/mobile/employer/MobileCandidateBrowser.tsx` -- Full rebuild with new layout, bottom-sheet detail, undo, match celebration
-- `src/components/mobile/employer/EnhancedCandidateCard.tsx` -- Redesigned for swipe context (more compact, overlay indicators)
-- `src/components/mobile/SwipeableContainer.tsx` -- Rebuilt swipe engine with velocity detection and better animations
-- `src/components/mobile/employer/MobileFilterModal.tsx` -- Convert to Vaul Drawer bottom-sheet
+- `src/services/cvDataService.ts` -- new image-based upload flow
+- `src/components/onboarding/cv/CVUploadModal.tsx` -- import shared utility, remove Railway references
+- `supabase/config.toml` -- add `[functions.parse-cv]`
 
 ### New Files
-- `src/components/mobile/employer/MatchCelebration.tsx` -- Full-screen match overlay component
-- `src/components/mobile/employer/CandidateDetailSheet.tsx` -- Bottom-sheet with full profile + AI summary
-- `src/components/mobile/employer/SwipeOverlayIndicator.tsx` -- The LIKE/PASS directional overlay
+- `supabase/functions/parse-cv/index.ts` -- Lovable AI vision-based parser
+- `src/utils/pdfToImages.ts` -- shared PDF-to-image conversion utility
 
-### Services Modified
-- `src/services/swipeService.ts` -- Add `deleteLastSwipe()` method for undo functionality (delete from `swipes` where `swiper_user_id = auth.uid()`, ordered by `created_at desc`, limit 1)
-
-### Dependencies Used (Already Installed)
-- `gsap` -- Card animations, transitions, spring physics
-- `vaul` -- Bottom sheet for candidate detail and filters
-- `framer-motion` -- Match celebration overlay entrance animation
-- `lucide-react` -- Icons for action buttons and indicators
+### No Database Changes Required
+- Uses existing `user_resumes`, `user_profiles`, `user_answers` tables
+- No RLS changes needed
 
