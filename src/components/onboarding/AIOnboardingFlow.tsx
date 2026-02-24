@@ -222,8 +222,8 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
       
       toast.success('Onboarding completed! Setting up your profile...');
       
-      // Navigate to certification page so users can start their first exam
-      navigate('/certification', { replace: true });
+      const destination = getPostOnboardingDestination('job_seeker');
+      navigate(destination, { replace: true });
     } catch (error) {
       console.error('Completion error:', error);
       toast.error('Failed to complete onboarding');
