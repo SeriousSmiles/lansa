@@ -1,87 +1,176 @@
 
 
-# Fix CV Mismatch Block + Add Student/Working Professional Selection to Onboarding
+# Architectural Audit: Auth, Routing, and Onboarding System
 
-## Three Issues Identified
+## Your Assessment is Correct
 
-### Issue 1: "Review Profile" button does nothing
-In `EnhancedCVAnalysisResults.tsx` (line 156), the "Review Profile" button has no `onClick` handler -- it's a dead button. It should either navigate users to their profile page or scroll to the relevant section.
-
-### Issue 2: Mismatch logic assumes everyone is a "student"
-The `parse-cv` edge function (line 194) generates misleading warnings like *'CV shows "Creative Specialist" but your career goal is "student"'*. The mismatch logic compares against the raw `academic_status` value (e.g., "final_year", "studying") rather than accounting for working professionals. This creates confusing, inaccurate warnings for professionals using the Career Advancement path.
-
-### Issue 3: No student vs. working professional distinction in onboarding
-The "Career Advancement" path (formerly "Student") only offers student-oriented options in the demographics step:
-- "Final year student"
-- "Recent graduate"  
-- "Currently studying"
-
-There's no option for working professionals. This affects the entire downstream system: profile generation, AI coaching tone, CV gap analysis, and future matchmaking.
+After reading every file involved in the login-to-dashboard flow, the system has significant architectural debt. Here is a detailed breakdown of the problems and a phased remediation plan.
 
 ---
 
-## Solution
+## Problems Found
 
-### Step 1: Add `professional_stage` column to `user_profiles`
-A new database column to store whether the user is a **student** or **working professional**. This is separate from `academic_status` (which captures student-specific details) and `career_goal_type` (which captures intent).
+### Problem 1: Duplicate Auth/State Infrastructure (Two Systems Doing the Same Job)
 
-- Column: `professional_stage` (text, nullable)
-- Values: `'student'` or `'working_professional'`
-- No enum needed -- simple text column keeps it flexible for future additions
+There are **two separate auth contexts** that both listen for auth changes and both query the database on every login:
 
-### Step 2: Redesign the Demographics step in AIOnboardingFlow
-Replace the current student-only demographics with a two-phase approach:
+- **`AuthContext.tsx`** -- manages `session`, `user`, `loading`, plus fetches `user_profiles.name`
+- **`UserStateProvider.tsx`** -- manages `session` (again via `getSession()`), `userType`, `hasCompletedOnboarding`, `careerPath`, org data, certification data, plus its own `loading`
 
-**Phase 1 -- Professional Stage selector** (new, first question):
-- "I'm a Student" -- studying, recently graduated, or about to graduate
-- "I'm a Working Professional" -- currently employed, seeking better opportunities
+Both set up `onAuthStateChange` listeners independently, both call `getSession()`, and both have their own `loading` states. On login, both fire simultaneously, creating a race condition where one resolves before the other, causing the flash you described.
 
-**Phase 2 -- Conditional follow-up questions**:
+### Problem 2: Triple Admin Check (Same Query, Three Places)
 
-If **Student** is selected:
-- Academic Status: Final year / Recent graduate / Currently studying (existing options)
-- Field of Study (existing)
-- Career Intention: Get my first job / Find a paid internship / Grow within a company (existing options)
+The admin role check (`SELECT role FROM user_roles WHERE user_id = ? AND role = 'admin'`) is executed independently in **three separate components**:
 
-If **Working Professional** is selected:
-- Current Role/Industry (text input, replaces "Field of Study" contextually)
-- Years of Experience: 1-3 years / 3-7 years / 7+ years
-- Career Intention: Get promoted / Switch careers / Land dream job at target company / Develop new skills
+1. `ProtectedRoute.tsx` -- runs the query in a `useEffect`
+2. `RouteGuard.tsx` -- runs the same query in a `useEffect`  
+3. `AdminRoute.tsx` -- runs the same query in a `useEffect`
 
-This saves `professional_stage` to `user_profiles` alongside the existing `academic_status`, `major`/field, and `career_goal_type` fields.
+Each has its own `isAdmin` state and `adminCheckComplete` flag. On every protected page load, up to 3 identical database calls fire.
 
-### Step 3: Update the `parse-cv` edge function mismatch logic
-- Remove the hardcoded assumption that all Career Advancement users are "students"
-- Use `professional_stage` from `user_profiles` to generate contextually accurate warnings
-- For working professionals, compare CV title against career goal, not student status
-- Adjust the "extensive work experience but student status" warning to only trigger for actual students
+### Problem 3: Three Competing Route Guard Systems
 
-### Step 4: Fix the "Review Profile" button
-Add an `onClick` handler to navigate to `/profile` or dismiss the mismatch card and let users continue to their profile after onboarding.
+There are **three different guard implementations**, all used simultaneously:
 
-### Step 5: Enable changing professional stage in Profile settings
-Add a "Professional Stage" selector in the profile editor so users can switch from student to working professional (or vice versa) as their life changes. This updates `user_profiles.professional_stage`.
+1. **`ProtectedRoute.tsx`** -- an `<Outlet>`-based layout guard wrapping all protected routes in `App.tsx`
+2. **`RouteGuards.tsx`** -- exports `RequireAuth`, `RequireOnboarding`, `RequireUserType` as wrapper components, nested inside the `ProtectedRoute` outlet
+3. **`RouteGuard.tsx`** -- a unified guard component (mostly unused in the actual routes)
+
+The actual routing in `App.tsx` layers `ProtectedRoute` (which checks auth + admin + onboarding) **and then** wraps individual routes with `RequireOnboarding` + `RequireUserType` from `RouteGuards.tsx`. This means:
+
+- Auth is checked twice (once in `ProtectedRoute`, once in `RequireAuth`)
+- Onboarding is checked twice (once in `ProtectedRoute`, once in `RequireOnboarding`)
+- Admin is checked up to 3 times
+- Each check has its own `loading` state that resolves at different times, causing sequential loading flashes
+
+### Problem 4: DefaultRoute Creates a Visible Flash
+
+`DefaultRoute` renders `<Index />` (the landing page) immediately, then fires a `useEffect` to check state and navigate away. Authenticated users **see the landing page flash** for a frame before being redirected to their dashboard.
+
+### Problem 5: Database Query Waterfall on Login
+
+When a user logs in, the following queries fire (many in parallel, some sequential):
+
+1. `AuthContext`: `getSession()` 
+2. `AuthContext`: `user_profiles.name` (setTimeout deferred)
+3. `UserStateProvider`: `getSession()` (duplicate)
+4. `UserStateProvider`: `user_profiles.onboarding_completed`
+5. `UserStateProvider`: `user_answers.user_type, career_path`
+6. `UserStateProvider`: `organization_memberships` (active)
+7. `UserStateProvider`: `user_certifications`
+8. `UserStateProvider`: `organization_memberships` (pending) -- sequential, after the first batch
+9. `ProtectedRoute`: `user_roles` (admin check)
+10. Each `RequireOnboarding`/`RequireUserType` re-reads from UserState context (no extra queries, but re-evaluates loading states)
+
+That is **9 database calls** before the user sees their dashboard, with at least 2 being duplicates and the admin check being irrelevant for 99% of users.
+
+### Problem 6: Global State Exposed on Window Object
+
+`UserStateProvider` line 246: `(window as any).__userStateRefresh = refreshUserState` -- a global mutation used by the mentor onboarding to trigger a refresh. This is fragile and untraceable.
 
 ---
 
-## Technical Details
+## Phased Remediation Plan
 
-### Database Migration
-```sql
-ALTER TABLE user_profiles ADD COLUMN professional_stage text;
+### Phase 1: Unify Auth into a Single Provider (Highest Impact, Lowest Risk)
+
+**Goal**: Merge `AuthContext` and `UserStateProvider` into one `AuthProvider` that:
+- Sets up `onAuthStateChange` once
+- Calls `getSession()` once
+- Fetches all user data (profile, answers, org, cert, admin role) in a **single** `Promise.all` batch
+- Exposes one `loading` boolean
+- Exposes `session`, `user`, `userType`, `hasCompletedOnboarding`, `isAdmin`, `organizationId`, etc.
+
+**Why safe**: All consumers currently use `useAuth()` or `useUserState()`. We keep both hooks working but point them at the same underlying provider internally. No route changes needed.
+
+**Database calls reduced from 9 to 5** (one batch), with admin check included.
+
+### Phase 2: Replace Three Guard Systems with One
+
+**Goal**: Replace `ProtectedRoute`, `RouteGuards`, and `RouteGuard` with a single `<Guard>` component that accepts config props:
+
+```text
+<Guard auth onboarding allowedTypes={['job_seeker']}>
+  <Dashboard />
+</Guard>
 ```
 
-### Files Modified
-1. **`src/components/onboarding/AIOnboardingFlow.tsx`** -- Redesign demographics step with professional stage selection, conditional follow-up questions, and save `professional_stage` to database
-2. **`supabase/functions/parse-cv/index.ts`** -- Update mismatch warning logic to use `professional_stage` instead of assuming student
-3. **`src/components/onboarding/cv/EnhancedCVAnalysisResults.tsx`** -- Add `onClick` to "Review Profile" button
-4. **`src/components/profile/ProfilePage.tsx`** (or relevant profile editor component) -- Add professional stage selector for post-onboarding changes
+This component:
+- Reads from the unified auth provider (one source of truth)
+- Shows a single loading state until all data is ready
+- Evaluates auth, onboarding, user type, and admin in one pass
+- Never renders children until the decision is made (no flash)
 
-### AI Coaching Adaptation
-The AI coaching prompts in the skill and goal steps already receive `demographicsData` as context. By including `professional_stage`, the AI will naturally adjust its tone:
-- Students: "As you prepare to enter the workforce..."
-- Professionals: "With your experience in the field..."
+**Route definitions become cleaner**:
+```text
+Before (current):
+  <Route element={<ProtectedRoute />}>
+    <Route path="/dashboard" element={
+      <RequireOnboarding soft={false}>
+        <RequireUserType allowedTypes={['job_seeker']}>
+          <Dashboard />
+        </RequireUserType>
+      </RequireOnboarding>
+    } />
+  </Route>
 
-### Matchmaking Impact
-The `professional_stage` column becomes available for the future matchmaking system to distinguish between entry-level candidates (students) and experienced professionals seeking advancement, enabling more accurate employer-seeker matching.
+After:
+  <Route path="/dashboard" element={
+    <Guard auth onboarding types={['job_seeker']}>
+      <Dashboard />
+    </Guard>
+  } />
+```
+
+### Phase 3: Fix DefaultRoute Flash
+
+**Goal**: Instead of rendering `<Index />` and then navigating away in a `useEffect`, `DefaultRoute` should:
+1. Show a loading indicator while auth state resolves
+2. Only render `<Index />` if the user is NOT authenticated
+3. If authenticated, navigate immediately without rendering the landing page
+
+This is a small change but eliminates the most visible symptom.
+
+### Phase 4: Remove Window Global and Centralize Refresh
+
+**Goal**: Replace `(window as any).__userStateRefresh` with a proper React pattern -- either pass `refreshUserState` through context (already available via `useUserState`) or use an event emitter. The mentor onboarding component should call `refreshUserState()` from the hook, not from `window`.
+
+### Phase 5: Clean Up Dead Code
+
+Remove:
+- `RouteGuard.tsx` (the "unified" one that is barely used)
+- `useUserType.tsx` hook (duplicates what `UserStateProvider` already provides)
+- `useOnboardingCompletion.ts`, `useSimplifiedOnboarding.ts` if unused
+- `SimplifiedOnboardingForm.tsx`, `EnhancedOnboardingForm.tsx`, `MultiStepForm.tsx` if superseded by `AIOnboardingFlow`
+
+---
+
+## Implementation Safety
+
+Each phase is independently deployable and testable:
+
+- **Phase 1** changes the data layer only -- hooks keep the same API
+- **Phase 2** changes the route definitions -- but behavior stays identical
+- **Phase 3** is a 10-line change
+- **Phase 4** is a 5-line change  
+- **Phase 5** is deletion only
+
+No database migrations needed. No RLS changes. No edge function changes. This is purely frontend architectural cleanup.
+
+---
+
+## Summary Table
+
+```text
+Problem                         | Phase | Risk  | Impact
+-----------------------------------------------------------
+Dual auth providers             | 1     | Low   | High (eliminates race conditions)
+9 DB calls on login             | 1     | Low   | High (reduces to 5)
+Triple admin check              | 1     | Low   | Medium
+Three guard systems             | 2     | Med   | High (eliminates flash)
+DefaultRoute flash              | 3     | Low   | High (visible UX fix)
+Window global hack              | 4     | Low   | Low (code quality)
+Dead code / unused components   | 5     | Low   | Low (maintainability)
+```
 
