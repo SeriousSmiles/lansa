@@ -48,7 +48,7 @@ Extract information accurately from the CV/resume images provided. Return ONLY v
   "personalInfo": {
     "name": "Full name from CV",
     "title": "Professional title/current role",
-    "summary": "Professional summary if present (2-3 sentences max)",
+    "summary": "The candidate's personal/professional bio paragraph. This section goes by many names: 'Profile', 'About Me', 'Bio', 'Summary', 'Personal Statement', 'Objective', 'Introduction', 'Professional Summary', 'Career Summary', 'Personal Profile', or similar. Extract the full text of this paragraph — it is the section where the candidate describes themselves in their own words. Do NOT invent one if none exists.",
     "email": "Email address if visible",
     "phone": "Phone number if visible"
   },
@@ -75,6 +75,7 @@ Focus on:
 - Work experience with specific achievements
 - Education and certifications
 - Contact information if visible
+- The personal bio/profile paragraph (look for ANY free-text section describing the person, regardless of its heading name)
 - Extract exact text, don't invent information`;
 
     // Call Lovable AI gateway (Gemini 2.5 Flash — vision-capable)
