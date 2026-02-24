@@ -30,7 +30,7 @@ export default function Onboarding() {
   const [showTypeSelection, setShowTypeSelection] = useState(true);
   const [showCareerSegmentation, setShowCareerSegmentation] = useState(false);
   const { user } = useAuth();
-  const { hasCompletedOnboarding, loading: userStateLoading, userType: contextUserType } = useUserState();
+  const { hasCompletedOnboarding, loading: userStateLoading, userType: contextUserType, refreshUserState } = useUserState();
   const navigate = useNavigate();
   const location = useLocation();
   const { navigateAfterOnboarding, isNavigating } = useOnboardingNavigation();
@@ -240,8 +240,8 @@ export default function Onboarding() {
             <CareerPathSegmentation onSelect={handleCareerPathSelect} />
           ) : showMentorOnboarding ? (
             <MentorOnboarding onComplete={async () => {
-              if ((window as any).__userStateRefresh) {
-                await (window as any).__userStateRefresh();
+              if (refreshUserState) {
+                await refreshUserState();
               }
               navigate('/mentor-dashboard', { replace: true });
             }} />

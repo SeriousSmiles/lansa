@@ -7,6 +7,7 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode 
 import { supabase } from '@/integrations/supabase/client';
 import { organizationService } from '@/services/organizationService';
 import { useAuth } from './AuthContext';
+import { useUserState } from './UserStateProvider';
 import { toast } from 'sonner';
 import type { 
   Organization, 
@@ -36,7 +37,8 @@ const ACTIVE_ORG_KEY = 'lansa_active_organization';
 
 export function OrganizationProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const [refreshUserStateFn, setRefreshUserStateFn] = useState<(() => Promise<void>) | null>(null);
+  const { refreshUserState } = useUserState();
+  const refreshUserStateFn = refreshUserState;
   const [activeOrganization, setActiveOrganization] = useState<Organization | null>(null);
   const [activeMembership, setActiveMembership] = useState<OrganizationMembership | null>(
     null
@@ -245,14 +247,7 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
     return activeMembership?.role === 'admin' || activeMembership?.role === 'owner';
   }, [activeMembership]);
 
-  // Allow UserStateProvider to register its refresh function
-  useEffect(() => {
-    // Access UserStateContext if available
-    const userStateContext = (window as any).__userStateRefresh;
-    if (userStateContext) {
-      setRefreshUserStateFn(() => userStateContext);
-    }
-  }, []);
+  // refreshUserState is now obtained directly from useUserState() — no window global needed
 
   const value: OrganizationContextValue = {
     activeOrganization,

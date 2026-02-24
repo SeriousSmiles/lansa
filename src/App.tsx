@@ -55,18 +55,13 @@ import AdminDocuments from "./pages/admin/AdminDocuments";
 import AdminSupport from "./pages/admin/AdminSupport";
 import AdminContent from "./pages/admin/AdminContent";
 import AdminMentors from "./pages/admin/AdminMentors";
-import { AuthProvider } from "./contexts/AuthContext";
-import { UserStateProvider } from "./contexts/UserStateProvider";
+
+import { UnifiedAuthProvider } from "./contexts/UnifiedAuthProvider";
 import { OrganizationProvider } from "./contexts/OrganizationContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
-import { RequireOnboarding, RequireUserType } from "./components/auth/RouteGuards";
-import { AdminRoute } from "./components/auth/AdminRoute";
+import { Guard } from "./components/auth/Guard";
 import { AdminLayout } from "./components/admin/AdminLayout";
 import { DefaultRoute } from "./components/auth/DefaultRoute";
-
-console.log("App.tsx loading, React available:", !!React);
-console.log("React hooks available:", typeof React.useState, typeof React.useEffect);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -83,207 +78,134 @@ const queryClient = new QueryClient({
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <UserStateProvider>
-          <OrganizationProvider>
-            <NotificationProvider>
-              <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <AddToHomeScreenPrompt />
-              <HotjarScript />
-              <CookieConsent />
-              <BrowserRouter>
-              <AppShell>
-                <Routes>
-                  {/* Public routes */}
-                  <Route path="/" element={<DefaultRoute />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/auth" element={<Login />} />
-                  <Route path="/auth/callback" element={<AuthCallback />} />
-                  <Route path="/help" element={<Help />} />
-                  <Route path="/privacy" element={<Privacy />} />
-                  <Route path="/terms" element={<Terms />} />
-                  <Route path="/profile/share/:userId" element={<SharedProfile />} />
-                  <Route path="/not-allowed" element={<NotAllowed />} />
-                  <Route path="/verify/:code" element={<VerifyCertification />} />
-                  
-                  {/* Protected routes */}
-                  <Route element={<ProtectedRoute />}>
-                    {/* Auth-only routes (no type/onboarding check) */}
-                    <Route path="/onboarding" element={<Onboarding />} />
-                    <Route path="/profile-starter" element={<ProfileStarter />} />
-                    <Route path="/card" element={<Card />} />
-                    <Route path="/dev-tools" element={<DevTools />} />
-                    
-                    {/* Job Seeker Routes - Protected by user type */}
-                    <Route path="/dashboard" element={
-                      <RequireOnboarding soft={false}>
-                        <RequireUserType allowedTypes={['job_seeker']}>
-                          <Dashboard />
-                        </RequireUserType>
-                      </RequireOnboarding>
-                    } />
-                    
-                    <Route path="/jobs" element={
-                      <RequireOnboarding soft={false}>
-                        <RequireUserType allowedTypes={['job_seeker']}>
-                          <LearningJobFeed />
-                        </RequireUserType>
-                      </RequireOnboarding>
-                    } />
-                    
-                    <Route path="/jobs/legacy" element={
-                      <RequireOnboarding soft={false}>
-                        <RequireUserType allowedTypes={['job_seeker']}>
-                          <JobFeed />
-                        </RequireUserType>
-                      </RequireOnboarding>
-                    } />
-                    
-                    <Route path="/profile" element={
-                      <RequireOnboarding soft={false}>
-                        <RequireUserType allowedTypes={['job_seeker']}>
-                          <Profile />
-                        </RequireUserType>
-                      </RequireOnboarding>
-                    } />
-                    
-                    <Route path="/profile/resume-editor" element={
-                      <RequireOnboarding soft={false}>
-                        <RequireUserType allowedTypes={['job_seeker']}>
-                          <ResumeEditor />
-                        </RequireUserType>
-                      </RequireOnboarding>
-                    } />
-                    
-                    <Route path="/discovery" element={
-                      <RequireOnboarding soft={false}>
-                        <RequireUserType allowedTypes={['job_seeker']}>
-                          <OpportunityDiscovery />
-                        </RequireUserType>
-                      </RequireOnboarding>
-                    } />
-                    
-                    <Route path="/opportunity-discovery" element={
-                      <RequireOnboarding soft={false}>
-                        <RequireUserType allowedTypes={['job_seeker']}>
-                          <OpportunityDiscovery />
-                        </RequireUserType>
-                      </RequireOnboarding>
-                    } />
-                    
-                    <Route path="/resources" element={
-                      <RequireUserType allowedTypes={['job_seeker']}>
-                        <Resources />
-                      </RequireUserType>
-                    } />
-                    
-                    <Route path="/notifications" element={<Notifications />} />
-                    
-                    <Route path="/content" element={
-                      <RequireUserType allowedTypes={['job_seeker', 'mentor']}>
-                        <ContentLibrary />
-                      </RequireUserType>
-                    } />
+      <UnifiedAuthProvider>
+        <OrganizationProvider>
+          <NotificationProvider>
+            <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <AddToHomeScreenPrompt />
+            <HotjarScript />
+            <CookieConsent />
+            <BrowserRouter>
+            <AppShell>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/" element={<DefaultRoute />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/auth" element={<Login />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/help" element={<Help />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/profile/share/:userId" element={<SharedProfile />} />
+                <Route path="/not-allowed" element={<NotAllowed />} />
+                <Route path="/verify/:code" element={<VerifyCertification />} />
+                
+                {/* Auth-only routes (no type/onboarding check) */}
+                <Route path="/onboarding" element={
+                  <Guard auth><Onboarding /></Guard>
+                } />
+                <Route path="/profile-starter" element={
+                  <Guard auth><ProfileStarter /></Guard>
+                } />
+                <Route path="/card" element={
+                  <Guard auth><Card /></Guard>
+                } />
+                <Route path="/dev-tools" element={
+                  <Guard auth><DevTools /></Guard>
+                } />
+                <Route path="/notifications" element={
+                  <Guard auth onboarding><Notifications /></Guard>
+                } />
+                
+                {/* Job Seeker Routes */}
+                <Route path="/dashboard" element={
+                  <Guard auth onboarding types={['job_seeker']}><Dashboard /></Guard>
+                } />
+                <Route path="/jobs" element={
+                  <Guard auth onboarding types={['job_seeker']}><LearningJobFeed /></Guard>
+                } />
+                <Route path="/jobs/legacy" element={
+                  <Guard auth onboarding types={['job_seeker']}><JobFeed /></Guard>
+                } />
+                <Route path="/profile" element={
+                  <Guard auth onboarding types={['job_seeker']}><Profile /></Guard>
+                } />
+                <Route path="/profile/resume-editor" element={
+                  <Guard auth onboarding types={['job_seeker']}><ResumeEditor /></Guard>
+                } />
+                <Route path="/discovery" element={
+                  <Guard auth onboarding types={['job_seeker']}><OpportunityDiscovery /></Guard>
+                } />
+                <Route path="/opportunity-discovery" element={
+                  <Guard auth onboarding types={['job_seeker']}><OpportunityDiscovery /></Guard>
+                } />
+                <Route path="/resources" element={
+                  <Guard auth types={['job_seeker']}><Resources /></Guard>
+                } />
+                <Route path="/content" element={
+                  <Guard auth types={['job_seeker', 'mentor']}><ContentLibrary /></Guard>
+                } />
+                <Route path="/certification" element={
+                  <Guard auth onboarding types={['job_seeker']}><Certification /></Guard>
+                } />
+                <Route path="/certification/:sector" element={
+                  <Guard auth onboarding types={['job_seeker']}><Certification /></Guard>
+                } />
+                <Route path="/certification/result/:resultId" element={
+                  <Guard auth onboarding types={['job_seeker']}><Certification /></Guard>
+                } />
 
-                    {/* Mentor Routes */}
-                    <Route path="/mentor-dashboard" element={
-                      <RequireOnboarding soft={false}>
-                        <RequireUserType allowedTypes={['mentor']}>
-                          <MentorDashboard />
-                        </RequireUserType>
-                      </RequireOnboarding>
-                    } />
-                    
-                    {/* Certification Routes - Protected by user type */}
-                    <Route path="/certification" element={
-                      <RequireOnboarding soft={false}>
-                        <RequireUserType allowedTypes={['job_seeker']}>
-                          <Certification />
-                        </RequireUserType>
-                      </RequireOnboarding>
-                    } />
-                    
-                    <Route path="/certification/:sector" element={
-                      <RequireOnboarding soft={false}>
-                        <RequireUserType allowedTypes={['job_seeker']}>
-                          <Certification />
-                        </RequireUserType>
-                      </RequireOnboarding>
-                    } />
-                    
-                    <Route path="/certification/result/:resultId" element={
-                      <RequireOnboarding soft={false}>
-                        <RequireUserType allowedTypes={['job_seeker']}>
-                          <Certification />
-                        </RequireUserType>
-                      </RequireOnboarding>
-                    } />
-                    
-                    {/* Employer Routes - Protected by user type */}
-                    <Route path="/employer-dashboard" element={
-                      <RequireOnboarding soft={false}>
-                        <RequireUserType allowedTypes={['employer']}>
-                          <EmployerDashboard />
-                        </RequireUserType>
-                      </RequireOnboarding>
-                    } />
-                    
-                    <Route path="/organization/settings" element={
-                      <RequireOnboarding soft={false}>
-                        <RequireUserType allowedTypes={['employer']}>
-                          <OrganizationSettings />
-                        </RequireUserType>
-                      </RequireOnboarding>
-                    } />
-                    
-                    <Route path="/browse-candidates" element={
-                      <RequireOnboarding soft={false}>
-                        <RequireUserType allowedTypes={['employer']}>
-                          <BrowseCandidates />
-                        </RequireUserType>
-                      </RequireOnboarding>
-                    } />
-                    
-                  </Route>
+                {/* Mentor Routes */}
+                <Route path="/mentor-dashboard" element={
+                  <Guard auth onboarding types={['mentor']}><MentorDashboard /></Guard>
+                } />
+                
+                {/* Employer Routes */}
+                <Route path="/employer-dashboard" element={
+                  <Guard auth onboarding types={['employer']}><EmployerDashboard /></Guard>
+                } />
+                <Route path="/organization/settings" element={
+                  <Guard auth onboarding types={['employer']}><OrganizationSettings /></Guard>
+                } />
+                <Route path="/browse-candidates" element={
+                  <Guard auth onboarding types={['employer']}><BrowseCandidates /></Guard>
+                } />
 
-                  {/* Admin Routes - Isolated with AdminRoute guard */}
-                  <Route
-                    path="/admin"
-                    element={
-                      <AdminRoute>
-                        <AdminLayout />
-                      </AdminRoute>
-                    }
-                  >
-                    <Route index element={<AdminHome />} />
-                    <Route path="users" element={<AdminUsers />} />
-                    <Route path="organizations" element={<AdminOrganizations />} />
-                    <Route path="updates" element={<AdminUpdates />} />
-                    <Route path="pricing" element={<AdminPricing />} />
-                    <Route path="trends" element={<AdminTrends />} />
-                    <Route path="analytics" element={<AdminAnalytics />} />
-                    <Route path="historical" element={<AdminHistorical />} />
-                    <Route path="documents" element={<AdminDocuments />} />
-                    <Route path="support" element={<AdminSupport />} />
-                    <Route path="content" element={<AdminContent />} />
-                    <Route path="mentors" element={<AdminMentors />} />
-                    <Route path="settings" element={<AdminSettings />} />
-                  </Route>
-                  
-                  <Route path="*" element={<HomeSpotlight />} />
-                </Routes>
-              </AppShell>
-              </BrowserRouter>
-              </TooltipProvider>
-            </NotificationProvider>
-          </OrganizationProvider>
-        </UserStateProvider>
-      </AuthProvider>
+                {/* Admin Routes */}
+                <Route
+                  path="/admin"
+                  element={
+                    <Guard auth admin><AdminLayout /></Guard>
+                  }
+                >
+                  <Route index element={<AdminHome />} />
+                  <Route path="users" element={<AdminUsers />} />
+                  <Route path="organizations" element={<AdminOrganizations />} />
+                  <Route path="updates" element={<AdminUpdates />} />
+                  <Route path="pricing" element={<AdminPricing />} />
+                  <Route path="trends" element={<AdminTrends />} />
+                  <Route path="analytics" element={<AdminAnalytics />} />
+                  <Route path="historical" element={<AdminHistorical />} />
+                  <Route path="documents" element={<AdminDocuments />} />
+                  <Route path="support" element={<AdminSupport />} />
+                  <Route path="content" element={<AdminContent />} />
+                  <Route path="mentors" element={<AdminMentors />} />
+                  <Route path="settings" element={<AdminSettings />} />
+                </Route>
+                
+                <Route path="*" element={<HomeSpotlight />} />
+              </Routes>
+            </AppShell>
+            </BrowserRouter>
+            </TooltipProvider>
+          </NotificationProvider>
+        </OrganizationProvider>
+      </UnifiedAuthProvider>
     </QueryClientProvider>
   );
 };
