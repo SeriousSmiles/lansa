@@ -1,39 +1,33 @@
 
 
-# Fix: Restore Profile Page as Post-Onboarding Destination for Job Seekers
+# Fix: Extract Profile/Bio Paragraph from CV Regardless of Section Name
 
 ## Problem
-After completing the AI onboarding flow, job seekers are sent to `/certification` instead of `/profile` (the profile-building page). This happened because someone hardcoded `navigate('/certification', { replace: true })` in `AIOnboardingFlow.tsx` line 226, bypassing the navigation service that correctly routes job seekers to `/profile`.
-
-The navigation service (`onboardingNavigationService.ts`) is already imported but never called -- the function `getPostOnboardingDestination` is imported on line 214 but ignored in favor of the hardcoded certification route.
+The CV parser's extraction prompt only asks for a `"Professional summary if present"`, which causes the AI to miss the personal bio/about paragraph when it appears under different headings like "Profile", "Bio", "About Me", "Personal Statement", "Objective", "Introduction", etc. This is one of the most common and valuable sections in a resume, but its label varies wildly.
 
 ## Fix (Single File Change)
 
-**File: `src/components/onboarding/AIOnboardingFlow.tsx`** (lines 222-226)
+**File: `supabase/functions/parse-cv/index.ts`** — lines 48-53 of the system prompt
 
-Replace the hardcoded certification navigation with the proper navigation service call:
+Update the `personalInfo.summary` field description to explicitly instruct the AI to look for this content under any common heading:
 
-```text
+```
 Before:
-  toast.success('Onboarding completed! Setting up your profile...');
-  navigate('/certification', { replace: true });
+"summary": "Professional summary if present (2-3 sentences max)"
 
 After:
-  toast.success('Onboarding completed! Setting up your profile...');
-  const destination = getPostOnboardingDestination('job_seeker');
-  navigate(destination, { replace: true });
+"summary": "The candidate's personal/professional bio paragraph. This section goes by many names: 'Profile', 'About Me', 'Bio', 'Summary', 'Personal Statement', 'Objective', 'Introduction', 'Professional Summary', 'Career Summary', 'Personal Profile', or similar. Extract the full text of this paragraph — it is the section where the candidate describes themselves in their own words. Do NOT invent one if none exists."
 ```
 
-This uses the already-imported `getPostOnboardingDestination` function, which returns `/profile` for job seekers. If the routing logic ever needs to change (e.g., based on career path), it can be updated in one place -- the navigation service -- instead of hunting through components.
+Also add a reinforcing bullet in the "Focus on" list at the bottom of the prompt:
 
-## Flow After Fix
-1. User completes AI onboarding steps (welcome, demographics, skills, goals, summary)
-2. Onboarding is marked complete in the database
-3. User state is refreshed
-4. User is navigated to `/profile` to build their full profile
-5. Certification remains accessible from the dashboard/profile when the user is ready
+```
+- The personal bio/profile paragraph (look for ANY free-text section describing the person, regardless of its heading name)
+```
 
-## No Other Files Affected
-- The navigation service already returns `/profile` for job seekers
-- The `useOnboardingNavigation` hook already works correctly
-- No database or RLS changes needed
+## Why This Works
+The AI model reads the full CV image. It already "sees" the bio paragraph — the problem is the prompt doesn't emphasize that it should capture it. By listing the common aliases and describing what the content looks like (a free-text paragraph where someone describes themselves), the model will reliably extract it regardless of the heading used.
+
+## Downstream Impact
+No changes needed downstream. The extracted `summary` field already maps to `about_text` in `cvDataService.ts` (line 152), which populates the user's profile bio section correctly.
+
