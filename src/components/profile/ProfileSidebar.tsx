@@ -5,6 +5,7 @@ import { SkillsList } from "./sidebar/SkillsList";
 import { LanguagesList } from "./sidebar/LanguagesList";
 import { CertificationsList } from "./sidebar/CertificationsList";
 import { ProfessionalGoalWithAI } from "./sidebar/ProfessionalGoalWithAI";
+import { ProfessionalStageSelector } from "./settings/ProfessionalStageSelector";
 import { LanguageItem, CertificationItem, AchievementItem } from "@/hooks/profile/profileTypes";
 
 interface ProfileSidebarProps {
@@ -117,6 +118,9 @@ export function ProfileSidebar({
         onUpdateLocation={onUpdateLocation}
         onUploadProfileImage={handleUploadProfileImage}
       />
+
+      {/* Professional Stage */}
+      <ProfessionalStageSelector />
 
       {/* Skills */}
       <SkillsList
