@@ -1,49 +1,49 @@
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUserState } from '@/contexts/UserStateProvider';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthProvider';
+import { LoadingSpinner } from '@/components/loading/LoadingSpinner';
+import { useEffect } from 'react';
 import Index from '@/pages/Index';
 
 export function DefaultRoute() {
-  const { loading, isAuthenticated, userType, hasCompletedOnboarding } = useUserState();
+  const { loading, isAuthenticated, userType, hasCompletedOnboarding, isRefreshing } = useUnifiedAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (loading) return;
     if (!isAuthenticated) return;
 
-    // Redirect to onboarding if not completed
     if (!hasCompletedOnboarding) {
-      console.info("🔄 [DefaultRoute] Redirecting to onboarding - not completed", {
-        userType,
-        hasCompletedOnboarding,
-        loading
-      });
       navigate('/onboarding', { replace: true, state: { fromRedirect: true } });
       return;
     }
 
-    // Redirect to appropriate dashboard based on user type
     if (userType === 'employer') {
-      console.info("🔄 [DefaultRoute] Redirecting to employer dashboard", { userType });
       navigate('/employer-dashboard', { replace: true, state: { fromRedirect: true } });
-      return;
-    }
-
-    if (userType === 'mentor') {
-      console.info("🔄 [DefaultRoute] Redirecting to mentor dashboard", { userType });
+    } else if (userType === 'mentor') {
       navigate('/mentor-dashboard', { replace: true, state: { fromRedirect: true } });
-      return;
-    }
-
-    if (userType === 'job_seeker') {
-      console.info("🔄 [DefaultRoute] Redirecting to job seeker dashboard", { userType });
+    } else if (userType === 'job_seeker') {
       navigate('/dashboard', { replace: true, state: { fromRedirect: true } });
-      return;
     }
-
-    // Fallback for unknown user types
-    console.warn("⚠️ [DefaultRoute] Unknown user type, staying on landing page", { userType });
   }, [loading, isAuthenticated, userType, hasCompletedOnboarding, navigate]);
 
-  return <Index />;
+  // CRITICAL: Show loader while auth resolves — prevents landing page flash
+  if (loading && !isRefreshing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  // Only show landing page for unauthenticated users
+  if (!isAuthenticated) {
+    return <Index />;
+  }
+
+  // Authenticated but waiting for redirect effect — show loader, not landing page
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <LoadingSpinner />
+    </div>
+  );
 }
