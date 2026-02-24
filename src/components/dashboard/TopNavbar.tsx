@@ -6,7 +6,7 @@ import { UserProfile } from "./UserProfile";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
-import { useUserType } from "@/hooks/useUserType";
+import { useUserState } from "@/contexts/UserStateProvider";
 import { useOrgPermissions } from "@/hooks/useOrgPermissions";
 import { TablerIcon } from "@tabler/icons-react";
 import { AnimatedTabNav } from "@/components/navigation/AnimatedTabNav";
@@ -32,7 +32,7 @@ interface TopNavbarProps {
 export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopNavbarProps) {
   const isDarkTheme = themeColor ? getContrastTextColor(themeColor) === "#FFFFFF" : false;
   const { t } = useTranslation();
-  const { userType } = useUserType();
+  const { userType } = useUserState();
   const { canManageOrgSettings } = useOrgPermissions();
   const { setSearchOpen } = useUIStore();
   const isMobile = useIsMobile();

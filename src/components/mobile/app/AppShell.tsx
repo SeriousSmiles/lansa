@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserState } from '@/contexts/UserStateProvider';
@@ -33,24 +33,13 @@ export function AppShell({ children }: AppShellProps) {
   // Compute userName from auth user displayName
   const userName = user?.displayName;
   
-  console.log('AppShell state:', { 
-    isMobile, 
-    loading, 
-    userStateLoading,
-    user: !!user, 
-    userType,
-    hasCompletedOnboarding, 
-    isAuthRoute, 
-    isOnboardingRoute, 
-    isSharedProfile,
-    isAdminRoute,
-    showMobileNavigation: isMobile && !loading && !userStateLoading && user && userType === 'job_seeker' && !isAuthRoute && !isOnboardingRoute && !isSharedProfile && !isAdminRoute
-  });
-  
   // CRITICAL: Only show mobile navigation for job seekers
   // Employers have their own navigation in MobileEmployerTabs
   // Admin routes have their own navigation in AdminMobileLayout
-  const showMobileNavigation = isMobile && !loading && !userStateLoading && user && userType === 'job_seeker' && !isAuthRoute && !isOnboardingRoute && !isSharedProfile && !isAdminRoute;
+  const showMobileNavigation = useMemo(
+    () => isMobile && !loading && !userStateLoading && user && userType === 'job_seeker' && !isAuthRoute && !isOnboardingRoute && !isSharedProfile && !isAdminRoute,
+    [isMobile, loading, userStateLoading, user, userType, isAuthRoute, isOnboardingRoute, isSharedProfile, isAdminRoute]
+  );
   
   // On desktop, just render children without mobile shell
   if (!isMobile) {

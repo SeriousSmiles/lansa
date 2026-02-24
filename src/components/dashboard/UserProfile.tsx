@@ -12,7 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { safeHandler } from "@/config/demo";
-import { useUserType } from "@/hooks/useUserType";
+import { useUserState } from "@/contexts/UserStateProvider";
 
 interface UserProfileProps {
   userName: string;
@@ -23,7 +23,7 @@ interface UserProfileProps {
 
 export function UserProfile({ userName, email, handleLogout, themeColor }: UserProfileProps) {
   const { user } = useAuth();
-  const { userType } = useUserType();
+  const { userType } = useUserState();
   const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState<string>("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
