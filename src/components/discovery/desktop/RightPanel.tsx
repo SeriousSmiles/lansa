@@ -1,7 +1,7 @@
 import React from 'react';
 import { DiscoveryProfile } from '@/services/discoveryService';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, GraduationCap, BarChart2 } from 'lucide-react';
+import { Briefcase, GraduationCap, BarChart2, Award } from 'lucide-react';
 
 interface RightPanelProps {
   profile: DiscoveryProfile;
@@ -60,6 +60,7 @@ export function RightPanel({ profile }: RightPanelProps) {
 
   const experiences = profile.experiences || [];
   const education = profile.education || [];
+  const achievements = profile.achievements || [];
   const accentColor = profile.highlight_color || '#6366f1';
   const rgb = hexToRgb(accentColor);
 
@@ -171,6 +172,25 @@ export function RightPanel({ profile }: RightPanelProps) {
           </div>
         )}
       </SectionCard>
+
+      {/* Achievements */}
+      {achievements.length > 0 && (
+        <SectionCard icon={<Award className="w-4 h-4" />} title="Achievements" accentColor={accentColor}>
+          <div className="space-y-3">
+            {achievements.map((a: any, idx: number) => (
+              <div key={idx} className={idx > 0 ? 'pt-3 border-t border-border' : ''}>
+                <p className="text-sm font-semibold text-foreground">{a.title}</p>
+                {a.organization && (
+                  <p className="text-xs font-medium mt-0.5" style={{ color: accentColor }}>{a.organization}</p>
+                )}
+                {a.description && (
+                  <p className="text-xs text-foreground/65 leading-relaxed mt-1">{a.description}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+      )}
 
     </div>
   );

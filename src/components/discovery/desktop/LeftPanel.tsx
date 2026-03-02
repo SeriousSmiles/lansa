@@ -49,7 +49,6 @@ export function LeftPanel({ profile }: LeftPanelProps) {
   const accentColor = profile.highlight_color || '#6366f1';
   const rgb = hexToRgb(accentColor);
   const languages = profile.languages || [];
-  const achievements = profile.achievements || [];
 
   return (
     <div className="h-full flex flex-col bg-background overflow-y-auto">
@@ -172,29 +171,6 @@ export function LeftPanel({ profile }: LeftPanelProps) {
             <div className="flex flex-wrap gap-1.5">
               {languages.map((lang: string, idx: number) => (
                 <Badge key={idx} variant="outline" className="text-xs">{lang}</Badge>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Achievements */}
-      {achievements.length > 0 && (
-        <>
-          <div className="h-px bg-border mx-5" />
-          <div className="px-5 py-4">
-            <div className="flex items-center gap-1.5 mb-2">
-              <Award className="w-3.5 h-3.5 text-muted-foreground" />
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Achievements</p>
-            </div>
-            <div className="space-y-2">
-              {achievements.slice(0, 2).map((a: any, idx: number) => (
-                <div key={idx}>
-                  <p className="text-xs font-semibold text-foreground">{a.title}</p>
-                  {a.description && (
-                    <p className="text-[11px] text-muted-foreground line-clamp-1">{a.description}</p>
-                  )}
-                </div>
               ))}
             </div>
           </div>
