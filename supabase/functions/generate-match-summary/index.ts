@@ -7,6 +7,16 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+function buildFallbackSummary(candidate: any, employer: any): string {
+  const name = candidate?.name || 'This candidate';
+  const skills = candidate?.skills?.slice(0, 3).join(', ') || 'relevant skills';
+  const industry = employer?.industry || 'your industry';
+  const certified = candidate?.lansa_certified ? ' As a Lansa Certified professional, they bring verified expertise.' : '';
+  return `${name} brings ${skills} that align well with ${industry}.${certified} Their profile and goals make them a strong potential fit for your team.`;
+}
+
+
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -129,9 +139,14 @@ Generate a 2-3 sentence match summary explaining why this candidate is a good fi
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
+      // For 5xx gateway errors, return a graceful fallback instead of crashing
       const errorText = await aiResponse.text();
       console.error('AI gateway error:', aiResponse.status, errorText);
-      throw new Error('AI gateway error');
+      const fallbackSummary = buildFallbackSummary(candidateProfile, businessProfile);
+      return new Response(
+        JSON.stringify({ summary: fallbackSummary }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const aiData = await aiResponse.json();
