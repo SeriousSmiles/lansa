@@ -32,10 +32,7 @@ export const swipeService = {
 
       const { data, error } = await supabase
         .from('swipes')
-        .upsert([swipeData], {
-          onConflict: 'swiper_user_id,target_user_id,context',
-          ignoreDuplicates: true,
-        })
+        .insert([swipeData])
         .select()
         .single();
 
