@@ -1,65 +1,47 @@
 
-## Fix: Swipe + overflow-y-auto Coexistence
+## Root Cause: `upsert` vs Partial Unique Index Mismatch
 
-### Root Cause (Precise)
+### The Problem
 
-The `SwipeableContainer` sets `touchAction: 'pan-y'` on its outer div. This tells the browser "vertical scroll is allowed, horizontal is mine." However, the inner `overflow-y-auto` div inside `EnhancedCandidateCard` creates a **nested scroll container**. On mobile browsers, when a touch starts inside a nested scrollable element, the browser routes the pointer stream to that inner scroll context first — the outer `SwipeableContainer` only receives the event after the inner scroller decides it doesn't want it (which it does, because it's `overflow-y-auto`).
+The `swipes` table has two unique indexes:
 
-The result: horizontal drags started on the content body are consumed by the inner scroll context before `SwipeableContainer.onPointerMove` can classify them as horizontal and take over.
+1. `uniq_swipe_with_listing` — covers `(swiper_user_id, target_user_id, context, job_listing_id)` — full constraint when a job listing is present
+2. `uniq_swipe_without_listing` — covers `(swiper_user_id, target_user_id, context)` WHERE `job_listing_id IS NULL` — this is a **partial** index
 
-### The Right Solution: Pointer Event Capture
+Postgres `ON CONFLICT` in an `upsert` requires a **non-partial** unique constraint on exactly the columns specified. The code passes `onConflict: 'swiper_user_id,target_user_id,context'`, but the only index covering those three columns is the partial one (`WHERE job_listing_id IS NULL`). Postgres cannot resolve a partial index as the conflict target for `ON CONFLICT`, so it throws `42P10` — "there is no unique or exclusion constraint matching the ON CONFLICT specification."
 
-The fix is to use **`setPointerCapture`** aggressively in `SwipeableContainer.onPointerDown`. This is already called on `e.target` — but `e.target` is the inner scrollable div, so the capture is on the wrong element.
+This breaks **every swipe** — buttons, drag gestures, everything — because the error is thrown before any insert succeeds.
 
-The fix: call `containerRef.current.setPointerCapture(e.pointerId)` (on the **SwipeableContainer's own element**) instead of `(e.target as HTMLElement).setPointerCapture(e.pointerId)`. Once pointer capture is set on the outer container, ALL subsequent `pointermove` and `pointerup` events route to it directly — the inner scroll context is bypassed for the duration of the gesture.
+### The Fix
 
-This is the standard Web platform mechanism for exactly this use case (drag handles inside scrollable containers).
+Switch from `upsert` back to a plain `insert`. Duplicate swipes are already prevented by the DB indexes — if a duplicate arrives, Postgres throws `23505` (unique violation). The code already has `if (error && error.code !== '23505') throw error` but it was short-circuited because `upsert` throws `42P10` first, before reaching the duplicate check.
 
-**Before:**
-```ts
-(e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-```
-
-**After:**
-```ts
-containerRef.current?.setPointerCapture(e.pointerId);
-```
-
-With this change, the `SwipeableContainer` captures the pointer stream immediately on `pointerdown`, regardless of which child element was touched. The `onPointerMove` fires on the outer container, can detect horizontal vs vertical intent, and if vertical (scroll), it can **release** the capture to hand it back to the browser:
+The corrected logic:
 
 ```ts
-if (!isHorizontalSwipe.current) {
-  isDragging.current = false;
-  containerRef.current?.releasePointerCapture(e.pointerId); // Give scroll back to browser
-  return;
-}
+const { data, error } = await supabase
+  .from('swipes')
+  .insert([swipeData])
+  .select()
+  .single();
+
+if (error && error.code !== '23505') throw error;
+return data;
 ```
 
-This way:
-- Horizontal drag → SwipeableContainer keeps capture → card swipes
-- Vertical drag → SwipeableContainer releases capture → inner `overflow-y-auto` scrolls normally
+This:
+- Inserts the swipe normally — DB triggers fire for notifications as expected
+- On a true duplicate (same person re-swiping the same candidate), silently swallows the `23505` error
+- Never fails with `42P10` because no `ON CONFLICT` clause is sent to Postgres
 
-The card content stays `overflow-y-auto`, the AI match insight is fully visible, and swipe works from anywhere on the card.
+### Why Not Add a Full Constraint to the DB?
 
-### Changes Required
+The partial index structure is intentional — it allows different uniqueness rules depending on whether a job listing is attached. Adding a full constraint would change the DB's data model. The code-side fix is the correct, minimal approach.
 
-**File: `src/components/mobile/SwipeableContainer.tsx`**
+### What Changes
 
-Two changes:
-1. In `onPointerDown`: replace `(e.target as HTMLElement).setPointerCapture?.(e.pointerId)` with `containerRef.current?.setPointerCapture(e.pointerId)`
-2. In `onPointerMove`: after detecting vertical intent (`isHorizontalSwipe.current === false`), add `containerRef.current?.releasePointerCapture(e.pointerId)` before returning — this hands vertical scroll back to the native browser/inner scroll context
+**File: `src/services/swipeService.ts`**
 
-**File: `src/components/mobile/employer/EnhancedCandidateCard.tsx`**
+In `recordSwipe`, replace the `.upsert(...)` call with `.insert(...)`. Remove the `onConflict` and `ignoreDuplicates` options. The existing `error.code !== '23505'` guard already handles true duplicates correctly.
 
-Revert line 117: change `overflow-hidden` back to `overflow-y-auto` on the inner content div. The AI match insight will be fully visible again and scrollable when content overflows.
-
-### Why This Is Better Than The Previous Approach
-
-The previous fix (`overflow-hidden`) solved the symptom by killing the competing scroll context entirely — but at the cost of content visibility. The pointer capture approach solves the actual problem at the Web platform level: who owns the pointer stream. It's the standard pattern used by drag-and-drop libraries (react-dnd, dnd-kit) to handle drag handles inside scrollable containers.
-
-### Files to Change
-
-| File | Change |
-|---|---|
-| `src/components/mobile/SwipeableContainer.tsx` | Capture pointer on container, release on vertical intent |
-| `src/components/mobile/employer/EnhancedCandidateCard.tsx` | Revert `overflow-hidden` → `overflow-y-auto` on line 117 |
+No other files need changing. No DB migrations needed. Notifications, DB triggers, and match logic are all unaffected — the `insert` path is identical to the original flow before the upsert was introduced.
