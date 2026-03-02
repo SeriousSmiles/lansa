@@ -1,79 +1,82 @@
 
-# Candidate Browser — Color Identity + Content Density Improvements
+# Fix: Candidate Browse Loop Bug + Real User Data
 
-## What You're Seeing (Diagnosis)
+## Bug Root Cause (Confirmed)
 
-Looking at both screenshots:
+The bug at candidates 15-17 is a **profiles array replacement + stale index collision**:
 
-**Problem 1 — The gray right panel has no identity**
-The right panel uses a fixed `bg-muted/20` background — a neutral gray that has nothing to do with the candidate's profile. Each candidate has a `cover_color` and `highlight_color` already stored in the database (it's what they use on their own profile page). The right panel should breathe the same color DNA as the candidate's identity choices — without being overwhelming.
+1. `useCandidateNavigation` tracks `currentIndex` as internal state (e.g., 17)
+2. When `currentIndex >= totalProfiles - 3`, `onEndReached()` fires
+3. `handleEndReached` calls `loadProfiles()` which calls `setProfiles(newData)` — **replacing** the array with a freshly shuffled 20 mock candidates
+4. `currentIndex` is still 17 but now points to a completely different profile in the new array — visual jump/flash
+5. No debounce exists, so it fires 3 times (at indices 17, 18, 19), causing 3 rapid replacements
 
-**Problem 2 — Empty space at the bottom with sparse content**
-When mock candidates have no experience/education, the right panel shows small italic placeholder text then leaves a large blank gap. There is useful information that can fill this space intelligently:
-- The `professional_goal` field shows once but there's also a `biggest_challenge` that isn't displayed anywhere
-- A "What they're looking for" summary tile (derived from the candidate's onboarding goal data)
-- A "Quick Profile Stats" tile showing: number of skills, years of experience (if derivable from dates), education level
-- A "Conversation Starter" tile — an AI-generated prompt to help the employer break the ice, which adds real value and fills the space meaningfully
+## Fix 1 — Append profiles instead of replacing (Critical)
 
-## Implementation Plan
+In `CandidateBrowseTab.tsx`, `handleEndReached` should **append** newly loaded profiles to the existing array rather than replacing it. This means `currentIndex` 17 still points to the same profile, and the new candidates are queued behind.
 
-### Change 1 — Tint the right panel with the candidate's accent color
+Also add a loading guard so `handleEndReached` cannot fire multiple times in rapid succession:
 
-In `RightPanel.tsx`, the outer wrapper currently has `bg-muted/20`. This will be replaced with a dynamic tint derived from the candidate's `highlight_color` (which defaults to `#FF6B4A` if unset). The approach:
+```
+// Before (bug):
+setProfiles(data);
 
-- Pass `highlight_color` from `profile` into the container background as an inline style using very low opacity (6–8%) so the tint is subtle — enough to feel personal, not enough to be garish
-- The `SectionCard` headers (currently `bg-muted/40`) will use the same color at slightly higher opacity (12%) to reinforce the hierarchy
-- The `border-primary` on the Professional Goals quote bar will use `highlight_color` instead of the global primary so it matches the candidate's color
-
-This connects the right panel's visual identity directly to the candidate's own profile color choices. Every candidate will look and feel slightly different.
-
-```text
-Before: bg-muted/20 (neutral gray for every candidate)
-After:  background: rgba(highlight_color, 0.06) (unique to each candidate)
+// After (fix):
+setProfiles(prev => {
+  const existingIds = new Set(prev.map(p => p.user_id));
+  const newOnes = data.filter(p => !existingIds.has(p.user_id));
+  return [...prev, ...newOnes];
+});
 ```
 
-### Change 2 — Add the "Biggest Challenge" tile
+Since mock candidates have fixed IDs (`mock-1` through `mock-20`), the dedup filter (`existingIds`) will prevent duplicates from being added. To avoid this blocking new pages, the mock candidate data will need to be shuffled with a suffix variant — OR we simply skip deduplication for mock IDs and just append them as a fresh "page". The simplest and most robust fix: use an `isLoadingMore` ref guard so `handleEndReached` can only fire once at a time, and append the result regardless.
 
-The `DiscoveryProfile` interface currently maps `professional_goal` but the candidate's `biggest_challenge` field exists in `user_profiles_public` and is NOT mapped or displayed. This is valuable signal for an employer:
+## Fix 2 — Show Real Users (Remove certifiedOnly filter for now)
 
-- Update `DiscoveryProfile` interface in `discoveryService.ts` to add `biggest_challenge?: string`
-- Update the `.map()` in `discoveryService.ts` to pull `biggest_challenge` from the database record
-- In `RightPanel.tsx`, add a "Biggest Challenge" tile below Professional Goals with a different icon (e.g. `Zap` or `AlertCircle`) and a left border in a different accent shade
+The database has real users with real data:
+- **John Nathan Stehpens** — Creative Specialist, 3 experiences, education, 4 languages, achievements, certifications, full profile
+- **Saviëntaly Noten** — Skills and languages, partial profile
+- One blank profile (can be filtered out by checking if name is non-empty)
 
-This directly fills the empty bottom space with real, meaningful content.
+Currently `certifiedOnly: true` is passed in `CandidateBrowseTab.tsx` even though `user_certifications` returns `[]`. This means real users are always filtered out and employers only ever see mock candidates.
 
-### Change 3 — Add a "Quick Stats" summary strip
+**Fix**: Change `certifiedOnly` to `false` so real database users are shown. Add a simple quality filter — skip profiles where `name` is blank/whitespace. The `isCertified` badge will still render correctly based on actual certification data (it checks the set independently).
 
-Between the Experience/Education tiles and the Languages/Achievements row, add a compact horizontal strip tile showing at a glance:
-- Skills count: "6 skills listed"
-- Experience: "3 roles" or "No experience yet"
-- Education: "Bachelor's degree" (first education title) or "No formal education listed"
-- Profile completeness indicator (simple pill: "Profile 80% complete" using primary color)
+This is a product decision — showing uncertified real users vs. mock certified users. Since the platform is in early growth, showing real users (even uncertified) provides more authentic value than 20 identical mock profiles.
 
-This makes candidates with sparse profiles feel less empty — the strip always renders regardless of data presence and shows the employer a compact summary they can scan in 2 seconds.
+## Fix 3 — Add isLoadingMore guard
 
-### Change 4 — Section card headers use the candidate's color
+In `useCandidateNavigation`, the `onEndReached` call fires at index 17, 18, AND 19 (since the effect runs on every `currentIndex` change). Add a `isLoadingMoreRef` boolean ref in `CandidateBrowseTab` to prevent repeated calls:
 
-The `SectionCard` header row (currently `bg-muted/40` flat gray) will use a tint of the candidate's `highlight_color` at ~10% opacity. The icon and title text will use the same color at full opacity (replacing the flat `text-muted-foreground`). This makes each section header feel branded to the candidate rather than generic.
+```typescript
+const isLoadingMoreRef = useRef(false);
 
-### Change 5 — Pass `highlight_color` into RightPanel
-
-Currently `RightPanel` only receives `profile`. It already has access to `profile.highlight_color`. The changes are all self-contained within `RightPanel.tsx` and `discoveryService.ts` — no prop interface changes needed for parent components.
+const handleEndReached = async () => {
+  if (isLoadingMoreRef.current) return;
+  isLoadingMoreRef.current = true;
+  await loadMoreProfiles(); // appends
+  isLoadingMoreRef.current = false;
+};
+```
 
 ## Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/components/discovery/desktop/RightPanel.tsx` | Dynamic background tint, colored section headers, biggest_challenge tile, quick stats strip |
-| `src/services/discoveryService.ts` | Add `biggest_challenge` to interface + mapping |
-
-## Visual Result
-
-Each candidate's right panel will feel like an extension of their personal brand rather than a generic gray form. An employer browsing candidates will notice the subtle color shift as they move through candidates — making the experience feel more human and alive. The bottom space is filled with the biggest challenge tile and quick stats strip, so no candidate profile ever feels like a half-empty page.
+| `src/components/dashboard/employer/CandidateBrowseTab.tsx` | Add `isLoadingMoreRef` guard, change `handleEndReached` to append not replace, change `certifiedOnly` to `false`, filter blank-name profiles |
+| `src/services/discoveryService.ts` | Add name quality filter (skip blank names) in the `.filter()` step |
 
 ## What Is NOT Changed
-- Left panel — already looks good per your feedback
-- Animation system — preserved as-is (key-prop based)
-- Action buttons — unchanged
-- Data fetching logic — only the mapping adds one field
-- Mobile SwipeDeck — untouched
+
+- `useCandidateNavigation.ts` — hook logic is fine as-is
+- `SplitPanelBrowser.tsx` — no changes needed
+- `LeftPanel.tsx`, `RightPanel.tsx` — no changes needed
+- Mobile `SwipeDeck` — untouched
+- Mock data — preserved as fallback when no real profiles exist
+
+## Expected Result After Fix
+
+- Browsing past candidate 17 no longer causes a visual jump or blank/flash
+- Real database users (John Nathan Stehpens, Saviëntaly Noten) appear in the feed alongside mock candidates
+- Blank/incomplete profiles (the unnamed user) are filtered out
+- `handleEndReached` can only fire once at a time, preventing triple-replacement
