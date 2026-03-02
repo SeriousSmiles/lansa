@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SwipeDeck } from "@/components/discovery/SwipeDeck";
 import { SplitPanelBrowser } from "@/components/discovery/desktop/SplitPanelBrowser";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ export function CandidateBrowseTab() {
   const [isLoading, setIsLoading] = useState(false);
   const [matchCount, setMatchCount] = useState(0);
   const [swipeCount, setSwipeCount] = useState(0);
+  const isLoadingMoreRef = useRef(false);
 
   useEffect(() => {
     if (user) {
@@ -39,7 +40,7 @@ export function CandidateBrowseTab() {
         'employee', 
         {}, 
         20,
-        true // certifiedOnly - filter for certified candidates
+        false // show all profiles including uncertified real users
       );
       setProfiles(data);
     } catch (error) {
@@ -134,8 +135,33 @@ export function CandidateBrowseTab() {
     }
   };
 
-  const handleEndReached = () => {
-    loadProfiles(); // Load more profiles
+  const handleEndReached = async () => {
+    if (isLoadingMoreRef.current) return;
+    isLoadingMoreRef.current = true;
+    try {
+      if (!user) return;
+      setIsLoading(true);
+      const data = await discoveryService.getDiscoveryProfiles(
+        user.id,
+        'employee',
+        {},
+        20,
+        false
+      );
+      setProfiles(prev => {
+        const existingIds = new Set(prev.map(p => p.user_id));
+        // For mock IDs, always allow appending (they have no real dedup concern)
+        const newOnes = data.filter(p => 
+          p.user_id.startsWith('mock-') || !existingIds.has(p.user_id)
+        );
+        return [...prev, ...newOnes];
+      });
+    } catch (error) {
+      console.error('Error loading more profiles:', error);
+    } finally {
+      setIsLoading(false);
+      isLoadingMoreRef.current = false;
+    }
   };
 
   return (

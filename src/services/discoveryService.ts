@@ -96,6 +96,8 @@ export const discoveryService = {
         // Convert database records to DiscoveryProfile format
         const discoveryProfiles: DiscoveryProfile[] = publicProfiles
           .filter(profile => {
+            // Quality filter: skip blank/whitespace-only names
+            if (!profile.name || !profile.name.trim()) return false;
             // Apply certification filter at application level
             if (certifiedOnly) {
               return certifiedUserIds.has(profile.user_id);
