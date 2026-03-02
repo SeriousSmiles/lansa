@@ -157,26 +157,29 @@ export function CandidateDetailSheet({
         </div>
 
         {/* Sticky action buttons — matching main browser style */}
-        <div className="absolute bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border/50 p-4 pb-safe">
+        <div className="absolute bottom-0 left-0 right-0 bg-card border-t border-border/50 p-4 pb-safe">
           <div className="flex justify-center items-center gap-5">
             {/* Pass */}
             <button
               onClick={() => handleAction('left')}
-              className="w-14 h-14 rounded-full border-2 border-red-500 flex items-center justify-center text-red-500 bg-background hover:bg-red-500 hover:text-white transition-colors"
+              className="w-14 h-14 rounded-full border-[2.5px] flex items-center justify-center bg-card shadow-md active:scale-95 transition-all"
+              style={{ borderColor: '#ef4444', color: '#ef4444' }}
             >
               <X className="w-6 h-6" strokeWidth={2.5} />
             </button>
             {/* Nudge */}
             <button
               onClick={() => handleAction('nudge')}
-              className="w-14 h-14 rounded-full border-2 border-amber-500 flex items-center justify-center text-amber-500 bg-background hover:bg-amber-500 hover:text-white transition-colors"
+              className="w-12 h-12 rounded-full border-[2.5px] flex items-center justify-center bg-card shadow-md active:scale-95 transition-all"
+              style={{ borderColor: '#f59e0b', color: '#f59e0b' }}
             >
-              <Zap className="w-6 h-6" strokeWidth={2.5} />
+              <Zap className="w-5 h-5" strokeWidth={2.5} />
             </button>
             {/* Interested */}
             <button
               onClick={() => handleAction('right')}
-              className="w-14 h-14 rounded-full border-2 border-blue-500 flex items-center justify-center text-blue-500 bg-background hover:bg-blue-500 hover:text-white transition-colors"
+              className="w-14 h-14 rounded-full border-[2.5px] flex items-center justify-center bg-card shadow-md active:scale-95 transition-all"
+              style={{ borderColor: '#3b82f6', color: '#3b82f6' }}
             >
               <Heart className="w-6 h-6" strokeWidth={2.5} />
             </button>

@@ -81,7 +81,7 @@ export function EnhancedCandidateCard({
       {/* Cover header */}
       <div
         className="relative p-5 pb-14 flex-shrink-0"
-        style={{ background: `linear-gradient(135deg, ${coverColor}, ${accentColor})` }}
+        style={{ background: `linear-gradient(150deg, ${coverColor}ee 0%, ${accentColor}cc 60%, ${accentColor}99 100%)` }}
       >
         {profile.isCertified && (
           <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
