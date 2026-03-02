@@ -278,6 +278,7 @@ export function MobileCandidateBrowser({
                   className="absolute inset-0 z-10"
                 >
                   <EnhancedCandidateCard
+                    userId={userId}
                     profile={currentProfile}
                     stackPosition={0}
                     swipeDirection={swipeDir}

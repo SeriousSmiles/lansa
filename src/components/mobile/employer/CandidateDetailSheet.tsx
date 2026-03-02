@@ -176,7 +176,7 @@ export function CandidateDetailSheet({
             <Button
               variant="outline"
               size="lg"
-              className="w-14 h-14 rounded-full border-2 border-accent text-accent-foreground hover:bg-accent"
+              className="w-14 h-14 rounded-full border-2 border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white"
               onClick={() => handleAction('nudge')}
             >
               <Zap className="h-6 w-6" />
@@ -184,7 +184,7 @@ export function CandidateDetailSheet({
             <Button
               variant="outline"
               size="lg"
-              className="w-14 h-14 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+              className="w-14 h-14 rounded-full border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
               onClick={() => handleAction('right')}
             >
               <Heart className="h-6 w-6" />
