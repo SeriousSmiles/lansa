@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
       recipientEmail: profile.email,
       oldSegment: old_segment,
       newSegment: new_segment,
-      dashboardUrl: 'https://lansa.app/dashboard'
+      dashboardUrl: 'https://lansa.online/dashboard'
     });
 
     console.log('[send-segment-email] Email sent successfully');

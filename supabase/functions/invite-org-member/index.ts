@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
         inviterName,
         recipientEmail: email,
         role: role,
-        inviteUrl: `https://lansa.app/join?token=${invitation.token}`
+        inviteUrl: `https://lansa.online/join?token=${invitation.token}`
       });
     } catch (emailError) {
       console.error('[invite-org-member] Email sending failed:', emailError);
