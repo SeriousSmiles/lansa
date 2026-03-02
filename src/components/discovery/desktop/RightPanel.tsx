@@ -1,7 +1,7 @@
 import React from 'react';
 import { DiscoveryProfile } from '@/services/discoveryService';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, GraduationCap, Globe, Award, Target, BookOpen, Zap, BarChart2 } from 'lucide-react';
+import { Briefcase, GraduationCap, BarChart2 } from 'lucide-react';
 
 interface RightPanelProps {
   profile: DiscoveryProfile;
@@ -60,8 +60,6 @@ export function RightPanel({ profile }: RightPanelProps) {
 
   const experiences = profile.experiences || [];
   const education = profile.education || [];
-  const languages = profile.languages || [];
-  const achievements = profile.achievements || [];
   const accentColor = profile.highlight_color || '#6366f1';
   const rgb = hexToRgb(accentColor);
 
@@ -69,6 +67,7 @@ export function RightPanel({ profile }: RightPanelProps) {
   const skillsCount = (profile.skills || []).length;
   const rolesCount = experiences.length;
   const educationLabel = education.length > 0 ? education[0].title : null;
+  const languages = profile.languages || [];
 
   return (
     <div
@@ -119,17 +118,6 @@ export function RightPanel({ profile }: RightPanelProps) {
           )}
         </div>
       </div>
-
-      {/* About */}
-      <SectionCard icon={<BookOpen className="w-4 h-4" />} title="About" accentColor={accentColor}>
-        {profile.about_text ? (
-          <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">
-            {profile.about_text}
-          </p>
-        ) : (
-          <p className="text-sm text-muted-foreground italic">No bio provided yet.</p>
-        )}
-      </SectionCard>
 
       {/* Experience */}
       <SectionCard icon={<Briefcase className="w-4 h-4" />} title="Experience" accentColor={accentColor}>
@@ -184,83 +172,6 @@ export function RightPanel({ profile }: RightPanelProps) {
         )}
       </SectionCard>
 
-      {/* Languages + Achievements row */}
-      <div className="grid grid-cols-2 gap-3">
-        {/* Languages */}
-        <div className="bg-background rounded-xl border border-border shadow-sm overflow-hidden">
-          <div
-            className="flex items-center gap-2 px-4 py-3 border-b border-border"
-            style={{ backgroundColor: `rgba(${rgb}, 0.10)` }}
-          >
-            <Globe className="w-4 h-4" style={{ color: accentColor }} />
-            <h3 className="text-sm font-semibold" style={{ color: accentColor }}>Languages</h3>
-          </div>
-          <div className="px-4 py-3">
-            {languages.length > 0 ? (
-              <div className="flex flex-wrap gap-1.5">
-                {languages.map((lang: string, idx: number) => (
-                  <Badge key={idx} variant="outline" className="text-xs">
-                    {lang}
-                  </Badge>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground italic">Not specified</p>
-            )}
-          </div>
-        </div>
-
-        {/* Achievements */}
-        <div className="bg-background rounded-xl border border-border shadow-sm overflow-hidden">
-          <div
-            className="flex items-center gap-2 px-4 py-3 border-b border-border"
-            style={{ backgroundColor: `rgba(${rgb}, 0.10)` }}
-          >
-            <Award className="w-4 h-4" style={{ color: accentColor }} />
-            <h3 className="text-sm font-semibold" style={{ color: accentColor }}>Achievements</h3>
-          </div>
-          <div className="px-4 py-3">
-            {achievements.length > 0 ? (
-              <div className="space-y-2">
-                {achievements.slice(0, 2).map((a: any, idx: number) => (
-                  <div key={idx}>
-                    <p className="text-xs font-semibold text-foreground">{a.title}</p>
-                    {a.description && (
-                      <p className="text-[11px] text-muted-foreground line-clamp-1">{a.description}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground italic">None listed</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Professional Goals */}
-      <SectionCard icon={<Target className="w-4 h-4" />} title="Professional Goals" accentColor={accentColor}>
-        {profile.professional_goal ? (
-          <div className="border-l-[3px] pl-3" style={{ borderColor: accentColor }}>
-            <p className="text-sm text-foreground/80 leading-relaxed italic">
-              {profile.professional_goal}
-            </p>
-          </div>
-        ) : (
-          <p className="text-xs text-muted-foreground italic">No professional goal shared yet.</p>
-        )}
-      </SectionCard>
-
-      {/* Biggest Challenge */}
-      {profile.biggest_challenge && (
-        <SectionCard icon={<Zap className="w-4 h-4" />} title="Biggest Challenge" accentColor={accentColor}>
-          <div className="border-l-[3px] pl-3" style={{ borderColor: `rgba(${rgb}, 0.5)` }}>
-            <p className="text-sm text-foreground/80 leading-relaxed italic">
-              {profile.biggest_challenge}
-            </p>
-          </div>
-        </SectionCard>
-      )}
     </div>
   );
 }
