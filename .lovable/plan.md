@@ -1,83 +1,75 @@
 
-# Fix: Employer Cannot See Certified Candidates — Missing Role or Wrong RLS Policy
+# Fix: Mobile Candidate Browser Shows "No More Candidates" Immediately
 
-## What Is Actually Happening
+## Root Cause
 
-The employer (user `e599bc17`) visits /browse-candidates. The app queries `user_certifications` to get the list of certified user IDs. That query returns **0 rows** — not because no certified users exist (there are 5), but because the RLS SELECT policy blocks the employer from reading them.
+The mobile browser (`MobileCandidateBrowser`) uses `candidateDiscoveryService.getFilteredCandidates`, which fetches from `user_profiles_public` but has **no certification cross-reference logic**.
 
-The SELECT policy on `user_certifications` is:
+The desktop browser uses `discoveryService.getDiscoveryProfiles(userId, context, filters, limit, certifiedOnly: true)`, which correctly:
+1. Fetches profiles from `user_profiles_public`
+2. Cross-references `user_certifications` to build a `certifiedUserIds` Set
+3. Filters out profiles not in the certified Set
+4. Filters out profiles with blank/whitespace-only names
 
-```sql
--- Current policy: only allows reading if user has 'business' role
-(user_id = auth.uid()) 
-OR (has_role(auth.uid(), 'business') AND lansa_certified = true AND verified = true)
-OR has_role(auth.uid(), 'admin')
-```
+The mobile service skips all of this, which means:
+- It fetches 7 rows from `user_profiles_public` (including 1 with empty name)
+- It does **no** certification check
+- It then filters out already-swiped users (no swipes exist)
+- It should show 6–7 cards — but it shows "No more candidates"
 
-The employer has **no role** in `user_roles`. So all three conditions fail. The query silently returns `[]`. The app then finds zero certified profiles to show and displays "You've reviewed all certified candidates."
+The real reason it shows 0 is that `candidateDiscoveryService` falls back to `mockFrontendCandidates` when profiles exist, and those mock UUIDs don't match any real user IDs. Wait — re-reading the code: it only falls back when `profiles.length === 0`. Since profiles exist, it uses the real data. 
 
-## Why This Is a Systemic Problem
+Actually the deeper issue: the mobile service has **no `certifiedOnly` filter**, but `user_profiles_public` now contains **non-certified** profiles too (the trigger was updated to sync any `certified = true AND visible_to_employers = true` profile, but there are 7 profiles in the table, meaning 2 are non-certified). And one has an **empty name**. So the mobile service would show 7 candidates... unless the issue is something else.
 
-Any employer who does not have the `business` role assigned will see zero candidates, even if many certified users exist. This is a missing onboarding/registration step: employer accounts are not being granted the `business` role when they sign up or complete onboarding.
+Checking the `user_profiles_public` data: 7 rows exist, one has an empty name. That leaves 6 profiles with names. The mobile service maps them all and shows them — which means the mobile service SHOULD work. The "No more candidates" screen means `profiles` array is empty after loading.
 
-## Two-Part Fix
+The likeliest cause is that `candidateDiscoveryService.getFilteredCandidates` calls `swipeService.getSwipeHistory(userId, 'employee')` with context `'employee'`. But the swipe recording uses `context: 'employee' as SwipeContext`. The swipes table returned **zero rows** for the employer. So that's not the blocker.
 
-### Part 1 — Fix the RLS Policy (Immediate, Correct)
+Re-reading the mobile code carefully: `candidateDiscoveryService` fetches from `user_profiles_public` without a certified filter. This means it also shows **non-certified** profiles, which is wrong per the app's rules (browse-candidates should be certified-only). 
 
-The `user_certifications` SELECT policy should allow **any authenticated user** to read basic certification status (`lansa_certified`, `verified`, `user_id`) for verified certified users. This is non-sensitive public status information — it is the whole point of the certification system that employers can see who is certified.
+The actual empty state is happening because the employer (`e599bc17`) has **no swipe records** yet, and the profiles query should return results. The most likely cause is a **RLS policy on `user_profiles_public`** that is still blocking the mobile service. The desktop service worked because it was already in the browser session. But let's check: after our RLS fix, does the mobile path see the same data?
 
-Replace the restrictive policy with one that allows all authenticated users to view verified certifications:
+Both mobile and desktop use the same `supabase` client. The real distinction: the desktop `CandidateBrowseTab` uses `discoveryService.getDiscoveryProfiles` with `certifiedOnly: true`, while mobile uses `candidateDiscoveryService.getFilteredCandidates` — a different service that goes through a different query path.
 
-```sql
--- Drop the old business-role-gated policy
-DROP POLICY IF EXISTS "Business users can view verified certifications only" ON public.user_certifications;
-
--- New: any authenticated user can see verified certifications (public status)
-CREATE POLICY "Authenticated users can view verified certifications"
-ON public.user_certifications
-FOR SELECT
-TO authenticated
-USING (
-  (user_id = auth.uid())
-  OR (lansa_certified = true AND verified = true)
-);
-```
-
-This is safe because:
-- Own record: always visible (for candidate's own dashboard)
-- Other users: only the certified+verified flag is queryable — unverified/uncertified records remain invisible
-- No sensitive personal data is exposed — `user_certifications` only holds certification status
-
-### Part 2 — Auto-Assign `employer` Role on Signup (Prevent Recurrence)
-
-The underlying cause is that employers are never assigned a role. The fix should also include assigning a role to the employer user so future role-based features work correctly.
-
-Create a database trigger that assigns the `employer` app_role when a new user completes employer onboarding (i.e., `user_type = 'employer'` is set in `user_answers`), OR apply a migration to backfill roles for all existing employer accounts.
-
-```sql
--- Backfill: assign 'employer' role to all users who are employers with no role
-INSERT INTO public.user_roles (user_id, role)
-SELECT ua.user_id, 'employer'::app_role
-FROM public.user_answers ua
-WHERE ua.user_type = 'employer'
-AND NOT EXISTS (
-  SELECT 1 FROM public.user_roles ur WHERE ur.user_id = ua.user_id
-)
-ON CONFLICT (user_id, role) DO NOTHING;
-```
-
-Note: This requires `employer` to exist in the `app_role` enum. We will check and add it if missing.
+The simplest and correct fix: **Update `candidateDiscoveryService.getFilteredCandidates` to delegate to `discoveryService.getDiscoveryProfiles` with `certifiedOnly: true`**, so both desktop and mobile use the same proven service. This:
+- Fixes the mobile empty state (same query that works on desktop)
+- Ensures only certified candidates appear on mobile
+- Removes the mock fallback from the mobile path
+- Keeps blank-name filtering consistent
 
 ## Files to Modify
 
-| Change | Type |
-|--------|------|
-| New migration: fix RLS policy on `user_certifications` | Database |
-| New migration: backfill employer roles | Database |
+| File | Change |
+|------|--------|
+| `src/services/candidateDiscoveryService.ts` | Replace the custom fetch logic in `getFilteredCandidates` with a call to `discoveryService.getDiscoveryProfiles(userId, 'employee', filters, limit, true)` |
 
-## Expected Result After Fix
+## Technical Details
 
-- All authenticated employers can see the certified candidate list in /browse-candidates
-- The "You've reviewed all certified candidates" message only appears when they have genuinely swiped through everyone
-- Future employer signups automatically get the employer role and will not hit this issue
-- No sensitive data is exposed — only `lansa_certified = true AND verified = true` records are visible to others
+Replace lines 22–124 of `candidateDiscoveryService.ts`:
+
+```ts
+async getFilteredCandidates(
+  userId: string,
+  filters: CandidateFilters = {},
+  limit: number = 20
+): Promise<DiscoveryProfile[]> {
+  // Delegate to the same service used by the desktop browser
+  // with certifiedOnly: true to ensure only certified candidates appear
+  return discoveryService.getDiscoveryProfiles(
+    userId,
+    'employee',
+    filters,
+    limit,
+    true
+  );
+},
+```
+
+This is a one-method change. It removes ~100 lines of duplicated, divergent logic and replaces it with a single call to the already-working desktop service.
+
+## Expected Result
+
+- Mobile shows the same certified candidates the desktop shows
+- "No more candidates" only appears after genuinely swiping through all certified profiles
+- No mock data fallbacks on mobile
+- Blank-name profiles are filtered consistently
