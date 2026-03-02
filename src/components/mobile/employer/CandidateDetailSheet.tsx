@@ -1,7 +1,6 @@
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   MapPin, Briefcase, GraduationCap, Award, Globe, User,
   Heart, X, Zap
@@ -43,7 +42,7 @@ export function CandidateDetailSheet({
       <DrawerContent className="max-h-[92vh] rounded-t-2xl">
         <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-muted-foreground/30 my-3" />
 
-        <div className="overflow-y-auto px-5 pb-32">
+        <div className="overflow-y-auto px-5 pb-36">
           {/* Header */}
           <div className="flex items-start gap-4 mb-6">
             <Avatar className="w-16 h-16 ring-2 ring-border shadow-md flex-shrink-0">
@@ -83,10 +82,7 @@ export function CandidateDetailSheet({
                     key={i}
                     variant="secondary"
                     className="text-xs font-medium"
-                    style={{
-                      backgroundColor: `${accentColor}12`,
-                      color: accentColor,
-                    }}
+                    style={{ backgroundColor: `${accentColor}18`, color: accentColor }}
                   >
                     {skill}
                   </Badge>
@@ -153,42 +149,37 @@ export function CandidateDetailSheet({
             <Section title="Languages" icon={<Globe className="w-4 h-4" />}>
               <div className="flex flex-wrap gap-2">
                 {languageNames.map((lang, i) => (
-                  <Badge key={i} variant="outline" className="text-xs">
-                    {lang}
-                  </Badge>
+                  <Badge key={i} variant="outline" className="text-xs">{lang}</Badge>
                 ))}
               </div>
             </Section>
           )}
         </div>
 
-        {/* Sticky action buttons */}
+        {/* Sticky action buttons — matching main browser style */}
         <div className="absolute bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border/50 p-4 pb-safe">
           <div className="flex justify-center items-center gap-5">
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-14 h-14 rounded-full border-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            {/* Pass */}
+            <button
               onClick={() => handleAction('left')}
+              className="w-14 h-14 rounded-full border-2 border-red-500 flex items-center justify-center text-red-500 bg-background hover:bg-red-500 hover:text-white transition-colors"
             >
-              <X className="h-6 w-6" />
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-14 h-14 rounded-full border-2 border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white"
+              <X className="w-6 h-6" strokeWidth={2.5} />
+            </button>
+            {/* Nudge */}
+            <button
               onClick={() => handleAction('nudge')}
+              className="w-14 h-14 rounded-full border-2 border-amber-500 flex items-center justify-center text-amber-500 bg-background hover:bg-amber-500 hover:text-white transition-colors"
             >
-              <Zap className="h-6 w-6" />
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-14 h-14 rounded-full border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
+              <Zap className="w-6 h-6" strokeWidth={2.5} />
+            </button>
+            {/* Interested */}
+            <button
               onClick={() => handleAction('right')}
+              className="w-14 h-14 rounded-full border-2 border-blue-500 flex items-center justify-center text-blue-500 bg-background hover:bg-blue-500 hover:text-white transition-colors"
             >
-              <Heart className="h-6 w-6" />
-            </Button>
+              <Heart className="w-6 h-6" strokeWidth={2.5} />
+            </button>
           </div>
         </div>
       </DrawerContent>
