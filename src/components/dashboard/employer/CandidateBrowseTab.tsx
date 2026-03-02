@@ -1,11 +1,8 @@
 import { useState, useEffect } from "react";
 import { SwipeDeck } from "@/components/discovery/SwipeDeck";
 import { SplitPanelBrowser } from "@/components/discovery/desktop/SplitPanelBrowser";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { IconUsers, IconHeart, IconTrendingUp } from "@tabler/icons-react";
 import { HelpCircle, ArrowLeft } from "lucide-react";
 import { discoveryService, DiscoveryProfile } from "@/services/discoveryService";
 import { swipeService, SwipeDirection } from "@/services/swipeService";
@@ -161,51 +158,6 @@ export function CandidateBrowseTab() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <IconHeart className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{matchCount}</p>
-                <p className="text-sm text-muted-foreground">Total Matches</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <IconTrendingUp className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{swipeCount}</p>
-                <p className="text-sm text-muted-foreground">Today's Swipes</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <IconUsers className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{profiles.length}</p>
-                <p className="text-sm text-muted-foreground">Available Candidates</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Swipe Interface - Desktop shows split panel, Mobile shows swipe deck */}
       <div className="flex-1 min-h-0 overflow-hidden">
         {isMobile ? (
@@ -223,6 +175,8 @@ export function CandidateBrowseTab() {
             onSwipe={handleSwipe}
             onEndReached={handleEndReached}
             isLoading={isLoading}
+            matchCount={matchCount}
+            swipeCount={swipeCount}
           />
         )}
       </div>
