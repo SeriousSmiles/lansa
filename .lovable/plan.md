@@ -1,82 +1,82 @@
 
-# Fix: Candidate Browse Loop Bug + Real User Data
+# Fix: Certified-Only Mode + Buttons Never Disabled on Current Candidate
 
-## Bug Root Cause (Confirmed)
+## Two Separate Bugs Being Fixed
 
-The bug at candidates 15-17 is a **profiles array replacement + stale index collision**:
+### Bug 1 — Buttons Gray and Unclickable
 
-1. `useCandidateNavigation` tracks `currentIndex` as internal state (e.g., 17)
-2. When `currentIndex >= totalProfiles - 3`, `onEndReached()` fires
-3. `handleEndReached` calls `loadProfiles()` which calls `setProfiles(newData)` — **replacing** the array with a freshly shuffled 20 mock candidates
-4. `currentIndex` is still 17 but now points to a completely different profile in the new array — visual jump/flash
-5. No debounce exists, so it fires 3 times (at indices 17, 18, 19), causing 3 rapid replacements
+**Root cause (confirmed by code trace):**
 
-## Fix 1 — Append profiles instead of replacing (Critical)
-
-In `CandidateBrowseTab.tsx`, `handleEndReached` should **append** newly loaded profiles to the existing array rather than replacing it. This means `currentIndex` 17 still points to the same profile, and the new candidates are queued behind.
-
-Also add a loading guard so `handleEndReached` cannot fire multiple times in rapid succession:
-
-```
-// Before (bug):
-setProfiles(data);
-
-// After (fix):
-setProfiles(prev => {
-  const existingIds = new Set(prev.map(p => p.user_id));
-  const newOnes = data.filter(p => !existingIds.has(p.user_id));
-  return [...prev, ...newOnes];
-});
-```
-
-Since mock candidates have fixed IDs (`mock-1` through `mock-20`), the dedup filter (`existingIds`) will prevent duplicates from being added. To avoid this blocking new pages, the mock candidate data will need to be shuffled with a suffix variant — OR we simply skip deduplication for mock IDs and just append them as a fresh "page". The simplest and most robust fix: use an `isLoadingMore` ref guard so `handleEndReached` can only fire once at a time, and append the result regardless.
-
-## Fix 2 — Show Real Users (Remove certifiedOnly filter for now)
-
-The database has real users with real data:
-- **John Nathan Stehpens** — Creative Specialist, 3 experiences, education, 4 languages, achievements, certifications, full profile
-- **Saviëntaly Noten** — Skills and languages, partial profile
-- One blank profile (can be filtered out by checking if name is non-empty)
-
-Currently `certifiedOnly: true` is passed in `CandidateBrowseTab.tsx` even though `user_certifications` returns `[]`. This means real users are always filtered out and employers only ever see mock candidates.
-
-**Fix**: Change `certifiedOnly` to `false` so real database users are shown. Add a simple quality filter — skip profiles where `name` is blank/whitespace. The `isCertified` badge will still render correctly based on actual certification data (it checks the set independently).
-
-This is a product decision — showing uncertified real users vs. mock certified users. Since the platform is in early growth, showing real users (even uncertified) provides more authentic value than 20 identical mock profiles.
-
-## Fix 3 — Add isLoadingMore guard
-
-In `useCandidateNavigation`, the `onEndReached` call fires at index 17, 18, AND 19 (since the effect runs on every `currentIndex` change). Add a `isLoadingMoreRef` boolean ref in `CandidateBrowseTab` to prevent repeated calls:
-
+In `SplitPanelBrowser.tsx` line 50:
 ```typescript
-const isLoadingMoreRef = useRef(false);
-
-const handleEndReached = async () => {
-  if (isLoadingMoreRef.current) return;
-  isLoadingMoreRef.current = true;
-  await loadMoreProfiles(); // appends
-  isLoadingMoreRef.current = false;
-};
+const hasReachedEnd = currentIndex >= totalProfiles - 1 && totalProfiles > 0;
 ```
+
+With `certifiedOnly: true` and only John Nathan Stehpens as a certified user, the feed loads 1 profile:
+- `currentIndex = 0`, `totalProfiles = 1`
+- `0 >= 1 - 1` → `0 >= 0` → **true immediately**
+- Buttons are disabled the moment the page loads, before the user has done anything
+
+The condition is wrong — `hasReachedEnd` should only be true **after** the user has actioned the final card (moved past it), not while they are currently viewing the last card.
+
+**Fix:**
+```typescript
+// Before (wrong — disables buttons while viewing last card):
+const hasReachedEnd = currentIndex >= totalProfiles - 1 && totalProfiles > 0;
+
+// After (correct — only disables after actioning final card):
+const hasReachedEnd = currentIndex >= totalProfiles && totalProfiles > 0;
+```
+
+This is a one-character fix (`- 1` removed) but it completely resolves the disabled buttons issue regardless of how many candidates are in the feed.
+
+Also, `advanceToNext` in `useCandidateNavigation.ts` prevents the index from ever exceeding `initialProfiles.length - 1`, so the "no candidates" empty state is still correctly shown when the user actions the last card.
+
+### Bug 2 — John Nathan Stehpens Not Appearing
+
+**Root cause:** The last edit changed `certifiedOnly` to `false` in both `loadProfiles` and `handleEndReached` in `CandidateBrowseTab.tsx`.
+
+**Database confirms John is already certified:**
+- `user_id: e15bf03c-4d06-4902-9a95-0701c54e3ea9`
+- `lansa_certified: true`
+- `verified: true`
+- `assessment_score: 95`
+- `certified_at: 2025-11-18`
+
+No database changes needed. Just reverting `certifiedOnly` back to `true` in both calls will surface John correctly.
+
+### Bug 3 — advanceToNext Stays Stuck at Last Index
+
+When the user actions the last profile, `advanceToNext` clamps at `initialProfiles.length - 1` (line 44-46 of the hook). This means `currentIndex` never reaches `totalProfiles` to trigger the empty state. We need to allow it to go one past the end so the empty state renders.
+
+**Fix in `useCandidateNavigation.ts`:**
+```typescript
+// Before:
+if (nextIndex >= initialProfiles.length) {
+  return prev; // stuck, never shows empty state
+}
+
+// After:
+return nextIndex; // allow going to length, which triggers empty state
+```
+
+The `currentProfile` will be `undefined` at index `length`, which `SplitPanelBrowser` already handles with the "No Candidates Available" empty state.
 
 ## Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/components/dashboard/employer/CandidateBrowseTab.tsx` | Add `isLoadingMoreRef` guard, change `handleEndReached` to append not replace, change `certifiedOnly` to `false`, filter blank-name profiles |
-| `src/services/discoveryService.ts` | Add name quality filter (skip blank names) in the `.filter()` step |
+| `src/components/dashboard/employer/CandidateBrowseTab.tsx` | Revert `certifiedOnly: false` → `true` in both `loadProfiles` and `handleEndReached` |
+| `src/components/discovery/desktop/SplitPanelBrowser.tsx` | Fix `hasReachedEnd` condition: remove the `- 1` |
+| `src/hooks/useCandidateNavigation.ts` | Allow `advanceToNext` to go past the last index so empty state triggers |
 
-## What Is NOT Changed
+## No Database Changes Required
 
-- `useCandidateNavigation.ts` — hook logic is fine as-is
-- `SplitPanelBrowser.tsx` — no changes needed
-- `LeftPanel.tsx`, `RightPanel.tsx` — no changes needed
-- Mobile `SwipeDeck` — untouched
-- Mock data — preserved as fallback when no real profiles exist
+John Nathan Stehpens is already certified in the database. No migration needed.
 
-## Expected Result After Fix
+## Expected Result
 
-- Browsing past candidate 17 no longer causes a visual jump or blank/flash
-- Real database users (John Nathan Stehpens, Saviëntaly Noten) appear in the feed alongside mock candidates
-- Blank/incomplete profiles (the unnamed user) are filtered out
-- `handleEndReached` can only fire once at a time, preventing triple-replacement
+- John Nathan Stehpens appears in the browse feed as a certified candidate with his Lansa Certified badge
+- Pass / Super Interest / Interested buttons are fully active and clickable while viewing any candidate including the last one
+- After actioning the last candidate, the empty state appears correctly
+- All previously fixed animations and layout improvements remain intact
