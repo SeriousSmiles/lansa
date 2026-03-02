@@ -1,151 +1,92 @@
 
-## Full Swipe Notification System + "Who's Interested" Section
-
-### Current State Summary
-
-**What exists and works:**
-- `swipes` table with `direction`, `swiper_user_id`, `target_user_id`, `context`
-- `notifications` table with `notification_type` enum
-- `create_match_if_mutual()` DB trigger fires on swipe INSERT — creates a match row
-- `create_thread_on_match()` DB trigger fires on match INSERT — creates chat thread
-- `trigger_chat_notification_email()` DB trigger fires on notification INSERT for `chat_request_received`, `chat_request_accepted`, `message_received` — calls `send-chat-email` edge function via `pg_net`
-- `CandidateBrowseTab.tsx` (desktop) calls `notificationService.createNotification()` client-side when employer swipes right/nudge — but uses `match_created` type (wrong intent, it's not a match yet)
-- `candidateDiscoveryService.swipeCandidate()` (mobile) does NOT send any notification
-
-**What's missing:**
-1. No server-side DB trigger to notify candidate when employer swipes right/nudge (relying on client-side is unreliable)
-2. No `match_created` notification with deep link to chat thread for both parties
-3. Email trigger only handles 3 types — `employer_interest_received` and `employer_nudge_received` types don't exist
-4. No "Who's Interested" UI for candidates to see employers who swiped right on them
-5. `notification_type` enum missing `employer_interest_received` and `employer_nudge_received` values
+## Two Fixes: Swipe Content Area + Email Branding Overhaul
 
 ---
 
-### What Will Be Built
+### Fix 1 — Swipe Not Working from Card Content Area
 
-#### Part 1 — DB Migration: New notification types + triggers
+**Root cause:**
 
-**Step 1a: Extend notification_type enum**
-```sql
-ALTER TYPE notification_type ADD VALUE IF NOT EXISTS 'employer_interest_received';
-ALTER TYPE notification_type ADD VALUE IF NOT EXISTS 'employer_nudge_received';
+In `EnhancedCandidateCard.tsx`, the content body has two compounding problems:
+
+1. `overflow-y-auto` on the inner scroll container (line 117) creates a new scroll context that intercepts pointer events before `SwipeableContainer` can determine horizontal vs vertical intent. The browser sees a scrollable container and routes touch events to it.
+
+2. `onClick={handleContentTap}` on the content wrapper means tapping opens the drawer correctly, but the pointer events during a drag gesture are being absorbed by the nested `overflow-y-auto` div, not propagating up to `SwipeableContainer`.
+
+**Fix:**
+
+In `EnhancedCandidateCard.tsx`, change the inner scrollable div (`overflow-y-auto`) to have `pointer-events: none` during active swipe drags. The approach: use a CSS `touch-action` override — the inner div should have `touch-action: pan-y` which tells the browser to allow vertical scroll but delegate horizontal pan events up the tree.
+
+However, the real fix is to remove `overflow-y-auto` from the card body since the card is already sized by the outer container — content should not need an inner scroll context on the card face itself (scrolling happens inside the detail drawer). Replace `overflow-y-auto` with `overflow-hidden` so the card content clips cleanly and no scroll context competes with the swipe handler.
+
+Also add `draggable={false}` and `onPointerDown={(e) => e.stopPropagation()}` should be **removed** from any child elements — currently `handleContentTap` is on a div that uses `onClick` only, so the `onPointerDown` from `SwipeableContainer` should correctly bubble through. The issue is specifically the `overflow-y-auto` scroll interception.
+
+**Files changed:**
+- `src/components/mobile/employer/EnhancedCandidateCard.tsx` — change `overflow-y-auto` → `overflow-hidden` on the inner content scroll div (line 117). Card face should not be independently scrollable; full profile scroll is in `CandidateDetailSheet`.
+
+---
+
+### Fix 2 — Email Templates: Proper HTML, Lansa Logo, Dark Mode Safe
+
+**Current state:**
+- All 9 email templates use inline `<style>` blocks which are partially ignored by email clients (Gmail strips `<style>`, Outlook ignores most CSS).
+- No Lansa logo — just the text "Lansa" in the footer.
+- Headers use CSS gradients which are fine, but the logo area is absent.
+- Dark mode email clients (Apple Mail, iOS Mail) can invert colors — a white text logo on a colored background is safe, but a dark background with white text can get double-inverted.
+
+**Approach:**
+
+Refactor ALL email templates to use **fully inlined styles** (no `<style>` block dependency for critical layout), and add a **Lansa wordmark** in the header. The wordmark will be rendered as styled HTML text in a colored pill — no external image required, making it zero-dependency and dark-mode safe.
+
+Key dark mode rules applied:
+- All header backgrounds use solid hex colors (not `transparent`) on a colored div — dark mode inversion won't affect white text on a colored background since the background is explicit
+- Logo uses `<!--[if !mso]>` conditional comment pattern where needed
+- Footer background is explicitly `#f9fafb` (light gray) with `color: #6b7280` — safe for dark mode inversion since email clients target `background: white` → dark, not explicit grays
+- The outer `<body>` background is explicitly `#f3f4f6` (light page wrapper) to give context
+
+**Logo treatment (dark mode safe):**
+
+```html
+<!-- Logo pill: white text on brand blue — dark mode won't re-invert colored backgrounds -->
+<div style="display:inline-block; background:#1a56db; border-radius:6px; padding:4px 12px; margin-bottom:12px;">
+  <span style="color:#ffffff; font-size:18px; font-weight:800; letter-spacing:-0.5px; font-family:Arial,sans-serif;">LANSA</span>
+</div>
 ```
 
-**Step 1b: DB trigger on `swipes` table for interest notifications**
+This is placed at the TOP of every header section. Since it uses an explicit background color (not `transparent`), dark mode email clients will not invert it.
 
-New function `notify_candidate_on_employer_swipe()`:
-- Fires AFTER INSERT on `swipes`
-- If `direction = 'right'`: inserts notification for `target_user_id` with type `employer_interest_received`, title "💚 An employer is interested!", message "An employer liked your profile. If you like them back, you'll match!", action_url `/dashboard`
-- If `direction = 'nudge'`: inserts notification for `target_user_id` with type `employer_nudge_received`, title "⚡ Super Interest received!", message "An employer sent you super interest — they really want to connect!", action_url `/dashboard`
-- Skips if `direction = 'left'`
+**Email template improvements per type:**
 
-**Step 1c: DB trigger on `matches` table for match notifications**
+| Template | Header Color | Logo Pill Color | Key Structural Improvement |
+|---|---|---|---|
+| Invitation | Blue `#1a56db` | White on blue | Add role info table |
+| Join Request | Blue `#1a56db` | White on blue | Add requester info table |
+| Approval | Green `#10b981` | White on green | Cleaner layout |
+| Rejection | Neutral `#374151` | White on dark | Add Lansa pill |
+| Segment Change | Dynamic | White on dynamic | Better tip list |
+| Chat Request | Blue `#1a56db` | White on blue | Note box retained |
+| Chat Accepted | Blue `#1a56db` | White on blue | Highlight box |
+| New Message | Dark `#1f2937` | White on dark | Message quote box |
+| Employer Interest | Green `#10b981` | White on green | CTA improvement |
+| Employer Nudge | Amber `#f59e0b` | White on amber | Priority badge |
+| Match Created | Purple `#7c3aed` | White on purple | Match names box |
 
-New function `notify_both_on_match()`:
-- Fires AFTER INSERT on `matches`
-- Looks up the chat thread created by `create_thread_on_match` (query `chat_threads` by `match_id`)
-- Notifies both `user_a` and `user_b` with type `match_created`, title "🎉 It's a Match!", message "You and [other party name] matched! Start chatting now.", action_url `/chat/{thread_id}`
-- Gets names from `user_profiles`
-
----
-
-#### Part 2 — Email extension in `send-chat-email` edge function
-
-Add two new template handlers in `supabase/functions/send-chat-email/index.ts`:
-
-```typescript
-} else if (notification_type === 'employer_interest_received') {
-  emailContent = generateEmployerInterestEmail({...});
-} else if (notification_type === 'employer_nudge_received') {
-  emailContent = generateEmployerNudgeEmail({...});
-} else if (notification_type === 'match_created') {
-  emailContent = generateMatchCreatedEmail({...});
-}
-```
-
-Add 3 new email template functions to `supabase/functions/_shared/emailTemplates.ts`:
-- `generateEmployerInterestEmail` — Lansa blue header, "An employer liked your profile" with CTA to dashboard
-- `generateEmployerNudgeEmail` — amber header, "⚡ Super Interest received" with priority styling
-- `generateMatchCreatedEmail` — green gradient header, "It's a Match!" with direct link to `/chat/{threadId}`
-
-Also update `trigger_chat_notification_email()` DB function to include these 3 new types in its type check (`IF NEW.type NOT IN (...)`)
+**All styles converted to fully inline** to maximize email client compatibility (critical for Gmail which strips `<style>` blocks entirely).
 
 ---
 
-#### Part 3 — "Who's Interested" section on candidate mobile dashboard
+### Files to Change
 
-New component: `src/components/dashboard/WhoIsInterestedSection.tsx`
-
-This queries the `swipes` table for rows where:
-- `target_user_id = auth.uid()`
-- `direction IN ('right', 'nudge')`
-- Candidate hasn't already swiped back on that employer (to avoid showing resolved ones)
-
-For each employer swipe, fetch their `user_profiles_public` or `user_profiles` data to show:
-- Avatar circle with cover color
-- Name (anonymized as "An Employer" if profile is private)
-- Interest level badge (⚡ Super Interest vs 💚 Interested)
-- "Swipe Back" CTA → deep links to the candidate's opportunity discovery / job feed
-
-**RLS note**: Candidates need read access to swipes where they are the target. The current swipes RLS only allows `swiper_user_id = auth.uid()`. A new policy is needed: `SELECT WHERE target_user_id = auth.uid() AND direction IN ('right', 'nudge')`.
-
-The section renders in `OverviewTab.tsx` (candidate dashboard), shown only when `isCertified` (since only certified candidates are discoverable). On mobile it shows as a horizontal scroll row of cards. On desktop it collapses into a compact strip.
-
----
-
-#### Part 4 — Remove duplicate client-side notifications
-
-In `CandidateBrowseTab.tsx` (desktop), remove the manual `notificationService.createNotification()` call since the DB trigger now handles it server-side — prevents double notifications. The mobile `candidateDiscoveryService` already doesn't do this, so no change needed there.
-
----
-
-### Files to Create/Edit
-
-| File | Action | Change |
-|------|--------|--------|
-| DB migration | Create | Add enum values + 2 new trigger functions + 3 RLS policy + update email trigger type list |
-| `supabase/functions/_shared/emailTemplates.ts` | Edit | Add 3 new email template functions |
-| `supabase/functions/send-chat-email/index.ts` | Edit | Handle 3 new notification types |
-| `src/components/dashboard/WhoIsInterestedSection.tsx` | Create | New section component |
-| `src/components/dashboard/overview/OverviewTab.tsx` | Edit | Inject `WhoIsInterestedSection` |
-| `src/components/dashboard/employer/CandidateBrowseTab.tsx` | Edit | Remove duplicate client-side notification call |
-
----
-
-### DB Trigger Flow After Implementation
-
-```text
-Employer taps ♥ (right) on mobile
-        ↓
-swipeService.recordSwipe() → INSERT into swipes
-        ↓
-[DB Trigger: notify_candidate_on_employer_swipe]
-  → INSERT notification(type=employer_interest_received, user_id=candidate)
-        ↓
-[DB Trigger: trigger_chat_notification_email]
-  → pg_net POST → send-chat-email
-  → Resend email to candidate: "An employer liked your profile"
-
-If candidate also swipes right back:
-        ↓
-[DB Trigger: create_match_if_mutual]
-  → INSERT into matches
-        ↓
-[DB Trigger: create_thread_on_match]
-  → INSERT into chat_threads
-        ↓
-[DB Trigger: notify_both_on_match]
-  → INSERT notification for BOTH (type=match_created, action_url=/chat/{thread_id})
-        ↓
-[DB Trigger: trigger_chat_notification_email] fires for each
-  → Resend email to both: "It's a Match!"
-```
+| File | Change |
+|---|---|
+| `src/components/mobile/employer/EnhancedCandidateCard.tsx` | Change `overflow-y-auto` → `overflow-hidden` on inner content div |
+| `supabase/functions/_shared/emailTemplates.ts` | Rewrite all 9 template functions with fully inlined styles + Lansa logo pill + dark mode safe structure |
 
 ---
 
 ### Technical Notes
 
-- The `notify_both_on_match()` trigger must run AFTER `create_thread_on_match()` to have the thread ID available. Both trigger on `matches` AFTER INSERT. Since both use `FOR EACH ROW`, we can rely on `chat_threads` being inserted synchronously in the same transaction by `create_thread_on_match()`.
-- The "Who's Interested" query needs a new RLS policy on `swipes`: `FOR SELECT TO authenticated USING (target_user_id = auth.uid())` — narrow to only right/nudge swipes is done in the query, not the policy.
-- Email rate limiting via `chat_email_log` already applies to all types going through `trigger_chat_notification_email`, so no extra work needed for the new types.
-- The `WhoIsInterestedSection` will join swipes with `user_profiles` using a Supabase `.select()` with an embedded join. Since employers may have private profiles, fallback to "An Interested Employer" with initials avatar.
+- The swipe fix is a single-line change but is the root cause of the content area not being draggable.
+- Email templates keep the same exported function signatures and data interfaces — zero breaking changes to the edge function or DB triggers.
+- No external image URLs or CDN dependencies added — the logo is pure HTML/CSS, meaning it works even if images are blocked by the email client.
+- All `<style>` blocks are removed from templates; every style property is applied as an inline `style=""` attribute for maximum compatibility across Gmail, Outlook, Apple Mail, and mobile clients.
