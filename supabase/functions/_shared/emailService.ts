@@ -17,7 +17,7 @@ export async function sendInvitationEmail(data: InvitationEmailData): Promise<vo
   const { subject, html } = generateInvitationEmail(data);
   
   const { error } = await resend.emails.send({
-    from: "Lansa <noreply@lansa.online>",
+    from: "Lansa <noreply@notification.lansa.online>",
     to: [data.recipientEmail],
     subject,
     html,
@@ -35,7 +35,7 @@ export async function sendRequestNotification(data: RequestEmailData, adminEmail
   const { subject, html } = generateRequestNotificationEmail(data);
   
   const { error } = await resend.emails.send({
-    from: "Lansa <noreply@lansa.online>",
+    from: "Lansa <noreply@notification.lansa.online>",
     to: [adminEmail],
     subject,
     html,
@@ -53,7 +53,7 @@ export async function sendApprovalEmail(data: ApprovalEmailData, recipientEmail:
   const { subject, html } = generateApprovalEmail(data);
   
   const { error } = await resend.emails.send({
-    from: "Lansa <noreply@lansa.online>",
+    from: "Lansa <noreply@notification.lansa.online>",
     to: [recipientEmail],
     subject,
     html,
@@ -71,7 +71,7 @@ export async function sendRejectionEmail(organizationName: string, recipientName
   const { subject, html } = generateRejectionEmail(organizationName, recipientName);
   
   const { error } = await resend.emails.send({
-    from: "Lansa <noreply@lansa.online>",
+    from: "Lansa <noreply@notification.lansa.online>",
     to: [recipientEmail],
     subject,
     html,
@@ -89,7 +89,7 @@ export async function sendSegmentChangeEmail(data: SegmentChangeEmailData): Prom
   const { subject, html } = generateSegmentChangeEmail(data);
   
   const { error } = await resend.emails.send({
-    from: "Lansa <noreply@lansa.online>",
+    from: "Lansa <noreply@notification.lansa.online>",
     to: [data.recipientEmail],
     subject,
     html,
