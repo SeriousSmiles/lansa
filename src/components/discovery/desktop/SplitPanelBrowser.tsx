@@ -1,4 +1,5 @@
 import { useRef, useEffect } from 'react';
+import { gsap } from 'gsap';
 import { DiscoveryProfile } from '@/services/discoveryService';
 import { SwipeDirection } from '@/services/swipeService';
 import { LeftPanel } from './LeftPanel';
@@ -6,7 +7,7 @@ import { RightPanel } from './RightPanel';
 import { ActionButtonBar } from './ActionButtonBar';
 import { useCandidateNavigation } from '@/hooks/useCandidateNavigation';
 import { candidatePanelAnimations } from '@/utils/candidatePanelAnimations';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Users } from 'lucide-react';
 
 interface SplitPanelBrowserProps {
   profiles: DiscoveryProfile[];
@@ -34,7 +35,6 @@ export function SplitPanelBrowser({
   } = useCandidateNavigation(profiles);
 
   useEffect(() => {
-    // Trigger load more when approaching the end
     if (currentIndex >= totalProfiles - 3 && !isLoading) {
       onEndReached();
     }
@@ -45,7 +45,7 @@ export function SplitPanelBrowser({
 
     setIsAnimating(true);
 
-    // Animate exit
+    // Animate exit on wrapper divs
     if (leftPanelRef.current) {
       candidatePanelAnimations.exitLeftPanel(leftPanelRef.current);
     }
@@ -53,31 +53,39 @@ export function SplitPanelBrowser({
       candidatePanelAnimations.exitRightPanel(rightPanelRef.current);
     }
 
-    // Wait for exit animations
+    // Wait for exit animations to complete
     await new Promise(resolve => setTimeout(resolve, 450));
 
     // Process the swipe
     await onSwipe(currentProfile, direction);
-    
+
+    // CRITICAL FIX: Reset parent wrapper opacity/transform so child enter animations are visible
+    if (leftPanelRef.current) {
+      gsap.set(leftPanelRef.current, { clearProps: 'all' });
+    }
+    if (rightPanelRef.current) {
+      gsap.set(rightPanelRef.current, { clearProps: 'all' });
+    }
+
     // Move to next profile
     advanceToNext();
-    
-    // Small delay before allowing next interaction
+
     setTimeout(() => {
       setIsAnimating(false);
     }, 100);
   };
 
-  // Check if we've reached the end of candidates
   const hasReachedEnd = currentIndex >= totalProfiles - 1 && totalProfiles > 0;
 
   if (!currentProfile && !isLoading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-300px)]">
         <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-6">
+            <Users className="w-10 h-10 text-muted-foreground" />
+          </div>
           <h3 className="text-xl font-semibold mb-2">No Certified Candidates Available</h3>
-          <p className="text-muted-foreground max-w-md mx-auto">
+          <p className="text-muted-foreground max-w-md mx-auto text-sm">
             All certified candidates have been reviewed. Check back later for more certified professionals!
           </p>
         </div>
@@ -86,22 +94,39 @@ export function SplitPanelBrowser({
   }
 
   return (
-    <div className="flex flex-col h-full px-4">
-      {/* Progress Counter */}
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-muted-foreground">
-          Candidate {currentIndex + 1} of {totalProfiles}
-        </p>
+    <div className="flex flex-col h-full">
+      {/* Header bar */}
+      <div className="flex items-center justify-between px-6 py-3 border-b border-border/50">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-foreground">
+            {currentIndex + 1} <span className="text-muted-foreground font-normal">of {totalProfiles} candidates</span>
+          </span>
+        </div>
+        {/* Progress dots */}
+        <div className="flex items-center gap-1">
+          {Array.from({ length: Math.min(totalProfiles, 8) }).map((_, i) => (
+            <div
+              key={i}
+              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                i < currentIndex
+                  ? 'bg-primary/30'
+                  : i === currentIndex
+                  ? 'bg-primary w-4'
+                  : 'bg-muted-foreground/20'
+              }`}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Split Panel Container */}
-      <div className="flex-1 grid grid-cols-[40%_60%] gap-8 mb-8 overflow-hidden">
-        {/* Left Panel */}
-        <div ref={leftPanelRef} className="h-full overflow-hidden">
+      <div className="flex-1 grid grid-cols-[40%_60%] overflow-hidden">
+        {/* Left Panel wrapper */}
+        <div ref={leftPanelRef} className="h-full overflow-hidden border-r border-border/50">
           <LeftPanel profile={currentProfile} />
         </div>
 
-        {/* Right Panel */}
+        {/* Right Panel wrapper */}
         <div ref={rightPanelRef} className="h-full overflow-hidden">
           <RightPanel profile={currentProfile} />
         </div>
@@ -109,17 +134,14 @@ export function SplitPanelBrowser({
 
       {/* End of List Message */}
       {hasReachedEnd && (
-        <div className="text-center py-6 border-t mb-4">
-          <p className="text-base font-medium text-muted-foreground mb-1">
-            You've reviewed all available certified candidates
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Check back later for new profiles
+        <div className="text-center py-4 border-t border-border bg-muted/20">
+          <p className="text-sm font-medium text-muted-foreground">
+            You've reviewed all available certified candidates — check back soon
           </p>
         </div>
       )}
 
-      {/* Action Buttons */}
+      {/* Action Buttons — sticky at bottom */}
       <ActionButtonBar
         onAction={handleAction}
         disabled={isAnimating || isLoading || hasReachedEnd}
