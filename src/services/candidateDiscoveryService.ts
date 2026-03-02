@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { swipeService, SwipeDirection, SwipeContext } from "./swipeService";
 import { matchService } from "./matchService";
 import type { DiscoveryProfile, DiscoveryFilters } from "./discoveryService";
-import { mockFrontendCandidates } from "@/data/mockCandidates";
+import { discoveryService } from "./discoveryService";
 
 export interface CandidateFilters extends DiscoveryFilters {
   jobReady?: boolean;
@@ -18,110 +18,9 @@ export const candidateDiscoveryService = {
     filters: CandidateFilters = {},
     limit: number = 20
   ): Promise<DiscoveryProfile[]> {
-    try {
-      let query = supabase
-        .from('user_profiles_public')
-        .select('*');
-
-      // Apply filters
-      if (filters.skills && filters.skills.length > 0) {
-        query = query.overlaps('skills', filters.skills);
-      }
-
-      if (filters.location) {
-        // Note: Would need location field in user_profiles_public
-        // For now, skip location filtering on database level
-      }
-
-      const { data: profiles, error } = await query.limit(limit);
-
-      if (error) throw error;
-
-      let candidates: DiscoveryProfile[] = [];
-      
-      if (profiles && profiles.length > 0) {
-        candidates = profiles.map(profile => ({
-          user_id: profile.user_id,
-          name: profile.name || 'Professional',
-          title: profile.title || 'Seeking Opportunities',
-          about_text: profile.about_text,
-          profile_image: profile.profile_image,
-          skills: Array.isArray(profile.skills) 
-            ? profile.skills.map((skill: any) => 
-                typeof skill === 'string' ? skill : skill?.name || skill
-              )
-            : [],
-          cover_color: profile.cover_color,
-          highlight_color: profile.highlight_color || '#FF6B4A',
-          professional_goal: profile.professional_goal,
-          location: profile.location,
-          experiences: Array.isArray(profile.experiences)
-            ? profile.experiences
-                .slice(0, 1)
-                .map((exp: any) => ({
-                  title: exp.title || exp.role,
-                  subtitle: exp.subtitle || exp.company,
-                  description: exp.description || '',
-                  period: exp.period || `${exp.start_date || ''} - ${exp.end_date || 'Present'}`
-                }))
-            : [],
-          education: Array.isArray(profile.education)
-            ? profile.education
-                .slice(0, 1)
-                .map((edu: any) => ({
-                  title: edu.title || edu.degree,
-                  description: edu.description || edu.institution,
-                  period: edu.period || `${edu.start_year || ''} - ${edu.end_year || 'Present'}`
-                }))
-            : [],
-          languages: Array.isArray(profile.languages)
-            ? profile.languages.map((l: any) => (typeof l === 'string' ? l : l?.name)).filter(Boolean)
-            : [],
-          achievements: Array.isArray(profile.achievements)
-            ? profile.achievements
-                .filter((a: any) => a.is_featured)
-                .slice(0, 3)
-                .map((a: any) => ({
-                  type: a.type,
-                  title: a.title,
-                  description: a.description,
-                  isFeatured: a.is_featured,
-                }))
-            : []
-        }));
-      } else {
-        // Fallback to mock data
-        candidates = [...mockFrontendCandidates];
-      }
-
-      // Filter out users that have already been swiped
-      const swipeHistory = await swipeService.getSwipeHistory(userId, 'employee');
-      const swipedUserIds = swipeHistory.map(s => s.target_user_id);
-      
-      const filteredCandidates = candidates.filter(
-        candidate => !swipedUserIds.includes(candidate.user_id)
-      );
-
-      // Apply client-side filters
-      let finalCandidates = filteredCandidates;
-
-      if (filters.skills && filters.skills.length > 0) {
-        finalCandidates = finalCandidates.filter(candidate =>
-          filters.skills!.some(skill => 
-            candidate.skills.some(candidateSkill => 
-              candidateSkill.toLowerCase().includes(skill.toLowerCase())
-            )
-          )
-        );
-      }
-
-      // Shuffle for variety
-      return finalCandidates.sort(() => Math.random() - 0.5).slice(0, limit);
-    } catch (error) {
-      console.error('Error fetching filtered candidates:', error);
-      // Return mock data on error
-      return [...mockFrontendCandidates].sort(() => Math.random() - 0.5).slice(0, limit);
-    }
+    // Delegate to the same proven service used by the desktop browser,
+    // with certifiedOnly: true to ensure only certified candidates appear
+    return discoveryService.getDiscoveryProfiles(userId, 'employee', filters, limit, true);
   },
 
   async swipeCandidate(
