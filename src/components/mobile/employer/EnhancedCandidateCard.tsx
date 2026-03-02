@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Briefcase, Award, User, ChevronUp } from "lucide-react";
+import { MapPin, Briefcase, Award, User, ChevronUp, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DiscoveryProfile } from "@/services/discoveryService";
 import { SwipeOverlayIndicator } from "./SwipeOverlayIndicator";
+import { matchSummaryService } from "@/services/matchSummaryService";
 
 interface EnhancedCandidateCardProps {
   profile: DiscoveryProfile;
@@ -11,7 +13,8 @@ interface EnhancedCandidateCardProps {
   swipeDirection?: 'left' | 'right' | null;
   swipeProgress?: number;
   onTapExpand?: () => void;
-  stackPosition?: number; // 0 = top, 1 = behind, 2 = furthest
+  stackPosition?: number;
+  userId?: string;
 }
 
 export function EnhancedCandidateCard({
@@ -21,7 +24,11 @@ export function EnhancedCandidateCard({
   swipeProgress = 0,
   onTapExpand,
   stackPosition = 0,
+  userId,
 }: EnhancedCandidateCardProps) {
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+
   const skillNames: string[] = Array.isArray(profile.skills)
     ? profile.skills.map((s: any) => (typeof s === 'string' ? s : s?.name)).filter(Boolean).slice(0, 5)
     : [];
@@ -29,10 +36,25 @@ export function EnhancedCandidateCard({
   const accentColor = profile.highlight_color || 'hsl(var(--primary))';
   const coverColor = profile.cover_color || accentColor;
 
+  // Only fetch AI summary for the top card
+  useEffect(() => {
+    if (stackPosition !== 0 || !userId) return;
+    setIsLoadingSummary(true);
+    matchSummaryService.getMatchSummary(userId, profile)
+      .then(summary => setAiSummary(summary))
+      .finally(() => setIsLoadingSummary(false));
+  }, [stackPosition, userId, profile.user_id]);
+
   // Stack visual offsets
   const stackScale = 1 - stackPosition * 0.04;
   const stackY = stackPosition * 8;
   const stackOpacity = stackPosition === 0 ? 1 : stackPosition === 1 ? 0.7 : 0.4;
+
+  const handleContentTap = () => {
+    if (swipeProgress < 0.1 && onTapExpand) {
+      onTapExpand();
+    }
+  };
 
   return (
     <div
@@ -93,9 +115,12 @@ export function EnhancedCandidateCard({
         </div>
       </div>
 
-      {/* Content body */}
-      <div className="flex-1 relative -mt-6 rounded-t-2xl bg-card overflow-y-auto">
-        <div className="p-5 space-y-4">
+      {/* Content body — tappable to open drawer */}
+      <div
+        className="flex-1 relative -mt-6 rounded-t-2xl bg-card flex flex-col overflow-hidden cursor-pointer"
+        onClick={handleContentTap}
+      >
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {/* Skills chips */}
           {skillNames.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
@@ -116,20 +141,29 @@ export function EnhancedCandidateCard({
             </div>
           )}
 
-          {/* Bio snippet */}
-          {profile.about_text && (
-            <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">
-              {profile.about_text}
-            </p>
-          )}
-
-          {/* Professional goal */}
-          {profile.professional_goal && (
-            <div className="bg-muted/40 rounded-xl p-3">
-              <p className="text-xs font-medium text-muted-foreground mb-0.5">Goal</p>
-              <p className="text-sm text-foreground line-clamp-2">{profile.professional_goal}</p>
+          {/* AI Match Insight — replaces bio + goal */}
+          <div
+            className="rounded-xl p-3.5 space-y-2"
+            style={{ backgroundColor: `${accentColor}10`, border: `1px solid ${accentColor}25` }}
+          >
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5" style={{ color: accentColor }} />
+              <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: accentColor }}>
+                Why this match?
+              </span>
             </div>
-          )}
+            {isLoadingSummary || (stackPosition === 0 && userId && !aiSummary) ? (
+              <div className="space-y-1.5">
+                <div className="h-3 bg-muted/60 rounded animate-pulse w-full" />
+                <div className="h-3 bg-muted/60 rounded animate-pulse w-5/6" />
+                <div className="h-3 bg-muted/60 rounded animate-pulse w-3/4" />
+              </div>
+            ) : (
+              <p className="text-sm text-foreground leading-relaxed line-clamp-3">
+                {aiSummary || matchSummaryService.generateFallbackSummary(profile)}
+              </p>
+            )}
+          </div>
 
           {/* Latest experience */}
           {profile.experiences && profile.experiences.length > 0 && (
@@ -152,18 +186,12 @@ export function EnhancedCandidateCard({
           )}
         </div>
 
-        {/* Tap to expand hint */}
+        {/* Tap to expand — sticky footer */}
         {onTapExpand && stackPosition === 0 && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onTapExpand();
-            }}
-            className="w-full py-3 flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors border-t border-border/30"
-          >
+          <div className="flex-shrink-0 w-full py-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground border-t border-border/30 bg-card">
             <ChevronUp className="w-3.5 h-3.5" />
-            Tap to see full profile
-          </button>
+            <span>Tap to see full profile</span>
+          </div>
         )}
       </div>
     </div>
