@@ -114,7 +114,7 @@ export function EnhancedCandidateCard({
         className="flex-1 relative -mt-6 rounded-t-2xl bg-card flex flex-col overflow-hidden cursor-pointer"
         onClick={handleContentTap}
       >
-        <div className="flex-1 overflow-hidden p-5 space-y-4">
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
 
           {/* Skills chips */}
           {skillNames.length > 0 && (
