@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, User, Briefcase, MessageSquare, Plus } from 'lucide-react';
+import { Home, User, Briefcase, MessageSquare, Plus, Mail } from 'lucide-react';
 import { useUIStore } from '@/stores/uiStore';
 import { cn } from '@/lib/utils';
+import { useUnreadChatCount } from '@/hooks/useUnreadChatCount';
 
 interface NavTab {
   id: string;
@@ -13,22 +14,28 @@ interface NavTab {
   badge?: number;
 }
 
-const tabs: NavTab[] = [
+const baseTabs: NavTab[] = [
   { id: 'home', label: 'Home', icon: Home, to: '/dashboard' },
   { id: 'profile', label: 'Profile', icon: User, to: '/profile' },
   { id: 'center', label: 'Create', icon: Plus, to: '#' }, // FAB placeholder
   { id: 'opportunities', label: 'Jobs', icon: Briefcase, to: '/jobs' },
-  { id: 'coach', label: 'Coach', icon: MessageSquare, to: '/content' },
+  { id: 'messages', label: 'Messages', icon: Mail, to: '/chat' },
 ];
 
 export function BottomNav() {
   const location = useLocation();
   const { setQuickActionsOpen } = useUIStore();
+  const unreadCount = useUnreadChatCount();
+
+  const tabs: NavTab[] = baseTabs.map(t =>
+    t.id === 'messages' ? { ...t, badge: unreadCount || undefined } : t
+  );
 
   const getActiveTab = () => {
     if (location.pathname === '/dashboard') return 'home';
     if (location.pathname === '/profile') return 'profile';
     if (location.pathname === '/jobs' || location.pathname === '/opportunity-discovery' || location.pathname === '/discovery') return 'opportunities';
+    if (location.pathname.startsWith('/chat')) return 'messages';
     if (location.pathname === '/content') return 'coach';
     return 'home';
   };

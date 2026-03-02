@@ -42,6 +42,7 @@ import DevTools from "./pages/DevTools";
 import Certification from "./pages/Certification";
 import VerifyCertification from "./pages/VerifyCertification";
 import Notifications from "./pages/Notifications";
+import Chat from "./pages/Chat";
 import AdminHome from "./pages/admin/AdminHome";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminOrganizations from "./pages/admin/AdminOrganizations";
@@ -120,6 +121,12 @@ const App: React.FC = () => {
                 } />
                 <Route path="/notifications" element={
                   <Guard auth onboarding><Notifications /></Guard>
+                } />
+                <Route path="/chat" element={
+                  <Guard auth onboarding><Chat /></Guard>
+                } />
+                <Route path="/chat/:threadId" element={
+                  <Guard auth onboarding><Chat /></Guard>
                 } />
                 
                 {/* Job Seeker Routes */}

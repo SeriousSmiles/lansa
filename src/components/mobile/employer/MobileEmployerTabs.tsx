@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Briefcase, BarChart3, Plus, Eye, CheckCircle2, XCircle, Settings, RefreshCw } from "lucide-react";
+import { LayoutDashboard, Users, Briefcase, BarChart3, Plus, Eye, CheckCircle2, XCircle, Settings, RefreshCw, Mail } from "lucide-react";
 import { MobileEmployerDashboard } from "./MobileEmployerDashboard";
 import { MobileCandidateBrowser } from "./MobileCandidateBrowser";
 import { MobileJobCreator } from "./MobileJobCreator";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { useOrgPermissions } from "@/hooks/useOrgPermissions";
+import { useUnreadChatCount } from "@/hooks/useUnreadChatCount";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { discoveryService } from "@/services/discoveryService";
@@ -44,6 +45,7 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
   const { activeOrganization } = useOrganization();
   const { canManageOrgSettings } = useOrgPermissions();
   const navigate = useNavigate();
+  const unreadCount = useUnreadChatCount();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showJobCreator, setShowJobCreator] = useState(false);
   const [showCandidateBrowser, setShowCandidateBrowser] = useState(false);
@@ -565,6 +567,20 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
             className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-white text-gray-700 hover:text-gray-900 hover:bg-gray-100"
           >
             <BarChart3 className="h-7 w-7" />
+          </TabsTrigger>
+          <TabsTrigger 
+            value="messages" 
+            onClick={() => navigate('/chat')}
+            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-white text-gray-700 hover:text-gray-900 hover:bg-gray-100 relative"
+          >
+              <div className="relative">
+              <Mail className="h-7 w-7" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-2 -right-2 h-4 w-4 bg-destructive text-white text-xs rounded-full flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </div>
           </TabsTrigger>
           {canManageOrgSettings && (
             <TabsTrigger 
