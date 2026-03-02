@@ -4,6 +4,9 @@ import {
   generateChatRequestEmail,
   generateChatAcceptedEmail,
   generateNewMessageEmail,
+  generateEmployerInterestEmail,
+  generateEmployerNudgeEmail,
+  generateMatchCreatedEmail,
 } from '../_shared/emailTemplates.ts';
 
 const corsHeaders = {
@@ -77,6 +80,25 @@ Deno.serve(async (req) => {
         recipientEmail: profile.email,
         senderName: 'Someone',
         messagePreview: message.slice(0, 120),
+        threadUrl: action_url || '/chat',
+      });
+    } else if (notification_type === 'employer_interest_received') {
+      emailContent = generateEmployerInterestEmail({
+        recipientName,
+        recipientEmail: profile.email,
+        dashboardUrl: action_url || '/dashboard',
+      });
+    } else if (notification_type === 'employer_nudge_received') {
+      emailContent = generateEmployerNudgeEmail({
+        recipientName,
+        recipientEmail: profile.email,
+        dashboardUrl: action_url || '/dashboard',
+      });
+    } else if (notification_type === 'match_created') {
+      emailContent = generateMatchCreatedEmail({
+        recipientName,
+        recipientEmail: profile.email,
+        otherPartyName: 'Your match',
         threadUrl: action_url || '/chat',
       });
     } else {

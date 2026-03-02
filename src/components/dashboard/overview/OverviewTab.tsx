@@ -4,6 +4,7 @@ import { GrowthCardSection } from "./GrowthCardSection";
 import { StudentAnalyticsCard } from "./StudentAnalyticsCard";
 // import { HireRateProgress } from "../HireRateProgress";
 import { CertificationCard } from "./CertificationCard";
+import { WhoIsInterestedSection } from "@/components/dashboard/WhoIsInterestedSection";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface OverviewTabProps {
@@ -29,6 +30,9 @@ export function OverviewTab({ userName, role, goal, insight, highlightActions, i
           <CertificationCard />
         </div>
       </div>
+
+      {/* Who's Interested Section */}
+      <WhoIsInterestedSection />
       
       {/* Growth Card Section - Hidden on desktop */}
       <div className="lg:hidden">

@@ -7,7 +7,6 @@ import { HelpCircle, ArrowLeft } from "lucide-react";
 import { discoveryService, DiscoveryProfile } from "@/services/discoveryService";
 import { swipeService, SwipeDirection } from "@/services/swipeService";
 import { matchService } from "@/services/matchService";
-import { notificationService } from "@/services/notificationService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -84,30 +83,8 @@ export function CandidateBrowseTab() {
       await swipeService.recordSwipe(swipeData);
       setSwipeCount(prev => prev + 1);
 
-      // Create notification for candidate when showing interest
-      if (direction === 'right' || direction === 'nudge') {
-        try {
-          await notificationService.createNotification(
-            profile.user_id,
-            'match_created',
-            direction === 'nudge' 
-              ? '⚡ Super Interest from an Employer!' 
-              : '💚 An Employer is Interested!',
-            direction === 'nudge'
-              ? 'An employer showed super interest in your profile. This could be a great opportunity!'
-              : 'An employer expressed interest in your profile. Check your matches to learn more!',
-            '/dashboard/matches',
-            {
-              employer_id: user.id,
-              context: 'employee',
-              interest_level: direction === 'nudge' ? 'super' : 'standard'
-            }
-          );
-        } catch (notifError) {
-          console.error('Failed to create notification:', notifError);
-          // Don't fail the swipe if notification fails
-        }
-      }
+      // Note: In-app notifications are now handled server-side via DB trigger
+      // (notify_candidate_on_swipe_trigger) — no client-side notification needed here
 
       // Check for match if it was a right swipe
       if (direction === 'right') {
