@@ -1,83 +1,103 @@
 
-# Fix: Candidate Browse Page - Blank After First Candidate + Visual Redesign
+# Candidate Browser — LinkedIn-Inspired Professional Redesign
 
-## Root Cause Analysis
+## What's Being Fixed & Why
 
-### Bug: "Page goes blank after first candidate"
+Looking at the screenshot and the code, the current page has these specific problems:
 
-The GSAP animation architecture has a critical flaw:
+1. **Stats bar takes up valuable vertical space** — 3 stat cards sit above the browser eating ~140px that could be profile content
+2. **Left panel is too sparse** — large empty gradient area with no information density; a lot of wasted space below the avatar before skills appear
+3. **Right panel tiles look flat** — `bg-muted/30` headers on cards are barely distinguishable from the card body; no visual weight hierarchy
+4. **The two panels feel disconnected** — no unified card wrapper around the whole browser, just two floating panels
+5. **Sections are too tall with too much padding** — each card has generous padding making the page feel "empty" even when data exists
+6. **Skills appear below a divider in a section with no structure** — LinkedIn puts skills as small compact chips directly under the name/title for immediate scanning
 
-1. `SplitPanelBrowser` holds `leftPanelRef` and `rightPanelRef` pointing to **wrapper divs**
-2. On swipe, it calls `exitLeftPanel(wrapper)` and `exitRightPanel(wrapper)` -- setting these wrappers to **opacity: 0** and offset positions
-3. After the exit, `advanceToNext()` updates the profile, triggering re-renders inside `LeftPanel` and `RightPanel`
-4. But the enter animations inside those child components run on their **own internal `containerRef`**, NOT on the parent wrapper divs
-5. Result: the parent wrappers stay at `opacity: 0` forever -- the page goes blank
+## New Layout: LinkedIn-Inspired Professional Design
 
-**Fix**: After advancing to the next profile, reset the parent wrapper divs (clear GSAP props) so the child enter animations are visible. Alternatively, consolidate the animation responsibility so only one layer controls visibility.
+### Overall Structure
 
-### Infrastructure Pattern Problem
-
-You asked about "past infrastructure causing everything to look the same." Here is the pattern I see:
-
-- **Mock data dominance**: The `discoveryService` falls back to 20 mock candidates whenever no certified users exist. The network logs confirm `user_certifications` returns `[]` (empty), so the system always shows mock data. Every employer sees the same 20 fake candidates with stock photos.
-- **Right panel appears blank for mock candidates**: Mock candidates have minimal data (1 experience, 1 education entry, short about text). The right panel renders conditionally -- if a field is empty, nothing shows. For many mock candidates, the right panel is nearly empty (as visible in your screenshot).
-- **AI match summaries are generic**: The edge function generates summaries without real employer context (no business profile data exists -- `business_profiles` returns `[]`), producing vague, templated text.
-
-This creates the "stuck in the same solution style" feeling -- the feature works mechanically but produces hollow results because the underlying data pipeline returns empty/fake data.
-
-## Implementation Plan
-
-### 1. Fix the GSAP Animation Bug (Critical)
-
-In `SplitPanelBrowser.tsx`, after calling `advanceToNext()`, reset the GSAP properties on the parent wrapper refs so the child components' enter animations become visible:
-
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│  ← Browse Candidates    [Matches: 3] [Swipes today: 12]  [?]   │  ← slim top bar
+├─────────────────────────────────────────────────────────────────┤
+│  Candidate 6 of 20  ●●●●●○○○○○○○○○○○○○○ (progress bar)        │
+├──────────────────────────┬──────────────────────────────────────┤
+│                          │  ┌──────────────────────────────────┐│
+│  [Cover color banner]    │  │ 📖 About                         ││
+│  [Avatar]  Name          │  │ Bio text here...                 ││
+│  Title · Location        │  └──────────────────────────────────┘│
+│  ─────────────────────── │  ┌──────────────────────────────────┐│
+│  🎯 Skills               │  │ 💼 Experience                    ││
+│  [TypeScript] [React]... │  │ Senior Dev · Acme Corp           ││
+│                          │  │ 2021 – Present                   ││
+│  ─────────────────────── │  │ ─────────────────────────────────││
+│  ✨ Why This Match        │  │ Junior Dev · Beta Co             ││
+│  AI summary paragraph    │  │ 2019 – 2021                      ││
+│                          │  └──────────────────────────────────┘│
+│  ─────────────────────── │  ┌──────────────────────────────────┐│
+│  🏆 Certified badge tile │  │ 🎓 Education                     ││
+│                          │  └──────────────────────────────────┘│
+│                          │  ┌─────────────┐ ┌──────────────────┐│
+│                          │  │ 🌐 Languages│ │ 🏅 Achievements  ││
+│                          │  └─────────────┘ └──────────────────┘│
+│                          │  ┌──────────────────────────────────┐│
+│                          │  │ 🎯 Professional Goals            ││
+│                          │  └──────────────────────────────────┘│
+├──────────────────────────┴──────────────────────────────────────┤
+│           [✗ Pass]      [⚡ Super Interest]    [♥ Interested]   │
+└─────────────────────────────────────────────────────────────────┘
 ```
-// After advanceToNext():
-gsap.set(leftPanelRef.current, { clearProps: "all" });
-gsap.set(rightPanelRef.current, { clearProps: "all" });
-```
 
-This is a 3-line fix that solves the blank page issue.
+### Key Design Changes (LinkedIn-Inspired)
 
-### 2. Redesign the Desktop Split Panel Layout
+**Left Panel — Identity Card**
+- Replace the plain gradient area with a proper cover banner (uses `cover_color` the candidate already has set on their profile) at ~90px tall, with the avatar sitting half-overlapping the banner — exactly like LinkedIn
+- Name in `text-xl font-bold`, title in `text-sm text-muted-foreground` (no colored text — LinkedIn style), location with pin icon inline
+- Skills immediately below in a tight pill cluster — no section heading needed, just the chips
+- AI match summary in a clearly labelled tile with a subtle AI sparkle icon and `bg-primary/5` tint to distinguish it from structural cards
+- Bottom: certification status tile — if certified, shows a green "Lansa Certified" tile with checkmark; if not, shows nothing
 
-The current layout feels unfinished because:
-- Left panel is a plain white box with too much vertical padding
-- Right panel uses `bg-muted/30` (barely visible gray) making it look empty
-- Cards inside the right panel have no visual weight
-- No clear visual hierarchy separating the two panels
+**Right Panel — Detail Feed**
+- Cards have a proper `border border-border` with `shadow-sm` and `rounded-xl`
+- Section header rows use `bg-slate-50 dark:bg-muted/40` with the icon + title — slightly more pronounced than the body
+- Experience items use a left timeline line (thin vertical bar from top to bottom of items) with filled dot per role — like LinkedIn's timeline
+- Education, Languages, Achievements, Professional Goals all follow the same tile grammar
+- All sections always render (with graceful empty states using placeholder text) — never leaves holes
 
-**Redesign approach:**
-- Left panel: add a subtle gradient header area behind the avatar, tighter spacing, stronger card styling
-- Right panel: replace the washed-out background with proper card sections that have borders and subtle shadows, use the brand highlight color for section accents
-- Add a visual separator/divider between panels
-- Make the "Professional Goals" section more prominent with a colored accent bar (matching the screenshot's orange bar)
-- Add skeleton loading states for when data is missing instead of showing nothing
+**Header & Stats**
+- The 3 stat cards are removed from being a full row and compressed into a slim inline strip on the same line as the back button: `← Browse Candidates · 3 matches · 12 swipes today · 20 candidates`
+- This recovers ~140px of vertical space for profile content
+- Progress bar (thin, `h-1`) replaces the dot navigation — cleaner and more professional
+- Candidate counter `6 of 20` remains but is smaller and integrated into the progress row
 
-### 3. Handle Empty/Sparse Profile Data Gracefully
-
-Instead of rendering nothing when a mock candidate has no experiences, education, or achievements, show placeholder content:
-- "No experience listed yet" with an icon
-- "No education details available" 
-- This prevents the right panel from appearing completely blank
-
-### 4. Fix the Action Button Bar Positioning
-
-Currently the action bar is inside the flex column flow and can get pushed off-screen. Make it sticky/fixed at the bottom of the browse area so it's always visible and accessible.
+**Animation**
+- Remove GSAP entirely from the panel components — it's been causing the blank-page bug across multiple fix attempts
+- Replace with React's built-in `key` prop pattern: when `currentProfile.user_id` changes, React unmounts/remounts the panel with a CSS `animate-in fade-in slide-in-from-bottom-2 duration-300` class — this is deterministic, cannot conflict with itself, and never leaves opacity at 0
+- The `candidatePanelAnimations.ts` utility is no longer called from these components (can be kept for future use elsewhere)
 
 ## Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/components/discovery/desktop/SplitPanelBrowser.tsx` | Fix GSAP reset after advance, improve layout structure |
-| `src/components/discovery/desktop/LeftPanel.tsx` | Visual redesign with gradient header, tighter spacing |
-| `src/components/discovery/desktop/RightPanel.tsx` | Visual redesign with proper cards, empty state handling |
-| `src/components/discovery/desktop/ActionButtonBar.tsx` | Sticky positioning fix |
-| `src/utils/candidatePanelAnimations.ts` | Ensure enter animations also clear previous state |
+| `src/components/discovery/desktop/LeftPanel.tsx` | Full redesign — cover banner, LinkedIn-style identity block, compact skills, AI tile |
+| `src/components/discovery/desktop/RightPanel.tsx` | Full redesign — proper card grammar, timeline experience, always-render sections |
+| `src/components/discovery/desktop/SplitPanelBrowser.tsx` | Replace GSAP refs with key-based animation, compress stats into header strip, slim progress bar |
+| `src/components/discovery/desktop/ActionButtonBar.tsx` | Minor polish — consistent height, button weights |
+| `src/components/dashboard/employer/CandidateBrowseTab.tsx` | Pass stats inline to SplitPanelBrowser as props instead of rendering stat cards |
 
-## Technical Notes
+## What Is NOT Changed
 
-- The animation bug is the highest priority -- it makes the feature completely unusable after the first candidate
-- The visual redesign follows the existing component structure, no new components needed
-- Mock data behavior is preserved (since no real certified candidates exist yet), but the UI will handle sparse data gracefully
-- All changes are isolated to the desktop candidate browser -- mobile SwipeDeck is unaffected
+- `discoveryService.ts` — no data layer changes; mock fallback preserved
+- Mobile `SwipeDeck` — completely untouched
+- `useCandidateNavigation.ts` hook — logic unchanged
+- The browse feature, swipe recording, notifications, match detection — all unchanged
+- Routing and auth guards — unchanged
+
+## Risk Assessment
+
+| Change | Risk |
+|--------|------|
+| Removing GSAP from panels | Low — CSS transitions are deterministic and solve the blank-page bug permanently |
+| Stats moved to header strip | None — data still fetched, just rendered differently |
+| Cover banner using `cover_color` | None — graceful fallback to `bg-muted` if null |
+| Key-based animation | None — standard React pattern |
