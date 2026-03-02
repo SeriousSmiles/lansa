@@ -16,59 +16,53 @@ export function ActionButtonBar({ onAction, disabled }: ActionButtonBarProps) {
 
   const handleAction = (direction: SwipeDirection, buttonRef: React.RefObject<HTMLButtonElement>) => {
     if (disabled) return;
-    
-    // Animate button press
     if (buttonRef.current) {
       candidatePanelAnimations.buttonPress(buttonRef.current);
     }
-
-    // Trigger action after animation
     setTimeout(() => {
       onAction(direction);
     }, 100);
   };
 
   return (
-    <div className="bg-background border-t border-border shadow-lg">
-      <div className="container mx-auto px-8 py-4">
-        <div className="flex items-center justify-center gap-6 max-w-2xl mx-auto">
-          {/* Pass Button */}
-          <Button
-            ref={passRef}
-            variant="outline"
-            size="lg"
-            className="flex-1 max-w-[200px] h-14 border-2 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700 hover:scale-105 hover:shadow-md transition-all duration-200"
-            onClick={() => handleAction('left', passRef)}
-            disabled={disabled}
-          >
-            <X className="w-5 h-5 mr-2" />
-            Pass
-          </Button>
+    <div className="flex-shrink-0 bg-background border-t border-border shadow-[0_-4px_16px_hsl(var(--foreground)/0.06)]">
+      <div className="flex items-center justify-center gap-4 px-8 py-4 max-w-2xl mx-auto">
+        {/* Pass */}
+        <Button
+          ref={passRef}
+          variant="outline"
+          size="lg"
+          className="flex-1 max-w-[180px] h-12 border-2 border-destructive/40 text-destructive hover:bg-destructive/5 hover:border-destructive transition-all duration-200 font-medium"
+          onClick={() => handleAction('left', passRef)}
+          disabled={disabled}
+        >
+          <X className="w-4 h-4 mr-2" />
+          Pass
+        </Button>
 
-          {/* Super Interest Button */}
-          <Button
-            ref={nudgeRef}
-            size="lg"
-            className="flex-1 max-w-[220px] h-14 bg-yellow-500 hover:bg-yellow-600 text-white hover:scale-105 hover:shadow-lg transition-all duration-200"
-            onClick={() => handleAction('nudge', nudgeRef)}
-            disabled={disabled}
-          >
-            <Zap className="w-5 h-5 mr-2" />
-            Super Interest
-          </Button>
+        {/* Super Interest */}
+        <Button
+          ref={nudgeRef}
+          size="lg"
+          className="flex-1 max-w-[200px] h-12 bg-amber-500 hover:bg-amber-600 text-white transition-all duration-200 font-semibold shadow-sm hover:shadow-md"
+          onClick={() => handleAction('nudge', nudgeRef)}
+          disabled={disabled}
+        >
+          <Zap className="w-4 h-4 mr-2" />
+          Super Interest
+        </Button>
 
-          {/* Interested Button */}
-          <Button
-            ref={likeRef}
-            size="lg"
-            className="flex-1 max-w-[200px] h-14 bg-green-600 hover:bg-green-700 text-white hover:scale-105 hover:shadow-lg transition-all duration-200"
-            onClick={() => handleAction('right', likeRef)}
-            disabled={disabled}
-          >
-            <Heart className="w-5 h-5 mr-2" />
-            Interested
-          </Button>
-        </div>
+        {/* Interested */}
+        <Button
+          ref={likeRef}
+          size="lg"
+          className="flex-1 max-w-[180px] h-12 bg-green-600 hover:bg-green-700 text-white transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+          onClick={() => handleAction('right', likeRef)}
+          disabled={disabled}
+        >
+          <Heart className="w-4 h-4 mr-2" />
+          Interested
+        </Button>
       </div>
     </div>
   );
