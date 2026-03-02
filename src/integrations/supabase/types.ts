@@ -3065,6 +3065,7 @@ export type Database = {
         | "org_admin"
         | "org_manager"
         | "org_member"
+        | "employer"
       application_status: "pending" | "accepted" | "declined" | "withdrawn"
       career_path_type:
         | "student"
@@ -3238,6 +3239,7 @@ export const Constants = {
         "org_admin",
         "org_manager",
         "org_member",
+        "employer",
       ],
       application_status: ["pending", "accepted", "declined", "withdrawn"],
       career_path_type: [
