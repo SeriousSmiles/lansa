@@ -13,6 +13,7 @@ export interface DiscoveryProfile {
   cover_color?: string;
   highlight_color?: string;
   professional_goal?: string;
+  biggest_challenge?: string;
   location?: string;
   isCertified?: boolean;
   experiences?: Array<{
@@ -115,6 +116,7 @@ export const discoveryService = {
             cover_color: profile.cover_color,
             highlight_color: profile.highlight_color || '#FF6B4A',
             professional_goal: profile.professional_goal,
+            biggest_challenge: profile.biggest_challenge,
             location: profile.location,
             isCertified: certifiedOnly ? true : certifiedUserIds.has(profile.user_id),
             experiences: Array.isArray(profile.experiences)
