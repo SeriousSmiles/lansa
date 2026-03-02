@@ -47,7 +47,7 @@ export function SplitPanelBrowser({
     setTimeout(() => setIsAnimating(false), 100);
   };
 
-  const hasReachedEnd = currentIndex >= totalProfiles - 1 && totalProfiles > 0;
+  const hasReachedEnd = currentIndex >= totalProfiles && totalProfiles > 0;
   const progress = totalProfiles > 0 ? ((currentIndex + 1) / totalProfiles) * 100 : 0;
 
   if (!currentProfile && !isLoading) {

@@ -39,12 +39,7 @@ export function useCandidateNavigation(initialProfiles: DiscoveryProfile[]) {
 
   const advanceToNext = useCallback(() => {
     setCurrentIndex(prev => {
-      const nextIndex = prev + 1;
-      // If we've reached the end, stay at current index
-      if (nextIndex >= initialProfiles.length) {
-        return prev;
-      }
-      return nextIndex;
+      return prev + 1;
     });
   }, [initialProfiles.length]);
 

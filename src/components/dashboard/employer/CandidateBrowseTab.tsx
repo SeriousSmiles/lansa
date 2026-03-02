@@ -40,7 +40,7 @@ export function CandidateBrowseTab() {
         'employee', 
         {}, 
         20,
-        false // show all profiles including uncertified real users
+        true // certifiedOnly - show only Lansa certified candidates
       );
       setProfiles(data);
     } catch (error) {
@@ -146,7 +146,7 @@ export function CandidateBrowseTab() {
         'employee',
         {},
         20,
-        false
+        true // certifiedOnly
       );
       setProfiles(prev => {
         const existingIds = new Set(prev.map(p => p.user_id));
