@@ -1,5 +1,9 @@
-import React, { useRef, useCallback, useState } from "react";
+import React, { useRef, useCallback, useState, useImperativeHandle, forwardRef } from "react";
 import { gsap } from "gsap";
+
+export interface SwipeableContainerHandle {
+  triggerSwipe: (direction: 'left' | 'right') => void;
+}
 
 interface SwipeableContainerProps {
   children: React.ReactNode;
@@ -10,14 +14,14 @@ interface SwipeableContainerProps {
   className?: string;
 }
 
-export function SwipeableContainer({
+export const SwipeableContainer = forwardRef<SwipeableContainerHandle, SwipeableContainerProps>(function SwipeableContainer({
   children,
   onSwipeLeft,
   onSwipeRight,
   onDragProgress,
   threshold = 80,
   className = ""
-}: SwipeableContainerProps) {
+}: SwipeableContainerProps, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const startX = useRef(0);
@@ -127,12 +131,13 @@ export function SwipeableContainer({
     });
   };
 
-  // Public method for programmatic swipe (called from action buttons)
-  const triggerSwipe = useCallback((direction: 'left' | 'right') => {
-    if (isAnimating || !containerRef.current) return;
-    const cb = direction === 'right' ? onSwipeRight : onSwipeLeft;
-    if (cb) animateExit(direction, cb);
-  }, [isAnimating, onSwipeLeft, onSwipeRight]);
+  useImperativeHandle(ref, () => ({
+    triggerSwipe: (direction: 'left' | 'right') => {
+      if (isAnimating || !containerRef.current) return;
+      const cb = direction === 'right' ? onSwipeRight : onSwipeLeft;
+      if (cb) animateExit(direction, cb);
+    }
+  }), [isAnimating, onSwipeLeft, onSwipeRight]);
 
   return (
     <div
@@ -147,9 +152,8 @@ export function SwipeableContainer({
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
       onPointerLeave={onPointerUp}
-      data-trigger-swipe={triggerSwipe}
     >
       {children}
     </div>
   );
-}
+});

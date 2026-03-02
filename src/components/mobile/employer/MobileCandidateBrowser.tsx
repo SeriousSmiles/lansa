@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Heart, X, Filter, ArrowLeft, Users, Zap, Undo2 } from "lucide-react";
-import { SwipeableContainer } from "../SwipeableContainer";
+import { SwipeableContainer, SwipeableContainerHandle } from "../SwipeableContainer";
 import { EnhancedCandidateCard } from "./EnhancedCandidateCard";
 import { CandidateDetailSheet } from "./CandidateDetailSheet";
 import { MatchCelebration } from "./MatchCelebration";
@@ -46,6 +46,7 @@ export function MobileCandidateBrowser({
   const [undoTimer, setUndoTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   const headerRef = useRef<HTMLDivElement>(null);
+  const swipeRef = useRef<SwipeableContainerHandle>(null);
 
   const currentProfile = profiles[currentIndex];
   const nextProfile = profiles[currentIndex + 1];
@@ -272,6 +273,7 @@ export function MobileCandidateBrowser({
               {/* Top card (swipeable) */}
               {currentProfile && (
                 <SwipeableContainer
+                  ref={swipeRef}
                   onSwipeLeft={() => handleSwipeAction('left')}
                   onSwipeRight={() => handleSwipeAction('right')}
                   onDragProgress={handleDragProgress}
@@ -311,7 +313,7 @@ export function MobileCandidateBrowser({
             <button
               className="w-14 h-14 rounded-full border-[2.5px] border-red-500 flex items-center justify-center bg-card shadow-md active:scale-95 transition-all"
               style={{ color: '#ef4444' }}
-              onClick={() => handleSwipeAction('left')}
+              onClick={() => swipeRef.current?.triggerSwipe('left')}
             >
               <X className="w-6 h-6" strokeWidth={2.5} />
             </button>
@@ -327,7 +329,7 @@ export function MobileCandidateBrowser({
             <button
               className="w-14 h-14 rounded-full border-[2.5px] flex items-center justify-center bg-card shadow-md active:scale-95 transition-all"
               style={{ borderColor: '#2563eb', color: '#2563eb' }}
-              onClick={() => handleSwipeAction('right')}
+              onClick={() => swipeRef.current?.triggerSwipe('right')}
             >
               <Heart className="w-6 h-6" strokeWidth={2.5} style={{ color: '#2563eb', stroke: '#2563eb' }} />
             </button>
