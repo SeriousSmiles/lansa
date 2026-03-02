@@ -246,7 +246,7 @@ export function MobileCandidateBrowser({
 
       {/* Card Stack */}
       <div className="flex-1 relative px-4 pt-4">
-        <div className="relative w-full h-[calc(100vh-260px)] max-h-[640px]">
+        <div className="relative w-full h-[calc(100vh-220px)] max-h-[760px]">
           {isLoading ? (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -325,11 +325,11 @@ export function MobileCandidateBrowser({
             </button>
             {/* Interested */}
             <button
-              className="w-14 h-14 rounded-full border-[2.5px] border-blue-500 flex items-center justify-center bg-card shadow-md active:scale-95 transition-all"
-              style={{ color: '#3b82f6' }}
+              className="w-14 h-14 rounded-full border-[2.5px] flex items-center justify-center bg-card shadow-md active:scale-95 transition-all"
+              style={{ borderColor: '#2563eb', color: '#2563eb' }}
               onClick={() => handleSwipeAction('right')}
             >
-              <Heart className="w-6 h-6" strokeWidth={2.5} />
+              <Heart className="w-6 h-6" strokeWidth={2.5} style={{ color: '#2563eb', stroke: '#2563eb' }} />
             </button>
           </div>
         </div>
