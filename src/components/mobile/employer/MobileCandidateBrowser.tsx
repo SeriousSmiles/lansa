@@ -309,21 +309,24 @@ export function MobileCandidateBrowser({
           <div className="flex justify-center items-center gap-6">
             {/* Pass */}
             <button
-              className="w-14 h-14 rounded-full border-2 border-red-500 flex items-center justify-center text-red-500 bg-background hover:bg-red-500 hover:text-white shadow-md active:scale-95 transition-all"
+              className="w-14 h-14 rounded-full border-[2.5px] border-red-500 flex items-center justify-center bg-card shadow-md active:scale-95 transition-all"
+              style={{ color: '#ef4444' }}
               onClick={() => handleSwipeAction('left')}
             >
               <X className="w-6 h-6" strokeWidth={2.5} />
             </button>
             {/* Nudge */}
             <button
-              className="w-12 h-12 rounded-full border-2 border-amber-500 flex items-center justify-center text-amber-500 bg-background hover:bg-amber-500 hover:text-white shadow-md active:scale-95 transition-all"
+              className="w-12 h-12 rounded-full border-[2.5px] border-amber-500 flex items-center justify-center bg-card shadow-md active:scale-95 transition-all"
+              style={{ color: '#f59e0b' }}
               onClick={() => handleSwipeAction('nudge')}
             >
               <Zap className="w-5 h-5" strokeWidth={2.5} />
             </button>
             {/* Interested */}
             <button
-              className="w-14 h-14 rounded-full border-2 border-blue-500 flex items-center justify-center text-blue-500 bg-background hover:bg-blue-500 hover:text-white shadow-md active:scale-95 transition-all"
+              className="w-14 h-14 rounded-full border-[2.5px] border-blue-500 flex items-center justify-center bg-card shadow-md active:scale-95 transition-all"
+              style={{ color: '#3b82f6' }}
               onClick={() => handleSwipeAction('right')}
             >
               <Heart className="w-6 h-6" strokeWidth={2.5} />
