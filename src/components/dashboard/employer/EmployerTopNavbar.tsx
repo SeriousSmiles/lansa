@@ -1,10 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
-import { Building2, Users } from "lucide-react";
+import { Building2, Users, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { useUnreadChatCount } from "@/hooks/useUnreadChatCount";
 
 export function EmployerTopNavbar() {
   const location = useLocation();
+  const unreadCount = useUnreadChatCount();
   
   const navItems = [
     {
@@ -16,7 +18,13 @@ export function EmployerTopNavbar() {
       title: "Browse Candidates",
       href: "/browse-candidates",
       icon: Users,
-    }
+    },
+    {
+      title: "Messages",
+      href: "/chat",
+      icon: Mail,
+      badge: unreadCount,
+    },
   ];
 
   return (
@@ -45,7 +53,14 @@ export function EmployerTopNavbar() {
                       : "text-muted-foreground"
                   )}
                 >
-                  <Icon className="h-4 w-4" />
+                  <div className="relative">
+                    <Icon className="h-4 w-4" />
+                    {'badge' in item && item.badge > 0 && (
+                      <span className="absolute -top-2 -right-2 h-4 w-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
+                        {item.badge > 9 ? '9+' : item.badge}
+                      </span>
+                    )}
+                  </div>
                   {item.title}
                 </Link>
               );

@@ -5,7 +5,7 @@ import { useUserState } from "@/contexts/UserStateProvider";
 import { gsap } from "gsap";
 import { TopNavbar } from "./TopNavbar";
 
-import { IconHome, IconBook, IconVideo, IconUser, IconBriefcase } from "@tabler/icons-react";
+import { IconHome, IconBook, IconVideo, IconUser, IconBriefcase, IconMessage } from "@tabler/icons-react";
 import { AnnouncementBanner } from "@/components/common/AnnouncementBanner";
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -35,6 +35,11 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
           title: "Browse Candidates",
           url: "/browse-candidates",
           icon: IconUser,
+        },
+        {
+          title: "Messages",
+          url: "/chat",
+          icon: IconMessage,
         },
       ]
     : userType === 'mentor'
