@@ -28,6 +28,33 @@ export interface SegmentChangeEmailData {
   dashboardUrl: string;
 }
 
+export interface ChatRequestEmailData {
+  recipientName: string;
+  recipientEmail: string;
+  requesterName: string;
+  organizationName?: string;
+  organizationLogo?: string;
+  introNote?: string;
+  actionUrl: string;
+}
+
+export interface ChatAcceptedEmailData {
+  recipientName: string;
+  recipientEmail: string;
+  otherPartyName: string;
+  organizationName?: string;
+  threadUrl: string;
+}
+
+export interface NewMessageEmailData {
+  recipientName: string;
+  recipientEmail: string;
+  senderName: string;
+  organizationName?: string;
+  messagePreview: string;
+  threadUrl: string;
+}
+
 export function generateInvitationEmail(data: InvitationEmailData): { subject: string; html: string } {
   return {
     subject: `You're invited to join ${data.organizationName} on Lansa`,
@@ -300,6 +327,163 @@ export function generateSegmentChangeEmail(data: SegmentChangeEmailData): { subj
             <div class="footer">
               <p><strong>Lansa</strong> - The Future of Hiring</p>
               <p>Questions? Reply to this email - we're here to help!</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `
+  };
+}
+
+export function generateChatRequestEmail(data: ChatRequestEmailData): { subject: string; html: string } {
+  const orgLine = data.organizationName
+    ? `from <strong>${data.organizationName}</strong>`
+    : '';
+
+  return {
+    subject: `${data.requesterName} wants to connect with you on Lansa`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 0 auto; }
+            .header { background: linear-gradient(135deg, #F2713B 0%, #e05a28 100%); color: white; padding: 40px 30px; text-align: center; }
+            .header h1 { margin: 0; font-size: 28px; font-weight: 700; }
+            .header p { margin: 8px 0 0; opacity: 0.9; font-size: 16px; }
+            .content { background: #ffffff; padding: 40px 30px; }
+            .content p { margin: 16px 0; font-size: 16px; }
+            .note-box { background: #fff7ed; border-left: 4px solid #F2713B; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 20px 0; font-style: italic; color: #374151; }
+            .button { display: inline-block; background: #F2713B; color: white !important; padding: 14px 32px; text-decoration: none; border-radius: 8px; margin: 24px 0; font-weight: 600; font-size: 16px; }
+            .footer { text-align: center; padding: 30px; color: #6b7280; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>✉️ Connection Request</h1>
+              <p>Someone wants to connect with you</p>
+            </div>
+            <div class="content">
+              <p>Hi ${data.recipientName},</p>
+              <p><strong>${data.requesterName}</strong> ${orgLine} has sent you a connection request on Lansa.</p>
+              ${data.introNote ? `
+              <div class="note-box">
+                <p style="margin: 0; font-size: 15px;">"${data.introNote}"</p>
+                <p style="margin: 8px 0 0; font-size: 13px; color: #6b7280;">— ${data.requesterName}</p>
+              </div>
+              ` : ''}
+              <p>Head to Lansa to review the request and decide whether to connect. Once you accept, a private chat will open between you both.</p>
+              <div style="text-align: center;">
+                <a href="https://lansa.app${data.actionUrl}" class="button">Review Request</a>
+              </div>
+            </div>
+            <div class="footer">
+              <p><strong>Lansa</strong> - The Future of Hiring</p>
+              <p>You can manage your connection preferences in your Lansa settings.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `
+  };
+}
+
+export function generateChatAcceptedEmail(data: ChatAcceptedEmailData): { subject: string; html: string } {
+  const withOrg = data.organizationName
+    ? `${data.otherPartyName} from ${data.organizationName}`
+    : data.otherPartyName;
+
+  return {
+    subject: `Your chat with ${data.otherPartyName} is now open on Lansa`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 0 auto; }
+            .header { background: linear-gradient(135deg, #2B7FE8 0%, #1a6cd4 100%); color: white; padding: 40px 30px; text-align: center; }
+            .header h1 { margin: 0; font-size: 28px; font-weight: 700; }
+            .content { background: #ffffff; padding: 40px 30px; }
+            .content p { margin: 16px 0; font-size: 16px; }
+            .highlight-box { background: #eff6ff; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; }
+            .highlight-box p { margin: 0; font-size: 18px; font-weight: 600; color: #1e40af; }
+            .button { display: inline-block; background: #2B7FE8; color: white !important; padding: 14px 32px; text-decoration: none; border-radius: 8px; margin: 24px 0; font-weight: 600; font-size: 16px; }
+            .footer { text-align: center; padding: 30px; color: #6b7280; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎉 Connection Made!</h1>
+            </div>
+            <div class="content">
+              <p>Hi ${data.recipientName},</p>
+              <p>Your connection with <strong>${withOrg}</strong> has been accepted — your private chat is now open!</p>
+              <div class="highlight-box">
+                <p>💬 Start your conversation now</p>
+              </div>
+              <p>Use the chat to discuss opportunities, ask questions, and take the next step together.</p>
+              <div style="text-align: center;">
+                <a href="https://lansa.app${data.threadUrl}" class="button">Open Chat</a>
+              </div>
+            </div>
+            <div class="footer">
+              <p><strong>Lansa</strong> - The Future of Hiring</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `
+  };
+}
+
+export function generateNewMessageEmail(data: NewMessageEmailData): { subject: string; html: string } {
+  const fromOrg = data.organizationName
+    ? `${data.senderName} · ${data.organizationName}`
+    : data.senderName;
+
+  return {
+    subject: `New message from ${data.senderName} on Lansa`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 0 auto; }
+            .header { background: linear-gradient(135deg, #1f2937 0%, #111827 100%); color: white; padding: 32px 30px; text-align: center; }
+            .header h1 { margin: 0; font-size: 24px; font-weight: 700; }
+            .content { background: #ffffff; padding: 40px 30px; }
+            .content p { margin: 16px 0; font-size: 16px; }
+            .message-box { background: #f9fafb; border-radius: 8px; padding: 20px; margin: 20px 0; border: 1px solid #e5e7eb; }
+            .message-box .sender { font-size: 13px; color: #6b7280; margin: 0 0 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+            .message-box .body { font-size: 16px; color: #1f2937; margin: 0; }
+            .button { display: inline-block; background: #1f2937; color: white !important; padding: 14px 32px; text-decoration: none; border-radius: 8px; margin: 24px 0; font-weight: 600; font-size: 16px; }
+            .footer { text-align: center; padding: 30px; color: #6b7280; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>💬 New Message</h1>
+            </div>
+            <div class="content">
+              <p>Hi ${data.recipientName},</p>
+              <p>You have a new message on Lansa:</p>
+              <div class="message-box">
+                <p class="sender">${fromOrg}</p>
+                <p class="body">${data.messagePreview}${data.messagePreview.length >= 120 ? '…' : ''}</p>
+              </div>
+              <div style="text-align: center;">
+                <a href="https://lansa.app${data.threadUrl}" class="button">Reply in Lansa</a>
+              </div>
+            </div>
+            <div class="footer">
+              <p><strong>Lansa</strong> - The Future of Hiring</p>
+              <p>To manage email preferences, visit your Lansa notification settings.</p>
             </div>
           </div>
         </body>
