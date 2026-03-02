@@ -307,32 +307,27 @@ export function MobileCandidateBrowser({
           )}
 
           <div className="flex justify-center items-center gap-6">
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-14 h-14 rounded-full border-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground shadow-md active:scale-95 transition-transform"
+            {/* Pass */}
+            <button
+              className="w-14 h-14 rounded-full border-2 border-red-500 flex items-center justify-center text-red-500 bg-background hover:bg-red-500 hover:text-white shadow-md active:scale-95 transition-all"
               onClick={() => handleSwipeAction('left')}
             >
-              <X className="h-6 w-6" />
-            </Button>
-
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-12 h-12 rounded-full border-2 border-accent text-accent-foreground hover:bg-accent shadow-md active:scale-95 transition-transform"
+              <X className="w-6 h-6" strokeWidth={2.5} />
+            </button>
+            {/* Nudge */}
+            <button
+              className="w-12 h-12 rounded-full border-2 border-amber-500 flex items-center justify-center text-amber-500 bg-background hover:bg-amber-500 hover:text-white shadow-md active:scale-95 transition-all"
               onClick={() => handleSwipeAction('nudge')}
             >
-              <Zap className="h-5 w-5" />
-            </Button>
-
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-14 h-14 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground shadow-md active:scale-95 transition-transform"
+              <Zap className="w-5 h-5" strokeWidth={2.5} />
+            </button>
+            {/* Interested */}
+            <button
+              className="w-14 h-14 rounded-full border-2 border-blue-500 flex items-center justify-center text-blue-500 bg-background hover:bg-blue-500 hover:text-white shadow-md active:scale-95 transition-all"
               onClick={() => handleSwipeAction('right')}
             >
-              <Heart className="h-6 w-6" />
-            </Button>
+              <Heart className="w-6 h-6" strokeWidth={2.5} />
+            </button>
           </div>
         </div>
       )}

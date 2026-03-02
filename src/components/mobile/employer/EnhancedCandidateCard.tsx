@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Briefcase, Award, User, ChevronUp, Sparkles } from "lucide-react";
+import { MapPin, Award, User, ChevronUp, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DiscoveryProfile } from "@/services/discoveryService";
 import { SwipeOverlayIndicator } from "./SwipeOverlayIndicator";
@@ -56,6 +56,8 @@ export function EnhancedCandidateCard({
     }
   };
 
+  const summaryText = aiSummary || (stackPosition === 0 ? matchSummaryService.generateFallbackSummary(profile) : null);
+
   return (
     <div
       className={cn(
@@ -79,29 +81,21 @@ export function EnhancedCandidateCard({
       {/* Cover header */}
       <div
         className="relative p-5 pb-14 flex-shrink-0"
-        style={{
-          background: `linear-gradient(135deg, ${coverColor}, ${accentColor})`,
-        }}
+        style={{ background: `linear-gradient(135deg, ${coverColor}, ${accentColor})` }}
       >
-        {/* Certification badge */}
         {profile.isCertified && (
           <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
             <Award className="w-3.5 h-3.5 text-white" />
             <span className="text-[10px] font-bold text-white tracking-wide">CERTIFIED</span>
           </div>
         )}
-
         <div className="flex items-start gap-4">
-          <Avatar className="w-16 h-16 ring-3 ring-white/30 shadow-lg flex-shrink-0">
+          <Avatar className="w-16 h-16 ring-4 ring-white/30 shadow-lg flex-shrink-0">
             <AvatarImage src={profile.profile_image} alt={profile.name} />
-            <AvatarFallback
-              style={{ backgroundColor: accentColor }}
-              className="text-white text-xl font-semibold"
-            >
+            <AvatarFallback style={{ backgroundColor: accentColor }} className="text-white text-xl font-semibold">
               {profile.name?.charAt(0) || <User className="w-8 h-8" />}
             </AvatarFallback>
           </Avatar>
-
           <div className="flex-1 min-w-0 text-white">
             <h2 className="text-xl font-bold truncate">{profile.name}</h2>
             <p className="text-white/90 text-sm truncate">{profile.title}</p>
@@ -121,6 +115,7 @@ export function EnhancedCandidateCard({
         onClick={handleContentTap}
       >
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
+
           {/* Skills chips */}
           {skillNames.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
@@ -130,8 +125,8 @@ export function EnhancedCandidateCard({
                   variant="secondary"
                   className="text-[11px] font-medium px-2.5 py-0.5"
                   style={{
-                    backgroundColor: `${accentColor}12`,
-                    borderColor: `${accentColor}25`,
+                    backgroundColor: `${accentColor}18`,
+                    borderColor: `${accentColor}30`,
                     color: accentColor,
                   }}
                 >
@@ -141,49 +136,30 @@ export function EnhancedCandidateCard({
             </div>
           )}
 
-          {/* AI Match Insight — replaces bio + goal */}
+          {/* AI Match Insight */}
           <div
-            className="rounded-xl p-3.5 space-y-2"
-            style={{ backgroundColor: `${accentColor}10`, border: `1px solid ${accentColor}25` }}
+            className="rounded-xl p-3.5"
+            style={{ backgroundColor: `${accentColor}10`, border: `1px solid ${accentColor}30` }}
           >
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5" style={{ color: accentColor }} />
+            <div className="flex items-center gap-1.5 mb-2">
+              <Sparkles className="w-3.5 h-3.5 flex-shrink-0" style={{ color: accentColor }} />
               <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: accentColor }}>
                 Why this match?
               </span>
             </div>
-            {isLoadingSummary || (stackPosition === 0 && userId && !aiSummary) ? (
+            {isLoadingSummary ? (
               <div className="space-y-1.5">
                 <div className="h-3 bg-muted/60 rounded animate-pulse w-full" />
                 <div className="h-3 bg-muted/60 rounded animate-pulse w-5/6" />
                 <div className="h-3 bg-muted/60 rounded animate-pulse w-3/4" />
               </div>
             ) : (
-              <p className="text-sm text-foreground leading-relaxed line-clamp-3">
-                {aiSummary || matchSummaryService.generateFallbackSummary(profile)}
+              <p className="text-sm text-foreground/85 leading-relaxed">
+                {summaryText}
               </p>
             )}
           </div>
 
-          {/* Latest experience */}
-          {profile.experiences && profile.experiences.length > 0 && (
-            <div className="flex items-start gap-2.5">
-              <div
-                className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                style={{ backgroundColor: `${accentColor}18` }}
-              >
-                <Briefcase className="w-3.5 h-3.5" style={{ color: accentColor }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">
-                  {profile.experiences[0].title}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {profile.experiences[0].subtitle}
-                </p>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Tap to expand — sticky footer */}
