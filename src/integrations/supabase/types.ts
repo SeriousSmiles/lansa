@@ -3251,6 +3251,8 @@ export type Database = {
         | "chat_request_received"
         | "chat_request_accepted"
         | "chat_request_declined"
+        | "employer_interest_received"
+        | "employer_nudge_received"
       subscription_tier: "free" | "starter" | "pro"
       swipe_direction: "right" | "left" | "nudge"
       user_color: "purple" | "green" | "orange" | "red"
@@ -3431,6 +3433,8 @@ export const Constants = {
         "chat_request_received",
         "chat_request_accepted",
         "chat_request_declined",
+        "employer_interest_received",
+        "employer_nudge_received",
       ],
       subscription_tier: ["free", "starter", "pro"],
       swipe_direction: ["right", "left", "nudge"],
