@@ -1,6 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
 import { SwipeContext } from "./swipeService";
-import { mockFrontendCandidates } from "@/data/mockCandidates";
 
 // Use mock data for demo purposes
 export interface DiscoveryProfile {
@@ -157,17 +156,6 @@ export const discoveryService = {
 
         console.log(`After certification filter: ${discoveryProfiles.length} profiles`);
 
-        // If certifiedOnly mode returns 0 candidates, use mock data as placeholder
-        if (certifiedOnly && discoveryProfiles.length === 0) {
-          console.log('No certified candidates found, using placeholder candidates');
-          const mockWithCertification = mockFrontendCandidates.map(mock => ({
-            ...mock,
-            isCertified: true
-          }));
-          const shuffled = mockWithCertification.sort(() => Math.random() - 0.5);
-          return shuffled.slice(0, limit);
-        }
-
         // Apply skill filtering if provided
         let filteredProfiles = discoveryProfiles;
         if (filters.skills && filters.skills.length > 0) {
@@ -183,46 +171,16 @@ export const discoveryService = {
         return filteredProfiles;
       }
 
-      // Fallback to mock data if no public profiles
-      let filteredProfiles = [...mockFrontendCandidates];
-      
-      // Apply skill filtering if provided
-      if (filters.skills && filters.skills.length > 0) {
-        filteredProfiles = filteredProfiles.filter(profile =>
-          filters.skills!.some(skill => 
-            profile.skills.some(profileSkill => 
-              profileSkill.toLowerCase().includes(skill.toLowerCase())
-            )
-          )
-        );
-      }
-      
-      // Shuffle for variety and take requested limit
-      const shuffled = filteredProfiles.sort(() => Math.random() - 0.5);
-      return shuffled.slice(0, limit);
+      return [];
     } catch (error) {
       console.error('Error fetching discovery profiles:', error);
-      // Return mock data on error
-      const shuffled = [...mockFrontendCandidates].sort(() => Math.random() - 0.5);
-      return shuffled.slice(0, limit);
+      return [];
     }
   },
 
-  async getJobListings(userId: string, filters: DiscoveryFilters = {}, limit: number = 10) {
+  async getJobListings(_userId: string, _filters: DiscoveryFilters = {}, _limit: number = 10) {
     try {
-      // For demo purposes, create mock job listings from our candidates
-      const mockJobs = mockFrontendCandidates.slice(0, limit).map((candidate, index) => ({
-        id: `job-${index + 1}`,
-        title: `${candidate.title} Position`,
-        description: `Join our team as a ${candidate.title}. We're looking for someone with expertise in ${candidate.skills.slice(0, 3).join(', ')}.`,
-        business_profiles: {
-          company_name: ['TechCorp', 'InnovateLabs', 'DevStudio', 'CodeCraft', 'FutureWeb'][index % 5],
-          location: ['San Francisco, CA', 'New York, NY', 'Austin, TX', 'Seattle, WA', 'Remote'][index % 5],
-          industry: 'Technology'
-        },
-        top_skills: candidate.skills.slice(0, 5),
-        location: ['San Francisco, CA', 'New York, NY', 'Austin, TX', 'Seattle, WA', 'Remote'][index % 5]
-      }));
+      const mockJobs: never[] = [];
 
       return mockJobs;
     } catch (error) {

@@ -57,9 +57,9 @@ export function SplitPanelBrowser({
           <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
             <Users className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-semibold mb-1">No Candidates Available</h3>
+          <h3 className="text-lg font-semibold mb-1">You've reviewed all certified candidates</h3>
           <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-            All certified candidates have been reviewed. Check back later!
+            Check back as new professionals earn their Lansa Certification.
           </p>
         </div>
       </div>
