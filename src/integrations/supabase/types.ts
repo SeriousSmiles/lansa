@@ -581,13 +581,39 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_email_log: {
+        Row: {
+          email_type: string
+          id: string
+          sent_at: string | null
+          thread_id: string | null
+          user_id: string
+        }
+        Insert: {
+          email_type: string
+          id?: string
+          sent_at?: string | null
+          thread_id?: string | null
+          user_id: string
+        }
+        Update: {
+          email_type?: string
+          id?: string
+          sent_at?: string | null
+          thread_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           body: string
           created_at: string
           id: string
           read_at: string | null
+          sender_display_name: string | null
           sender_id: string
+          sender_org_id: string | null
           thread_id: string
         }
         Insert: {
@@ -595,7 +621,9 @@ export type Database = {
           created_at?: string
           id?: string
           read_at?: string | null
+          sender_display_name?: string | null
           sender_id: string
+          sender_org_id?: string | null
           thread_id: string
         }
         Update: {
@@ -603,7 +631,9 @@ export type Database = {
           created_at?: string
           id?: string
           read_at?: string | null
+          sender_display_name?: string | null
           sender_id?: string
+          sender_org_id?: string | null
           thread_id?: string
         }
         Relationships: [
@@ -618,6 +648,7 @@ export type Database = {
       }
       chat_threads: {
         Row: {
+          connection_request_id: string | null
           context: Database["public"]["Enums"]["match_context"]
           created_at: string
           created_by: string
@@ -625,9 +656,12 @@ export type Database = {
           job_listing_id: string | null
           last_message_at: string | null
           match_id: string | null
+          org_id: string | null
           participant_ids: string[]
+          thread_status: string
         }
         Insert: {
+          connection_request_id?: string | null
           context: Database["public"]["Enums"]["match_context"]
           created_at?: string
           created_by: string
@@ -635,9 +669,12 @@ export type Database = {
           job_listing_id?: string | null
           last_message_at?: string | null
           match_id?: string | null
+          org_id?: string | null
           participant_ids: string[]
+          thread_status?: string
         }
         Update: {
+          connection_request_id?: string | null
           context?: Database["public"]["Enums"]["match_context"]
           created_at?: string
           created_by?: string
@@ -645,9 +682,18 @@ export type Database = {
           job_listing_id?: string | null
           last_message_at?: string | null
           match_id?: string | null
+          org_id?: string | null
           participant_ids?: string[]
+          thread_status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "chat_threads_connection_request_id_fkey"
+            columns: ["connection_request_id"]
+            isOneToOne: false
+            referencedRelation: "connection_requests"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "chat_threads_job_listing_id_fkey"
             columns: ["job_listing_id"]
@@ -691,6 +737,48 @@ export type Database = {
           logo_url?: string | null
           name?: string
           size?: string | null
+        }
+        Relationships: []
+      }
+      connection_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          intro_note: string | null
+          job_listing_id: string | null
+          recipient_id: string
+          requester_id: string
+          requester_org_id: string | null
+          responded_at: string | null
+          source: string
+          status: string
+          thread_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          intro_note?: string | null
+          job_listing_id?: string | null
+          recipient_id: string
+          requester_id: string
+          requester_org_id?: string | null
+          responded_at?: string | null
+          source?: string
+          status?: string
+          thread_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          intro_note?: string | null
+          job_listing_id?: string | null
+          recipient_id?: string
+          requester_id?: string
+          requester_org_id?: string | null
+          responded_at?: string | null
+          source?: string
+          status?: string
+          thread_id?: string | null
         }
         Relationships: []
       }
@@ -876,6 +964,13 @@ export type Database = {
             foreignKeyName: "job_applications_v2_applicant_user_id_fkey"
             columns: ["applicant_user_id"]
             isOneToOne: false
+            referencedRelation: "chat_participants_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "job_applications_v2_applicant_user_id_fkey"
+            columns: ["applicant_user_id"]
+            isOneToOne: false
             referencedRelation: "user_profiles"
             referencedColumns: ["user_id"]
           },
@@ -924,6 +1019,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "job_listings_v2"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_interactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "chat_participants_view"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "job_interactions_user_id_fkey"
@@ -1085,6 +1187,13 @@ export type Database = {
             foreignKeyName: "job_listings_v2_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "chat_participants_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "job_listings_v2_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "user_profiles"
             referencedColumns: ["user_id"]
           },
@@ -1126,6 +1235,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "job_listings_v2"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_recommendations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "chat_participants_view"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "job_recommendations_user_id_fkey"
@@ -1455,6 +1571,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_organization_memberships_user_profiles"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "chat_participants_view"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "fk_organization_memberships_user_profiles"
             columns: ["user_id"]
@@ -2404,6 +2527,13 @@ export type Database = {
             foreignKeyName: "user_job_prefs_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "chat_participants_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_job_prefs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "user_profiles"
             referencedColumns: ["user_id"]
           },
@@ -2982,6 +3112,26 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_participants_view: {
+        Row: {
+          name: string | null
+          organization_id: string | null
+          organization_logo: string | null
+          organization_name: string | null
+          profile_image: string | null
+          title: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_memberships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       assign_user_color: {
@@ -3098,6 +3248,9 @@ export type Database = {
         | "match_created"
         | "message_received"
         | "system_update"
+        | "chat_request_received"
+        | "chat_request_accepted"
+        | "chat_request_declined"
       subscription_tier: "free" | "starter" | "pro"
       swipe_direction: "right" | "left" | "nudge"
       user_color: "purple" | "green" | "orange" | "red"
@@ -3275,6 +3428,9 @@ export const Constants = {
         "match_created",
         "message_received",
         "system_update",
+        "chat_request_received",
+        "chat_request_accepted",
+        "chat_request_declined",
       ],
       subscription_tier: ["free", "starter", "pro"],
       swipe_direction: ["right", "left", "nudge"],
