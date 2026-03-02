@@ -440,6 +440,168 @@ export function generateChatAcceptedEmail(data: ChatAcceptedEmailData): { subjec
   };
 }
 
+export interface EmployerInterestEmailData {
+  recipientName: string;
+  recipientEmail: string;
+  dashboardUrl: string;
+}
+
+export interface MatchCreatedEmailData {
+  recipientName: string;
+  recipientEmail: string;
+  otherPartyName: string;
+  threadUrl: string;
+}
+
+export function generateEmployerInterestEmail(data: EmployerInterestEmailData): { subject: string; html: string } {
+  return {
+    subject: `💚 An employer is interested in your profile on Lansa`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 0 auto; }
+            .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 40px 30px; text-align: center; }
+            .header h1 { margin: 0; font-size: 28px; font-weight: 700; }
+            .header p { margin: 8px 0 0; opacity: 0.9; font-size: 16px; }
+            .content { background: #ffffff; padding: 40px 30px; }
+            .content p { margin: 16px 0; font-size: 16px; }
+            .highlight-box { background: #d1fae5; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; border-left: 4px solid #10b981; }
+            .highlight-box p { margin: 0; font-size: 18px; font-weight: 600; color: #065f46; }
+            .button { display: inline-block; background: #10b981; color: white !important; padding: 14px 32px; text-decoration: none; border-radius: 8px; margin: 24px 0; font-weight: 600; font-size: 16px; }
+            .footer { text-align: center; padding: 30px; color: #6b7280; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>💚 An Employer is Interested!</h1>
+              <p>Your profile caught someone's attention</p>
+            </div>
+            <div class="content">
+              <p>Hi ${data.recipientName},</p>
+              <p>Great news — an employer on Lansa liked your profile and expressed interest in connecting with you!</p>
+              <div class="highlight-box">
+                <p>🎯 If you like them back, you'll match and a chat will open</p>
+              </div>
+              <p>Head to your dashboard to see who's interested in you and decide if you want to connect.</p>
+              <div style="text-align: center;">
+                <a href="https://lansa.app${data.dashboardUrl}" class="button">View My Dashboard</a>
+              </div>
+            </div>
+            <div class="footer">
+              <p><strong>Lansa</strong> - The Future of Hiring</p>
+              <p>You can manage your notification preferences in your Lansa settings.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `
+  };
+}
+
+export function generateEmployerNudgeEmail(data: EmployerInterestEmailData): { subject: string; html: string } {
+  return {
+    subject: `⚡ An employer sent you super interest on Lansa`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 0 auto; }
+            .header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 40px 30px; text-align: center; }
+            .header h1 { margin: 0; font-size: 28px; font-weight: 700; }
+            .header p { margin: 8px 0 0; opacity: 0.9; font-size: 16px; }
+            .content { background: #ffffff; padding: 40px 30px; }
+            .content p { margin: 16px 0; font-size: 16px; }
+            .highlight-box { background: #fef3c7; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; border-left: 4px solid #f59e0b; }
+            .highlight-box p { margin: 0; font-size: 18px; font-weight: 600; color: #92400e; }
+            .button { display: inline-block; background: #f59e0b; color: white !important; padding: 14px 32px; text-decoration: none; border-radius: 8px; margin: 24px 0; font-weight: 600; font-size: 16px; }
+            .footer { text-align: center; padding: 30px; color: #6b7280; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>⚡ Super Interest Received!</h1>
+              <p>An employer really wants to connect with you</p>
+            </div>
+            <div class="content">
+              <p>Hi ${data.recipientName},</p>
+              <p>An employer on Lansa sent you <strong>Super Interest</strong> — this means they're especially excited about your profile and really want to connect!</p>
+              <div class="highlight-box">
+                <p>⚡ Super Interest is a priority signal — don't miss this opportunity!</p>
+              </div>
+              <p>Visit your dashboard to discover who sent you super interest and decide if you'd like to connect back.</p>
+              <div style="text-align: center;">
+                <a href="https://lansa.app${data.dashboardUrl}" class="button">View My Dashboard</a>
+              </div>
+            </div>
+            <div class="footer">
+              <p><strong>Lansa</strong> - The Future of Hiring</p>
+              <p>You can manage your notification preferences in your Lansa settings.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `
+  };
+}
+
+export function generateMatchCreatedEmail(data: MatchCreatedEmailData): { subject: string; html: string } {
+  return {
+    subject: `🎉 It's a Match! You and ${data.otherPartyName} matched on Lansa`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 0 auto; }
+            .header { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; padding: 40px 30px; text-align: center; }
+            .header h1 { margin: 0; font-size: 32px; font-weight: 700; }
+            .header p { margin: 8px 0 0; opacity: 0.9; font-size: 16px; }
+            .content { background: #ffffff; padding: 40px 30px; }
+            .content p { margin: 16px 0; font-size: 16px; }
+            .match-box { background: #ede9fe; border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center; }
+            .match-box .names { font-size: 20px; font-weight: 700; color: #4c1d95; margin: 0 0 8px; }
+            .match-box .sub { font-size: 14px; color: #6d28d9; margin: 0; }
+            .button { display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white !important; padding: 14px 32px; text-decoration: none; border-radius: 8px; margin: 24px 0; font-weight: 600; font-size: 16px; }
+            .footer { text-align: center; padding: 30px; color: #6b7280; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎉 It's a Match!</h1>
+              <p>Both of you expressed mutual interest</p>
+            </div>
+            <div class="content">
+              <p>Hi ${data.recipientName},</p>
+              <p>Exciting news — you and <strong>${data.otherPartyName}</strong> have mutually matched on Lansa! A private chat is now open between you both.</p>
+              <div class="match-box">
+                <p class="names">You ❤️ ${data.otherPartyName}</p>
+                <p class="sub">Your chat is ready — say hello!</p>
+              </div>
+              <p>This is your moment to make a great first impression. Start a conversation, ask questions, and explore the opportunity together.</p>
+              <div style="text-align: center;">
+                <a href="https://lansa.app${data.threadUrl}" class="button">Open Chat Now</a>
+              </div>
+            </div>
+            <div class="footer">
+              <p><strong>Lansa</strong> - The Future of Hiring</p>
+              <p>You can manage your notification preferences in your Lansa settings.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `
+  };
+}
+
 export function generateNewMessageEmail(data: NewMessageEmailData): { subject: string; html: string } {
   const fromOrg = data.organizationName
     ? `${data.senderName} · ${data.organizationName}`
