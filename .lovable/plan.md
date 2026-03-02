@@ -1,99 +1,94 @@
 
-# Fix: Endless Loop, Remove Mocks, Show Only Real Certified Users
+# Fix: Missing INSERT Policy on cert_certifications — The Silent Failure
 
-## Root Cause Analysis
+## What Happened (Complete Chain)
 
-### Problem 1 — Endless counter loop
-
-The `SplitPanelBrowser.tsx` has this effect:
-```typescript
-useEffect(() => {
-  if (currentIndex >= totalProfiles - 3 && !isLoading) {
-    onEndReached();
-  }
-}, [currentIndex, totalProfiles, isLoading, onEndReached]);
+```text
+1. Casey takes exam → passes with score 84 ✅
+2. cert_results INSERT succeeds ✅
+3. ExamFlow.tsx calls: supabase.from('cert_certifications').insert(...) ❌
+   └── RLS: no INSERT policy exists → silently blocked
+4. cert_certifications row is never created
+5. sync_cert_certification_to_user trigger never fires (nothing to trigger on)
+6. user_certifications never updated
+7. user_profiles.certified never set to true
+8. Candidate never appears in employer browse feed
 ```
 
-`handleEndReached` appends new results. Since mock candidates use `startsWith('mock-')` which bypasses the deduplication check, the same 20 mocks get appended on every call: 20 → 40 → 60 → 80... creating an endless growing list. The counter displays increasing totals that the user can never finish.
+The trigger (`sync_cert_certification_to_user`) is healthy and correctly defined. It was never the problem. The problem is upstream: the row it needs to react to never gets written.
 
-### Problem 2 — Saviëntaly Noten not appearing
+## Who Is Affected
 
-Database query confirmed: only John Nathan Stehpens has a `user_certifications` record with `lansa_certified = true AND verified = true`. Saviëntaly has no certification record at all. With `certifiedOnly: true`, she is correctly excluded — she has not passed an exam.
+All users who passed an exam but have no `cert_certifications` record:
 
-This is correct product behavior. If the user wants Saviëntaly to appear, she needs to pass a certification exam first.
+| User | Sector | Score | Date |
+|------|--------|-------|------|
+| Casey Doran (`3f84cc75`) | Technical | 84 | Dec 16, 2025 |
+| `981224b5` | Office + Service | 93 / 87 | Jan 18, 2026 |
+| `6f58b5b2` | Digital, Technical, Service, Office | 100/97/92/96 | Jan 8, 2026 |
 
-### Problem 3 — Mock/seeded candidates appearing
-
-The service has two fallback paths that return mock data:
-1. When `certifiedOnly = true` returns 0 real certified profiles → returns 20 mock candidates
-2. On any error → returns shuffled mock candidates
-
-Both of these must be removed. The product requirement is: **show only real users who have passed at least one certification exam**.
-
-## What the Feed Should Show Today
-
-Based on database reality:
-- **John Nathan Stehpens** — only real certified user
-- When the user has reviewed all certified candidates → show a clean empty state ("No certified candidates right now — check back soon")
-- **No mock/seeded candidates ever**
+None of these users have a `cert_certifications` record. All are affected by the same missing policy.
 
 ## Fix Plan
 
-### Change 1 — Remove all mock fallbacks from discoveryService.ts
+### Part 1 — Database Migration: Add the missing INSERT policy
 
-Remove the three paths that return `mockFrontendCandidates`:
-1. The `certifiedOnly && discoveryProfiles.length === 0` fallback (lines 161–169)
-2. The outer fallback at line 187–202 (when `publicProfiles` is empty)
-3. The catch block fallback at line 206–208
-
-Replace each with a clean `return []` so the empty state is shown properly.
-
-Also remove the import of `mockFrontendCandidates` since it will no longer be used here.
-
-### Change 2 — Disable `onEndReached` entirely when certifiedOnly is true
-
-Since the database has a finite, known set of certified users, there is no "next page" to load. Appending more profiles is meaningless. The fix: in `CandidateBrowseTab.tsx`, the `handleEndReached` function should simply do nothing (early return) — because with `certifiedOnly: true`, there is no infinite scroll scenario. Once all certified candidates are reviewed, the empty state should show.
-
-The `SplitPanelBrowser` effect that fires `onEndReached` at `totalProfiles - 3` will fire, but `handleEndReached` will immediately return without doing anything.
-
-### Change 3 — Fix the index reset guard in useCandidateNavigation.ts
-
-Currently the `useEffect` resets `currentIndex` to 0 if it's out of bounds:
-```typescript
-if (currentIndex >= initialProfiles.length && initialProfiles.length > 0) {
-  setCurrentIndex(0);
-}
+```sql
+-- Allow authenticated users to insert their own certification record
+CREATE POLICY "Users can insert their own certifications"
+ON public.cert_certifications
+FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = user_id);
 ```
 
-This is the "jump" bug's other root. When `handleEndReached` was appending mocks and the user was at index 20 of 20, the array grew to 40 — triggering this guard which reset to 0. Now that we're not appending anymore, this is less critical, but the guard should be kept as a safety measure.
+This is the missing piece. Once added, every future exam pass will correctly write to `cert_certifications`, which fires the trigger, which updates `user_certifications` and `user_profiles`.
 
-### Change 4 — Show a better empty state when no certified candidates exist
+### Part 2 — Database Migration: Backfill all users who passed but have no cert record
 
-Replace the generic "No Candidates Available" message with a more specific and encouraging message:
-- "You've reviewed all certified candidates" 
-- "Check back as new professionals earn their Lansa Certification"
-- This applies both when the initial load returns 0 AND when the user actions the last card
+Since the INSERT was silently blocked for all historical passes, we need to backfill `cert_certifications` for every user who has a passing `cert_results` entry but no corresponding `cert_certifications` row.
+
+The backfill logic:
+1. Find all `cert_results` where `pass_fail = true` with no matching `cert_certifications` by `result_id`
+2. For each, insert a `cert_certifications` row (this will fire the trigger automatically, updating `user_certifications` and `user_profiles`)
+3. Use `generate_cert_verification_code()` for unique codes
+
+```sql
+INSERT INTO public.cert_certifications (user_id, sector, level, result_id, verification_code, date_issued)
+SELECT 
+  cr.user_id,
+  cr.sector,
+  CASE WHEN cr.high_performer THEN 'high_performer'::certification_level ELSE 'standard'::certification_level END,
+  cr.id,
+  public.generate_cert_verification_code(),
+  cr.created_at
+FROM public.cert_results cr
+WHERE cr.pass_fail = true
+AND NOT EXISTS (
+  SELECT 1 FROM public.cert_certifications cc WHERE cc.result_id = cr.id
+);
+```
+
+This single INSERT handles Casey and all other affected users at once. The trigger fires once per row inserted, automatically cascading to `user_certifications` and `user_profiles`.
 
 ## Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/services/discoveryService.ts` | Remove all 3 mock fallback paths, return `[]` instead |
-| `src/components/dashboard/employer/CandidateBrowseTab.tsx` | Make `handleEndReached` a no-op (immediate return) |
-| `src/components/discovery/desktop/SplitPanelBrowser.tsx` | Improve empty state messaging |
+| New migration | Add INSERT RLS policy on `cert_certifications` |
+| New migration | Backfill `cert_certifications` for all historical passes |
 
-## What Is NOT Changed
+## No Code Changes Required
 
-- `certifiedOnly: true` — stays, this is correct behavior
-- `user_certifications` table — no database changes needed
-- Saviëntaly's profile — she needs to pass an exam first (correct)
-- John Nathan Stehpens — will appear correctly as the only certified candidate
-- Left/Right panels, animations, color identity — all preserved
+`ExamFlow.tsx` already has the correct insert call. The fix is purely at the database policy level. Once the policy exists, the existing code works correctly for all future exams.
 
 ## Expected Result After Fix
 
-- Only John Nathan Stehpens appears in the feed (the only certified user)
-- After actioning his card, the clean empty state shows
-- The counter shows "1 of 1 candidates" — no looping, no growing numbers
-- No mock/seeded candidates ever appear anywhere
-- If more users earn certification in future, they automatically appear
+- Casey Doran appears in the employer browse feed (certified)
+- Users `981224b5` and `6f58b5b2` also get their certifications properly created and will appear if their profiles are public/complete
+- All future exam passes automatically write `cert_certifications` → trigger fires → `user_certifications` updated → candidate visible in feed
+- No more silent failures
+
+## Note on Casey's Correction
+
+Casey already has a `user_certifications` record from the manual fix applied earlier. The backfill migration uses `ON CONFLICT` safety and the trigger uses `ON CONFLICT DO UPDATE`, so running the backfill will not create duplicates — it will safely update the existing record if one exists.
