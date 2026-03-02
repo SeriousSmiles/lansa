@@ -1,47 +1,73 @@
 
-## Root Cause: `upsert` vs Partial Unique Index Mismatch
+## Root Cause: All Database Triggers Are Missing
 
-### The Problem
+The full notification and email pipeline depends on three triggers that are not present in the database:
 
-The `swipes` table has two unique indexes:
-
-1. `uniq_swipe_with_listing` — covers `(swiper_user_id, target_user_id, context, job_listing_id)` — full constraint when a job listing is present
-2. `uniq_swipe_without_listing` — covers `(swiper_user_id, target_user_id, context)` WHERE `job_listing_id IS NULL` — this is a **partial** index
-
-Postgres `ON CONFLICT` in an `upsert` requires a **non-partial** unique constraint on exactly the columns specified. The code passes `onConflict: 'swiper_user_id,target_user_id,context'`, but the only index covering those three columns is the partial one (`WHERE job_listing_id IS NULL`). Postgres cannot resolve a partial index as the conflict target for `ON CONFLICT`, so it throws `42P10` — "there is no unique or exclusion constraint matching the ON CONFLICT specification."
-
-This breaks **every swipe** — buttons, drag gestures, everything — because the error is thrown before any insert succeeds.
-
-### The Fix
-
-Switch from `upsert` back to a plain `insert`. Duplicate swipes are already prevented by the DB indexes — if a duplicate arrives, Postgres throws `23505` (unique violation). The code already has `if (error && error.code !== '23505') throw error` but it was short-circuited because `upsert` throws `42P10` first, before reaching the duplicate check.
-
-The corrected logic:
-
-```ts
-const { data, error } = await supabase
-  .from('swipes')
-  .insert([swipeData])
-  .select()
-  .single();
-
-if (error && error.code !== '23505') throw error;
-return data;
+```text
+Swipe (right) → [TRIGGER: notify_candidate_on_employer_swipe] → notifications table
+                                                                       ↓
+                                                        [TRIGGER: trigger_chat_notification_email]
+                                                                       ↓
+                                                             send-chat-email Edge Function
+                                                                       ↓
+                                                                Resend API → Inbox
 ```
 
-This:
-- Inserts the swipe normally — DB triggers fire for notifications as expected
-- On a true duplicate (same person re-swiping the same candidate), silently swallows the `23505` error
-- Never fails with `42P10` because no `ON CONFLICT` clause is sent to Postgres
+Evidence:
+- `information_schema.triggers` returns zero rows
+- The `notifications` table has no rows newer than October 2025
+- The `chat_email_log` table is completely empty
+- Right swipes exist in `swipes` (direction: right) but produced no notifications
 
-### Why Not Add a Full Constraint to the DB?
+All DB functions exist and are correct. The issue is exclusively that the CREATE TRIGGER statements were never persisted.
 
-The partial index structure is intentional — it allows different uniqueness rules depending on whether a job listing is attached. Adding a full constraint would change the DB's data model. The code-side fix is the correct, minimal approach.
+---
 
-### What Changes
+## What Will Be Created
 
-**File: `src/services/swipeService.ts`**
+A single database migration that creates all missing triggers:
 
-In `recordSwipe`, replace the `.upsert(...)` call with `.insert(...)`. Remove the `onConflict` and `ignoreDuplicates` options. The existing `error.code !== '23505'` guard already handles true duplicates correctly.
+### 1. On `auth.users` (new user profile)
+- `on_auth_user_created` → calls `handle_new_user()` — creates user_profiles row on signup
 
-No other files need changing. No DB migrations needed. Notifications, DB triggers, and match logic are all unaffected — the `insert` path is identical to the original flow before the upsert was introduced.
+### 2. On `swipes`
+- `notify_candidate_on_swipe_trigger` AFTER INSERT → calls `notify_candidate_on_employer_swipe()` — creates the `employer_interest_received` / `employer_nudge_received` notification when an employer right-swipes or nudges
+- `on_swipe_create_match` AFTER INSERT → calls `create_match_if_mutual()` — creates a match when both parties swiped right
+
+### 3. On `matches`
+- `on_match_create_thread` AFTER INSERT → calls `create_thread_on_match()` — creates the chat thread
+- `on_match_notify_users` AFTER INSERT → calls `notify_both_on_match()` — creates `match_created` notifications for both users
+
+### 4. On `notifications`
+- `trigger_chat_email_on_notification` AFTER INSERT → calls `trigger_chat_notification_email()` — sends the HTTP call to the `send-chat-email` edge function via `pg_net`
+
+### 5. Supporting triggers (already had these but need re-creation)
+- `on_user_profile_updated` on `user_profiles` → `assign_role_on_onboarding()`
+- `update_user_profiles_updated_at` on `user_profiles` → `update_updated_at_column()`
+- `on_cert_issued` on `cert_certifications` → `sync_cert_to_user_certifications()`
+- `on_wall_entry_mark_certified` on `wall_entries` → `mark_certified()`
+- `on_new_message_update_last_active` on `chat_messages` → `update_user_last_active()`
+- `on_user_action_maybe_update_color` on `user_actions` → `maybe_update_user_color()`
+- `on_user_profile_sync_public` on `user_profiles` → `sync_user_profiles_public()`
+
+---
+
+## Technical Details
+
+The migration will use `CREATE TRIGGER IF NOT EXISTS` (or `DROP TRIGGER IF EXISTS` + `CREATE TRIGGER`) so it is safe to re-run without duplicating anything.
+
+The critical path for emails is:
+
+```sql
+-- Step 1: swipe triggers notification
+CREATE TRIGGER notify_candidate_on_swipe_trigger
+  AFTER INSERT ON public.swipes
+  FOR EACH ROW EXECUTE FUNCTION public.notify_candidate_on_employer_swipe();
+
+-- Step 2: notification triggers email edge function  
+CREATE TRIGGER trigger_chat_email_on_notification
+  AFTER INSERT ON public.notifications
+  FOR EACH ROW EXECUTE FUNCTION public.trigger_chat_notification_email();
+```
+
+No code changes are needed. No edge function changes needed. The `lansa.online` domain and `RESEND_API_KEY` are already configured correctly.
