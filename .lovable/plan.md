@@ -1,94 +1,83 @@
 
-# Fix: Missing INSERT Policy on cert_certifications — The Silent Failure
+# Fix: Employer Cannot See Certified Candidates — Missing Role or Wrong RLS Policy
 
-## What Happened (Complete Chain)
+## What Is Actually Happening
 
-```text
-1. Casey takes exam → passes with score 84 ✅
-2. cert_results INSERT succeeds ✅
-3. ExamFlow.tsx calls: supabase.from('cert_certifications').insert(...) ❌
-   └── RLS: no INSERT policy exists → silently blocked
-4. cert_certifications row is never created
-5. sync_cert_certification_to_user trigger never fires (nothing to trigger on)
-6. user_certifications never updated
-7. user_profiles.certified never set to true
-8. Candidate never appears in employer browse feed
-```
+The employer (user `e599bc17`) visits /browse-candidates. The app queries `user_certifications` to get the list of certified user IDs. That query returns **0 rows** — not because no certified users exist (there are 5), but because the RLS SELECT policy blocks the employer from reading them.
 
-The trigger (`sync_cert_certification_to_user`) is healthy and correctly defined. It was never the problem. The problem is upstream: the row it needs to react to never gets written.
-
-## Who Is Affected
-
-All users who passed an exam but have no `cert_certifications` record:
-
-| User | Sector | Score | Date |
-|------|--------|-------|------|
-| Casey Doran (`3f84cc75`) | Technical | 84 | Dec 16, 2025 |
-| `981224b5` | Office + Service | 93 / 87 | Jan 18, 2026 |
-| `6f58b5b2` | Digital, Technical, Service, Office | 100/97/92/96 | Jan 8, 2026 |
-
-None of these users have a `cert_certifications` record. All are affected by the same missing policy.
-
-## Fix Plan
-
-### Part 1 — Database Migration: Add the missing INSERT policy
+The SELECT policy on `user_certifications` is:
 
 ```sql
--- Allow authenticated users to insert their own certification record
-CREATE POLICY "Users can insert their own certifications"
-ON public.cert_certifications
-FOR INSERT
+-- Current policy: only allows reading if user has 'business' role
+(user_id = auth.uid()) 
+OR (has_role(auth.uid(), 'business') AND lansa_certified = true AND verified = true)
+OR has_role(auth.uid(), 'admin')
+```
+
+The employer has **no role** in `user_roles`. So all three conditions fail. The query silently returns `[]`. The app then finds zero certified profiles to show and displays "You've reviewed all certified candidates."
+
+## Why This Is a Systemic Problem
+
+Any employer who does not have the `business` role assigned will see zero candidates, even if many certified users exist. This is a missing onboarding/registration step: employer accounts are not being granted the `business` role when they sign up or complete onboarding.
+
+## Two-Part Fix
+
+### Part 1 — Fix the RLS Policy (Immediate, Correct)
+
+The `user_certifications` SELECT policy should allow **any authenticated user** to read basic certification status (`lansa_certified`, `verified`, `user_id`) for verified certified users. This is non-sensitive public status information — it is the whole point of the certification system that employers can see who is certified.
+
+Replace the restrictive policy with one that allows all authenticated users to view verified certifications:
+
+```sql
+-- Drop the old business-role-gated policy
+DROP POLICY IF EXISTS "Business users can view verified certifications only" ON public.user_certifications;
+
+-- New: any authenticated user can see verified certifications (public status)
+CREATE POLICY "Authenticated users can view verified certifications"
+ON public.user_certifications
+FOR SELECT
 TO authenticated
-WITH CHECK (auth.uid() = user_id);
-```
-
-This is the missing piece. Once added, every future exam pass will correctly write to `cert_certifications`, which fires the trigger, which updates `user_certifications` and `user_profiles`.
-
-### Part 2 — Database Migration: Backfill all users who passed but have no cert record
-
-Since the INSERT was silently blocked for all historical passes, we need to backfill `cert_certifications` for every user who has a passing `cert_results` entry but no corresponding `cert_certifications` row.
-
-The backfill logic:
-1. Find all `cert_results` where `pass_fail = true` with no matching `cert_certifications` by `result_id`
-2. For each, insert a `cert_certifications` row (this will fire the trigger automatically, updating `user_certifications` and `user_profiles`)
-3. Use `generate_cert_verification_code()` for unique codes
-
-```sql
-INSERT INTO public.cert_certifications (user_id, sector, level, result_id, verification_code, date_issued)
-SELECT 
-  cr.user_id,
-  cr.sector,
-  CASE WHEN cr.high_performer THEN 'high_performer'::certification_level ELSE 'standard'::certification_level END,
-  cr.id,
-  public.generate_cert_verification_code(),
-  cr.created_at
-FROM public.cert_results cr
-WHERE cr.pass_fail = true
-AND NOT EXISTS (
-  SELECT 1 FROM public.cert_certifications cc WHERE cc.result_id = cr.id
+USING (
+  (user_id = auth.uid())
+  OR (lansa_certified = true AND verified = true)
 );
 ```
 
-This single INSERT handles Casey and all other affected users at once. The trigger fires once per row inserted, automatically cascading to `user_certifications` and `user_profiles`.
+This is safe because:
+- Own record: always visible (for candidate's own dashboard)
+- Other users: only the certified+verified flag is queryable — unverified/uncertified records remain invisible
+- No sensitive personal data is exposed — `user_certifications` only holds certification status
+
+### Part 2 — Auto-Assign `employer` Role on Signup (Prevent Recurrence)
+
+The underlying cause is that employers are never assigned a role. The fix should also include assigning a role to the employer user so future role-based features work correctly.
+
+Create a database trigger that assigns the `employer` app_role when a new user completes employer onboarding (i.e., `user_type = 'employer'` is set in `user_answers`), OR apply a migration to backfill roles for all existing employer accounts.
+
+```sql
+-- Backfill: assign 'employer' role to all users who are employers with no role
+INSERT INTO public.user_roles (user_id, role)
+SELECT ua.user_id, 'employer'::app_role
+FROM public.user_answers ua
+WHERE ua.user_type = 'employer'
+AND NOT EXISTS (
+  SELECT 1 FROM public.user_roles ur WHERE ur.user_id = ua.user_id
+)
+ON CONFLICT (user_id, role) DO NOTHING;
+```
+
+Note: This requires `employer` to exist in the `app_role` enum. We will check and add it if missing.
 
 ## Files to Modify
 
-| File | Change |
-|------|--------|
-| New migration | Add INSERT RLS policy on `cert_certifications` |
-| New migration | Backfill `cert_certifications` for all historical passes |
-
-## No Code Changes Required
-
-`ExamFlow.tsx` already has the correct insert call. The fix is purely at the database policy level. Once the policy exists, the existing code works correctly for all future exams.
+| Change | Type |
+|--------|------|
+| New migration: fix RLS policy on `user_certifications` | Database |
+| New migration: backfill employer roles | Database |
 
 ## Expected Result After Fix
 
-- Casey Doran appears in the employer browse feed (certified)
-- Users `981224b5` and `6f58b5b2` also get their certifications properly created and will appear if their profiles are public/complete
-- All future exam passes automatically write `cert_certifications` → trigger fires → `user_certifications` updated → candidate visible in feed
-- No more silent failures
-
-## Note on Casey's Correction
-
-Casey already has a `user_certifications` record from the manual fix applied earlier. The backfill migration uses `ON CONFLICT` safety and the trigger uses `ON CONFLICT DO UPDATE`, so running the backfill will not create duplicates — it will safely update the existing record if one exists.
+- All authenticated employers can see the certified candidate list in /browse-candidates
+- The "You've reviewed all certified candidates" message only appears when they have genuinely swiped through everyone
+- Future employer signups automatically get the employer role and will not hit this issue
+- No sensitive data is exposed — only `lansa_certified = true AND verified = true` records are visible to others
