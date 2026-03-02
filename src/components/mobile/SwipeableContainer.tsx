@@ -35,7 +35,7 @@ export function SwipeableContainer({
     startY.current = e.clientY;
     currentX.current = 0;
     startTime.current = Date.now();
-    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    containerRef.current?.setPointerCapture(e.pointerId);
   }, [isAnimating]);
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
@@ -49,6 +49,7 @@ export function SwipeableContainer({
       isHorizontalSwipe.current = Math.abs(dx) > Math.abs(dy);
       if (!isHorizontalSwipe.current) {
         isDragging.current = false;
+        containerRef.current?.releasePointerCapture(e.pointerId);
         return;
       }
     }
