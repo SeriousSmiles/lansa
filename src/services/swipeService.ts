@@ -32,11 +32,14 @@ export const swipeService = {
 
       const { data, error } = await supabase
         .from('swipes')
-        .insert([swipeData])
+        .upsert([swipeData], {
+          onConflict: 'swiper_user_id,target_user_id,context',
+          ignoreDuplicates: true,
+        })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error && error.code !== '23505') throw error;
       return data;
     } catch (error) {
       console.error('Error recording swipe:', error);

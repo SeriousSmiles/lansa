@@ -70,9 +70,12 @@ export function SwipeableContainer({
     onDragProgress?.(dx > 0 ? 'right' : 'left', progress);
   }, [isAnimating, threshold, onDragProgress]);
 
-  const onPointerUp = useCallback(() => {
+  const onPointerUp = useCallback((e?: React.PointerEvent) => {
     if (!isDragging.current || !containerRef.current) return;
     isDragging.current = false;
+    if (e && containerRef.current) {
+      try { containerRef.current.releasePointerCapture(e.pointerId); } catch {}
+    }
 
     const dx = currentX.current;
     const elapsed = Date.now() - startTime.current;
@@ -143,6 +146,7 @@ export function SwipeableContainer({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
+      onPointerLeave={onPointerUp}
       data-trigger-swipe={triggerSwipe}
     >
       {children}
