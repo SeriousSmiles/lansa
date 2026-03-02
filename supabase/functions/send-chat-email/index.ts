@@ -117,7 +117,7 @@ Deno.serve(async (req) => {
     }
 
     const { error: sendError } = await resend.emails.send({
-      from: 'Lansa <noreply@lansa.app>',
+      from: 'Lansa <noreply@lansa.online>',
       to: [profile.email],
       subject: emailContent.subject,
       html: emailContent.html,

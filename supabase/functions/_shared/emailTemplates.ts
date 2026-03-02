@@ -183,7 +183,7 @@ export function generateRequestNotificationEmail(data: RequestEmailData): { subj
     ${p('A new user has requested to join your organization:')}
     ${infoTable([['Name', data.requesterName], ['Email', data.requesterEmail], ['Organization', data.organizationName]])}
     ${p('Review and manage this request in your organization settings.')}
-    ${ctaButton('Review Request', 'https://lansa.app/organization/settings?tab=requests', '#1a56db')}`;
+    ${ctaButton('Review Request', 'https://lansa.online/organization/settings?tab=requests', '#1a56db')}`;
 
   return {
     subject: `New join request for ${data.organizationName}`,
@@ -333,7 +333,7 @@ export function generateChatRequestEmail(data: ChatRequestEmailData): { subject:
     ${p(`<strong>${data.requesterName}</strong>${orgLine} has sent you a connection request on Lansa.`)}
     ${noteBlock}
     ${p('Head to Lansa to review the request and decide whether to connect. Once you accept, a private chat will open between you both.')}
-    ${ctaButton('Review Request', `https://lansa.app${data.actionUrl}`, '#1a56db')}`;
+    ${ctaButton('Review Request', `https://lansa.online${data.actionUrl}`, '#1a56db')}`;
 
   return {
     subject: `${data.requesterName} wants to connect with you on Lansa`,
@@ -354,7 +354,7 @@ export function generateChatAcceptedEmail(data: ChatAcceptedEmailData): { subjec
     ${p(`Your connection with <strong>${withOrg}</strong> has been accepted — your private chat is now open!`)}
     ${highlightBox('💬 Start your conversation now — introduce yourself and explore the opportunity together.', '#eff6ff', '#1a56db', '#1e40af')}
     ${p('Use the chat to discuss opportunities, ask questions, and take the next step together.')}
-    ${ctaButton('Open Chat', `https://lansa.app${data.threadUrl}`, '#1a56db')}`;
+    ${ctaButton('Open Chat', `https://lansa.online${data.threadUrl}`, '#1a56db')}`;
 
   return {
     subject: `Your chat with ${data.otherPartyName} is now open on Lansa`,
@@ -385,7 +385,7 @@ export function generateNewMessageEmail(data: NewMessageEmailData): { subject: s
         </td>
       </tr>
     </table>
-    ${ctaButton('Reply in Lansa', `https://lansa.app${data.threadUrl}`, '#1f2937')}`;
+    ${ctaButton('Reply in Lansa', `https://lansa.online${data.threadUrl}`, '#1f2937')}`;
 
   return {
     subject: `New message from ${data.senderName} on Lansa`,
@@ -404,7 +404,7 @@ export function generateEmployerInterestEmail(data: EmployerInterestEmailData): 
     ${p('Great news — an employer on Lansa liked your profile and expressed interest in connecting with you!')}
     ${highlightBox('🎯 If you like them back, you\'ll match and a private chat will open automatically.', '#d1fae5', '#10b981', '#065f46')}
     ${p("Head to your dashboard to see who's interested in you and decide if you want to connect.")}
-    ${ctaButton('View My Dashboard', `https://lansa.app${data.dashboardUrl}`, '#059669')}`;
+    ${ctaButton('View My Dashboard', `https://lansa.online${data.dashboardUrl}`, '#059669')}`;
 
   return {
     subject: `💚 An employer is interested in your profile on Lansa`,
@@ -423,7 +423,7 @@ export function generateEmployerNudgeEmail(data: EmployerInterestEmailData): { s
     ${p('An employer on Lansa sent you <strong>Super Interest</strong> — this means they\'re especially excited about your profile and really want to connect!')}
     ${highlightBox('⚡ Super Interest is a priority signal — don\'t miss this opportunity!', '#fef3c7', '#f59e0b', '#92400e')}
     ${p("Visit your dashboard to discover who sent you super interest and decide if you'd like to connect back.")}
-    ${ctaButton('View My Dashboard', `https://lansa.app${data.dashboardUrl}`, '#d97706')}`;
+    ${ctaButton('View My Dashboard', `https://lansa.online${data.dashboardUrl}`, '#d97706')}`;
 
   return {
     subject: `⚡ An employer sent you super interest on Lansa`,
@@ -449,7 +449,7 @@ export function generateMatchCreatedEmail(data: MatchCreatedEmailData): { subjec
       </tr>
     </table>
     ${p("This is your moment to make a great first impression. Start a conversation, ask questions, and explore the opportunity together.")}
-    ${ctaButton('Open Chat Now', `https://lansa.app${data.threadUrl}`, '#6d28d9')}`;
+    ${ctaButton('Open Chat Now', `https://lansa.online${data.threadUrl}`, '#6d28d9')}`;
 
   return {
     subject: `🎉 It's a Match! You and ${data.otherPartyName} matched on Lansa`,

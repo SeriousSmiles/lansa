@@ -187,7 +187,7 @@ Deno.serve(async (req) => {
               organizationName: request.organization.name,
               recipientName: userName,
               role: role || 'member',
-              dashboardUrl: 'https://lansa.app/employer-dashboard'
+              dashboardUrl: 'https://lansa.online/employer-dashboard'
             },
             userEmail
           );
