@@ -1,87 +1,151 @@
 
-## Mobile Candidate Card — AI Insight + Button Contrast + Tappable Card
+## Full Swipe Notification System + "Who's Interested" Section
 
-### What's changing
+### Current State Summary
 
-Three focused fixes to `EnhancedCandidateCard.tsx`, `MobileCandidateBrowser.tsx`, and the action buttons in both the browser and `CandidateDetailSheet.tsx`.
+**What exists and works:**
+- `swipes` table with `direction`, `swiper_user_id`, `target_user_id`, `context`
+- `notifications` table with `notification_type` enum
+- `create_match_if_mutual()` DB trigger fires on swipe INSERT — creates a match row
+- `create_thread_on_match()` DB trigger fires on match INSERT — creates chat thread
+- `trigger_chat_notification_email()` DB trigger fires on notification INSERT for `chat_request_received`, `chat_request_accepted`, `message_received` — calls `send-chat-email` edge function via `pg_net`
+- `CandidateBrowseTab.tsx` (desktop) calls `notificationService.createNotification()` client-side when employer swipes right/nudge — but uses `match_created` type (wrong intent, it's not a match yet)
+- `candidateDiscoveryService.swipeCandidate()` (mobile) does NOT send any notification
 
----
-
-### Problem 1 — AI Insight missing from card
-
-The `matchSummaryService` already exists and is used in the desktop `LeftPanel`. The mobile `EnhancedCandidateCard` never calls it. The card currently shows: skills chips → bio snippet → goal → latest experience.
-
-**Fix:** Replace the bio snippet + goal block in the card with an AI Match Insight section (Sparkles icon + tinted background, loading shimmer while fetching). The card needs `userId` (employer) passed in to call `matchSummaryService.getMatchSummary(userId, profile)`.
-
-Card content becomes:
-1. Skills chips (keep)
-2. **AI Match Insight** — replaces bio + goal with a `Sparkles`-labeled block, tinted with `accentColor`, 2-3 lines max
-3. Latest experience (keep)
-4. "Tap to see full profile" button — moved to bottom
-
-Since the card is rendered in a stack (positions 0, 1, 2), only the top card (stackPosition === 0) fetches the AI summary. The other two cards show a placeholder shimmer.
+**What's missing:**
+1. No server-side DB trigger to notify candidate when employer swipes right/nudge (relying on client-side is unreliable)
+2. No `match_created` notification with deep link to chat thread for both parties
+3. Email trigger only handles 3 types — `employer_interest_received` and `employer_nudge_received` types don't exist
+4. No "Who's Interested" UI for candidates to see employers who swiped right on them
+5. `notification_type` enum missing `employer_interest_received` and `employer_nudge_received` values
 
 ---
 
-### Problem 2 — Button contrast on action row
+### What Will Be Built
 
-The current buttons use `border-accent text-accent-foreground` for the Nudge (middle) button. `accent` is a low-contrast tinted color — on a white/light card background, the border and icon are barely visible (as shown in the screenshot with the faded middle circle).
+#### Part 1 — DB Migration: New notification types + triggers
 
-**Fix:** Give each button an explicit, high-contrast color:
-- **Pass (X):** `border-red-500 text-red-500` — already good, keep
-- **Nudge (⚡):** Change to `border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white` — clear yellow/gold
-- **Interested (♥):** `border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white` — clear Lansa Blue
+**Step 1a: Extend notification_type enum**
+```sql
+ALTER TYPE notification_type ADD VALUE IF NOT EXISTS 'employer_interest_received';
+ALTER TYPE notification_type ADD VALUE IF NOT EXISTS 'employer_nudge_received';
+```
 
-Same fix applied to the `CandidateDetailSheet` sticky action buttons.
+**Step 1b: DB trigger on `swipes` table for interest notifications**
 
----
+New function `notify_candidate_on_employer_swipe()`:
+- Fires AFTER INSERT on `swipes`
+- If `direction = 'right'`: inserts notification for `target_user_id` with type `employer_interest_received`, title "💚 An employer is interested!", message "An employer liked your profile. If you like them back, you'll match!", action_url `/dashboard`
+- If `direction = 'nudge'`: inserts notification for `target_user_id` with type `employer_nudge_received`, title "⚡ Super Interest received!", message "An employer sent you super interest — they really want to connect!", action_url `/dashboard`
+- Skips if `direction = 'left'`
 
-### Problem 3 — Whole card tappable + "Tap to see full profile" at bottom
+**Step 1c: DB trigger on `matches` table for match notifications**
 
-Currently, "Tap to see full profile" is a small button mid-card. The `SwipeableContainer` wraps the card and handles drag — tapping the card body doesn't open the drawer.
-
-**Fix:** 
-- Move the "Tap to see full profile" hint to the very **bottom** of the card as a proper footer strip (full-width, `border-t`, `ChevronUp` icon, sticky within the card's flex layout).
-- Make the entire **content body** area of the card (not the swipe handle area) trigger `onTapExpand` on tap — by adding an `onClick` handler to the content `div` that only fires if the swipe progress is near zero (i.e., not dragging). This avoids triggering the drawer mid-swipe.
-
----
-
-### Files to edit
-
-| File | Change |
-|------|--------|
-| `src/components/mobile/employer/EnhancedCandidateCard.tsx` | Add `userId` prop, fetch AI summary for top card, replace bio/goal with AI insight block, move tap button to bottom, make content area tappable |
-| `src/components/mobile/employer/MobileCandidateBrowser.tsx` | Pass `userId` to `EnhancedCandidateCard` for top card |
-| `src/components/mobile/employer/CandidateDetailSheet.tsx` | Fix Nudge button color contrast (amber) and Heart button (blue) |
+New function `notify_both_on_match()`:
+- Fires AFTER INSERT on `matches`
+- Looks up the chat thread created by `create_thread_on_match` (query `chat_threads` by `match_id`)
+- Notifies both `user_a` and `user_b` with type `match_created`, title "🎉 It's a Match!", message "You and [other party name] matched! Start chatting now.", action_url `/chat/{thread_id}`
+- Gets names from `user_profiles`
 
 ---
 
-### Card layout after changes
+#### Part 2 — Email extension in `send-chat-email` edge function
+
+Add two new template handlers in `supabase/functions/send-chat-email/index.ts`:
+
+```typescript
+} else if (notification_type === 'employer_interest_received') {
+  emailContent = generateEmployerInterestEmail({...});
+} else if (notification_type === 'employer_nudge_received') {
+  emailContent = generateEmployerNudgeEmail({...});
+} else if (notification_type === 'match_created') {
+  emailContent = generateMatchCreatedEmail({...});
+}
+```
+
+Add 3 new email template functions to `supabase/functions/_shared/emailTemplates.ts`:
+- `generateEmployerInterestEmail` — Lansa blue header, "An employer liked your profile" with CTA to dashboard
+- `generateEmployerNudgeEmail` — amber header, "⚡ Super Interest received" with priority styling
+- `generateMatchCreatedEmail` — green gradient header, "It's a Match!" with direct link to `/chat/{threadId}`
+
+Also update `trigger_chat_notification_email()` DB function to include these 3 new types in its type check (`IF NEW.type NOT IN (...)`)
+
+---
+
+#### Part 3 — "Who's Interested" section on candidate mobile dashboard
+
+New component: `src/components/dashboard/WhoIsInterestedSection.tsx`
+
+This queries the `swipes` table for rows where:
+- `target_user_id = auth.uid()`
+- `direction IN ('right', 'nudge')`
+- Candidate hasn't already swiped back on that employer (to avoid showing resolved ones)
+
+For each employer swipe, fetch their `user_profiles_public` or `user_profiles` data to show:
+- Avatar circle with cover color
+- Name (anonymized as "An Employer" if profile is private)
+- Interest level badge (⚡ Super Interest vs 💚 Interested)
+- "Swipe Back" CTA → deep links to the candidate's opportunity discovery / job feed
+
+**RLS note**: Candidates need read access to swipes where they are the target. The current swipes RLS only allows `swiper_user_id = auth.uid()`. A new policy is needed: `SELECT WHERE target_user_id = auth.uid() AND direction IN ('right', 'nudge')`.
+
+The section renders in `OverviewTab.tsx` (candidate dashboard), shown only when `isCertified` (since only certified candidates are discoverable). On mobile it shows as a horizontal scroll row of cards. On desktop it collapses into a compact strip.
+
+---
+
+#### Part 4 — Remove duplicate client-side notifications
+
+In `CandidateBrowseTab.tsx` (desktop), remove the manual `notificationService.createNotification()` call since the DB trigger now handles it server-side — prevents double notifications. The mobile `candidateDiscoveryService` already doesn't do this, so no change needed there.
+
+---
+
+### Files to Create/Edit
+
+| File | Action | Change |
+|------|--------|--------|
+| DB migration | Create | Add enum values + 2 new trigger functions + 3 RLS policy + update email trigger type list |
+| `supabase/functions/_shared/emailTemplates.ts` | Edit | Add 3 new email template functions |
+| `supabase/functions/send-chat-email/index.ts` | Edit | Handle 3 new notification types |
+| `src/components/dashboard/WhoIsInterestedSection.tsx` | Create | New section component |
+| `src/components/dashboard/overview/OverviewTab.tsx` | Edit | Inject `WhoIsInterestedSection` |
+| `src/components/dashboard/employer/CandidateBrowseTab.tsx` | Edit | Remove duplicate client-side notification call |
+
+---
+
+### DB Trigger Flow After Implementation
 
 ```text
-┌─────────────────────────────────────────┐
-│  [Cover banner — name, title, location] │
-├─────────────────────────────────────────┤
-│  Skills: [Tag] [Tag] [Tag]              │
-│                                         │
-│  ✦ Why this match?                      │
-│  ┌─────────────────────────────────┐    │
-│  │ "This certified professional    │    │
-│  │  brings strong skills in X and  │    │
-│  │  Y, aligned with your goals..." │    │
-│  └─────────────────────────────────┘    │
-│                                         │
-│  💼 Creative Specialist · Acme Corp     │
-│                                         │
-├─────────────────────────────────────────┤
-│  ↑  Tap to see full profile             │  ← sticky footer, full width tappable
-└─────────────────────────────────────────┘
+Employer taps ♥ (right) on mobile
+        ↓
+swipeService.recordSwipe() → INSERT into swipes
+        ↓
+[DB Trigger: notify_candidate_on_employer_swipe]
+  → INSERT notification(type=employer_interest_received, user_id=candidate)
+        ↓
+[DB Trigger: trigger_chat_notification_email]
+  → pg_net POST → send-chat-email
+  → Resend email to candidate: "An employer liked your profile"
+
+If candidate also swipes right back:
+        ↓
+[DB Trigger: create_match_if_mutual]
+  → INSERT into matches
+        ↓
+[DB Trigger: create_thread_on_match]
+  → INSERT into chat_threads
+        ↓
+[DB Trigger: notify_both_on_match]
+  → INSERT notification for BOTH (type=match_created, action_url=/chat/{thread_id})
+        ↓
+[DB Trigger: trigger_chat_notification_email] fires for each
+  → Resend email to both: "It's a Match!"
 ```
 
 ---
 
-### Technical notes
+### Technical Notes
 
-- The AI summary fetch uses `useEffect` gated on `stackPosition === 0` so only the front card loads the summary. `setIsLoadingSummary` drives a shimmer placeholder (3 lines of `animate-pulse bg-muted rounded`).
-- The tap-to-open logic: `onClick={(e) => { if (swipeProgress < 0.1) { e.stopPropagation(); onTapExpand?.(); } }}` on the content body div prevents false triggers during swipe drags.
-- The `userId` prop is optional on the card (`userId?: string`) so background stack cards (positions 1, 2) still render without it.
+- The `notify_both_on_match()` trigger must run AFTER `create_thread_on_match()` to have the thread ID available. Both trigger on `matches` AFTER INSERT. Since both use `FOR EACH ROW`, we can rely on `chat_threads` being inserted synchronously in the same transaction by `create_thread_on_match()`.
+- The "Who's Interested" query needs a new RLS policy on `swipes`: `FOR SELECT TO authenticated USING (target_user_id = auth.uid())` — narrow to only right/nudge swipes is done in the query, not the policy.
+- Email rate limiting via `chat_email_log` already applies to all types going through `trigger_chat_notification_email`, so no extra work needed for the new types.
+- The `WhoIsInterestedSection` will join swipes with `user_profiles` using a Supabase `.select()` with an embedded join. Since employers may have private profiles, fallback to "An Interested Employer" with initials avatar.
