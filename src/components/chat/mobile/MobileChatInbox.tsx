@@ -146,19 +146,7 @@ export function MobileChatInbox({
 
       {/* Dividers + Thread List */}
       <div className="flex-1">
-        {loading ? (
-          <div className="space-y-0">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="flex items-center gap-4 px-5 py-4 border-b border-border/30 animate-pulse">
-                <div className="w-13 h-13 rounded-full bg-muted flex-shrink-0" style={{ width: 52, height: 52 }} />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-muted rounded w-2/5" />
-                  <div className="h-3 bg-muted rounded w-3/5" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : threads.length === 0 ? (
+        {threads.length === 0 ? (
           <div className="flex flex-col items-center justify-center flex-1 text-center px-8 py-24">
             <div className="w-20 h-20 rounded-3xl bg-muted/70 flex items-center justify-center mb-5">
               <MessageCircle className="w-10 h-10 text-muted-foreground/30" />

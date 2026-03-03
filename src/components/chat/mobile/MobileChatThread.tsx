@@ -71,15 +71,7 @@ export function MobileChatThread({ threadId, currentUserId, onBack }: MobileChat
       {/* Messages */}
       <ScrollArea className="flex-1">
         <div className="px-4 py-4 space-y-0.5">
-          {loading ? (
-            <div className="space-y-4 pt-2">
-              {[1, 2, 3].map(i => (
-                <div key={i} className={`flex ${i % 2 === 0 ? "justify-end" : "justify-start"}`}>
-                  <div className={`h-12 rounded-[20px] bg-muted animate-pulse ${i % 2 === 0 ? "w-44" : "w-52"}`} />
-                </div>
-              ))}
-            </div>
-          ) : messages.length === 0 ? (
+          {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-center px-6 mt-8">
               <div className="w-16 h-16 rounded-3xl bg-muted/80 flex items-center justify-center mb-4">
                 <MessageCircle className="w-8 h-8 text-muted-foreground/30" />
