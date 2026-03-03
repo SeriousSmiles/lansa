@@ -89,20 +89,34 @@ Experience: ${candidateProfile.experiences?.map((exp: any) => exp.title).join(',
 Professional Goal: ${candidateProfile.professional_goal || 'Not specified'}
 Certification: ${certData?.lansa_certified ? `Lansa Certified (Score: ${certData.assessment_score || 'N/A'})` : 'Not certified'}
 About: ${candidateProfile.about_text?.slice(0, 300) || 'No description'}
+Education Background: ${candidateProfile.academic_status || 'Not specified'} — Field: ${candidateProfile.major || 'Not specified'}
+Work Experience: ${candidateProfile.work_experience_years || 'Not specified'}
+Current Industry: ${candidateProfile.current_industry || 'Not specified'}
+Career Intention: ${candidateProfile.career_intention_professional || candidateProfile.career_goal_type || 'Not specified'}
+Still Studying: ${candidateProfile.still_studying ? 'Yes — currently in education' : 'No'}
 `;
 
     const systemPrompt = `You are a professional recruitment AI analyzing candidate-employer compatibility. Generate a concise, personalized 2-3 sentence summary explaining why this candidate could be a great match for the employer's needs.
 
 Focus on:
 - Skills alignment with employer's industry
-- Relevant experience and professional goals
+- Relevant experience, education background, and professional goals
 - Location compatibility (if relevant)
 - Certification strength (high score = highly qualified professional)
-- Professional aspirations matching employer needs
+- Career intentions and aspirations matching employer needs
+- Education-to-career progression and growth trajectory
+
+Also classify the match tier as one of:
+- "Promising" — strong skills alignment, relevant experience/education, clear career goals matching employer needs
+- "Good" — solid foundation but not as strong a match, some gaps but coachable and motivated
+- "Medium" — some risks or misalignment, but potential with mentoring and coaching
 
 DO NOT reveal specific certification answers, assessment details, or any private information.
 Keep it professional, positive, and action-oriented.
-Write in second person addressing the employer (e.g., "This candidate's skills in...")`;
+Write in second person addressing the employer (e.g., "This candidate's skills in...")
+
+Return ONLY valid JSON in this exact format:
+{"summary": "your 2-3 sentence summary here", "match_tier": "Promising"}`;
 
     const userPrompt = `${employerContext}
 
@@ -144,18 +158,33 @@ Generate a 2-3 sentence match summary explaining why this candidate is a good fi
       console.error('AI gateway error:', aiResponse.status, errorText);
       const fallbackSummary = buildFallbackSummary(candidateProfile, businessProfile);
       return new Response(
-        JSON.stringify({ summary: fallbackSummary }),
+        JSON.stringify({ summary: fallbackSummary, match_tier: 'Good' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const aiData = await aiResponse.json();
-    const summary = aiData.choices?.[0]?.message?.content || 'Unable to generate summary';
+    const rawContent = aiData.choices?.[0]?.message?.content || '';
+    
+    let summary = 'Unable to generate summary';
+    let match_tier: 'Promising' | 'Good' | 'Medium' = 'Good';
+    
+    try {
+      const cleaned = rawContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      summary = parsed.summary || summary;
+      if (['Promising', 'Good', 'Medium'].includes(parsed.match_tier)) {
+        match_tier = parsed.match_tier;
+      }
+    } catch {
+      // Fallback: use raw content as summary if JSON parse fails
+      summary = rawContent || buildFallbackSummary(candidateProfile, businessProfile);
+    }
 
-    console.log('Match summary generated successfully');
+    console.log('Match summary generated successfully, tier:', match_tier);
 
     return new Response(
-      JSON.stringify({ summary }),
+      JSON.stringify({ summary, match_tier }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }

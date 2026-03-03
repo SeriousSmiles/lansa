@@ -2678,6 +2678,7 @@ export type Database = {
           age_group: string | null
           biggest_challenge: string | null
           career_goal_type: string | null
+          career_intention_professional: string | null
           certification_paid_at: string | null
           certified: boolean | null
           clerk_user_id: string | null
@@ -2686,6 +2687,7 @@ export type Database = {
           color_palette: Json | null
           cover_color: string | null
           created_at: string | null
+          current_industry: string | null
           cv_imported_at: string | null
           cv_last_used: string | null
           cv_source_metadata: Json | null
@@ -2717,10 +2719,12 @@ export type Database = {
           profile_image: string | null
           score_breakdown: Json | null
           skills: string[] | null
+          still_studying: boolean | null
           title: string | null
           updated_at: string | null
           user_id: string
           visible_to_employers: boolean | null
+          work_experience_years: string | null
         }
         Insert: {
           about_text?: string | null
@@ -2728,6 +2732,7 @@ export type Database = {
           age_group?: string | null
           biggest_challenge?: string | null
           career_goal_type?: string | null
+          career_intention_professional?: string | null
           certification_paid_at?: string | null
           certified?: boolean | null
           clerk_user_id?: string | null
@@ -2736,6 +2741,7 @@ export type Database = {
           color_palette?: Json | null
           cover_color?: string | null
           created_at?: string | null
+          current_industry?: string | null
           cv_imported_at?: string | null
           cv_last_used?: string | null
           cv_source_metadata?: Json | null
@@ -2767,10 +2773,12 @@ export type Database = {
           profile_image?: string | null
           score_breakdown?: Json | null
           skills?: string[] | null
+          still_studying?: boolean | null
           title?: string | null
           updated_at?: string | null
           user_id: string
           visible_to_employers?: boolean | null
+          work_experience_years?: string | null
         }
         Update: {
           about_text?: string | null
@@ -2778,6 +2786,7 @@ export type Database = {
           age_group?: string | null
           biggest_challenge?: string | null
           career_goal_type?: string | null
+          career_intention_professional?: string | null
           certification_paid_at?: string | null
           certified?: boolean | null
           clerk_user_id?: string | null
@@ -2786,6 +2795,7 @@ export type Database = {
           color_palette?: Json | null
           cover_color?: string | null
           created_at?: string | null
+          current_industry?: string | null
           cv_imported_at?: string | null
           cv_last_used?: string | null
           cv_source_metadata?: Json | null
@@ -2817,10 +2827,12 @@ export type Database = {
           profile_image?: string | null
           score_breakdown?: Json | null
           skills?: string[] | null
+          still_studying?: boolean | null
           title?: string | null
           updated_at?: string | null
           user_id?: string
           visible_to_employers?: boolean | null
+          work_experience_years?: string | null
         }
         Relationships: [
           {
