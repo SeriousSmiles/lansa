@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import type { ChatMessage } from "@/services/chatService";
 
 interface MessageBubbleProps {
@@ -23,29 +23,39 @@ export function MessageBubble({
 }: MessageBubbleProps) {
   const displayName = message.sender_display_name || senderName || "Unknown";
   const initials = displayName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
-  const timeStr = formatDistanceToNow(new Date(message.created_at), { addSuffix: true });
-  const orgName = senderOrgName;
+  const timeStr = format(new Date(message.created_at), "h:mm a");
+  const isEmployerSender = !isSelf && !!senderOrgName;
 
   return (
-    <div className={cn("flex items-end gap-2 mb-1", isSelf ? "flex-row-reverse" : "flex-row")}>
+    <div className={cn(
+      "flex items-end gap-2.5",
+      isSelf ? "flex-row-reverse" : "flex-row",
+      showSenderInfo ? "mt-4" : "mt-0.5"
+    )}>
       {/* Avatar (other party only) */}
-      {!isSelf && showSenderInfo && (
-        <Avatar className="w-7 h-7 flex-shrink-0 mb-1">
-          <AvatarImage src={senderImage} alt={displayName} />
-          <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-semibold">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-      )}
-      {!isSelf && !showSenderInfo && <div className="w-7 flex-shrink-0" />}
+      {!isSelf ? (
+        showSenderInfo ? (
+          <Avatar className="w-7 h-7 flex-shrink-0 mb-1 ring-1 ring-border/30">
+            <AvatarImage src={senderImage} alt={displayName} />
+            <AvatarFallback
+              className="text-[10px] font-bold text-white"
+              style={{ background: isEmployerSender ? "#2B7FE8" : "#F2713B" }}
+            >
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+        ) : (
+          <div className="w-7 flex-shrink-0" />
+        )
+      ) : null}
 
-      <div className={cn("max-w-[65%] flex flex-col", isSelf ? "items-end" : "items-start")}>
+      <div className={cn("max-w-[62%] flex flex-col gap-1", isSelf ? "items-end" : "items-start")}>
         {/* Sender label */}
         {!isSelf && showSenderInfo && (
-          <div className="flex items-center gap-1.5 mb-1">
-            <span className="text-xs font-semibold text-foreground/80">{displayName}</span>
-            {orgName && (
-              <span className="text-xs text-muted-foreground">· {orgName}</span>
+          <div className="flex items-center gap-1.5 px-1">
+            <span className="text-xs font-semibold text-foreground/75">{displayName}</span>
+            {senderOrgName && (
+              <span className="text-xs text-muted-foreground/70">· {senderOrgName}</span>
             )}
           </div>
         )}
@@ -53,17 +63,17 @@ export function MessageBubble({
         {/* Bubble */}
         <div
           className={cn(
-            "px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words",
+            "px-4 py-2.5 text-sm leading-relaxed break-words shadow-sm",
             isSelf
-              ? "bg-[#F2713B] text-white rounded-br-sm"
-              : "bg-muted text-foreground rounded-bl-sm border border-border/40"
+              ? "bg-[#F2713B] text-white rounded-2xl rounded-br-md"
+              : "bg-muted/80 text-foreground rounded-2xl rounded-bl-md border border-border/30"
           )}
         >
           {message.body}
         </div>
 
         {/* Timestamp */}
-        <span className="text-[10px] text-muted-foreground mt-1 px-1">{timeStr}</span>
+        <span className="text-[10px] text-muted-foreground/60 px-1">{timeStr}</span>
       </div>
     </div>
   );
