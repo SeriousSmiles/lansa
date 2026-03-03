@@ -25,6 +25,8 @@ interface InterestedEmployer {
   employer_title: string | null;
   employer_image: string | null;
   employer_cover_color: string | null;
+  org_name: string | null;
+  org_logo: string | null;
 }
 
 interface JobListing {
@@ -161,7 +163,14 @@ export function EmployerInterestDrawer({ employer, open, onClose }: Props) {
         {/* Profile header */}
         <div className="px-5 -mt-8 flex-shrink-0">
           <div className="flex items-end gap-3 mb-3">
-            {employer.employer_image ? (
+            {/* Org logo > profile image > initials */}
+            {employer.org_logo ? (
+              <img
+                src={employer.org_logo}
+                alt={employer.org_name ?? "Company"}
+                className="w-16 h-16 rounded-2xl border-4 border-background object-cover shadow-md bg-muted"
+              />
+            ) : employer.employer_image ? (
               <img
                 src={employer.employer_image}
                 alt={employer.employer_name ?? "Employer"}
@@ -169,19 +178,20 @@ export function EmployerInterestDrawer({ employer, open, onClose }: Props) {
               />
             ) : (
               <div
-                className="w-16 h-16 rounded-2xl border-4 border-background flex items-center justify-center text-white text-lg font-bold shadow-md"
-                style={{
-                  background: employer.employer_cover_color ?? "hsl(var(--primary))",
-                }}
+                className="w-16 h-16 rounded-2xl border-4 border-background flex items-center justify-center text-primary-foreground text-lg font-bold shadow-md bg-primary"
               >
-                {getInitials(employer.employer_name)}
+                {getInitials(employer.org_name ?? employer.employer_name)}
               </div>
             )}
             <div className="pb-1">
               <h2 className="font-bold text-foreground text-base leading-tight">
-                {employer.employer_name ?? "An Employer"}
+                {employer.org_name ?? employer.employer_name ?? "An Employer"}
               </h2>
-              {employer.employer_title && (
+              {/* Show personal name as subtitle if org name is set */}
+              {employer.org_name && employer.employer_name && (
+                <p className="text-xs text-muted-foreground">{employer.employer_name}</p>
+              )}
+              {!employer.org_name && employer.employer_title && (
                 <p className="text-sm text-muted-foreground">{employer.employer_title}</p>
               )}
             </div>
@@ -275,7 +285,7 @@ export function EmployerInterestDrawer({ employer, open, onClose }: Props) {
             )}
           </Button>
           <p className="text-[11px] text-muted-foreground text-center mt-2">
-            This will notify {employer.employer_name ?? "the employer"} that you've connected.
+            This will notify {employer.org_name ?? employer.employer_name ?? "the employer"} that you've connected.
           </p>
         </div>
       </SheetContent>
