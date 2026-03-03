@@ -40,7 +40,7 @@ export function ChatThreadView({
   return (
     <div className="flex flex-col h-full">
       {/* Thread Header */}
-      <div className="px-6 py-4 border-b border-border/60 flex items-center gap-3.5 bg-card/50 backdrop-blur-sm">
+      <div className="px-6 py-4 border-b border-border/60 flex items-center gap-3.5 bg-white">
         <Avatar className="w-10 h-10 ring-2 ring-border/40 flex-shrink-0">
           <AvatarImage src={avatarSrc} alt={otherName} />
           <AvatarFallback
@@ -92,7 +92,7 @@ export function ChatThreadView({
       </ScrollArea>
 
       {/* Input */}
-      <div className="px-6 py-4 border-t border-border/60 bg-card/50 backdrop-blur-sm">
+      <div className="px-6 py-4 border-t border-border/60 bg-white">
         <ChatInput
           onSend={(body) => sendMessage(body, senderDisplayName, senderOrgId)}
           disabled={sending}

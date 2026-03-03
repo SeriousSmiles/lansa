@@ -23,7 +23,7 @@ export function DesktopChatLayout({ activeThreadId, onSelectThread }: DesktopCha
   const dashboardPath = userType === 'employer' ? '/employer-dashboard' : '/dashboard';
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-[#FDF8F2]">
       <div className="max-w-[1280px] mx-auto h-screen flex flex-col px-6 lg:px-10 py-6">
         {/* Top nav bar */}
         <div className="flex items-center gap-3 mb-5">
@@ -51,7 +51,7 @@ export function DesktopChatLayout({ activeThreadId, onSelectThread }: DesktopCha
           </div>
 
           {/* Right: Active Thread or Empty State */}
-          <div className="flex-1 flex flex-col min-w-0 bg-background/60">
+          <div className="flex-1 flex flex-col min-w-0 bg-[#F8F9FA]">
             {activeThreadId ? (
               <ChatThreadView
                 key={activeThreadId}

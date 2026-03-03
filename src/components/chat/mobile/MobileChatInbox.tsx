@@ -117,9 +117,9 @@ export function MobileChatInbox({
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-[#FDF8F2]">
       {/* Header */}
-      <div className="px-5 pt-safe-top pb-4 bg-card/90 backdrop-blur-md sticky top-0 z-10 border-b border-border/40">
+      <div className="px-5 pt-safe-top pb-4 bg-white sticky top-0 z-10 border-b border-border/40">
         <div className="flex items-center gap-2">
           {userType === 'employer' && (
             <button
