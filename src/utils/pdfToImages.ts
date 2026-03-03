@@ -1,7 +1,6 @@
 /**
  * Convert a PDF or image file to an array of JPEG data URLs.
- * Uses a fake worker (main-thread rendering) to avoid pdfjs-dist v5
- * worker compatibility issues ("getOrInsertComputed is not a function").
+ * Uses pdfjs-dist v4 which is compatible with Vite bundling.
  */
 export const convertFileToImages = async (file: File): Promise<string[]> => {
   const TIMEOUT_MS = 45_000;
@@ -10,16 +9,10 @@ export const convertFileToImages = async (file: File): Promise<string[]> => {
     const images: string[] = [];
 
     if (file.type === 'application/pdf') {
-      // Dynamically import pdfjs and disable the worker to avoid v5 worker bugs
       const pdfjs = await import('pdfjs-dist');
 
-      // Only set once — re-init causes "getOrInsertComputed" crash on re-upload
-      if (!pdfjs.GlobalWorkerOptions.workerSrc) {
-        pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-          'pdfjs-dist/build/pdf.worker.mjs',
-          import.meta.url
-        ).toString();
-      }
+      // Static public path — never Vite-hashed, works in dev and prod
+      pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
       const arrayBuffer = await file.arrayBuffer();
       const loadingTask = pdfjs.getDocument({
@@ -40,10 +33,9 @@ export const convertFileToImages = async (file: File): Promise<string[]> => {
         canvas.width = viewport.width;
 
         await page.render({
-          canvas,
           canvasContext: context,
           viewport,
-        }).promise;
+        } as Parameters<typeof page.render>[0]).promise;
 
         images.push(canvas.toDataURL('image/jpeg', 0.7));
         page.cleanup();
