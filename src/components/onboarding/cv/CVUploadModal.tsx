@@ -5,7 +5,7 @@ import { CVUploadArea } from "./CVUploadArea";
 import { CVParsingProgress } from "./CVParsingProgress";
 import { EnhancedCVAnalysisResults } from "./EnhancedCVAnalysisResults";
 import { CVLoadingProgress } from "./CVLoadingProgress";
-import { FileText, Sparkles } from "lucide-react";
+import { FileText, Sparkles, AlertTriangle, RefreshCw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface CVUploadModalProps {
@@ -14,7 +14,7 @@ interface CVUploadModalProps {
   onComplete: () => void;
 }
 
-type CVUploadStep = 'upload' | 'parsing' | 'results';
+type CVUploadStep = 'upload' | 'parsing' | 'results' | 'error';
 
 export interface CVAnalysisData {
   extractedData: {
@@ -51,6 +51,7 @@ export function CVUploadModal({ open, onOpenChange, onComplete }: CVUploadModalP
   const [currentStep, setCurrentStep] = useState<CVUploadStep>('upload');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [analysisData, setAnalysisData] = useState<CVAnalysisData | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { user } = useAuth();
 
   const handleFileUpload = async (file: File) => {
@@ -87,11 +88,10 @@ export function CVUploadModal({ open, onOpenChange, onComplete }: CVUploadModalP
 
       setAnalysisData(analysisData);
       setCurrentStep('results');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error processing CV:', error);
-      // Show error to user instead of mock data
-      setCurrentStep('upload');
-      throw error;
+      setErrorMessage(error?.message || 'Failed to process your CV. Please try again.');
+      setCurrentStep('error');
     }
   };
 
@@ -164,6 +164,7 @@ export function CVUploadModal({ open, onOpenChange, onComplete }: CVUploadModalP
     setCurrentStep('upload');
     setUploadedFile(null);
     setAnalysisData(null);
+    setErrorMessage(null);
   };
 
   return (
@@ -206,6 +207,38 @@ export function CVUploadModal({ open, onOpenChange, onComplete }: CVUploadModalP
             </DialogHeader>
             <div className="mt-6">
               <CVLoadingProgress fileName={uploadedFile?.name || "your-cv.pdf"} />
+            </div>
+          </>
+        )}
+
+        {currentStep === 'error' && (
+          <>
+            <DialogHeader className="text-center space-y-3">
+              <div className="w-16 h-16 mx-auto rounded-full bg-destructive/10 flex items-center justify-center">
+                <AlertTriangle className="w-8 h-8 text-destructive" />
+              </div>
+              <DialogTitle className="text-2xl font-bold">Couldn't Read Your CV</DialogTitle>
+              <p className="text-muted-foreground text-sm">
+                {errorMessage || 'Something went wrong while processing your CV.'}
+              </p>
+            </DialogHeader>
+            <div className="mt-6 space-y-3 text-sm text-muted-foreground bg-muted rounded-lg p-4">
+              <p className="font-medium text-foreground">Common causes:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Scanned/image-only PDFs (no selectable text)</li>
+                <li>Password-protected or encrypted files</li>
+                <li>Very large files (&gt;10MB)</li>
+                <li>Corrupted or unsupported format</li>
+              </ul>
+            </div>
+            <div className="flex gap-3 justify-center mt-6">
+              <Button onClick={resetModal}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Try Again
+              </Button>
+              <Button variant="outline" onClick={handleSkip}>
+                Skip for Now
+              </Button>
             </div>
           </>
         )}
