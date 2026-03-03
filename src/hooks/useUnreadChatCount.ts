@@ -18,7 +18,7 @@ export function useUnreadChatCount() {
     if (!user) return;
     refresh();
 
-    // Subscribe to new messages to keep badge live
+    // Subscribe to inserts AND updates (e.g. read_at set) to keep badge accurate
     channelRef.current = supabase
       .channel(`unread_badge_${user.id}`)
       .on(
@@ -28,7 +28,7 @@ export function useUnreadChatCount() {
       )
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'chat_messages', filter: 'read_at=not.is.null' },
+        { event: 'UPDATE', schema: 'public', table: 'chat_messages' },
         () => refresh()
       )
       .subscribe();
