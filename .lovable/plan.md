@@ -1,70 +1,175 @@
 
-## Root Cause Analysis
+## What We're Building
 
-### Bug 1 — `match_created` email: "your match" fallback fires due to race condition
+The demographics step in `AIOnboardingFlow.tsx` needs a two-tab redesign where BOTH tabs are always filled out — "As a Student" (formal education background, even for working professionals) and "As a Working Professional" (current career context, disabled for still-studying users).
 
-**Flow**: `notify_both_on_match` trigger fires → inserts notification → `trigger_chat_notification_email` trigger fires immediately → calls `send-chat-email` edge function → function calls `resolveOtherPartyName(threadId)`.
+This data feeds directly into: AI during onboarding, profile storage, and the `generate-match-summary` edge function which determines Promising / Good / Medium match tier for employers.
 
-**Problem**: The notification already has `metadata` containing `other_user_id` from the trigger, but `send-chat-email` IGNORES the metadata entirely. Instead it tries to re-derive the other party from the thread's `participant_ids`. If the thread doesn't exist yet (race condition between `create_thread_on_match` and `notify_both_on_match`) → thread query returns null → fallback `'your match'` is used in subject line.
+---
 
-**Fix**: The `notify_both_on_match` trigger already stores `other_user_id` in the notification `metadata` field. Pass `metadata` from the DB trigger to the edge function, and use `metadata.other_user_id` directly to look up the name — no thread dependency needed.
+## Architecture — One Clean System, No Layers
 
-### Bug 2 — `employer_interest_received` and `employer_nudge_received`: no employer name
+**Single source of truth for this step**: The demographics state lives in `AIOnboardingFlow.tsx` → saved to `user_profiles` via `handleDemographicsSave()` → consumed by `generate-match-summary` edge function.
 
-The `EmployerInterestEmailData` interface has no `employerName` field. The email body says "an employer on Lansa liked your profile" — completely anonymous. The notification metadata contains the employer's `user_id` (from the swipe trigger), but it's never used.
+No new tables needed. The `user_profiles` table already has:
+- `professional_stage` (student / working_professional)
+- `academic_status`
+- `major`
+- `career_goal_type`
 
-**Fix**: Pass employer name from notification metadata in the edge function for these two types.
+We add two new columns via migration:
+- `work_experience_years` (text enum: none / 1-2 / 3-5 / 6-10 / 10+)  
+- `current_industry` (text, freeform)
+- `career_intention` (text enum, working professional goals)
+- `still_studying` (boolean, for working professionals who are also in education)
 
-### RLS Check
+---
 
-- `matches` table: ✅ RLS enabled, SELECT policy scoped to participants only
-- `chat_threads` table: ✅ RLS enabled, `is_thread_participant` check
-- `notifications` table: ✅ RLS enabled, users see only their own
-- `chat_email_log` table: ⚠️ RLS **disabled** (intentional per memory — postgres superuser needs access for rate-limit checks, this is documented as intentional)
-- The `trigger_chat_notification_email` and `notify_both_on_match` both use `SECURITY DEFINER` — correct, they need to read across users
+## Step Design: Two Tabs, Always Both Filled
 
-No RLS gaps to fix for this feature.
+### Tab 1 — "As a Student" (education background)
 
-## Changes Needed
+Tab label changes: **"As a Student"** (was "I'm a Student")
 
-### 1. DB trigger — `trigger_chat_notification_email`
-Pass `metadata` in the `net.http_post` body so the edge function can use `other_user_id` directly.
+Expanded `academic_status` options:
+- `currently_studying` — Currently studying
+- `final_year` — Final year student
+- `recently_graduated` — Recently graduated (last 2 years)
+- `graduated_university` — Graduated university (2+ years ago)
+- `completed_college` — Completed college / technical diploma
+- `finished_before_university` — Finished before university (secondary/high school)
+- `self_taught` — Largely self-taught / no formal degree
 
-```sql
-body := jsonb_build_object(
-  'user_id', NEW.user_id,
-  'notification_type', NEW.type,
-  'title', NEW.title,
-  'message', NEW.message,
-  'action_url', NEW.action_url,
-  'metadata', NEW.metadata  -- ADD THIS
-)
+Field of Study input (existing, keep as-is but relabeled: "Field of study or specialization")
+
+Student Career Intention (for this profile section, rename from "Career Goal"):
+- `first_job` — Get my first professional job
+- `paid_internship` — Land a paid internship
+- `grow_in_company` — Find a company to grow with long-term
+- `continue_studying` — Continue studying before entering the workforce
+- `not_sure` — Still figuring it out
+
+### Tab 2 — "As a Working Professional" (career context)
+
+Tab label: **"As a Working Professional"**
+
+**"Still Currently Studying" toggle button** at the top — when active:
+- Locks the entire tab 2 form (all fields go `opacity-50 pointer-events-none`)
+- Still stores `still_studying: true` to signal they haven't entered the workforce yet
+- A subtle message appears: "Complete this section once you've started your career journey"
+
+When NOT still studying, form shows:
+- **Current Role / Industry** (existing `major` field repurposed → keep `major` for student tab, add `current_industry` for professional tab)
+- **Years of experience** (new field `work_experience_years`):
+  - `none` — Just starting out
+  - `1_to_2` — 1–2 years
+  - `3_to_5` — 3–5 years
+  - `6_to_10` — 6–10 years
+  - `10_plus` — 10+ years
+- **Career Intention** (expanded professional options, already exist for working_professional tab):
+  - `get_promoted` — Get promoted in my current field
+  - `switch_careers` — Switch careers or industries
+  - `dream_job` — Land my dream job at a target company
+  - `develop_skills` — Develop new skills for advancement
+  - `start_something` — Start something of my own eventually
+  - `work_life_balance` — Find better work-life balance
+  - `earn_more` — Earn significantly more
+
+---
+
+## Validation Logic (canContinue)
+
+```
+Tab 1 always required: academic_status + major (field of study)
+Tab 2 required if still_studying = false: current_industry + work_experience_years + career_intention_professional
+Tab 2 if still_studying = true: no fields required, still_studying flag is enough
 ```
 
-### 2. Edge function `send-chat-email/index.ts`
+Both tabs must be visited (tracked via `visitedTabs` state: `Set<'student' | 'professional'>`).
 
-**For `match_created`**: Read `metadata.other_user_id` from payload first, then look up their name directly by `user_id`. No thread lookup needed. Only fall back to thread lookup if metadata is missing.
+canContinue = `visitedTabs.has('student') && visitedTabs.has('professional') && tab1Valid && tab2Valid`
 
-**For `employer_interest_received` and `employer_nudge_received`**: Read `metadata.employer_id` or `metadata.swiper_id` from payload, look up the employer/org name, pass it to email templates.
+---
 
-### 3. Email templates `_shared/emailTemplates.ts`
+## Data Save: `handleDemographicsSave()`
 
-**`EmployerInterestEmailData`**: Add optional `employerName?: string` field.
+Save to `user_profiles`:
+```ts
+{
+  professional_stage: still_studying ? 'student' : 'working_professional', // derived
+  academic_status,           // tab 1
+  major,                     // tab 1 field of study
+  career_goal_type,          // tab 1 career intention
+  current_industry,          // tab 2 (null if still_studying)
+  work_experience_years,     // tab 2 (null if still_studying)
+  career_intention_professional, // tab 2 (null if still_studying)
+  still_studying,            // boolean
+}
+```
 
-Update body copy:
-- Interest: `"An employer on Lansa liked your profile"` → `"<strong>EmployerName</strong> liked your profile on Lansa"` (when name available)
-- Nudge: same treatment with Super Interest copy
+`professional_stage` is now **derived** from `still_studying`. If still_studying → 'student'. Otherwise → 'working_professional'. This preserves all downstream logic that reads `professional_stage`.
 
-**`generateMatchCreatedEmail`**: Subject and body already use `data.otherPartyName` correctly — no template change needed, just the data pipeline.
+---
 
-### 4. Check swipe trigger for employer metadata
+## AI Integration: `generate-match-summary` Edge Function
 
-Need to verify the swipe notification trigger stores the employer's `user_id` in metadata so the edge function can use it.
+Add new fields to `candidateContext` block:
+
+```ts
+const candidateContext = `
+...existing fields...
+Education Background: ${candidateProfile.academic_status || 'Not specified'} — Field: ${candidateProfile.major || 'Not specified'}
+Work Experience: ${candidateProfile.work_experience_years || 'Not specified'}
+Current Industry: ${candidateProfile.current_industry || 'Not specified'}
+Career Intention: ${candidateProfile.career_intention_professional || candidateProfile.career_goal_type || 'Not specified'}
+Still Studying: ${candidateProfile.still_studying ? 'Yes — currently in education' : 'No'}
+`;
+```
+
+Update system prompt to include the match tier classification:
+
+```
+Classify the match tier as one of:
+- "Promising" — strong skills alignment, relevant experience, clear career goals matching employer needs
+- "Good" — solid foundation but not as strong a match, some gaps but coachable
+- "Medium" — some risks or misalignment, but potential with mentoring/coaching
+
+Return JSON: { summary: string, match_tier: "Promising" | "Good" | "Medium" }
+```
+
+The employer browse UI already shows the AI insight — the `match_tier` value gets a visual badge beside it.
+
+---
+
+## DB Migration
+
+```sql
+ALTER TABLE user_profiles
+  ADD COLUMN IF NOT EXISTS current_industry TEXT,
+  ADD COLUMN IF NOT EXISTS work_experience_years TEXT,
+  ADD COLUMN IF NOT EXISTS career_intention_professional TEXT,
+  ADD COLUMN IF NOT EXISTS still_studying BOOLEAN DEFAULT FALSE;
+```
+
+---
 
 ## Files to Change
 
 | File | Change |
 |---|---|
-| DB migration | Pass `metadata` column in `trigger_chat_notification_email` net.http_post body |
-| `send-chat-email/index.ts` | Use `metadata.other_user_id` for match names; use `metadata` for employer names |
-| `_shared/emailTemplates.ts` | Add `employerName?` to interest/nudge interfaces; update copy |
+| `src/components/onboarding/AIOnboardingFlow.tsx` | Replace demographics step with two-tab design |
+| `supabase/functions/generate-match-summary/index.ts` | Add new fields to candidateContext, add match_tier to prompt + response |
+| `supabase/migrations/new.sql` | Add 4 columns to user_profiles |
+| `src/integrations/supabase/types.ts` | Update Row types for user_profiles |
+
+`StudentDemographicsStep.tsx` (inside `src/components/onboarding/student/`) is a SEPARATE component used by the older student onboarding path flow — update its `academic_status` options to match the expanded list for consistency, but it is NOT the primary component being changed here.
+
+---
+
+## What Stays Intact
+
+- All other AIOnboardingFlow steps (welcome → skill → goal → summary) unchanged
+- `professional_stage` field continues to work as before (now derived from `still_studying`)
+- Employer and Mentor onboarding paths untouched
+- Guard + UnifiedAuthProvider routing untouched
+- Power Mirror, skill analysis, goal analysis steps unchanged
