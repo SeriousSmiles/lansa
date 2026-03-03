@@ -59,6 +59,7 @@ export interface EmployerInterestEmailData {
   recipientName: string;
   recipientEmail: string;
   dashboardUrl: string;
+  employerName?: string;
 }
 
 export interface MatchCreatedEmailData {
@@ -396,6 +397,10 @@ export function generateNewMessageEmail(data: NewMessageEmailData): { subject: s
 }
 
 export function generateEmployerInterestEmail(data: EmployerInterestEmailData): { subject: string; html: string } {
+  const employerLine = data.employerName
+    ? `<strong>${data.employerName}</strong> liked your profile on Lansa and expressed interest in connecting with you!`
+    : 'Great news — an employer on Lansa liked your profile and expressed interest in connecting with you!';
+
   const header = `
     ${logoHtml()}
     <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">💚 An Employer is Interested!</h1>
@@ -403,18 +408,26 @@ export function generateEmployerInterestEmail(data: EmployerInterestEmailData): 
 
   const body = `
     ${p(`Hi ${data.recipientName},`)}
-    ${p('Great news — an employer on Lansa liked your profile and expressed interest in connecting with you!')}
+    ${p(employerLine)}
     ${highlightBox('🎯 If you like them back, you\'ll match and a private chat will open automatically.', '#d1fae5', '#10b981', '#065f46')}
     ${p("Head to your dashboard to see who's interested in you and decide if you want to connect.")}
     ${ctaButton('View My Dashboard', `https://lansa.online${data.dashboardUrl}`, '#059669')}`;
 
+  const subject = data.employerName
+    ? `💚 ${data.employerName} is interested in your profile on Lansa`
+    : `💚 An employer is interested in your profile on Lansa`;
+
   return {
-    subject: `💚 An employer is interested in your profile on Lansa`,
+    subject,
     html: wrapper('#059669', header, body, 'You can manage your notification preferences in your Lansa settings.')
   };
 }
 
 export function generateEmployerNudgeEmail(data: EmployerInterestEmailData): { subject: string; html: string } {
+  const nudgeLine = data.employerName
+    ? `<strong>${data.employerName}</strong> sent you <strong>Super Interest</strong> on Lansa — they're especially excited about your profile and really want to connect!`
+    : 'An employer on Lansa sent you <strong>Super Interest</strong> — this means they\'re especially excited about your profile and really want to connect!';
+
   const header = `
     ${logoHtml()}
     <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">⚡ Super Interest Received!</h1>
@@ -422,13 +435,17 @@ export function generateEmployerNudgeEmail(data: EmployerInterestEmailData): { s
 
   const body = `
     ${p(`Hi ${data.recipientName},`)}
-    ${p('An employer on Lansa sent you <strong>Super Interest</strong> — this means they\'re especially excited about your profile and really want to connect!')}
+    ${p(nudgeLine)}
     ${highlightBox('⚡ Super Interest is a priority signal — don\'t miss this opportunity!', '#fef3c7', '#f59e0b', '#92400e')}
     ${p("Visit your dashboard to discover who sent you super interest and decide if you'd like to connect back.")}
     ${ctaButton('View My Dashboard', `https://lansa.online${data.dashboardUrl}`, '#d97706')}`;
 
+  const subject = data.employerName
+    ? `⚡ ${data.employerName} sent you super interest on Lansa`
+    : `⚡ An employer sent you super interest on Lansa`;
+
   return {
-    subject: `⚡ An employer sent you super interest on Lansa`,
+    subject,
     html: wrapper('#d97706', header, body, 'You can manage your notification preferences in your Lansa settings.')
   };
 }
