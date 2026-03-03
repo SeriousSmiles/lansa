@@ -67,6 +67,11 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
           icon: IconBriefcase,
         },
         {
+          title: "Messages",
+          url: "/chat",
+          icon: IconMessage,
+        },
+        {
           title: "Resources",
           url: "/resources",
           icon: IconBook,
