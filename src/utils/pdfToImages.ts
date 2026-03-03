@@ -1,31 +1,35 @@
-import * as pdfjs from 'pdfjs-dist';
-
-// Use the bundled worker from the npm package (works with v5+)
-// Vite handles the ?url import to get the correct asset path
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
-
 /**
  * Convert a PDF or image file to an array of JPEG data URLs.
- * PDFs are rendered page-by-page (max 10 pages) at 2× scale.
- * Images are resized to max 1024px and compressed to 70% JPEG quality.
- * Includes a timeout to prevent infinite hangs.
+ * Uses a fake worker (main-thread rendering) to avoid pdfjs-dist v5
+ * worker compatibility issues ("getOrInsertComputed is not a function").
  */
 export const convertFileToImages = async (file: File): Promise<string[]> => {
-  const TIMEOUT_MS = 30_000; // 30 second timeout
+  const TIMEOUT_MS = 45_000;
 
   const doConversion = async (): Promise<string[]> => {
     const images: string[] = [];
 
     if (file.type === 'application/pdf') {
+      // Dynamically import pdfjs and disable the worker to avoid v5 worker bugs
+      const pdfjs = await import('pdfjs-dist');
+
+      // Use fake worker (runs on main thread) — avoids "getOrInsertComputed" v5 bug
+      pdfjs.GlobalWorkerOptions.workerSrc = '';
+
       const arrayBuffer = await file.arrayBuffer();
-      const loadingTask = pdfjs.getDocument({ data: arrayBuffer });
+      const loadingTask = pdfjs.getDocument({
+        data: arrayBuffer,
+        useWorkerFetch: false,
+        isEvalSupported: false,
+        useSystemFonts: true,
+      });
+
       const pdf = await loadingTask.promise;
-      const maxPages = Math.min(pdf.numPages, 10);
+      const maxPages = Math.min(pdf.numPages, 8);
 
       for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
-        const viewport = page.getViewport({ scale: 2.0 });
+        const viewport = page.getViewport({ scale: 1.5 });
 
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d')!;
@@ -33,26 +37,27 @@ export const convertFileToImages = async (file: File): Promise<string[]> => {
         canvas.width = viewport.width;
 
         await page.render({
-          canvas: canvas,
+          canvas,
           canvasContext: context,
-          viewport: viewport,
+          viewport,
         }).promise;
 
-        images.push(canvas.toDataURL('image/jpeg', 0.7));
+        images.push(canvas.toDataURL('image/jpeg', 0.75));
+        page.cleanup();
       }
     } else if (file.type.startsWith('image/')) {
       const imageDataUrl = await new Promise<string>((resolve, reject) => {
         const img = new Image();
         img.onload = () => {
-          const maxSize = 1024;
+          const maxSize = 1280;
           let { width, height } = img;
 
           if (width > maxSize || height > maxSize) {
             if (width > height) {
-              height = (height * maxSize) / width;
+              height = Math.round((height * maxSize) / width);
               width = maxSize;
             } else {
-              width = (width * maxSize) / height;
+              width = Math.round((width * maxSize) / height);
               height = maxSize;
             }
           }
@@ -62,7 +67,7 @@ export const convertFileToImages = async (file: File): Promise<string[]> => {
           canvas.height = height;
           const ctx = canvas.getContext('2d')!;
           ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', 0.7));
+          resolve(canvas.toDataURL('image/jpeg', 0.8));
         };
         img.onerror = () => reject(new Error('Failed to load image file'));
 
@@ -80,9 +85,11 @@ export const convertFileToImages = async (file: File): Promise<string[]> => {
     return images;
   };
 
-  // Race conversion against a timeout
   const timeoutPromise = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error('PDF processing timed out. Please try a smaller file or different format.')), TIMEOUT_MS)
+    setTimeout(
+      () => reject(new Error('PDF processing timed out. Please try a smaller file.')),
+      TIMEOUT_MS
+    )
   );
 
   return Promise.race([doConversion(), timeoutPromise]);
