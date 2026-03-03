@@ -58,27 +58,76 @@ Deno.serve(async (req) => {
     const recipientName = profile.name || 'there';
     let emailContent: { subject: string; html: string } | null = null;
 
+    // Helper: resolve the other party's name from a thread
+    const resolveOtherPartyName = async (threadId: string | null, fallback: string): Promise<string> => {
+      if (!threadId) return fallback;
+      const { data: thread } = await supabase
+        .from('chat_threads')
+        .select('participant_ids')
+        .eq('id', threadId)
+        .single();
+      if (!thread?.participant_ids) return fallback;
+      const otherUserId = thread.participant_ids.find((id: string) => id !== user_id);
+      if (!otherUserId) return fallback;
+      const { data: otherProfile } = await supabase
+        .from('user_profiles')
+        .select('name')
+        .eq('user_id', otherUserId)
+        .single();
+      return otherProfile?.name || fallback;
+    };
+
+    // Helper: parse thread ID from action_url like /chat/UUID
+    const parseThreadId = (url?: string): string | null => {
+      if (!url) return null;
+      const match = url.match(/\/chat\/([0-9a-f-]{36})/i);
+      return match?.[1] ?? null;
+    };
+
     if (notification_type === 'chat_request_received') {
-      // Extract requester name from message or use fallback
+      // Extract requester name from notification message
+      const requesterName = await resolveOtherPartyName(parseThreadId(action_url), 'Someone');
       emailContent = generateChatRequestEmail({
         recipientName,
         recipientEmail: profile.email,
-        requesterName: title.replace('New connection request', '').trim() || 'Someone',
+        requesterName,
         introNote: message.includes('"') ? message.match(/"([^"]+)"/)?.[1] : undefined,
         actionUrl: action_url || '/notifications',
       });
     } else if (notification_type === 'chat_request_accepted') {
+      const threadId = parseThreadId(action_url);
+      const otherPartyName = await resolveOtherPartyName(threadId, 'your connection');
       emailContent = generateChatAcceptedEmail({
         recipientName,
         recipientEmail: profile.email,
-        otherPartyName: 'Your connection',
+        otherPartyName,
         threadUrl: action_url || '/chat',
       });
     } else if (notification_type === 'message_received') {
+      const threadId = parseThreadId(action_url);
+      // Get the most recent sender from chat_messages
+      let senderName = 'Someone';
+      if (threadId) {
+        const { data: lastMsg } = await supabase
+          .from('chat_messages')
+          .select('sender_id')
+          .eq('thread_id', threadId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+        if (lastMsg?.sender_id) {
+          const { data: senderProfile } = await supabase
+            .from('user_profiles')
+            .select('name')
+            .eq('user_id', lastMsg.sender_id)
+            .single();
+          senderName = senderProfile?.name || 'Someone';
+        }
+      }
       emailContent = generateNewMessageEmail({
         recipientName,
         recipientEmail: profile.email,
-        senderName: 'Someone',
+        senderName,
         messagePreview: message.slice(0, 120),
         threadUrl: action_url || '/chat',
       });
@@ -95,10 +144,12 @@ Deno.serve(async (req) => {
         dashboardUrl: action_url || '/dashboard',
       });
     } else if (notification_type === 'match_created') {
+      const threadId = parseThreadId(action_url);
+      const otherPartyName = await resolveOtherPartyName(threadId, 'your match');
       emailContent = generateMatchCreatedEmail({
         recipientName,
         recipientEmail: profile.email,
-        otherPartyName: 'Your match',
+        otherPartyName,
         threadUrl: action_url || '/chat',
       });
     } else {

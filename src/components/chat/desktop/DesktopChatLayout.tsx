@@ -3,7 +3,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useChatThreads } from "@/hooks/useChatThreads";
 import { ChatThreadList } from "./ChatThreadList";
 import { ChatThreadView } from "./ChatThreadView";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useUserState } from "@/contexts/UserStateProvider";
 
 interface DesktopChatLayoutProps {
   activeThreadId: string | null;
@@ -13,12 +15,29 @@ interface DesktopChatLayoutProps {
 export function DesktopChatLayout({ activeThreadId, onSelectThread }: DesktopChatLayoutProps) {
   const { user } = useAuth();
   const { threads, loading } = useChatThreads();
+  const { userType } = useUserState();
+  const navigate = useNavigate();
 
   if (!user) return null;
+
+  const dashboardPath = userType === 'employer' ? '/dashboard' : '/dashboard';
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-[1200px] mx-auto h-screen flex flex-col px-6 lg:px-12 py-6">
+        {/* Top nav bar */}
+        <div className="flex items-center gap-3 mb-4">
+          <button
+            onClick={() => navigate(dashboardPath)}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+            Back to Dashboard
+          </button>
+          <span className="text-muted-foreground/40">·</span>
+          <h1 className="text-lg font-semibold text-foreground">Messages</h1>
+        </div>
+
         <div className="flex-1 flex rounded-2xl border border-border overflow-hidden bg-card shadow-sm min-h-0">
           {/* Left: Thread List */}
           <div className="w-[300px] flex-shrink-0 flex flex-col">
