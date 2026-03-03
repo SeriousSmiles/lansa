@@ -1,46 +1,64 @@
 
-## Problem
-
-On mobile, `MobileChatThread` uses `h-screen` on the outer container, but the bottom nav bar overlaps the input box, and on iOS the virtual keyboard pushes content. The issue is the layout doesn't account for the mobile bottom nav (which sits at z-100) and the browser chrome/keyboard.
-
-The fix is to use `100dvh` (dynamic viewport height) instead of `h-screen`, add proper `env(safe-area-inset-*)` padding, and ensure the structure is a true fixed-header + fixed-footer + scrollable-middle layout — exactly like WhatsApp.
-
 ## Root Cause
 
-`MobileChatThread` line 36: `h-screen` doesn't account for:
-1. The mobile bottom navigation bar overlapping the input
-2. iOS Safari browser chrome at top/bottom
-3. Virtual keyboard resizing the viewport
+In `Dashboard.tsx` line 206, the content wrapper has:
+```tsx
+<div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
+```
+
+This creates a **nested scroll container** inside the page. The result: the outer `<body>` and this inner `div` both scroll independently → janky double-scroll on mobile.
+
+The `TopNavbar` is `sticky top-0 z-40` in `DashboardLayout` — good structure, but the inner scroll container bypasses the body scroll entirely so hide-on-scroll can't work against it.
 
 ## Fix
 
-**`src/components/chat/mobile/MobileChatThread.tsx`** — one targeted change:
+### 1. `Dashboard.tsx` — Remove the inner scroll container
+Strip `h-[calc(100vh-72px)] overflow-y-auto` so the content flows naturally into the page body scroll:
+```tsx
+// Before
+<div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
 
+// After  
+<div className="p-4 md:p-6">
 ```
-// Outer container: use dvh + flex + overflow-hidden
-<div className="flex flex-col bg-[#F4F1ED]" style={{ height: '100dvh' }}>
+This lets the body be the single scroll context — the header stays sticky, bottom nav stays fixed, content scrolls behind both.
 
-// Header: no longer needs sticky — it stays fixed at top naturally in flex column
-<div className="flex items-center gap-2 px-3 pb-3 border-b ... flex-shrink-0"
-  style={{ paddingTop: 'env(safe-area-inset-top, 12px)' }}>
+### 2. `TopNavbar.tsx` — Hide on scroll down, show on scroll up (mobile only)
+Add a `useScrollDirection` hook detection inline (or use a ref + scroll listener). On mobile (`md:hidden` equivalent), apply a `translate-y-0` → `-translate-y-full` transition based on scroll direction.
 
-// Messages: flex-1 + overflow-y-auto (replace ScrollArea which adds a wrapper)
-<div className="flex-1 overflow-y-auto">
-  <div className="px-4 py-5 space-y-1">
-    ...
-  </div>
-</div>
+### 3. `MobileBottomNavigation.tsx` — Hide on scroll down, show on scroll up
+Same scroll direction logic → apply `translate-y-0` → `translate-y-full` transition on the fixed bottom nav.
 
-// Input: flex-shrink-0, no sticky needed
-<div className="px-4 py-3 border-t ... flex-shrink-0"
-  style={{ paddingBottom: 'env(safe-area-inset-bottom, 12px)' }}>
+### Scroll hide/show logic (shared)
+```ts
+// Simple pattern — no new file needed, inline in each component
+const [hidden, setHidden] = useState(false);
+const lastScrollY = useRef(0);
+
+useEffect(() => {
+  const handleScroll = () => {
+    const currentY = window.scrollY;
+    setHidden(currentY > lastScrollY.current && currentY > 80);
+    lastScrollY.current = currentY;
+  };
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  return () => window.removeEventListener('scroll', handleScroll);
+}, []);
 ```
 
-This gives:
-- Header: fixed height at top (flex-shrink-0)
-- Messages: fills remaining space (flex-1 overflow-y-auto) — scrollable
-- Input: fixed height at bottom (flex-shrink-0)
+Apply with Tailwind transition:
+```tsx
+// TopNavbar wrapper in DashboardLayout:
+className={`sticky top-0 z-40 transition-transform duration-300 ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}
 
-`100dvh` dynamically adjusts when the keyboard opens on iOS/Android, keeping the input always visible at the bottom — exactly the WhatsApp pattern.
+// MobileBottomNavigation:
+className={`fixed bottom-0 ... transition-transform duration-300 ${navHidden ? 'translate-y-full' : 'translate-y-0'}`}
+```
 
-No changes needed to desktop `ChatThreadView` or `MobileChatInbox` — the issue is isolated to the mobile thread view.
+## Files to Change
+
+| File | Change |
+|---|---|
+| `src/pages/Dashboard.tsx` | Remove `h-[calc(100vh-72px)] overflow-y-auto` from inner wrapper |
+| `src/components/dashboard/DashboardLayout.tsx` | Add scroll-direction listener, apply hide/show to sticky top nav wrapper |
+| `src/components/mobile/MobileBottomNavigation.tsx` | Add scroll-direction listener, apply hide/show translate to fixed bottom nav |
