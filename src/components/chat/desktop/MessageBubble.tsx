@@ -66,7 +66,7 @@ export function MessageBubble({
             "px-4 py-2.5 text-sm leading-relaxed break-words shadow-sm",
             isSelf
               ? "bg-[#F2713B] text-white rounded-2xl rounded-br-md"
-              : "bg-muted/80 text-foreground rounded-2xl rounded-bl-md border border-border/30"
+              : "bg-white text-foreground rounded-2xl rounded-bl-md border border-border/20 shadow-sm"
           )}
         >
           {message.body}

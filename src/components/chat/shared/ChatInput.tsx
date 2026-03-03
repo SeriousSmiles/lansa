@@ -30,7 +30,7 @@ export function ChatInput({ onSend, disabled, placeholder = "Write a message…"
 
   return (
     <div className={cn(
-      "flex items-end gap-2.5 bg-muted/40 rounded-2xl px-3 py-2 border transition-colors duration-150",
+      "flex items-end gap-2.5 bg-white rounded-2xl px-3 py-2 border transition-colors duration-150",
       hasContent ? "border-border" : "border-border/40"
     )}>
       <Textarea

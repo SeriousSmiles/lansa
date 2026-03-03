@@ -66,9 +66,7 @@ export function MobileChatBubble({
             "px-4 py-2.5 text-[15px] leading-relaxed break-words",
             isSelf
               ? "bg-[#F2713B] text-white rounded-[20px] rounded-br-[6px] shadow-sm"
-              : isEmployerMessage
-                ? "bg-[#2B7FE8] text-white rounded-[20px] rounded-bl-[6px] shadow-sm"
-                : "bg-muted text-foreground rounded-[20px] rounded-bl-[6px] border border-border/30"
+              : "bg-white text-foreground rounded-[20px] rounded-bl-[6px] border border-border/20 shadow-sm"
           )}
         >
           {message.body}
