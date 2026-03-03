@@ -19,6 +19,8 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
   const { userType } = useUserState();
   const mainContentRef = useRef<HTMLDivElement>(null);
   const [isContentVisible, setIsContentVisible] = useState(false);
+  const [navHidden, setNavHidden] = useState(false);
+  const lastScrollY = useRef(0);
 
   const handleLogout = async () => {
     await signOut();
@@ -83,6 +85,17 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
         },
       ];
   
+  // Scroll direction detection for hide-on-scroll nav
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      setNavHidden(currentY > lastScrollY.current && currentY > 80);
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Animation for content loading
   useEffect(() => {
     if (mainContentRef.current) {
@@ -102,7 +115,7 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
 
   return (
     <div className="flex min-h-screen w-full bg-[rgba(253,248,242,1)] flex-col">
-      <div className="sticky top-0 z-40">
+      <div className={`sticky top-0 z-40 transition-transform duration-300 ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}>
         <AnnouncementBanner />
         <TopNavbar 
           items={menuItems}
