@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { chatService, type ChatMessage, type ChatThread } from "@/services/chatService";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 export function useChat(threadId: string | null) {
   const { user } = useAuth();
@@ -73,8 +74,9 @@ export function useChat(threadId: string | null) {
           if (prev.some(m => m.id === msg.id)) return prev;
           return [...prev, msg];
         });
-      } catch (e) {
+      } catch (e: any) {
         console.error('[useChat] send error:', e);
+        toast.error(e?.message ?? 'Failed to send message. Please try again.');
         throw e;
       } finally {
         setSending(false);

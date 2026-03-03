@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Home, User, Briefcase, MessageSquare, Plus, Mail } from 'lucide-react';
@@ -26,6 +26,26 @@ export function BottomNav() {
   const location = useLocation();
   const { setQuickActionsOpen } = useUIStore();
   const unreadCount = useUnreadChatCount();
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  // Hide on active chat thread (full-screen chat)
+  const isActiveThread = /^\/chat\/.+/.test(location.pathname);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      const delta = currentY - lastScrollY.current;
+      if (Math.abs(delta) > 8) {
+        setHidden(delta > 0 && currentY > 60);
+        lastScrollY.current = currentY;
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  if (isActiveThread) return null;
 
   const tabs: NavTab[] = baseTabs.map(t =>
     t.id === 'messages' ? { ...t, badge: unreadCount || undefined } : t
@@ -51,7 +71,11 @@ export function BottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-navigation bg-card/95 border-t border-border/50 backdrop-blur-xl">
+    <motion.nav
+      className="fixed bottom-0 left-0 right-0 z-navigation bg-card/95 border-t border-border/50 backdrop-blur-xl"
+      animate={{ y: hidden ? 100 : 0 }}
+      transition={{ type: "spring", stiffness: 400, damping: 35 }}
+    >
       <div className="mobile-safe-bottom">
         <div className="grid grid-cols-5 h-20 items-center px-2">
           {tabs.map((tab) => {
@@ -141,6 +165,6 @@ export function BottomNav() {
           })}
         </div>
       </div>
-    </nav>
+    </motion.nav>
   );
 }

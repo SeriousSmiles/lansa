@@ -33,6 +33,8 @@ export function AppShell({ children }: AppShellProps) {
   // Compute userName from auth user displayName
   const userName = user?.displayName;
   
+  const isActiveThread = /^\/chat\/.+/.test(location.pathname);
+
   // CRITICAL: Only show mobile navigation for job seekers
   // Employers have their own navigation in MobileEmployerTabs
   // Admin routes have their own navigation in AdminMobileLayout
@@ -55,7 +57,7 @@ export function AppShell({ children }: AppShellProps) {
       <main 
         className={`
           flex-1 relative
-          ${showMobileNavigation ? 'pb-20' : ''}
+          ${showMobileNavigation && !isActiveThread ? 'pb-20' : ''}
         `}
         style={{
           minHeight: showMobileNavigation 

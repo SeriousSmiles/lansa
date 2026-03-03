@@ -43,7 +43,7 @@ function ThreadRow({
       {/* Avatar */}
       <div className="relative flex-shrink-0">
         <Avatar className="w-12 h-12">
-          <AvatarImage src={other?.profile_image ?? undefined} alt={name} />
+          <AvatarImage src={(isEmployer && other?.organization_logo) ? other.organization_logo : (other?.profile_image ?? undefined)} alt={name} />
           <AvatarFallback
             className="text-sm font-semibold text-white"
             style={{ background: isEmployer ? "#2B7FE8" : "#F2713B" }}
@@ -109,7 +109,7 @@ export function MobileChatInbox({
         <div className="flex items-center gap-3">
           {userType === 'employer' && (
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/employer-dashboard')}
               className="p-1.5 -ml-1 text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Back to dashboard"
             >

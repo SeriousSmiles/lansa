@@ -20,6 +20,8 @@ export function ChatThreadListItem({
   const other = thread.other_party;
   const name = other?.name ?? "Unknown";
   const initials = name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
+  const isEmployer = !!other?.organization_name;
+  const avatarSrc = (isEmployer && other?.organization_logo) ? other.organization_logo : (other?.profile_image ?? undefined);
   const timeAgo = thread.last_message_at
     ? formatDistanceToNow(new Date(thread.last_message_at), { addSuffix: false })
     : "";
@@ -35,7 +37,7 @@ export function ChatThreadListItem({
       {/* Avatar */}
       <div className="relative flex-shrink-0">
         <Avatar className="w-11 h-11">
-          <AvatarImage src={other?.profile_image ?? undefined} alt={name} />
+          <AvatarImage src={avatarSrc} alt={name} />
           <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
             {initials}
           </AvatarFallback>

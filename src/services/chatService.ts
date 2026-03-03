@@ -168,7 +168,10 @@ export const chatService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('[chatService] sendMessage error:', error);
+      throw error;
+    }
 
     // Update thread last_message_at
     await supabase
