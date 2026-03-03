@@ -13,11 +13,13 @@ export const convertFileToImages = async (file: File): Promise<string[]> => {
       // Dynamically import pdfjs and disable the worker to avoid v5 worker bugs
       const pdfjs = await import('pdfjs-dist');
 
-      // Point to the real worker file — required in pdfjs-dist v5
-      pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-        'pdfjs-dist/build/pdf.worker.min.mjs',
-        import.meta.url
-      ).toString();
+      // Only set once — re-init causes "getOrInsertComputed" crash on re-upload
+      if (!pdfjs.GlobalWorkerOptions.workerSrc) {
+        pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+          'pdfjs-dist/build/pdf.worker.mjs',
+          import.meta.url
+        ).toString();
+      }
 
       const arrayBuffer = await file.arrayBuffer();
       const loadingTask = pdfjs.getDocument({
