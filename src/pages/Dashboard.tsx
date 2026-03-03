@@ -203,7 +203,7 @@ export default function Dashboard() {
         canonical="https://lansa.online/dashboard"
       />
       <DashboardLayout userName={userName} email={user?.email || ""}>
-        <div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
+        <div className="p-4 md:p-6">
           <div className="w-full">
             <div className="flex items-center justify-between mb-4 animate-fade-in">
               <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>

@@ -27,6 +27,18 @@ export function MobileBottomNavigation() {
   const navRef = useRef<HTMLDivElement>(null);
   const activeIndicatorRef = useRef<HTMLDivElement>(null);
   const fabRef = useRef<HTMLButtonElement>(null);
+  const [navHidden, setNavHidden] = React.useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      setNavHidden(currentY > lastScrollY.current && currentY > 80);
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     // Animate navigation entrance
@@ -75,7 +87,7 @@ export function MobileBottomNavigation() {
       {/* Bottom Navigation */}
       <div 
         ref={navRef}
-        className="fixed bottom-0 left-0 right-0 z-[100] bg-card/95 backdrop-blur-lg border-t border-border/50 md:hidden"
+        className={`fixed bottom-0 left-0 right-0 z-[100] bg-card/95 backdrop-blur-lg border-t border-border/50 md:hidden transition-transform duration-300 ${navHidden ? 'translate-y-full' : 'translate-y-0'}`}
         style={{
           background: 'linear-gradient(135deg, hsl(var(--card)/0.95), hsl(var(--primary)/0.05))',
           backdropFilter: 'blur(20px)',
