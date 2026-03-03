@@ -340,6 +340,8 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
                 stats={stats}
                 onCreateJob={handleCreateJob}
                 onBrowseCandidates={handleBrowseCandidates}
+                onManageJobs={() => setActiveTab('jobs')}
+                onViewAnalytics={() => setActiveTab('analytics')}
               />
             </div>
           </TabsContent>

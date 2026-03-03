@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Heart, X, Filter, ArrowLeft, Users, Zap, Undo2 } from "lucide-react";
+import { Heart, X, Filter, ArrowLeft, Users, Zap, Undo2, CheckCircle2, MessageCircle } from "lucide-react";
 import { SwipeableContainer, SwipeableContainerHandle } from "../SwipeableContainer";
 import { EnhancedCandidateCard } from "./EnhancedCandidateCard";
 import { CandidateDetailSheet } from "./CandidateDetailSheet";
@@ -31,17 +31,10 @@ export function MobileCandidateBrowser({
   const [filters, setFilters] = useState<CandidateFilters>(initialFilters);
   const [stats, setStats] = useState({ matchCount: 0, todayCount: 0, weekCount: 0 });
 
-  // Swipe overlay state
   const [swipeDir, setSwipeDir] = useState<'left' | 'right' | null>(null);
   const [swipeProgress, setSwipeProgress] = useState(0);
-
-  // Detail sheet
   const [detailOpen, setDetailOpen] = useState(false);
-
-  // Match celebration
   const [matchCandidate, setMatchCandidate] = useState<DiscoveryProfile | null>(null);
-
-  // Undo state
   const [undoProfile, setUndoProfile] = useState<DiscoveryProfile | null>(null);
   const [undoTimer, setUndoTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
@@ -52,13 +45,11 @@ export function MobileCandidateBrowser({
   const nextProfile = profiles[currentIndex + 1];
   const thirdProfile = profiles[currentIndex + 2];
 
-  // Load candidates
   useEffect(() => {
     loadCandidates();
     loadStats();
   }, [filters]);
 
-  // Header animation on mount
   useEffect(() => {
     if (headerRef.current) {
       mobileAnimations.pageSlideIn(headerRef.current);
@@ -97,7 +88,6 @@ export function MobileCandidateBrowser({
 
     mobileUtils.hapticFeedback(direction === 'nudge' ? 'medium' : 'light');
 
-    // Store for undo (only on pass)
     if (direction === 'left') {
       setUndoProfile(currentProfile);
       if (undoTimer) clearTimeout(undoTimer);
@@ -107,7 +97,6 @@ export function MobileCandidateBrowser({
       setUndoProfile(null);
     }
 
-    // Record swipe
     try {
       const result = await candidateDiscoveryService.swipeCandidate(userId, currentProfile, direction);
       if (result.isMatch) {
@@ -118,42 +107,27 @@ export function MobileCandidateBrowser({
       console.error('Error swiping candidate:', error);
     }
 
-    // Advance
     const nextIdx = currentIndex + 1;
-    if (nextIdx >= profiles.length - 3) {
-      // Prefetch more
-      candidateDiscoveryService.getFilteredCandidates(userId, filters, 20).then(more => {
-        if (more.length > 0) {
-          setProfiles(prev => [...prev, ...more]);
-        }
-      });
-    }
-
+    // No prefetch-append to avoid showing already-swiped candidates
     if (nextIdx < profiles.length) {
       setCurrentIndex(nextIdx);
     } else {
       loadCandidates();
     }
 
-    // Update today count locally
     setStats(prev => ({ ...prev, todayCount: prev.todayCount + 1 }));
   }, [currentProfile, currentIndex, profiles, userId, filters, undoTimer]);
 
   const handleUndo = useCallback(async () => {
     if (!undoProfile) return;
     mobileUtils.hapticFeedback('medium');
-
-    // Delete last swipe from DB
     await swipeService.deleteLastSwipe(userId, 'employee');
-
-    // Re-insert at current position
     setCurrentIndex(prev => Math.max(0, prev - 1));
     setProfiles(prev => {
       const updated = [...prev];
       updated.splice(Math.max(0, currentIndex - 1), 0, undoProfile);
       return updated;
     });
-
     setUndoProfile(null);
     if (undoTimer) clearTimeout(undoTimer);
     setStats(prev => ({ ...prev, todayCount: Math.max(0, prev.todayCount - 1) }));
@@ -171,20 +145,56 @@ export function MobileCandidateBrowser({
     filters.lansaCertified,
   ].filter(Boolean).length;
 
-  // Empty state
+  // Branded empty state
   if (!currentProfile && !isLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-        <div className="text-center space-y-4">
-          <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto">
-            <Users className="h-10 w-10 text-muted-foreground" />
+        <div className="w-full max-w-sm text-center space-y-6">
+          {/* Icon */}
+          <div className="relative mx-auto w-24 h-24">
+            <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+              <CheckCircle2 className="h-12 w-12 text-primary" />
+            </div>
           </div>
-          <h3 className="text-lg font-semibold text-foreground">No more candidates</h3>
-          <p className="text-muted-foreground text-sm">Check back later for new profiles</p>
-          <Button onClick={onBack} variant="outline" className="mt-4">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
+
+          {/* Copy */}
+          <div className="space-y-2">
+            <h3 className="text-2xl font-bold text-foreground">You're all caught up!</h3>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              You've reviewed all available candidates. Check back later as new talent joins the platform.
+            </p>
+          </div>
+
+          {/* Session Stats */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-muted/60 rounded-xl p-4">
+              <p className="text-2xl font-bold text-foreground">{stats.todayCount}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Reviewed today</p>
+            </div>
+            <div className="bg-primary/10 rounded-xl p-4">
+              <p className="text-2xl font-bold text-primary">{stats.matchCount}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Total matches</p>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="space-y-3 pt-2">
+            <Button
+              onClick={() => navigate('/chat')}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12 rounded-xl"
+            >
+              <MessageCircle className="h-4 w-4 mr-2" />
+              View Matches & Messages
+            </Button>
+            <Button
+              onClick={onBack}
+              variant="outline"
+              className="w-full h-12 rounded-xl"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -192,7 +202,6 @@ export function MobileCandidateBrowser({
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Match Celebration Overlay */}
       {matchCandidate && (
         <MatchCelebration
           candidate={matchCandidate}
@@ -233,7 +242,6 @@ export function MobileCandidateBrowser({
             </FilterDrawer>
           </div>
 
-          {/* Compact stats row */}
           <div className="flex justify-center gap-4 mt-2">
             <span className="text-xs text-muted-foreground">
               <span className="font-semibold text-foreground">{stats.matchCount}</span> matches
@@ -254,23 +262,12 @@ export function MobileCandidateBrowser({
             </div>
           ) : (
             <>
-              {/* Third card (background) */}
               {thirdProfile && (
-                <EnhancedCandidateCard
-                  profile={thirdProfile}
-                  stackPosition={2}
-                />
+                <EnhancedCandidateCard profile={thirdProfile} stackPosition={2} />
               )}
-
-              {/* Second card (behind) */}
               {nextProfile && (
-                <EnhancedCandidateCard
-                  profile={nextProfile}
-                  stackPosition={1}
-                />
+                <EnhancedCandidateCard profile={nextProfile} stackPosition={1} />
               )}
-
-              {/* Top card (swipeable) */}
               {currentProfile && (
                 <SwipeableContainer
                   ref={swipeRef}
@@ -297,7 +294,6 @@ export function MobileCandidateBrowser({
       {/* Action Buttons */}
       {currentProfile && (
         <div className="px-4 py-5 relative">
-          {/* Undo FAB */}
           {undoProfile && (
             <button
               onClick={handleUndo}
@@ -309,7 +305,6 @@ export function MobileCandidateBrowser({
           )}
 
           <div className="flex justify-center items-center gap-6">
-            {/* Pass */}
             <button
               className="w-14 h-14 rounded-full border-[2.5px] border-red-500 flex items-center justify-center bg-card shadow-md active:scale-95 transition-all"
               style={{ color: '#ef4444' }}
@@ -317,7 +312,6 @@ export function MobileCandidateBrowser({
             >
               <X className="w-6 h-6" strokeWidth={2.5} />
             </button>
-            {/* Nudge */}
             <button
               className="w-12 h-12 rounded-full border-[2.5px] border-amber-500 flex items-center justify-center bg-card shadow-md active:scale-95 transition-all"
               style={{ color: '#f59e0b' }}
@@ -325,7 +319,6 @@ export function MobileCandidateBrowser({
             >
               <Zap className="w-5 h-5" strokeWidth={2.5} />
             </button>
-            {/* Interested */}
             <button
               className="w-14 h-14 rounded-full border-[2.5px] flex items-center justify-center bg-card shadow-md active:scale-95 transition-all"
               style={{ borderColor: '#2563eb', color: '#2563eb' }}
@@ -337,7 +330,6 @@ export function MobileCandidateBrowser({
         </div>
       )}
 
-      {/* Detail Bottom Sheet */}
       <CandidateDetailSheet
         open={detailOpen}
         onOpenChange={setDetailOpen}

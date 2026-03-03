@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Building2, Users, FileText, TrendingUp, Settings } from "lucide-react";
+import { Building2, Users, FileText, TrendingUp, Settings, PlusCircle, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +18,7 @@ interface BusinessData {
 
 interface EmployerOverviewTabProps {
   businessData: BusinessData | null;
+  onTabChange?: (tab: string) => void;
 }
 
 interface EmployerStats {
@@ -26,11 +27,7 @@ interface EmployerStats {
   candidatesViewed: number;
 }
 
-interface UserOrgRole {
-  role: string;
-}
-
-export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) {
+export function EmployerOverviewTab({ businessData, onTabChange }: EmployerOverviewTabProps) {
   const [stats, setStats] = useState<EmployerStats>({
     activeJobs: 0,
     totalApplications: 0,
@@ -47,7 +44,6 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
       if (!activeOrganization?.id || !user?.id) return;
 
       try {
-        // Fetch user's role in the organization
         const { data: membership } = await supabase
           .from('organization_memberships')
           .select('role')
@@ -60,25 +56,26 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
           setUserRole(membership.role);
         }
 
-        // ✅ FIXED: Count active job listings for this organization (using job_listings_v2)
-        const { count: jobCount } = await supabase
-          .from('job_listings_v2')
-          .select('*', { count: 'exact', head: true })
-          .eq('organization_id', activeOrganization.id)
-          .eq('is_active', true);
+        const [
+          { count: jobCount },
+          { count: swipeCount },
+          { count: appCount },
+        ] = await Promise.all([
+          supabase
+            .from('job_listings_v2')
+            .select('*', { count: 'exact', head: true })
+            .eq('organization_id', activeOrganization.id)
+            .eq('is_active', true),
+          supabase
+            .from('swipes')
+            .select('*', { count: 'exact', head: true })
+            .eq('swiper_user_id', user.id),
+          supabase
+            .from('job_applications_v2')
+            .select('*', { count: 'exact', head: true })
+            .eq('organization_id', activeOrganization.id),
+        ]);
 
-        // Count candidate views for this organization
-        const { count: swipeCount } = await supabase
-          .from('swipes')
-          .select('*', { count: 'exact', head: true })
-          .eq('swiper_user_id', user?.id || '');
-
-        // ✅ FIXED: Count organization-wide applications
-        const { count: appCount } = await supabase
-          .from('job_applications_v2')
-          .select('*', { count: 'exact', head: true })
-          .eq('organization_id', activeOrganization.id);
-        
         setStats({
           activeJobs: jobCount || 0,
           totalApplications: appCount || 0,
@@ -91,6 +88,18 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
 
     loadStats();
   }, [activeOrganization?.id, user?.id]);
+
+  const handlePostJob = () => {
+    if (onTabChange) {
+      onTabChange('jobs');
+    } else {
+      navigate('/employer-dashboard?tab=jobs');
+    }
+  };
+
+  const handleBrowseCandidates = () => {
+    navigate('/browse-candidates');
+  };
 
   return (
     <div className="space-y-6">
@@ -147,10 +156,10 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-[#666666]">Active Job Listings</p>
-                <p className="text-2xl font-bold text-[#2E2E2E]">{stats.activeJobs}</p>
+                <p className="text-sm font-medium text-muted-foreground">Active Job Listings</p>
+                <p className="text-2xl font-bold text-foreground">{stats.activeJobs}</p>
               </div>
-              <FileText className="h-8 w-8 text-[#FF6B4A]" />
+              <FileText className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -159,10 +168,10 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-[#666666]">Candidates Viewed</p>
-                <p className="text-2xl font-bold text-[#2E2E2E]">{stats.candidatesViewed}</p>
+                <p className="text-sm font-medium text-muted-foreground">Candidates Viewed</p>
+                <p className="text-2xl font-bold text-foreground">{stats.candidatesViewed}</p>
               </div>
-              <Users className="h-8 w-8 text-[#FF6B4A]" />
+              <Users className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -171,10 +180,10 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-[#666666]">Total Applications</p>
-                <p className="text-2xl font-bold text-[#2E2E2E]">{stats.totalApplications}</p>
+                <p className="text-sm font-medium text-muted-foreground">Total Applications</p>
+                <p className="text-2xl font-bold text-foreground">{stats.totalApplications}</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-[#FF6B4A]" />
+              <TrendingUp className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -187,24 +196,48 @@ export function EmployerOverviewTab({ businessData }: EmployerOverviewTabProps) 
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
-              <h3 className="font-semibold text-[#2E2E2E] mb-2">Post a New Job</h3>
-              <p className="text-sm text-[#666666]">Create a new job listing to attract top talent</p>
+            <div
+              className="p-4 border rounded-lg hover:bg-accent/50 hover:border-primary/30 transition-colors cursor-pointer group"
+              onClick={handlePostJob}
+            >
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                  <PlusCircle className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground mb-1">Post a New Job</h3>
+                  <p className="text-sm text-muted-foreground">Create a new job listing to attract top talent</p>
+                </div>
+              </div>
             </div>
-            <div className="p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
-              <h3 className="font-semibold text-[#2E2E2E] mb-2">Browse Candidates</h3>
-              <p className="text-sm text-[#666666]">Discover skilled professionals looking for opportunities</p>
+            <div
+              className="p-4 border rounded-lg hover:bg-accent/50 hover:border-primary/30 transition-colors cursor-pointer group"
+              onClick={handleBrowseCandidates}
+            >
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                  <Search className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground mb-1">Browse Candidates</h3>
+                  <p className="text-sm text-muted-foreground">Discover skilled professionals looking for opportunities</p>
+                </div>
+              </div>
             </div>
             {canManageOrgSettings && (
               <div 
-                className="p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                className="p-4 border rounded-lg hover:bg-accent/50 hover:border-primary/30 transition-colors cursor-pointer group"
                 onClick={() => navigate('/organization/settings')}
               >
-                <h3 className="font-semibold text-[#2E2E2E] mb-2">
-                  <Settings className="inline h-4 w-4 mr-2" />
-                  Organization Settings
-                </h3>
-                <p className="text-sm text-[#666666]">Manage members, invitations, and organization details</p>
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                    <Settings className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-1">Organization Settings</h3>
+                    <p className="text-sm text-muted-foreground">Manage members, invitations, and organization details</p>
+                  </div>
+                </div>
               </div>
             )}
           </div>
