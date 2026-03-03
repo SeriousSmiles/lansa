@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
-import { User, Target, Trophy, Eye, Sparkles, Briefcase, GraduationCap } from "lucide-react";
+import { User, Target, Trophy, Eye, Sparkles, Briefcase, GraduationCap, BookOpen, Lock } from "lucide-react";
 import { StrengthBar } from "./StrengthBar";
 import { WhyItMatters } from "./WhyItMatters";
 import { StepHeader } from "./StepHeader";
@@ -43,11 +43,16 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [isLoading, setIsLoading] = useState(false);
   const [demographicsData, setDemographicsData] = useState({
-    professional_stage: '',
     academic_status: '',
     major: '',
-    career_goal_type: ''
+    career_goal_type: '',
+    still_studying: false,
+    current_industry: '',
+    work_experience_years: '',
+    career_intention_professional: ''
   });
+  const [demoTab, setDemoTab] = useState<'student' | 'professional'>('student');
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(['student']));
   const [skillInput, setSkillInput] = useState('');
   const [goalInput, setGoalInput] = useState('');
   const [skillAnalysis, setSkillAnalysis] = useState<any>(null);
@@ -192,10 +197,14 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
         .from('user_profiles')
         .upsert({
           user_id: user.id,
-          professional_stage: demographicsData.professional_stage,
-          academic_status: demographicsData.professional_stage === 'student' ? demographicsData.academic_status : null,
-          major: demographicsData.major,
-          career_goal_type: demographicsData.career_goal_type
+          professional_stage: demographicsData.still_studying ? 'student' : 'working_professional',
+          academic_status: demographicsData.academic_status || null,
+          major: demographicsData.major || null,
+          career_goal_type: demographicsData.career_goal_type || null,
+          still_studying: demographicsData.still_studying,
+          current_industry: demographicsData.still_studying ? null : (demographicsData.current_industry || null),
+          work_experience_years: demographicsData.still_studying ? null : (demographicsData.work_experience_years || null),
+          career_intention_professional: demographicsData.still_studying ? null : (demographicsData.career_intention_professional || null),
         });
       
       if (error) throw error;
@@ -326,201 +335,244 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
   }
 
   if (currentStep === 'demographics') {
-    const isStudent = demographicsData.professional_stage === 'student';
-    const isProfessional = demographicsData.professional_stage === 'working_professional';
-    const hasStage = isStudent || isProfessional;
-    
-    const canContinue = hasStage && demographicsData.major && demographicsData.career_goal_type && 
-      (isStudent ? demographicsData.academic_status : true);
+    // Tab 1 validation
+    const tab1Valid = !!demographicsData.academic_status && !!demographicsData.major && !!demographicsData.career_goal_type;
+    // Tab 2 validation
+    const tab2Valid = demographicsData.still_studying 
+      ? true 
+      : (!!demographicsData.current_industry && !!demographicsData.work_experience_years && !!demographicsData.career_intention_professional);
+
+    const bothVisited = visitedTabs.has('student') && visitedTabs.has('professional');
+    const canContinue = tab1Valid && tab2Valid && bothVisited;
+
+    const handleTabChange = (tab: 'student' | 'professional') => {
+      setDemoTab(tab);
+      setVisitedTabs(prev => new Set([...prev, tab]));
+    };
+
+    const radioItem = (value: string, id: string, label: string, group: 'academic_status' | 'career_goal_type' | 'work_experience_years' | 'career_intention_professional') => (
+      <div
+        key={id}
+        className={cn(
+          "flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-150",
+          demographicsData[group] === value
+            ? "border-primary bg-primary/5"
+            : "border-transparent hover:bg-muted/50 hover:border-border"
+        )}
+        onClick={() => setDemographicsData(prev => ({ ...prev, [group]: value }))}
+      >
+        <div className={cn(
+          "w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all",
+          demographicsData[group] === value ? "border-primary bg-primary" : "border-muted-foreground"
+        )} />
+        <span className="text-sm">{label}</span>
+      </div>
+    );
 
     return (
       <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-background to-secondary/5">
         <OnboardingNavbar currentStep={getStepNumber()} totalSteps={5} />
         <div className="lansa-container-narrow">
           <ProgressBar currentStep={getStepNumber()} totalSteps={5} />
-        
-        <StepHeader 
-          stepNumber={getStepNumber()}
-          totalSteps={5}
-          title="Tell us about yourself"
-          subtitle="Help us customize the experience for your background and career goals"
-          image={demographicsImage}
-        />
 
-        <Card className="shadow-lg border-border max-w-xl mx-auto">
-          <CardContent className="p-4">
-            <div className="space-y-8">
-              {/* Phase 1: Professional Stage */}
-              <ActionCard
-                title="Where are you in your career?"
-                description="This helps us tailor advice, coaching tone, and match you with the right opportunities."
-                icon={User}
-                status="active"
-              >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <StepHeader
+            stepNumber={getStepNumber()}
+            totalSteps={5}
+            title="Tell us about yourself"
+            subtitle="We need both sides of your story — your education and your career — to match you accurately."
+            image={demographicsImage}
+          />
+
+          <Card className="shadow-lg border-border max-w-xl mx-auto">
+            <CardContent className="p-0">
+              {/* Tab Bar */}
+              <div className="flex border-b border-border">
+                {(['student', 'professional'] as const).map(tab => (
                   <button
+                    key={tab}
                     type="button"
-                    onClick={() => setDemographicsData(prev => ({ ...prev, professional_stage: 'student', academic_status: '', career_goal_type: '' }))}
+                    onClick={() => handleTabChange(tab)}
                     className={cn(
-                      "flex flex-col items-center gap-3 p-5 rounded-xl border-2 transition-all duration-200 text-left",
-                      isStudent
-                        ? "border-primary bg-primary/5 shadow-md"
-                        : "border-border hover:border-primary/50 hover:bg-muted/50"
+                      "flex-1 flex items-center justify-center gap-2 py-4 text-sm font-medium transition-all duration-200 relative",
+                      demoTab === tab
+                        ? "text-primary border-b-2 border-primary bg-primary/5"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
                     )}
                   >
-                    <GraduationCap className={cn("h-8 w-8", isStudent ? "text-primary" : "text-muted-foreground")} />
-                    <div className="text-center">
-                      <p className="font-semibold text-sm">I'm a Student</p>
-                      <p className="text-xs text-muted-foreground mt-1">Studying, recently graduated, or about to graduate</p>
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDemographicsData(prev => ({ ...prev, professional_stage: 'working_professional', academic_status: '', career_goal_type: '' }))}
-                    className={cn(
-                      "flex flex-col items-center gap-3 p-5 rounded-xl border-2 transition-all duration-200 text-left",
-                      isProfessional
-                        ? "border-primary bg-primary/5 shadow-md"
-                        : "border-border hover:border-primary/50 hover:bg-muted/50"
+                    {tab === 'student' ? <GraduationCap className="h-4 w-4" /> : <Briefcase className="h-4 w-4" />}
+                    {tab === 'student' ? 'As a Student' : 'As a Working Professional'}
+                    {visitedTabs.has(tab) && (tab === 'student' ? tab1Valid : tab2Valid) && (
+                      <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-green-500" />
                     )}
-                  >
-                    <Briefcase className={cn("h-8 w-8", isProfessional ? "text-primary" : "text-muted-foreground")} />
-                    <div className="text-center">
-                      <p className="font-semibold text-sm">I'm a Working Professional</p>
-                      <p className="text-xs text-muted-foreground mt-1">Currently employed, seeking better opportunities</p>
-                    </div>
                   </button>
-                </div>
-              </ActionCard>
+                ))}
+              </div>
 
-              {/* Phase 2: Conditional follow-ups */}
-              {isStudent && (
-                <ActionCard
-                  title="Academic Status"
-                  description="Where are you in your academic journey?"
-                  icon={GraduationCap}
-                  status="active"
-                >
-                  <RadioGroup 
-                    value={demographicsData.academic_status}
-                    onValueChange={(value) => 
-                      setDemographicsData(prev => ({ ...prev, academic_status: value }))
-                    }
-                    className="space-y-3"
-                  >
-                    <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                      <RadioGroupItem value="final_year" id="final_year" />
-                      <Label htmlFor="final_year" className="cursor-pointer flex-1">Final year student</Label>
-                    </div>
-                    <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                      <RadioGroupItem value="recent_grad" id="recent_grad" />
-                      <Label htmlFor="recent_grad" className="cursor-pointer flex-1">Recent graduate</Label>
-                    </div>
-                    <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                      <RadioGroupItem value="studying" id="studying" />
-                      <Label htmlFor="studying" className="cursor-pointer flex-1">Currently studying</Label>
-                    </div>
-                  </RadioGroup>
-                </ActionCard>
-              )}
+              {/* TAB 1 — As a Student */}
+              {demoTab === 'student' && (
+                <div className="p-5 space-y-6">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">This captures your formal education background — even if you've been working for years.</p>
+                  </div>
 
-              {hasStage && (
-                <ActionCard
-                  title={isStudent ? "Field of Study" : "Current Role / Industry"}
-                  description={isStudent 
-                    ? "What's your major or area of specialization?" 
-                    : "What field or industry are you currently working in?"}
-                  icon={Target}
-                  status="active"
-                >
-                  <div className="flex items-center gap-2">
+                  {/* Academic Status */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold flex items-center gap-2">
+                      <BookOpen className="h-4 w-4 text-primary" />
+                      Academic Status
+                    </Label>
+                    <div className="space-y-1">
+                      {radioItem('currently_studying', 'cs', 'Currently studying', 'academic_status')}
+                      {radioItem('final_year', 'fy', 'Final year student', 'academic_status')}
+                      {radioItem('recently_graduated', 'rg', 'Recently graduated (last 2 years)', 'academic_status')}
+                      {radioItem('graduated_university', 'gu', 'Graduated university (2+ years ago)', 'academic_status')}
+                      {radioItem('completed_college', 'cc', 'Completed college / technical diploma', 'academic_status')}
+                      {radioItem('finished_before_university', 'fbu', 'Finished before university (secondary/high school)', 'academic_status')}
+                      {radioItem('self_taught', 'st', 'Largely self-taught / no formal degree', 'academic_status')}
+                    </div>
+                  </div>
+
+                  {/* Field of Study */}
+                  <div className="space-y-2">
+                    <Label htmlFor="major" className="text-sm font-semibold flex items-center gap-2">
+                      <Target className="h-4 w-4 text-primary" />
+                      Field of study or specialization
+                    </Label>
                     <Input
+                      id="major"
                       value={demographicsData.major}
-                      onChange={(e) => 
-                        setDemographicsData(prev => ({ ...prev, major: e.target.value }))
-                      }
-                      placeholder={isStudent 
-                        ? "e.g., Business Administration, Computer Science, Marketing..." 
-                        : "e.g., Marketing Manager, Software Engineer, Finance..."}
-                      className="flex-1"
-                    />
-                    <HoverInfo 
-                      title="Why do we ask this?"
-                      content={isStudent 
-                        ? "We use your major to give you field-specific examples and recommendations." 
-                        : "We use your current role to provide relevant career advancement advice and match you with the right opportunities."}
-                      variant="help"
+                      onChange={e => setDemographicsData(prev => ({ ...prev, major: e.target.value }))}
+                      placeholder="e.g., Business Administration, Computer Science, Marketing..."
                     />
                   </div>
-                </ActionCard>
-              )}
 
-              {hasStage && (
-                <ActionCard
-                  title="Career Intention"
-                  description={isStudent 
-                    ? "What's your primary career goal right now?" 
-                    : "What's your next career move?"}
-                  icon={Trophy}
-                  status="active"
-                >
-                  <RadioGroup 
-                    value={demographicsData.career_goal_type}
-                    onValueChange={(value) => 
-                      setDemographicsData(prev => ({ ...prev, career_goal_type: value }))
-                    }
-                    className="space-y-3"
+                  {/* Student Career Intention */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold flex items-center gap-2">
+                      <Trophy className="h-4 w-4 text-primary" />
+                      Career Intention
+                    </Label>
+                    <div className="space-y-1">
+                      {radioItem('first_job', 'fj', 'Get my first professional job', 'career_goal_type')}
+                      {radioItem('paid_internship', 'pi', 'Land a paid internship', 'career_goal_type')}
+                      {radioItem('grow_in_company', 'gic', 'Find a company to grow with long-term', 'career_goal_type')}
+                      {radioItem('continue_studying', 'cstu', 'Continue studying before entering the workforce', 'career_goal_type')}
+                      {radioItem('not_sure', 'ns', 'Still figuring it out', 'career_goal_type')}
+                    </div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    onClick={() => handleTabChange('professional')}
+                    disabled={!tab1Valid}
+                    className="w-full"
+                    variant="outline"
                   >
-                    {isStudent ? (
-                      <>
-                        <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                          <RadioGroupItem value="first_job" id="first_job" />
-                          <Label htmlFor="first_job" className="cursor-pointer flex-1">Get my first job</Label>
-                        </div>
-                        <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                          <RadioGroupItem value="paid_internship" id="paid_internship" />
-                          <Label htmlFor="paid_internship" className="cursor-pointer flex-1">Find a paid internship</Label>
-                        </div>
-                        <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                          <RadioGroupItem value="grow_in_company" id="grow_in_company" />
-                          <Label htmlFor="grow_in_company" className="cursor-pointer flex-1">Grow within a company</Label>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                          <RadioGroupItem value="get_promoted" id="get_promoted" />
-                          <Label htmlFor="get_promoted" className="cursor-pointer flex-1">Get promoted in my current field</Label>
-                        </div>
-                        <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                          <RadioGroupItem value="switch_careers" id="switch_careers" />
-                          <Label htmlFor="switch_careers" className="cursor-pointer flex-1">Switch careers or industries</Label>
-                        </div>
-                        <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                          <RadioGroupItem value="dream_job" id="dream_job" />
-                          <Label htmlFor="dream_job" className="cursor-pointer flex-1">Land my dream job at a target company</Label>
-                        </div>
-                        <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                          <RadioGroupItem value="develop_skills" id="develop_skills" />
-                          <Label htmlFor="develop_skills" className="cursor-pointer flex-1">Develop new skills for advancement</Label>
-                        </div>
-                      </>
-                    )}
-                  </RadioGroup>
-                </ActionCard>
+                    Next: As a Working Professional →
+                  </Button>
+                </div>
               )}
 
-              <Button 
-                onClick={handleDemographicsSave}
-                disabled={!canContinue}
-                className="w-full py-4 text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
-                size="lg"
-              >
-                Continue to Power Moments ✨
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+              {/* TAB 2 — As a Working Professional */}
+              {demoTab === 'professional' && (
+                <div className="p-5 space-y-6">
+                  {/* Still Studying Toggle */}
+                  <button
+                    type="button"
+                    onClick={() => setDemographicsData(prev => ({ ...prev, still_studying: !prev.still_studying }))}
+                    className={cn(
+                      "w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all duration-200",
+                      demographicsData.still_studying
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/40"
+                    )}
+                  >
+                    <div className="flex items-center gap-3 text-left">
+                      <BookOpen className={cn("h-5 w-5", demographicsData.still_studying ? "text-primary" : "text-muted-foreground")} />
+                      <div>
+                        <p className="text-sm font-semibold">Still Currently Studying</p>
+                        <p className="text-xs text-muted-foreground">I haven't entered the workforce yet</p>
+                      </div>
+                    </div>
+                    <div className={cn(
+                      "w-10 h-6 rounded-full transition-all duration-200 flex items-center px-1",
+                      demographicsData.still_studying ? "bg-primary" : "bg-muted"
+                    )}>
+                      <div className={cn(
+                        "w-4 h-4 rounded-full bg-background transition-all duration-200",
+                        demographicsData.still_studying ? "translate-x-4" : "translate-x-0"
+                      )} />
+                    </div>
+                  </button>
+
+                  {demographicsData.still_studying ? (
+                    <div className={cn("rounded-xl border-2 border-dashed border-border p-6 text-center space-y-2 opacity-60")}>
+                      <Lock className="h-8 w-8 mx-auto text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground font-medium">Complete this section once you've started your career journey</p>
+                      <p className="text-xs text-muted-foreground">Your student background is enough for now — we'll ask again as you grow.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {/* Current Industry */}
+                      <div className="space-y-2">
+                        <Label htmlFor="current_industry" className="text-sm font-semibold flex items-center gap-2">
+                          <Briefcase className="h-4 w-4 text-primary" />
+                          Current Role / Industry
+                        </Label>
+                        <Input
+                          id="current_industry"
+                          value={demographicsData.current_industry}
+                          onChange={e => setDemographicsData(prev => ({ ...prev, current_industry: e.target.value }))}
+                          placeholder="e.g., Marketing Manager, Software Engineer, Finance..."
+                        />
+                      </div>
+
+                      {/* Years of Experience */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold flex items-center gap-2">
+                          <User className="h-4 w-4 text-primary" />
+                          Years of Experience
+                        </Label>
+                        <div className="space-y-1">
+                          {radioItem('none', 'exp_none', 'Just starting out', 'work_experience_years')}
+                          {radioItem('1_to_2', 'exp_1_2', '1–2 years', 'work_experience_years')}
+                          {radioItem('3_to_5', 'exp_3_5', '3–5 years', 'work_experience_years')}
+                          {radioItem('6_to_10', 'exp_6_10', '6–10 years', 'work_experience_years')}
+                          {radioItem('10_plus', 'exp_10p', '10+ years', 'work_experience_years')}
+                        </div>
+                      </div>
+
+                      {/* Professional Career Intention */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold flex items-center gap-2">
+                          <Trophy className="h-4 w-4 text-primary" />
+                          Career Intention
+                        </Label>
+                        <div className="space-y-1">
+                          {radioItem('get_promoted', 'cp_gp', 'Get promoted in my current field', 'career_intention_professional')}
+                          {radioItem('switch_careers', 'cp_sc', 'Switch careers or industries', 'career_intention_professional')}
+                          {radioItem('dream_job', 'cp_dj', 'Land my dream job at a target company', 'career_intention_professional')}
+                          {radioItem('develop_skills', 'cp_ds', 'Develop new skills for advancement', 'career_intention_professional')}
+                          {radioItem('start_something', 'cp_ss', 'Start something of my own eventually', 'career_intention_professional')}
+                          {radioItem('work_life_balance', 'cp_wlb', 'Find better work-life balance', 'career_intention_professional')}
+                          {radioItem('earn_more', 'cp_em', 'Earn significantly more', 'career_intention_professional')}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <Button
+                    onClick={handleDemographicsSave}
+                    disabled={!canContinue}
+                    className="w-full py-4 text-sm shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+                    size="lg"
+                  >
+                    Continue to Power Moments ✨
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
