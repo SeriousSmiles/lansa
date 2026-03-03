@@ -1,52 +1,50 @@
 
-## What Needs to Change
+## Root Problems Identified
 
-The screenshot shows the problem clearly: received message bubbles use a dark slate-gray (`bg-muted` which resolves to a dark tone in the current theme). The user wants a clean, light surface-based look — white/near-white tiles with a soft shadow, not colored bubbles for received messages.
+From the screenshot and code audit, there are 4 distinct issues:
 
-### Changes to make
+### 1. Send Button — Invisible Icon When Idle
+The empty-state button uses `bg-muted text-muted-foreground`. In this theme, `--muted` is a mid-gray and `--muted-foreground` is darker gray — the icon is nearly invisible. Fix: use `bg-[#E8E4DF] text-[#9E9087]` (warm light gray, visible icon) for idle state. Active stays orange.
 
-**1. `MessageBubble.tsx` (desktop received bubbles)**
-- Change `bg-muted/80 text-foreground` → `bg-white text-foreground shadow-sm border border-border/20` (clean white card tile)
-- Self (sent) bubbles keep `#F2713B` orange — that's on-brand and correct
+### 2. Input Bar — Spacing & Visual Weight
+The `ChatInput` wrapper `px-3 py-2` is too tight vertically. The textarea has `p-0` creating alignment issues. The whole footer container `px-6 py-4` needs to match. Fix: `px-4 py-3` on wrapper, `py-2` min-height on textarea, proper `gap-3`.
 
-**2. `MobileChatBubble.tsx` (mobile received bubbles)**
-- Same: remove `bg-muted` and `bg-[#2B7FE8]` dark blue for received messages
-- Use `bg-white text-foreground shadow-sm border border-border/20` for all received bubbles
-- Self bubbles keep orange
+### 3. Message Bubble Spacing — Too Cramped
+`space-y-0.5` and `mt-1` between same-sender bubbles is only 2-4px — bubbles visually merge. Fix: `space-y-1` for same sender, `mt-3` for group changes (was `mt-4`). Bubbles also need slightly more padding: `px-4 py-3` (was `py-2.5`).
 
-**3. `ChatThreadView.tsx` (desktop message area background)**
-- The `bg-background/60` on the right panel feels slightly off-white — change to clean `bg-[#F8F9FA]` (very light warm gray, tile-friendly surface)
-- Thread header and input footer: `bg-white` instead of `bg-card/50`
+### 4. Mobile Thread Background — Inconsistent Surface
+`MobileChatThread` uses `bg-background` on the outer div and scroll area. The header/footer are `bg-card/90` but the message area is pure white — doesn't match the warm `#FDF8F2` brand surface. Fix: outer div `bg-[#F4F1ED]` (warm message area tint), keep bubbles white as tiles.
 
-**4. `DesktopChatLayout.tsx` (outer wrapper)**
-- `bg-muted/30` → `bg-[#F0EDE8]` (the app's warm cream base, consistent with the rest of the app which uses `rgba(253,248,242,1)`)
-- The chat card border shadow should feel like a clean tile: `shadow-lg` → `shadow-sm border border-border/30`
+### 5. Mobile Header — Backdrop Blur Over Wrong Surface
+`bg-card/90 backdrop-blur-md` on the header looks muddy because `--card` is white but with partial opacity. Fix: `bg-white border-b border-border/40` — solid, clean, no blur.
 
-**5. `ChatInput.tsx` (input bar)**
-- `bg-muted/40` → `bg-white border-border/30` for a cleaner tile look
+---
 
-**6. `MobileChatInbox.tsx`**
-- `bg-background` outer wrapper → `bg-[rgba(253,248,242,1)]` (app warm cream)
-- Header `bg-card/90` → `bg-white`
+## Changes Per File
 
-**Summary of color replacements (project-wide)**
+### `ChatInput.tsx`
+- Idle button: `bg-[#EDE9E4] text-[#9E9087]` (warm gray, icon clearly visible)
+- Active button: `bg-[#F2713B] text-white` — no change
+- Wrapper: `px-4 py-3 gap-3` (more breathing room)
+- Textarea: `min-h-[36px]` for better vertical centering
+- Button: `h-9 w-9` → `h-10 w-10` (more prominent, easier tap)
 
-| Element | Before | After |
-|---|---|---|
-| Received bubble | `bg-muted/80` dark gray | `bg-white shadow-sm border/20` |
-| Received employer bubble (mobile) | `bg-[#2B7FE8]` blue | `bg-white shadow-sm border/20` |
-| Message area background | `bg-background/60` | `bg-[#F8F9FA]` |
-| Desktop outer shell | `bg-muted/30` | `bg-[rgba(253,248,242,1)]` |
-| Chat input | `bg-muted/40` | `bg-white` |
-| Mobile inbox background | `bg-background` | `bg-[rgba(253,248,242,1)]` |
-| Mobile header | `bg-card/90` | `bg-white` |
+### `MobileChatThread.tsx`
+- Outer div: `bg-[#F4F1ED]` (warm surface, not stark white)
+- Header: `bg-white` solid, remove `backdrop-blur-md`, keep `border-b`
+- Input footer: `bg-white` solid, remove `backdrop-blur-md`
+- Message area scroll: `px-4 py-5 space-y-1` (was `py-4 space-y-0.5`)
 
-The sent (self) orange bubble stays — it's on-brand. Only the **received** bubbles and background surfaces change to clean white tiles.
+### `MobileChatBubble.tsx`
+- Same-sender margin: `mt-1` (was fine)
+- Group change margin: `mt-3` (was `mt-4`, slightly tighter)
+- Bubble padding: `px-4 py-3` (was `py-2.5`)
 
-### Files to edit
-- `src/components/chat/desktop/MessageBubble.tsx`
-- `src/components/chat/mobile/MobileChatBubble.tsx`
-- `src/components/chat/desktop/ChatThreadView.tsx`
-- `src/components/chat/desktop/DesktopChatLayout.tsx`
-- `src/components/chat/shared/ChatInput.tsx`
-- `src/components/chat/mobile/MobileChatInbox.tsx`
+### `MessageBubble.tsx` (desktop)
+- Bubble padding: `px-4 py-3` (was `py-2.5`)
+- Group change margin: `mt-3` (was `mt-4`)
+
+### `ChatThreadView.tsx`
+- Message area: `px-6 py-6 space-y-1` (was `py-5 space-y-1` — slight increase)
+
+No structural changes — only targeted padding, color, and spacing fixes.
