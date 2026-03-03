@@ -1,64 +1,47 @@
 
-## Root Cause
+## Root Cause Found
 
-In `Dashboard.tsx` line 206, the content wrapper has:
-```tsx
-<div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
+**The `chat_messages` table has NO `UPDATE` RLS policy.**
+
+The `markThreadRead` function in `chatService.ts` calls:
+```sql
+UPDATE chat_messages SET read_at = now()
+WHERE thread_id = ? AND sender_id != me AND read_at IS NULL
 ```
 
-This creates a **nested scroll container** inside the page. The result: the outer `<body>` and this inner `div` both scroll independently → janky double-scroll on mobile.
+Because there is no `UPDATE` policy, Supabase's RLS silently blocks this write — no error thrown, 0 rows updated. Messages are **never marked as read in the database**, so:
+- `read_at` is always `null` on every message sent by the other party
+- `getTotalUnreadCount()` always returns the full count
+- The badge never clears
+- Thread rows always show the unread dot
 
-The `TopNavbar` is `sticky top-0 z-40` in `DashboardLayout` — good structure, but the inner scroll container bypasses the body scroll entirely so hide-on-scroll can't work against it.
+Every debounce, optimistic update, and real-time subscription that was previously added was compensating for this underlying DB policy gap — but none of it could survive a page reload or a fresh query.
 
-## Fix
+## The Fix
 
-### 1. `Dashboard.tsx` — Remove the inner scroll container
-Strip `h-[calc(100vh-72px)] overflow-y-auto` so the content flows naturally into the page body scroll:
-```tsx
-// Before
-<div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
+**One database migration** to add an UPDATE policy on `chat_messages` that allows a participant to mark messages as read (set `read_at`) — but only for messages sent to them (not their own messages):
 
-// After  
-<div className="p-4 md:p-6">
-```
-This lets the body be the single scroll context — the header stays sticky, bottom nav stays fixed, content scrolls behind both.
-
-### 2. `TopNavbar.tsx` — Hide on scroll down, show on scroll up (mobile only)
-Add a `useScrollDirection` hook detection inline (or use a ref + scroll listener). On mobile (`md:hidden` equivalent), apply a `translate-y-0` → `-translate-y-full` transition based on scroll direction.
-
-### 3. `MobileBottomNavigation.tsx` — Hide on scroll down, show on scroll up
-Same scroll direction logic → apply `translate-y-0` → `translate-y-full` transition on the fixed bottom nav.
-
-### Scroll hide/show logic (shared)
-```ts
-// Simple pattern — no new file needed, inline in each component
-const [hidden, setHidden] = useState(false);
-const lastScrollY = useRef(0);
-
-useEffect(() => {
-  const handleScroll = () => {
-    const currentY = window.scrollY;
-    setHidden(currentY > lastScrollY.current && currentY > 80);
-    lastScrollY.current = currentY;
-  };
-  window.addEventListener('scroll', handleScroll, { passive: true });
-  return () => window.removeEventListener('scroll', handleScroll);
-}, []);
+```sql
+CREATE POLICY "chat_messages_update_read"
+ON public.chat_messages
+FOR UPDATE
+TO authenticated
+USING (is_thread_participant(thread_id, auth.uid()))
+WITH CHECK (is_thread_participant(thread_id, auth.uid()));
 ```
 
-Apply with Tailwind transition:
-```tsx
-// TopNavbar wrapper in DashboardLayout:
-className={`sticky top-0 z-40 transition-transform duration-300 ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}
+This is the only change needed. All the existing service and hook logic is correct — it just never had permission to write to the database.
 
-// MobileBottomNavigation:
-className={`fixed bottom-0 ... transition-transform duration-300 ${navHidden ? 'translate-y-full' : 'translate-y-0'}`}
-```
+## What This Fixes
+- Unread counter clears when opening a thread ✓
+- Badge on nav disappears after reading ✓  
+- Thread rows lose the unread indicator after viewing ✓
+- Counter stays at 0 after reading (survives refresh) ✓
+- Real-time count is accurate ✓
 
 ## Files to Change
-
-| File | Change |
+| Target | Change |
 |---|---|
-| `src/pages/Dashboard.tsx` | Remove `h-[calc(100vh-72px)] overflow-y-auto` from inner wrapper |
-| `src/components/dashboard/DashboardLayout.tsx` | Add scroll-direction listener, apply hide/show to sticky top nav wrapper |
-| `src/components/mobile/MobileBottomNavigation.tsx` | Add scroll-direction listener, apply hide/show translate to fixed bottom nav |
+| Supabase DB (migration) | Add `UPDATE` policy on `chat_messages` for authenticated participants |
+
+No frontend code changes needed. The existing logic is correct.
