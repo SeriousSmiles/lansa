@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SwipeDeck } from "@/components/discovery/SwipeDeck";
 import { SplitPanelBrowser } from "@/components/discovery/desktop/SplitPanelBrowser";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,8 @@ export function CandidateBrowseTab() {
   const [isLoading, setIsLoading] = useState(false);
   const [matchCount, setMatchCount] = useState(0);
   const [swipeCount, setSwipeCount] = useState(0);
-  
+  const swipedInSession = useRef<Set<string>>(new Set());
+
 
   useEffect(() => {
     if (user) {
@@ -41,7 +42,7 @@ export function CandidateBrowseTab() {
         20,
         true // certifiedOnly - show only Lansa certified candidates
       );
-      setProfiles(data);
+      setProfiles(data.filter(p => !swipedInSession.current.has(p.user_id)));
     } catch (error) {
       console.error('Error loading profiles:', error);
       toast.error('Failed to load candidate profiles');
@@ -71,6 +72,10 @@ export function CandidateBrowseTab() {
 
   const handleSwipe = async (profile: DiscoveryProfile, direction: SwipeDirection) => {
     if (!user) return;
+
+    // Track immediately in session before async DB call
+    swipedInSession.current.add(profile.user_id);
+    setProfiles(prev => prev.filter(p => p.user_id !== profile.user_id));
 
     try {
       const swipeData = {
