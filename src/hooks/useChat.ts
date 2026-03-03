@@ -46,7 +46,7 @@ export function useChat(threadId: string | null) {
         if (prev.some(m => m.id === newMsg.id)) return prev;
         return [...prev, newMsg];
       });
-      // Mark as read immediately and update thread state
+      // Mark as read immediately when a new message arrives while thread is open
       chatService.markThreadRead(threadId).then(() => {
         setThread(prev => prev ? { ...prev, unread_count: 0 } : prev);
       });
