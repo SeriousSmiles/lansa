@@ -1,33 +1,43 @@
 
-## Root Cause Analysis
+## Root Cause — Confirmed via GitHub Issue #20236
 
-The pipeline has **two distinct failure points**:
+`pdfjs-dist v5.4.149` (the version installed: `^5.4.149`) has a **confirmed upstream bug** where Vite's dev-mode source map injection (`eval-*` sourcemaps) corrupts internal `Map` prototype methods inside the pdfjs module during dynamic `import()`. This produces the exact error: `getOrInsertComputed is not a function`.
 
-### Problem 1: `pdfjs-dist` v5 — empty `workerSrc` throws
-`pdfToImages.ts` line 17 sets `workerSrc = ''`. In pdfjs v5, empty string is **invalid** and throws before any page is rendered. The fix is to point it to the real worker file using Vite's `new URL()` syntax.
+**This is not a workerSrc configuration issue.** The import itself fails before workerSrc even matters.
 
-### Problem 2: `parse-cv` edge function — NOT redeployed after last edit
-The edge function code looks correct but may be running a stale version. The `imageDataUrls` payload from client can also be very large (8 pages × ~200KB JPEG = ~1.6MB base64), which can silently fail at the Supabase edge function request body size limit or the AI gateway.
-
-### Problem 3: No request timeout / size guard on client
-The user's PDF (John Stephens Resume, a real-world 2-page resume) needs to work. We should reduce max pages from 8 → 4 and reduce scale from 1.5 → 1.2 to keep payloads manageable while still giving the AI clear images.
+Community-verified fix for Vite (Jan 2026, same issue thread):
+```
+GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).toString();
+// Only set if not already set — avoid re-init
+if (!GlobalWorkerOptions.workerSrc) { ... }
+```
+Plus **critically**: exclude `pdfjs-dist` from Vite's dependency pre-bundler.
 
 ---
 
-## Fix Plan
+## Two Changes Needed
 
-### 1. Fix `src/utils/pdfToImages.ts`
-- Change `workerSrc = ''` → `new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()`
-- Remove `useWorkerFetch: false` and `isEvalSupported: false` (fake-worker flags, no longer needed)
-- Reduce max pages: `8` → `4`
-- Reduce scale: `1.5` → `1.2` (smaller payload, still AI-readable)
-- Reduce JPEG quality: `0.75` → `0.7`
+### 1. `vite.config.ts` — Exclude pdfjs from Vite pre-bundling
+Vite's optimizer wraps ES modules with its own eval-based runtime for HMR. When it wraps pdfjs-dist, it corrupts internal `Map` usage. Excluding it forces Vite to load pdfjs as a native ES module, untouched.
 
-### 2. Redeploy `parse-cv` edge function
-The edge function code is correct. It needs to be redeployed to pick up the latest version in production. Add a payload size check — if `imageDataUrls` total base64 size exceeds ~4MB, throw a clear error rather than silently timing out.
+```ts
+optimizeDeps: {
+  exclude: ['pdfjs-dist'],
+},
+```
 
-### 3. Add progress messaging in `CVLoadingProgress`
-The "silent cancel" feeling happens because there's no stage feedback. Add stage text: "Reading your CV…" → "Sending to AI…" → "Extracting your data…" so users know it's working.
+### 2. `src/utils/pdfToImages.ts` — Use non-minified worker + guard re-init
+- Use `pdf.worker.mjs` instead of `pdf.worker.min.mjs` (non-minified resolves correctly in Vite)
+- Guard with `if (!pdfjs.GlobalWorkerOptions.workerSrc)` to avoid double-init on re-upload
+
+```ts
+if (!pdfjs.GlobalWorkerOptions.workerSrc) {
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    'pdfjs-dist/build/pdf.worker.mjs',
+    import.meta.url
+  ).toString();
+}
+```
 
 ---
 
@@ -35,6 +45,7 @@ The "silent cancel" feeling happens because there's no stage feedback. Add stage
 
 | File | Change |
 |---|---|
-| `src/utils/pdfToImages.ts` | Fix workerSrc, reduce scale/pages/quality |
-| `supabase/functions/parse-cv/index.ts` | Add payload size guard, redeploy |
-| `src/components/onboarding/cv/CVLoadingProgress.tsx` | Add timed stage messages for better UX |
+| `vite.config.ts` | Add `optimizeDeps: { exclude: ['pdfjs-dist'] }` |
+| `src/utils/pdfToImages.ts` | Switch to non-minified worker, add guard |
+
+No edge function changes needed — the `parse-cv` function is correct and already deployed.
