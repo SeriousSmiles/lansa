@@ -20,6 +20,7 @@ interface ChatEmailPayload {
   title: string;
   message: string;
   action_url?: string;
+  metadata?: Record<string, any>;
 }
 
 Deno.serve(async (req) => {
@@ -36,7 +37,7 @@ Deno.serve(async (req) => {
     const resend = new Resend(resendApiKey);
 
     const payload: ChatEmailPayload = await req.json();
-    const { user_id, notification_type, title, message, action_url } = payload;
+    const { user_id, notification_type, title, message, action_url, metadata } = payload;
 
     console.log('[send-chat-email] Processing:', { user_id, notification_type });
 
@@ -132,20 +133,57 @@ Deno.serve(async (req) => {
         threadUrl: action_url || '/chat',
       });
     } else if (notification_type === 'employer_interest_received') {
+      // Resolve employer name from metadata.employer_id
+      let employerName: string | undefined;
+      const employerId = metadata?.employer_id;
+      if (employerId) {
+        const { data: empProfile } = await supabase
+          .from('user_profiles')
+          .select('name')
+          .eq('user_id', employerId)
+          .single();
+        employerName = empProfile?.name || undefined;
+      }
       emailContent = generateEmployerInterestEmail({
         recipientName,
         recipientEmail: profile.email,
         dashboardUrl: action_url || '/dashboard',
+        employerName,
       });
     } else if (notification_type === 'employer_nudge_received') {
+      // Resolve employer name from metadata.employer_id
+      let employerName: string | undefined;
+      const employerId = metadata?.employer_id;
+      if (employerId) {
+        const { data: empProfile } = await supabase
+          .from('user_profiles')
+          .select('name')
+          .eq('user_id', employerId)
+          .single();
+        employerName = empProfile?.name || undefined;
+      }
       emailContent = generateEmployerNudgeEmail({
         recipientName,
         recipientEmail: profile.email,
         dashboardUrl: action_url || '/dashboard',
+        employerName,
       });
     } else if (notification_type === 'match_created') {
-      const threadId = parseThreadId(action_url);
-      const otherPartyName = await resolveOtherPartyName(threadId, 'your match');
+      // Use metadata.other_user_id directly — avoids race condition with thread creation
+      let otherPartyName = 'your match';
+      const otherUserId = metadata?.other_user_id;
+      if (otherUserId) {
+        const { data: otherProfile } = await supabase
+          .from('user_profiles')
+          .select('name')
+          .eq('user_id', otherUserId)
+          .single();
+        otherPartyName = otherProfile?.name || otherPartyName;
+      } else {
+        // Fallback: try thread lookup
+        const threadId = parseThreadId(action_url);
+        otherPartyName = await resolveOtherPartyName(threadId, 'your match');
+      }
       emailContent = generateMatchCreatedEmail({
         recipientName,
         recipientEmail: profile.email,
