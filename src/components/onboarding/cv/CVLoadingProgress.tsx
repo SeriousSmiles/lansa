@@ -166,12 +166,16 @@ export function CVLoadingProgress({ fileName, onComplete }: CVLoadingProgressPro
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
           <Sparkles className="w-3 h-3" />
-          <span>
+        <span>
             {isComplete 
-              ? "Analysis complete - let's build something amazing!"
-              : currentStep < 2 
-                ? "Hang tight, this takes less than a minute..."
-                : "Almost done - creating personalized insights..."
+              ? "Analysis complete — let's build something amazing!"
+              : currentStep === 0
+                ? "Reading your CV…"
+                : currentStep === 1
+                  ? "Sending to AI for analysis…"
+                  : currentStep === 2
+                    ? "Extracting your data…"
+                    : "Almost done — creating personalized insights…"
             }
           </span>
           <Sparkles className="w-3 h-3" />

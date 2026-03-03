@@ -20,6 +20,15 @@ serve(async (req) => {
 
     const { imageDataUrls, fileName, userId } = await req.json();
 
+    // Guard: reject payloads that are too large (> 4MB base64 total)
+    const totalSize = (imageDataUrls ?? []).reduce((sum: number, url: string) => sum + url.length, 0);
+    if (totalSize > 4_000_000) {
+      return new Response(
+        JSON.stringify({ error: "CV file is too large to process. Please try a smaller file or fewer pages." }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (!imageDataUrls || imageDataUrls.length === 0 || !userId) {
       return new Response(
         JSON.stringify({ error: "Missing required parameters" }),
