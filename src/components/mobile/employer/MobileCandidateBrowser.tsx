@@ -40,6 +40,7 @@ export function MobileCandidateBrowser({
 
   const headerRef = useRef<HTMLDivElement>(null);
   const swipeRef = useRef<SwipeableContainerHandle>(null);
+  const swipedInSession = useRef<Set<string>>(new Set());
 
   const currentProfile = profiles[currentIndex];
   const nextProfile = profiles[currentIndex + 1];
@@ -60,7 +61,9 @@ export function MobileCandidateBrowser({
     setIsLoading(true);
     try {
       const newProfiles = await candidateDiscoveryService.getFilteredCandidates(userId, filters, 20);
-      setProfiles(newProfiles);
+      // Filter out any profiles swiped during this session (catches race condition with async DB inserts)
+      const filtered = newProfiles.filter(p => !swipedInSession.current.has(p.user_id));
+      setProfiles(filtered);
       setCurrentIndex(0);
     } catch (error) {
       console.error('Error loading candidates:', error);
@@ -87,6 +90,9 @@ export function MobileCandidateBrowser({
     if (!currentProfile) return;
 
     mobileUtils.hapticFeedback(direction === 'nudge' ? 'medium' : 'light');
+
+    // Synchronously track this swipe before any async work — prevents race condition on reload
+    swipedInSession.current.add(currentProfile.user_id);
 
     if (direction === 'left') {
       setUndoProfile(currentProfile);
@@ -122,6 +128,8 @@ export function MobileCandidateBrowser({
     if (!undoProfile) return;
     mobileUtils.hapticFeedback('medium');
     await swipeService.deleteLastSwipe(userId, 'employee');
+    // Remove from session set so it can reappear after undo
+    swipedInSession.current.delete(undoProfile.user_id);
     setCurrentIndex(prev => Math.max(0, prev - 1));
     setProfiles(prev => {
       const updated = [...prev];
