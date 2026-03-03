@@ -58,7 +58,7 @@ export function useChat(threadId: string | null) {
         channelRef.current = null;
       }
     };
-  }, [threadId, loadMessages]);
+  }, [threadId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sendMessage = useCallback(
     async (body: string, senderDisplayName?: string, senderOrgId?: string) => {
