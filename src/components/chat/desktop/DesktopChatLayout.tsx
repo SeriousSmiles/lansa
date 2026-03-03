@@ -14,7 +14,7 @@ interface DesktopChatLayoutProps {
 
 export function DesktopChatLayout({ activeThreadId, onSelectThread }: DesktopChatLayoutProps) {
   const { user } = useAuth();
-  const { threads, loading } = useChatThreads();
+  const { threads, loading, clearUnread } = useChatThreads();
   const { userType } = useUserState();
   const navigate = useNavigate();
 
@@ -46,7 +46,7 @@ export function DesktopChatLayout({ activeThreadId, onSelectThread }: DesktopCha
               activeThreadId={activeThreadId}
               currentUserId={user.id}
               loading={loading}
-              onSelect={onSelectThread}
+              onSelect={(id) => { clearUnread(id); onSelectThread(id); }}
             />
           </div>
 

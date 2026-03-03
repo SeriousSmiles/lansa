@@ -38,5 +38,7 @@ export function useChatThreads() {
     };
   }, [user, loadThreads]);
 
-  return { threads, loading, reload: loadThreads };
+  return { threads, loading, reload: loadThreads, clearUnread: (threadId: string) => {
+    setThreads(prev => prev.map(t => t.id === threadId ? { ...t, unread_count: 0 } : t));
+  }};
 }

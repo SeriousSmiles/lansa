@@ -21,8 +21,9 @@ export function useChat(threadId: string | null) {
       ]);
       setMessages(msgs);
       setThread(t);
-      // Mark as read when opening
+      // Mark as read when opening — then clear unread count on thread
       await chatService.markThreadRead(threadId);
+      setThread(prev => prev ? { ...prev, unread_count: 0 } : t ? { ...t, unread_count: 0 } : null);
     } catch (e) {
       console.error('[useChat] load error:', e);
     } finally {
@@ -42,12 +43,13 @@ export function useChat(threadId: string | null) {
     // Subscribe to real-time messages
     channelRef.current = chatService.subscribeToThread(threadId, (newMsg) => {
       setMessages(prev => {
-        // Avoid duplicates
         if (prev.some(m => m.id === newMsg.id)) return prev;
         return [...prev, newMsg];
       });
-      // Mark read immediately if we're viewing the thread
-      chatService.markThreadRead(threadId);
+      // Mark as read immediately and update thread state
+      chatService.markThreadRead(threadId).then(() => {
+        setThread(prev => prev ? { ...prev, unread_count: 0 } : prev);
+      });
     });
 
     return () => {

@@ -33,35 +33,37 @@ function ThreadRow({
     : "";
   const hasUnread = (thread.unread_count ?? 0) > 0;
   const isEmployer = !!other?.organization_name;
-  const avatarSrc = (isEmployer && other?.organization_logo) ? other.organization_logo : (other?.profile_image ?? undefined);
+  const avatarSrc = (isEmployer && other?.organization_logo)
+    ? other.organization_logo
+    : (other?.profile_image ?? undefined);
 
   return (
     <button
       onClick={onSelect}
       className={cn(
-        "w-full flex items-center gap-4 px-5 py-4 text-left transition-colors active:bg-muted/60",
-        hasUnread ? "bg-primary/5" : "hover:bg-muted/30"
+        "w-full flex items-center gap-3.5 px-5 py-3.5 text-left transition-colors active:bg-muted/60",
+        hasUnread ? "bg-primary/5" : ""
       )}
     >
       {/* Avatar */}
       <div className="relative flex-shrink-0">
-        <Avatar className="w-13 h-13" style={{ width: 52, height: 52 }}>
+        <Avatar className="w-12 h-12">
           <AvatarImage src={avatarSrc} alt={name} />
           <AvatarFallback
-            className="text-base font-bold text-white"
+            className="text-sm font-bold text-white"
             style={{ background: isEmployer ? "#2B7FE8" : "#F2713B" }}
           >
             {initials}
           </AvatarFallback>
         </Avatar>
         {hasUnread && (
-          <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-[#F2713B] rounded-full border-2 border-background" />
+          <span className="absolute top-0 right-0 w-3 h-3 bg-[#F2713B] rounded-full border-2 border-background" />
         )}
       </div>
 
       {/* Text */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-baseline justify-between mb-0.5">
+        <div className="flex items-center justify-between gap-2 mb-0.5">
           <span className={cn(
             "text-[15px] truncate",
             hasUnread ? "font-bold text-foreground" : "font-semibold text-foreground/85"
@@ -69,8 +71,8 @@ function ThreadRow({
             {name}
           </span>
           <span className={cn(
-            "text-xs ml-2 flex-shrink-0",
-            hasUnread ? "text-[#F2713B] font-semibold" : "text-muted-foreground/60"
+            "text-[11px] flex-shrink-0 whitespace-nowrap",
+            hasUnread ? "text-[#F2713B] font-medium" : "text-muted-foreground/60"
           )}>
             {timeAgo}
           </span>
@@ -81,17 +83,12 @@ function ThreadRow({
           </p>
         )}
         <p className={cn(
-          "text-sm truncate leading-relaxed",
-          hasUnread ? "text-foreground/80 font-medium" : "text-muted-foreground/70"
+          "text-sm truncate",
+          hasUnread ? "text-foreground/80 font-medium" : "text-muted-foreground/60"
         )}>
           {thread.last_message ?? "Tap to start chatting"}
         </p>
       </div>
-
-      {/* Unread indicator dot */}
-      {hasUnread && (
-        <div className="w-2.5 h-2.5 rounded-full bg-[#F2713B] flex-shrink-0" />
-      )}
     </button>
   );
 }
@@ -102,7 +99,7 @@ export function MobileChatInbox({
   onBack,
 }: MobileChatInboxProps) {
   const { user } = useAuth();
-  const { threads, loading } = useChatThreads();
+  const { threads, loading, clearUnread } = useChatThreads();
   const { userType } = useUserState();
   const navigate = useNavigate();
 
@@ -122,8 +119,8 @@ export function MobileChatInbox({
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
-      <div className="px-5 pt-safe-top pb-4 bg-card/90 backdrop-blur-md sticky top-0 z-10 border-b border-border/40 shadow-sm">
-        <div className="flex items-center gap-3 mb-0">
+      <div className="px-5 pt-safe-top pb-4 bg-card/90 backdrop-blur-md sticky top-0 z-10 border-b border-border/40">
+        <div className="flex items-center gap-2">
           {userType === 'employer' && (
             <button
               onClick={() => navigate('/employer-dashboard')}
@@ -133,10 +130,10 @@ export function MobileChatInbox({
               <ArrowLeft className="w-5 h-5" />
             </button>
           )}
-          <div className="flex-1">
+          <div>
             <h1 className="text-2xl font-bold text-foreground tracking-tight">Messages</h1>
             {!loading && threads.length > 0 && (
-              <p className="text-xs text-muted-foreground/70 mt-0.5">
+              <p className="text-xs text-muted-foreground/60">
                 {threads.length} conversation{threads.length !== 1 ? "s" : ""}
               </p>
             )}
@@ -144,10 +141,10 @@ export function MobileChatInbox({
         </div>
       </div>
 
-      {/* Dividers + Thread List */}
-      <div className="flex-1">
+      {/* Thread List */}
+      <div className="flex-1 divide-y divide-border/30">
         {threads.length === 0 ? (
-          <div className="flex flex-col items-center justify-center flex-1 text-center px-8 py-24">
+          <div className="flex flex-col items-center justify-center text-center px-8 py-24">
             <div className="w-20 h-20 rounded-3xl bg-muted/70 flex items-center justify-center mb-5">
               <MessageCircle className="w-10 h-10 text-muted-foreground/30" />
             </div>
@@ -157,16 +154,14 @@ export function MobileChatInbox({
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-border/30">
-            {threads.map(thread => (
-              <ThreadRow
-                key={thread.id}
-                thread={thread}
-                currentUserId={user.id}
-                onSelect={() => onSelectThread(thread.id)}
-              />
-            ))}
-          </div>
+          threads.map(thread => (
+            <ThreadRow
+              key={thread.id}
+              thread={thread}
+              currentUserId={user.id}
+              onSelect={() => { clearUnread(thread.id); onSelectThread(thread.id); }}
+            />
+          ))
         )}
       </div>
     </div>
