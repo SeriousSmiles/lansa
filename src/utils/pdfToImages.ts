@@ -13,23 +13,24 @@ export const convertFileToImages = async (file: File): Promise<string[]> => {
       // Dynamically import pdfjs and disable the worker to avoid v5 worker bugs
       const pdfjs = await import('pdfjs-dist');
 
-      // Use fake worker (runs on main thread) — avoids "getOrInsertComputed" v5 bug
-      pdfjs.GlobalWorkerOptions.workerSrc = '';
+      // Point to the real worker file — required in pdfjs-dist v5
+      pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+        'pdfjs-dist/build/pdf.worker.min.mjs',
+        import.meta.url
+      ).toString();
 
       const arrayBuffer = await file.arrayBuffer();
       const loadingTask = pdfjs.getDocument({
         data: arrayBuffer,
-        useWorkerFetch: false,
-        isEvalSupported: false,
         useSystemFonts: true,
       });
 
       const pdf = await loadingTask.promise;
-      const maxPages = Math.min(pdf.numPages, 8);
+      const maxPages = Math.min(pdf.numPages, 4);
 
       for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
-        const viewport = page.getViewport({ scale: 1.5 });
+        const viewport = page.getViewport({ scale: 1.2 });
 
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d')!;
@@ -42,7 +43,7 @@ export const convertFileToImages = async (file: File): Promise<string[]> => {
           viewport,
         }).promise;
 
-        images.push(canvas.toDataURL('image/jpeg', 0.75));
+        images.push(canvas.toDataURL('image/jpeg', 0.7));
         page.cleanup();
       }
     } else if (file.type.startsWith('image/')) {
