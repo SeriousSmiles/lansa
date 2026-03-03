@@ -270,9 +270,20 @@ export const chatService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return 0;
 
+    // First get all thread IDs the user participates in
+    const { data: threadRows } = await supabase
+      .from('chat_threads')
+      .select('id')
+      .contains('participant_ids', [user.id]);
+
+    if (!threadRows || threadRows.length === 0) return 0;
+
+    const threadIds = threadRows.map(r => r.id);
+
     const { count } = await supabase
       .from('chat_messages')
       .select('id', { count: 'exact', head: true })
+      .in('thread_id', threadIds)
       .neq('sender_id', user.id)
       .is('read_at', null);
 
