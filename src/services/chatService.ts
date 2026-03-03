@@ -225,6 +225,7 @@ export const chatService = {
 
   /**
    * Subscribe to real-time thread list updates (new messages, new threads).
+   * Scoped to threads the user participates in via chat_threads UPDATE events.
    */
   subscribeToThreadList(
     userId: string,
@@ -235,11 +236,19 @@ export const chatService = {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          // Listen to thread updates (last_message_at changes) — avoids the
+          // global chat_messages broadcast that fired for every user on every message.
+          event: 'UPDATE',
           schema: 'public',
-          table: 'chat_messages',
+          table: 'chat_threads',
         },
-        onUpdate
+        (payload) => {
+          // Only trigger if this user is a participant
+          const thread = payload.new as { participant_ids: string[] };
+          if (thread.participant_ids?.includes(userId)) {
+            onUpdate();
+          }
+        }
       )
       .on(
         'postgres_changes',
@@ -248,7 +257,12 @@ export const chatService = {
           schema: 'public',
           table: 'chat_threads',
         },
-        onUpdate
+        (payload) => {
+          const thread = payload.new as { participant_ids: string[] };
+          if (thread.participant_ids?.includes(userId)) {
+            onUpdate();
+          }
+        }
       )
       .subscribe();
 
@@ -256,11 +270,53 @@ export const chatService = {
   },
 
   /**
-   * Get a single thread by ID.
+   * Get a single thread by ID — direct query, no full-list fetch.
    */
   async getThread(threadId: string): Promise<ChatThread | null> {
-    const threads = await chatService.getThreadsForUser();
-    return threads.find(t => t.id === threadId) ?? null;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data: thread, error } = await supabase
+      .from('chat_threads')
+      .select('*')
+      .eq('id', threadId)
+      .single();
+
+    if (error || !thread) return null;
+
+    const otherPartyId = thread.participant_ids.find((id: string) => id !== user.id);
+    let otherParty;
+
+    if (otherPartyId) {
+      const { data: p } = await supabase
+        .from('chat_participants_view')
+        .select('user_id, name, profile_image, title, organization_name, organization_logo')
+        .eq('user_id', otherPartyId)
+        .single();
+
+      if (p) {
+        otherParty = {
+          user_id: p.user_id,
+          name: p.name ?? 'Unknown',
+          profile_image: p.profile_image ?? null,
+          title: p.title ?? null,
+          organization_name: p.organization_name ?? null,
+          organization_logo: p.organization_logo ?? null,
+        };
+      }
+    }
+
+    return {
+      id: thread.id,
+      participant_ids: thread.participant_ids,
+      context: thread.context,
+      connection_request_id: thread.connection_request_id ?? null,
+      org_id: thread.org_id ?? null,
+      thread_status: (thread as any).thread_status ?? 'active',
+      last_message_at: thread.last_message_at,
+      created_at: thread.created_at,
+      other_party: otherParty,
+    };
   },
 
   /**

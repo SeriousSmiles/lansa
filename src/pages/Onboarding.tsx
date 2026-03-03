@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { useUserState } from "@/contexts/UserStateProvider";
+import { useAuth } from "@/contexts/UnifiedAuthProvider";
+import { useUserState } from "@/contexts/UnifiedAuthProvider";
 import { toast } from "sonner";
 import { 
   getUserAnswers, 
@@ -16,8 +16,8 @@ import { MentorOnboarding } from "@/components/mentor/MentorOnboarding";
 import { CareerPathSegmentation, type CareerPath } from "@/components/onboarding/CareerPathSegmentation";
 import { AIOnboardingFlow } from "@/components/onboarding/AIOnboardingFlow";
 import { OnboardingErrorBoundary } from "@/components/onboarding/OnboardingErrorBoundary";
-import { getPostOnboardingDestination } from "@/services/navigation/onboardingNavigationService";
 import { useOnboardingNavigation } from "@/hooks/useOnboardingNavigation";
+import { LansaLoader } from "@/components/shared/LansaLoader";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Onboarding() {
@@ -30,28 +30,12 @@ export default function Onboarding() {
   const [showTypeSelection, setShowTypeSelection] = useState(true);
   const [showCareerSegmentation, setShowCareerSegmentation] = useState(false);
   const { user } = useAuth();
-  const { hasCompletedOnboarding, loading: userStateLoading, userType: contextUserType, refreshUserState } = useUserState();
+  const { refreshUserState } = useUserState();
   const navigate = useNavigate();
   const location = useLocation();
   const { navigateAfterOnboarding, isNavigating } = useOnboardingNavigation();
 
-  // Redirect users who have completed onboarding
-  useEffect(() => {
-    if (userStateLoading) return;
-    if (!hasCompletedOnboarding) return;
-    if (!contextUserType) return;
-
-    if (contextUserType === 'employer') {
-      navigate('/employer-dashboard', { replace: true, state: { fromRedirect: true } });
-    } else if (contextUserType === 'mentor') {
-      navigate('/mentor-dashboard', { replace: true, state: { fromRedirect: true } });
-    } else if (contextUserType === 'job_seeker') {
-      navigate('/dashboard', { replace: true, state: { fromRedirect: true } });
-    } else {
-      navigate('/', { replace: true, state: { fromRedirect: true } });
-    }
-  }, [userStateLoading, hasCompletedOnboarding, contextUserType, navigate]);
-
+  // Load existing progress — Guard already prevents onboarded users from reaching this page
   useEffect(() => {
     async function loadUserAnswers() {
       if (!user?.id) {
@@ -66,18 +50,15 @@ export default function Onboarding() {
         if (answers) {
           setUserAnswers(answers);
           
-          // Check if user has already selected a type
           if (answers.user_type) {
             setUserType(answers.user_type);
             
-            // Restore user_intent from onboarding_inputs if available
             const savedIntent = answers.onboarding_inputs?.user_intent as 'job_seeker' | 'create_org' | 'join_org' | undefined;
             
             if (savedIntent) {
               setUserIntent(savedIntent);
               setShowTypeSelection(false);
               
-              // Check if user has already selected career path (for job seekers)
               if (answers.career_path) {
                 setCareerPath(answers.career_path);
                 setShowCareerSegmentation(false);
@@ -85,7 +66,6 @@ export default function Onboarding() {
                 setShowCareerSegmentation(true);
               }
             } else {
-              // No saved intent - show type selection again
               setShowTypeSelection(true);
             }
           }
@@ -100,17 +80,15 @@ export default function Onboarding() {
     }
     
     loadUserAnswers();
-  }, [user, navigate]);
+  }, [user?.id]);
 
   const handleUserTypeSelect = async (selectedIntent: 'job_seeker' | 'create_org' | 'join_org' | 'mentor') => {
     setUserIntent(selectedIntent);
     setShowTypeSelection(false);
     
-    // Map intent to user_type for database
     const mappedUserType = selectedIntent === 'job_seeker' ? 'job_seeker' : selectedIntent === 'mentor' ? 'mentor' : 'employer';
     setUserType(mappedUserType);
     
-    // Save user_type AND user_intent to database immediately
     if (user?.id) {
       try {
         const updatedAnswers = { 
@@ -123,29 +101,22 @@ export default function Onboarding() {
         };
         await saveUserAnswers(user.id, updatedAnswers);
         setUserAnswers(updatedAnswers);
-        console.log("Saved user intent:", selectedIntent);
       } catch (error) {
         console.error("Error saving user type:", error);
         toast.error("Failed to save your selection. Please try again.");
       }
     }
     
-    // Handle different intents
     if (selectedIntent === 'job_seeker') {
       setShowCareerSegmentation(true);
     } else if (selectedIntent === 'mentor') {
       setShowMentorOnboarding(true);
-    } else if (selectedIntent === 'create_org') {
-      // Organization creation flow
-    } else if (selectedIntent === 'join_org') {
-      // Join organization flow
     }
   };
 
   const handleBackToTypeSelection = () => {
     setShowTypeSelection(true);
     setUserIntent(null);
-    // Don't reset userType here - keep it so we don't lose the employer status
     setShowCareerSegmentation(false);
   };
 
@@ -153,7 +124,6 @@ export default function Onboarding() {
     setCareerPath(selectedPath);
     setShowCareerSegmentation(false);
     
-    // Save the career path selection
     if (user?.id) {
       try {
         const updatedAnswers = { 
@@ -194,7 +164,6 @@ export default function Onboarding() {
     try {
       console.log("Business onboarding complete, navigating to dashboard...");
       
-      // Mark onboarding as complete first
       if (user?.id) {
         const { markOnboardingComplete } = await import('@/services/onboarding/unifiedOnboardingService');
         await markOnboardingComplete(user.id, 'employer');
@@ -204,19 +173,12 @@ export default function Onboarding() {
     } catch (error) {
       console.error("Error during post-onboarding navigation:", error);
       toast.error("Navigation failed. Please refresh the page.");
-      // Fallback navigation
       navigate('/employer-dashboard', { replace: true });
     }
   };
 
   if (isLoading || isNavigating) {
-    return (
-      <div className="min-h-screen bg-[rgba(253,248,242,1)] flex items-center justify-center">
-        <div className="text-2xl text-[#2E2E2E]">
-          {isNavigating ? "Completing setup..." : "Setting up your onboarding experience..."}
-        </div>
-      </div>
-    );
+    return <LansaLoader duration={5000} />;
   }
 
   return (

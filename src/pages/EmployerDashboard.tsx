@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/UnifiedAuthProvider";
 import { useOrganization } from "@/contexts/OrganizationContext";
-import { useUserState } from "@/contexts/UserStateProvider";
+import { useUserState } from "@/contexts/UnifiedAuthProvider";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { EmployerDashboardTabs } from "@/components/dashboard/EmployerDashboardTabs";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileEmployerTabs } from "@/components/mobile/employer/MobileEmployerTabs";
 import { PendingRequestBanner } from "@/components/organization/PendingRequestBanner";
 import { QuickActionsWidget } from "@/components/organization/QuickActionsWidget";
+import { LansaLoader } from "@/components/shared/LansaLoader";
+import { useNavigate } from "react-router-dom";
 import { RefreshCw } from "lucide-react";
 
 interface BusinessData {
@@ -24,6 +26,7 @@ interface BusinessData {
 }
 
 export default function EmployerDashboard() {
+  const navigate = useNavigate();
   const [businessData, setBusinessData] = useState<BusinessData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshingDashboard, setIsRefreshingDashboard] = useState(false);
@@ -114,11 +117,7 @@ export default function EmployerDashboard() {
   };
 
   if (isLoading || orgLoading) {
-    return (
-      <div className="employer-theme h-screen bg-background flex items-center justify-center">
-        <div className="text-2xl text-foreground animate-pulse">Loading your employer dashboard...</div>
-      </div>
-    );
+    return <LansaLoader duration={5000} />;
   }
 
   if (!activeOrganization) {
@@ -133,14 +132,12 @@ export default function EmployerDashboard() {
               organizationName={pendingOrgName}
               requestSentAt={requestSentAt}
             />
-            
-            {/* Status Timeline */}
             <div className="bg-card border rounded-lg p-6">
               <h3 className="font-semibold mb-4">Your Progress</h3>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                    <svg className="w-4 h-4 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
@@ -149,10 +146,9 @@ export default function EmployerDashboard() {
                     <p className="text-sm text-muted-foreground">Your account is ready to use</p>
                   </div>
                 </div>
-                
                 <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                    <svg className="w-4 h-4 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
@@ -161,7 +157,6 @@ export default function EmployerDashboard() {
                     <p className="text-sm text-muted-foreground">Waiting for admin approval</p>
                   </div>
                 </div>
-                
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0 w-6 h-6 rounded-full bg-muted flex items-center justify-center">
                     <svg className="w-4 h-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -175,7 +170,6 @@ export default function EmployerDashboard() {
                 </div>
               </div>
             </div>
-            
             <div className="text-center">
               <p className="text-sm text-muted-foreground">
                 While you wait, you can close this page. We'll notify you by email once your request is reviewed.
@@ -187,9 +181,14 @@ export default function EmployerDashboard() {
     }
     return (
       <div className="employer-theme h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="text-2xl text-foreground">No Organization Found</div>
-          <p className="text-muted-foreground">Please create or join an organization to access the employer dashboard.</p>
+        <div className="text-center space-y-6">
+          <div className="text-2xl font-semibold text-foreground">No Organization Found</div>
+          <p className="text-muted-foreground">You need an organization to access the employer dashboard.</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button onClick={() => navigate('/onboarding')}>
+              Set Up Organization
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -236,7 +235,7 @@ export default function EmployerDashboard() {
     <>
       <div className="employer-theme">
         <DashboardLayout userName={userName} email={user?.email || ""}>
-          <div className="p-4 md:p-6 h-[calc(100vh-72px)] overflow-y-auto">
+          <div className="p-4 md:p-6">
             <div className="w-full">
               <div className="flex items-center justify-between mb-4 animate-fade-in">
                 <div>

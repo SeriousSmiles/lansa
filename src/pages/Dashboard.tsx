@@ -1,6 +1,4 @@
-
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import { 
   getUserAnswers, 
   getProfileRole, 
@@ -8,31 +6,25 @@ import {
   getBasicInsightFromAnswers,
   getPersonalizedInsight
 } from "@/services/question";
-import { hasCompletedOnboarding } from "@/services/question";
 import { getProfileStatus } from "@/services/profileStatus";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/UnifiedAuthProvider";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { toast } from "sonner";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { useActionTracking } from "@/hooks/useActionTracking";
 import { ProfileCard } from "@/components/dashboard/overview/ProfileCard";
-import { useUserState } from "@/contexts/UserStateProvider";
-import EmployerDashboard from "./EmployerDashboard";
 import { SEOHead } from "@/components/SEOHead";
 import { LansaLoader } from "@/components/shared/LansaLoader";
 
 export default function Dashboard() {
   const [userAnswers, setUserAnswers] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isCheckingProfile, setIsCheckingProfile] = useState(true);
   const [highlightActions, setHighlightActions] = useState(false);
   const [aiInsight, setAiInsight] = useState<string | undefined>();
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
-  const { session, user } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const { track } = useActionTracking();
-  const { userType, loading: isLoadingUserType } = useUserState();
   const mountedRef = useRef(true);
   const initializingRef = useRef(false);
   
@@ -42,94 +34,47 @@ export default function Dashboard() {
     };
   }, []);
 
-  // Check onboarding and profile status when component mounts
-  useEffect(() => {
-    if (!session?.user || !user) return;
-
-    let mounted = true;
-
-    const checkUserProfile = async () => {
-      try {
-        // Get user answers to check onboarding completion
-        const userAnswers = await getUserAnswers(user.id);
-        const onboardingStatus = hasCompletedOnboarding(userAnswers);
-        
-        if (!mounted) return;
-        
-        if (!onboardingStatus) {
-          navigate('/onboarding', { replace: true });
-          return;
-        }
-
-        // Check if profile is ready and show soft notification
-        const profileStatus = await getProfileStatus(user.id);
-        
-        if (!mounted) return;
-        
-        if (!profileStatus.isProfileReady) {
-          // Only show toast once per session
-          const toastShown = sessionStorage.getItem('profile-incomplete-toast');
-          if (!toastShown) {
-            toast.info('Complete your profile to unlock all features');
-            sessionStorage.setItem('profile-incomplete-toast', 'true');
-          }
-        }
-        
-        setIsCheckingProfile(false);
-      } catch (error) {
-        console.error('Error checking user profile:', error);
-        if (mounted) {
-          setIsCheckingProfile(false);
-        }
-      }
-    };
-
-    checkUserProfile();
-
-    return () => {
-      mounted = false;
-    };
-  }, [session, user, navigate]);
-  
+  // Single consolidated data fetch on mount — Guard already ensures user is 
+  // authenticated, onboarded, and is a job_seeker before rendering this page.
   useEffect(() => {
     async function loadDashboard() {
-      // Prevent duplicate initialization
       if (!user?.id || hasInitialized || initializingRef.current) return;
       
       initializingRef.current = true;
       setIsLoading(true);
       
       try {
-        console.log('Dashboard: Starting initialization for user:', user.id);
-        
-        // Track dashboard visit only once
         track('dashboard_visited');
+
+        // Check profile completeness (single DB call — no duplicate onboarding check)
+        const [answers, profileStatus] = await Promise.all([
+          getUserAnswers(user.id),
+          getProfileStatus(user.id),
+        ]);
         
-        const answers = await getUserAnswers(user.id);
-        
-        // Check if component is still mounted
         if (!mountedRef.current) return;
         
+        if (!profileStatus.isProfileReady) {
+          const toastShown = sessionStorage.getItem('profile-incomplete-toast');
+          if (!toastShown) {
+            toast.info('Complete your profile to unlock all features');
+            sessionStorage.setItem('profile-incomplete-toast', 'true');
+          }
+        }
+
         if (answers) {
-          console.log('Dashboard: User answers loaded successfully');
           setUserAnswers(answers);
           
-          // Check if we have a stored AI insight
           if (answers.ai_insight) {
             setAiInsight(answers.ai_insight);
           } else {
-            // Generate insight if we don't have one stored
             setIsLoadingInsight(true);
             try {
               const insight = await getPersonalizedInsight(user.id, answers);
-              
-              // Check if component is still mounted
               if (!mountedRef.current) return;
-              
               setAiInsight(insight);
             } catch (error) {
               console.error("Failed to get AI insight:", error);
-              // Fallback to basic insight
               if (mountedRef.current) {
                 setAiInsight(getBasicInsightFromAnswers(answers));
               }
@@ -141,14 +86,10 @@ export default function Dashboard() {
           }
         }
         
-        // Check if we should highlight the recommended actions
         const shouldHighlight = localStorage.getItem('highlightRecommendedActions') === 'true';
         if (shouldHighlight) {
           setHighlightActions(true);
-          // Clean up the flag after using it to prevent multiple highlights
           localStorage.removeItem('highlightRecommendedActions');
-          
-          // Show welcome toast
           setTimeout(() => {
             if (mountedRef.current) {
               toast.success("Welcome! Here are your recommended actions to get started.", {
@@ -175,27 +116,15 @@ export default function Dashboard() {
     
     loadDashboard();
   }, [user?.id, hasInitialized, track]);
-  
-  // Redirect employers to their dedicated dashboard
-  if (!isLoading && !isLoadingUserType && !isCheckingProfile && userType === 'employer') {
-    return <EmployerDashboard />;
-  }
 
-  // Show loader as overlay while content loads behind
-  const showLoader = isLoading || isLoadingUserType || isCheckingProfile;
-
-  // Defensive fallbacks to avoid rendering issues when answers are missing
   const role = getProfileRole(userAnswers?.identity, userAnswers?.career_path) || "Professional seeking clarity";
   const goal = getProfileGoal(userAnswers?.desired_outcome) || "Gaining professional clarity";
   const insight = aiInsight || getBasicInsightFromAnswers(userAnswers || null);
-  
-  // Use the display name from the user object
   const userName = user?.displayName || "Lansa User";
   
   return (
     <>
-      {/* Loader overlay - renders on top while loading */}
-      {showLoader && <LansaLoader duration={5000} />}
+      {isLoading && <LansaLoader duration={5000} />}
       
       <SEOHead
         title="Dashboard | Lansa - AI-Powered Career Builder"
