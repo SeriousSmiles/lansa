@@ -1,35 +1,100 @@
 
-## Root Cause
+## Understanding the Full Flow
 
-The Supabase Realtime publication (`supabase_realtime`) only includes the `notifications` table. `chat_messages` and `chat_threads` are excluded — so even though the client subscribes correctly via `subscribeToThread`, Postgres never broadcasts the `INSERT` events. Messages only appear after a manual reload.
+The current "Who's Interested in You" section shows employer cards with a "Swipe Back" CTA that navigates to the discover tab. This is wrong for several reasons:
+1. The metaphor is wrong — candidates shouldn't "swipe back", they should **respond to interest**
+2. There's no context about WHY this employer is interesting (what job do they have open?)
+3. There's no ability to open a chat directly from here
+4. When a match already exists (mutual swipe → chat thread created), the card should surface that thread
 
-## Fix
-
-### 1. Enable Realtime on the two tables (database migration)
-```sql
-ALTER PUBLICATION supabase_realtime ADD TABLE public.chat_messages;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.chat_threads;
-```
-
-This is the **only required change**. The client-side subscription code in `chatService.subscribeToThread` is already written correctly — it just never receives events because the tables aren't in the publication.
-
-### 2. Verify subscription channel stability in `useChat.ts`
-One subtle issue: `loadMessages` is in the `useEffect` dependency array. Because `loadMessages` is a `useCallback` that depends on `threadId`, the effect re-runs whenever `threadId` changes — that's fine. But if anything causes `loadMessages` to be recreated unnecessarily, the channel is torn down and re-subscribed constantly. Removing `loadMessages` from the deps array (since `threadId` already covers it) prevents channel thrashing.
-
-### 3. Add `REPLICA IDENTITY FULL` to `chat_messages`
-Supabase Realtime only returns `new` row data for `INSERT` events by default, which is enough here. No changes needed.
+The user wants:
+- **Notification-style cards** — feel like an "alert" someone is interested
+- **CTA: "Review"** → opens a drawer showing the employer's profile + their open job listings
+- **Context label**: shows whether employer Liked or Super Interested (nudge)
+- **Open Chat button** inside the drawer (only if a mutual match/thread exists already, OR create one on demand)
+- **Email to employer** when candidate opens chat — notifying them of the mutual match
 
 ---
 
-## Files to change
+## What Needs to Be Built
 
-**Migration only** — no frontend file changes needed. The subscription code already works. Just the two `ALTER PUBLICATION` SQL statements.
+### 1. New `EmployerInterestDrawer` component
+A bottom drawer (mobile) / side sheet (desktop) that opens when "Review" is clicked, showing:
+- Employer avatar, name, title, company name
+- Interest type badge (Liked / Super Interested)
+- Their open job listings fetched from `job_listings_v2` filtered by `created_by = employer_id`
+- "Open Chat" button at the bottom — navigates to the existing match thread or creates a new one and notifies the employer
 
-The `useEffect` dep array tweak in `useChat.ts` is a small defensive fix (remove `loadMessages` from deps, keep `threadId`).
+### 2. Redesigned `WhoIsInterestedSection` cards
+Transform from mini profile cards → notification-style cards:
+- Softer card with a left accent border (green for liked, amber for nudge)
+- Notification icon + "expressed interest in your profile"
+- Interest type label with icon
+- Date/time of interest (relative: "2 days ago")
+- Single full-width "Review" CTA button (replaces "Swipe Back")
 
-### Summary
-| Change | Type |
+### 3. Chat thread resolution logic in the drawer
+When "Open Chat" is clicked:
+- Check `matches` table for `(user_a = candidateId AND user_b = employerId) OR (user_a = employerId AND user_b = candidateId)`
+- If match exists → check `chat_threads` for the thread → navigate to `/chat/{threadId}`
+- If no match yet → create a swipe (`direction: 'right'`), which triggers the DB match creation → then find the new thread
+
+### 4. Email notification to employer when chat is opened
+When the candidate clicks "Open Chat", invoke `send-chat-email` edge function with:
+- `user_id`: employer's user_id
+- `notification_type`: `match_created` (already has an email template)
+- `action_url`: `/chat/{threadId}`
+
+This satisfies the requirement: "sends email notification to the business that chat has been opened by mutual match/interest."
+
+---
+
+## Files to Change
+
+| File | Change |
 |---|---|
-| Add `chat_messages` to realtime publication | DB migration |
-| Add `chat_threads` to realtime publication | DB migration |
-| Remove `loadMessages` from useEffect deps | `useChat.ts` (minor) |
+| `src/components/dashboard/WhoIsInterestedSection.tsx` | Full redesign — notification cards, "Review" CTA |
+| `src/components/dashboard/EmployerInterestDrawer.tsx` | New file — drawer with employer profile + jobs + Open Chat |
+
+### `WhoIsInterestedSection.tsx` — New card design
+
+```
+┌─────────────────────────────────────────────────────┐
+│ [green accent border]                               │
+│  [Avatar]  Acme Corp                    2 days ago  │
+│            Marketing Manager                        │
+│            ♥ Liked your profile                     │
+│                                                     │
+│  [           Review →           ]                   │
+└─────────────────────────────────────────────────────┘
+```
+
+### `EmployerInterestDrawer.tsx` — Drawer content
+
+```
+┌──────────────────────────────────────┐
+│  [Cover banner]                      │
+│  [Avatar] Employer Name              │
+│           Company · Title            │
+│           ♥ Liked / ⚡ Super Interest│
+│  ──────────────────────────────────  │
+│  Open Positions (2)                  │
+│  ┌────────────────────────────────┐  │
+│  │ Marketing Manager · Full-time  │  │
+│  │ Remote · $50k–$70k             │  │
+│  └────────────────────────────────┘  │
+│  ┌────────────────────────────────┐  │
+│  │ Content Writer · Part-time     │  │
+│  └────────────────────────────────┘  │
+│  ──────────────────────────────────  │
+│  [      Open Chat & Connect      ]   │
+└──────────────────────────────────────┘
+```
+
+The "Open Chat & Connect" button:
+1. Calls `candidateDiscoveryService.handleSwipe('right', employer)` if no match exists yet — this creates the match and chat thread via the existing DB trigger
+2. Queries `chat_threads` to find the thread where both users are participants
+3. Calls `send-chat-email` edge function to notify the employer
+4. Navigates to `/chat/{threadId}`
+
+No DB migrations needed — reuses existing `swipes`, `matches`, `chat_threads`, and `job_listings_v2` tables.
