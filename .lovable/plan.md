@@ -1,95 +1,52 @@
 
-## Issues Identified
+## What Needs to Change
 
-### 1. Bottom Nav overlaps content (job seeker mobile)
-`BottomNav` is always `fixed bottom-0` — it never auto-hides. When users are on a chat thread or scrolling through discovery, it sits on top of content.
+The screenshot shows the problem clearly: received message bubbles use a dark slate-gray (`bg-muted` which resolves to a dark tone in the current theme). The user wants a clean, light surface-based look — white/near-white tiles with a soft shadow, not colored bubbles for received messages.
 
-**Fix**: Add scroll-direction detection in `BottomNav`. Hide nav when scrolling down, reveal when scrolling up. This is the standard mobile pattern (used by Instagram, LinkedIn, etc.) — momentum-friendly, not intrusive.
+### Changes to make
 
-Implementation: `useRef` for last scroll Y + `window.addEventListener('scroll')` in `BottomNav`. When scrolling down > 10px threshold → slide nav to `y(100)`, scrolling up → slide back to `y(0)`. Use Framer Motion's `animate` prop.
+**1. `MessageBubble.tsx` (desktop received bubbles)**
+- Change `bg-muted/80 text-foreground` → `bg-white text-foreground shadow-sm border border-border/20` (clean white card tile)
+- Self (sent) bubbles keep `#F2713B` orange — that's on-brand and correct
 
-Also: The bottom nav currently shows on the `/chat/:threadId` sub-route for job seekers, overlapping the `ChatInput`. The nav should **hide entirely** when inside an active thread. Add `/chat/` (with ID) to the hide condition in `AppShell`.
+**2. `MobileChatBubble.tsx` (mobile received bubbles)**
+- Same: remove `bg-muted` and `bg-[#2B7FE8]` dark blue for received messages
+- Use `bg-white text-foreground shadow-sm border border-border/20` for all received bubbles
+- Self bubbles keep orange
 
----
+**3. `ChatThreadView.tsx` (desktop message area background)**
+- The `bg-background/60` on the right panel feels slightly off-white — change to clean `bg-[#F8F9FA]` (very light warm gray, tile-friendly surface)
+- Thread header and input footer: `bg-white` instead of `bg-card/50`
 
-### 2. Messages not appearing in chat canvas
+**4. `DesktopChatLayout.tsx` (outer wrapper)**
+- `bg-muted/30` → `bg-[#F0EDE8]` (the app's warm cream base, consistent with the rest of the app which uses `rgba(253,248,242,1)`)
+- The chat card border shadow should feel like a clean tile: `shadow-lg` → `shadow-sm border border-border/30`
 
-**Root cause (confirmed by DB query)**:
-- `chat_participants_view` is a plain view (no `SECURITY DEFINER`) that queries `user_profiles`
-- The new RLS policy `Allow reading profile info of chat participants` IS in place — but the view still runs as the **invoker's permission**, so the policy should apply
+**5. `ChatInput.tsx` (input bar)**
+- `bg-muted/40` → `bg-white border-border/30` for a cleaner tile look
 
-However, looking at `chatService.sendMessage()` — it inserts a message and then **separately** updates `chat_threads.last_message_at`. The `chat_threads` UPDATE policy is `is_thread_participant(id, auth.uid())` — this is fine.
+**6. `MobileChatInbox.tsx`**
+- `bg-background` outer wrapper → `bg-[rgba(253,248,242,1)]` (app warm cream)
+- Header `bg-card/90` → `bg-white`
 
-The real issue with messages not appearing: **`chatService.subscribeToThread()` uses Postgres Changes real-time on `chat_messages`**. Supabase Realtime Postgres Changes require the table to have **RLS enabled** AND the user to have a SELECT policy that matches the payload row. Currently there are two duplicate SELECT policies — while redundant, they shouldn't break things.
+**Summary of color replacements (project-wide)**
 
-BUT: The actual message display issue is likely that `getThread()` calls `getThreadsForUser()` which does a second full fetch. If `chat_participants_view` returns empty for the other party (which would mean `other_party: undefined`), the thread object has no `other_party` and the UI shows `loading` state indefinitely or "Unknown" with messages never appearing.
+| Element | Before | After |
+|---|---|---|
+| Received bubble | `bg-muted/80` dark gray | `bg-white shadow-sm border/20` |
+| Received employer bubble (mobile) | `bg-[#2B7FE8]` blue | `bg-white shadow-sm border/20` |
+| Message area background | `bg-background/60` | `bg-[#F8F9FA]` |
+| Desktop outer shell | `bg-muted/30` | `bg-[rgba(253,248,242,1)]` |
+| Chat input | `bg-muted/40` | `bg-white` |
+| Mobile inbox background | `bg-background` | `bg-[rgba(253,248,242,1)]` |
+| Mobile header | `bg-card/90` | `bg-white` |
 
-**Let me check**: The RLS policy added was `Allow reading profile info of chat participants` on `user_profiles`. The view `chat_participants_view` queries `user_profiles` directly without SECURITY DEFINER — so the invoker (logged-in user) sees only rows where the policy permits. The new policy allows them to see profiles of users they share a chat_thread with. This **should work** — but only if the policy was correctly applied (which the DB query confirms it was).
+The sent (self) orange bubble stays — it's on-brand. Only the **received** bubbles and background surfaces change to clean white tiles.
 
-There's one more potential issue: the `chat_participants_view` also joins `organization_memberships` and `organizations`. If those tables have RLS that blocks the query, the join may return null for org fields even if the user row is visible.
-
-**Most likely live issue**: The `send-chat-email` edge function fix from the previous round may have introduced a syntax/import error, causing a startup failure that manifests as messages not sending. Let me verify.
-
-Actually — the user says messages don't appear "not even to the sender." This is a strong signal that **`sendMessage` is failing at the DB INSERT level**. The INSERT policy on `chat_messages` requires `is_thread_participant(thread_id, auth.uid())`. If the thread was created by a trigger/service role (not by the user), the `chat_threads_insert_participant` policy won't block the read, but there could be a `created_by` column issue.
-
-**The concrete fix**: 
-1. Ensure real-time is enabled for `chat_messages` table (check via Supabase realtime config)
-2. The `sendMessage` INSERT has `sender_org_id` field — need to confirm it exists in the schema. If not, the insert silently fails.
-3. Add error surface in `ChatInput` — currently errors in `sendMessage` are only `console.error`'d, so the user sees nothing wrong
-
-For the company logo issue: `ChatThreadListItem` and `MobileChatInbox ThreadRow` show `other.organization_name` as text but **never render the `organization_logo`**. The `ChatThread` type has `organization_logo` in `other_party`, but neither the desktop list item nor the mobile thread header display it. For job seekers looking at employer threads, this logo should appear.
-
----
-
-### 3. Back button navigates employers to wrong dashboard
-
-In `MobileChatInbox` (line 114): `navigate('/dashboard')` — hardcoded, should be `/employer-dashboard` for employers.
-
-In `DesktopChatLayout` (line 23): `const dashboardPath = userType === 'employer' ? '/dashboard' : '/dashboard'` — **both arms are `/dashboard`**! This is the bug. It should be `userType === 'employer' ? '/employer-dashboard' : '/dashboard'`.
-
----
-
-## Files to Change
-
-### `src/components/chat/desktop/DesktopChatLayout.tsx`
-Fix line 23: `'/employer-dashboard'` for employers.
-
-### `src/components/chat/mobile/MobileChatInbox.tsx`
-Fix line 114: `navigate('/employer-dashboard')` for employers.
-
-### `src/components/mobile/app/BottomNav.tsx`
-- Add scroll-direction auto-hide behavior using `useEffect` with `scroll` event listener
-- Hide nav entirely when `location.pathname` includes `/chat/` with a thread ID (active thread = full-screen, nav obstructs input)
-
-### `src/components/mobile/app/AppShell.tsx`
-- Add `pb-20` exclusion for active chat thread route (`/chat/:id`)
-
-### `src/components/chat/desktop/ChatThreadListItem.tsx` + `MobileChatInbox ThreadRow`
-- Show company logo (`organization_logo`) for employer threads as a small avatar next to the name/org text
-
-### `src/components/chat/shared/ChatInput.tsx`
-- Surface send errors with a toast so users know when messages fail
-
-### `useChat.ts` send error surfacing
-- Add `toast.error` on catch in `sendMessage`
-
-### Message visibility deeper fix
-- In `chatService.sendMessage`, add explicit console logging to surface any Supabase errors
-- Verify `sender_org_id` column exists in `chat_messages` — if not, the insert fails silently on that field
-
-Let me check `sender_org_id` in the schema before finalizing.
-
----
-
-## Summary Table
-
-| File | Change |
-|---|---|
-| `DesktopChatLayout.tsx` | Fix employer dashboard path (`/employer-dashboard`) |
-| `MobileChatInbox.tsx` | Fix employer back navigation to `/employer-dashboard` |
-| `BottomNav.tsx` | Add scroll-direction hide/show; hide on active chat thread |
-| `AppShell.tsx` | Exclude padding-bottom on active chat thread route |
-| `ChatThreadListItem.tsx` | Show `organization_logo` for employer threads |
-| `MobileChatInbox.tsx` ThreadRow | Show `organization_logo` |
-| `useChat.ts` / `ChatInput` | Surface send errors via toast |
-| `chatService.ts` | Add explicit error logging in `sendMessage` |
+### Files to edit
+- `src/components/chat/desktop/MessageBubble.tsx`
+- `src/components/chat/mobile/MobileChatBubble.tsx`
+- `src/components/chat/desktop/ChatThreadView.tsx`
+- `src/components/chat/desktop/DesktopChatLayout.tsx`
+- `src/components/chat/shared/ChatInput.tsx`
+- `src/components/chat/mobile/MobileChatInbox.tsx`
