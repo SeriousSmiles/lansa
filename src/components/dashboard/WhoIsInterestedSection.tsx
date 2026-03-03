@@ -15,6 +15,8 @@ interface InterestedEmployer {
   employer_title: string | null;
   employer_image: string | null;
   employer_cover_color: string | null;
+  org_name: string | null;
+  org_logo: string | null;
 }
 
 const getInitials = (name: string | null) => {
@@ -67,16 +69,34 @@ export function WhoIsInterestedSection() {
       }
 
       const employerIds = [...new Set(pending.map((s) => s.swiper_user_id))];
-      const { data: profiles } = await supabase
-        .from("user_profiles")
-        .select("user_id, name, title, profile_image, cover_color")
-        .in("user_id", employerIds);
 
-      const profileMap = new Map(profiles?.map((p) => [p.user_id, p]) ?? []);
+      // Fetch profiles and org data in parallel
+      const [profilesRes, orgMembershipsRes] = await Promise.all([
+        supabase
+          .from("user_profiles")
+          .select("user_id, name, title, profile_image, cover_color")
+          .in("user_id", employerIds),
+        supabase
+          .from("organization_memberships")
+          .select("user_id, organizations(name, logo_url)")
+          .in("user_id", employerIds)
+          .eq("is_active", true),
+      ]);
+
+      const profileMap = new Map(profilesRes.data?.map((p) => [p.user_id, p]) ?? []);
+      // Use first active org per employer
+      const orgMap = new Map<string, { name: string | null; logo_url: string | null }>();
+      for (const m of orgMembershipsRes.data ?? []) {
+        if (!orgMap.has(m.user_id) && m.organizations) {
+          const org = m.organizations as { name: string | null; logo_url: string | null };
+          orgMap.set(m.user_id, org);
+        }
+      }
 
       setInterested(
         pending.map((swipe) => {
           const profile = profileMap.get(swipe.swiper_user_id);
+          const org = orgMap.get(swipe.swiper_user_id);
           return {
             swipe_id: swipe.id,
             direction: swipe.direction,
@@ -86,6 +106,8 @@ export function WhoIsInterestedSection() {
             employer_title: profile?.title ?? null,
             employer_image: profile?.profile_image ?? null,
             employer_cover_color: profile?.cover_color ?? null,
+            org_name: org?.name ?? null,
+            org_logo: org?.logo_url ?? null,
           };
         })
       );
@@ -139,8 +161,14 @@ export function WhoIsInterestedSection() {
               style={{ borderLeftWidth: "3px" }}
               >
                 <div className="flex items-center gap-3 flex-1 px-3 py-3">
-                  {/* Avatar */}
-                  {employer.employer_image ? (
+                  {/* Avatar: org logo > profile image > initials */}
+                  {employer.org_logo ? (
+                    <img
+                      src={employer.org_logo}
+                      alt={employer.org_name ?? employer.employer_name ?? "Employer"}
+                      className="w-10 h-10 rounded-xl border border-border object-cover flex-shrink-0 bg-muted"
+                    />
+                  ) : employer.employer_image ? (
                     <img
                       src={employer.employer_image}
                       alt={employer.employer_name ?? "Employer"}
@@ -148,12 +176,9 @@ export function WhoIsInterestedSection() {
                     />
                   ) : (
                     <div
-                      className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-xs font-bold"
-                      style={{
-                        background: employer.employer_cover_color ?? "hsl(var(--primary))",
-                      }}
+                      className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-primary-foreground text-xs font-bold bg-primary"
                     >
-                      {getInitials(employer.employer_name)}
+                      {getInitials(employer.org_name ?? employer.employer_name)}
                     </div>
                   )}
 
@@ -161,7 +186,7 @@ export function WhoIsInterestedSection() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-foreground truncate">
-                        {employer.employer_name ?? "An Employer"}
+                        {employer.org_name ?? employer.employer_name ?? "An Employer"}
                       </p>
                       <span className="text-[10px] text-muted-foreground whitespace-nowrap flex-shrink-0">
                         {formatDistanceToNow(new Date(employer.created_at), { addSuffix: true })}
