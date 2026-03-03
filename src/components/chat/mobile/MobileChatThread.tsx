@@ -33,9 +33,9 @@ export function MobileChatThread({ threadId, currentUserId, onBack }: MobileChat
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-screen bg-[#F4F1ED]">
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 pt-safe-top pb-3 border-b border-border/50 bg-card/90 backdrop-blur-md sticky top-0 z-10 shadow-sm">
+      <div className="flex items-center gap-2 px-3 pt-safe-top pb-3 border-b border-border/40 bg-white sticky top-0 z-10 shadow-sm">
         <button
           onClick={onBack}
           className="p-2.5 rounded-full hover:bg-muted transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0"
@@ -70,7 +70,7 @@ export function MobileChatThread({ threadId, currentUserId, onBack }: MobileChat
 
       {/* Messages */}
       <ScrollArea className="flex-1">
-        <div className="px-4 py-4 space-y-0.5">
+        <div className="px-4 py-5 space-y-1">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-center px-6 mt-8">
               <div className="w-16 h-16 rounded-3xl bg-muted/80 flex items-center justify-center mb-4">
@@ -99,7 +99,7 @@ export function MobileChatThread({ threadId, currentUserId, onBack }: MobileChat
       </ScrollArea>
 
       {/* Input area */}
-      <div className="px-4 py-3 border-t border-border/50 bg-card/90 backdrop-blur-md sticky bottom-0 pb-safe-bottom shadow-[0_-1px_0_0_hsl(var(--border)/0.3)]">
+      <div className="px-4 py-3 border-t border-border/40 bg-white sticky bottom-0 pb-safe-bottom shadow-[0_-1px_8px_0_rgba(0,0,0,0.06)]">
         <ChatInput
           onSend={(body) => sendMessage(body)}
           disabled={sending}

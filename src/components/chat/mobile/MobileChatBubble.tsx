@@ -30,7 +30,7 @@ export function MobileChatBubble({
     <div className={cn(
       "flex items-end gap-2",
       isSelf ? "flex-row-reverse" : "flex-row",
-      showSenderInfo ? "mt-4" : "mt-1"
+      showSenderInfo ? "mt-3" : "mt-1"
     )}>
       {/* Avatar for other party */}
       {!isSelf ? (
@@ -63,7 +63,7 @@ export function MobileChatBubble({
         {/* Bubble */}
         <div
           className={cn(
-            "px-4 py-2.5 text-[15px] leading-relaxed break-words",
+            "px-4 py-3 text-[15px] leading-relaxed break-words",
             isSelf
               ? "bg-[#F2713B] text-white rounded-[20px] rounded-br-[6px] shadow-sm"
               : "bg-white text-foreground rounded-[20px] rounded-bl-[6px] border border-border/20 shadow-sm"

@@ -30,7 +30,7 @@ export function MessageBubble({
     <div className={cn(
       "flex items-end gap-2.5",
       isSelf ? "flex-row-reverse" : "flex-row",
-      showSenderInfo ? "mt-4" : "mt-0.5"
+      showSenderInfo ? "mt-3" : "mt-1"
     )}>
       {/* Avatar (other party only) */}
       {!isSelf ? (
@@ -63,7 +63,7 @@ export function MessageBubble({
         {/* Bubble */}
         <div
           className={cn(
-            "px-4 py-2.5 text-sm leading-relaxed break-words shadow-sm",
+            "px-4 py-3 text-sm leading-relaxed break-words shadow-sm",
             isSelf
               ? "bg-[#F2713B] text-white rounded-2xl rounded-br-md"
               : "bg-white text-foreground rounded-2xl rounded-bl-md border border-border/20 shadow-sm"
