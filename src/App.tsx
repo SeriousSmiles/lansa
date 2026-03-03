@@ -8,9 +8,8 @@ import { HotjarScript } from "@/components/analytics/HotjarScript";
 import { CookieConsent } from "@/components/analytics/CookieConsent";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppShell } from "@/components/mobile/app/AppShell";
-import HomeSpotlight from "./pages/HomeSpotlight";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -36,7 +35,6 @@ import Resources from "./pages/Resources";
 import ContentLibrary from "./pages/ContentLibrary";
 import MentorDashboard from "./pages/MentorDashboard";
 import Card from "./pages/Card";
-import JobFeed from "./pages/JobFeed";
 import LearningJobFeed from "./pages/LearningJobFeed";
 import DevTools from "./pages/DevTools";
 import Certification from "./pages/Certification";
@@ -117,7 +115,7 @@ const App: React.FC = () => {
                   <Guard auth><Card /></Guard>
                 } />
                 <Route path="/dev-tools" element={
-                  <Guard auth><DevTools /></Guard>
+                  <Guard auth admin><DevTools /></Guard>
                 } />
                 <Route path="/notifications" element={
                   <Guard auth onboarding><Notifications /></Guard>
@@ -136,9 +134,8 @@ const App: React.FC = () => {
                 <Route path="/jobs" element={
                   <Guard auth onboarding types={['job_seeker']}><LearningJobFeed /></Guard>
                 } />
-                <Route path="/jobs/legacy" element={
-                  <Guard auth onboarding types={['job_seeker']}><JobFeed /></Guard>
-                } />
+                {/* Legacy redirect — /jobs/legacy → /jobs */}
+                <Route path="/jobs/legacy" element={<Navigate to="/jobs" replace />} />
                 <Route path="/profile" element={
                   <Guard auth onboarding types={['job_seeker']}><Profile /></Guard>
                 } />
@@ -148,9 +145,8 @@ const App: React.FC = () => {
                 <Route path="/discovery" element={
                   <Guard auth onboarding types={['job_seeker']}><OpportunityDiscovery /></Guard>
                 } />
-                <Route path="/opportunity-discovery" element={
-                  <Guard auth onboarding types={['job_seeker']}><OpportunityDiscovery /></Guard>
-                } />
+                {/* Legacy redirect — /opportunity-discovery → /discovery */}
+                <Route path="/opportunity-discovery" element={<Navigate to="/discovery" replace />} />
                 <Route path="/resources" element={
                   <Guard auth types={['job_seeker']}><Resources /></Guard>
                 } />
@@ -205,7 +201,8 @@ const App: React.FC = () => {
                   <Route path="settings" element={<AdminSettings />} />
                 </Route>
                 
-                <Route path="*" element={<HomeSpotlight />} />
+                {/* 404 — any unmatched route */}
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </AppShell>
             </BrowserRouter>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { chatService } from "@/services/chatService";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/UnifiedAuthProvider";
 
 export function useUnreadChatCount() {
   const { user } = useAuth();
@@ -16,8 +16,6 @@ export function useUnreadChatCount() {
   }, [user]);
 
   // Debounced refresh — waits 700ms after last event.
-  // Prevents race between markThreadRead DB write and the realtime UPDATE
-  // that would fire before read_at is committed, restoring the old badge count.
   const debouncedRefresh = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => refresh(), 700);
@@ -27,10 +25,22 @@ export function useUnreadChatCount() {
     if (!user) return;
     refresh();
 
+    // Phase 4: Scope subscription to messages NOT sent by the current user
+    // This prevents badge refresh when we send a message ourselves
     channelRef.current = supabase
       .channel(`unread_badge_${user.id}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, debouncedRefresh)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_messages' }, debouncedRefresh)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'chat_messages',
+        filter: `sender_id=neq.${user.id}`,
+      }, debouncedRefresh)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'chat_messages',
+        filter: `sender_id=neq.${user.id}`,
+      }, debouncedRefresh)
       .subscribe();
 
     return () => {
