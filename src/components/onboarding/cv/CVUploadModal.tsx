@@ -212,35 +212,50 @@ export function CVUploadModal({ open, onOpenChange, onComplete }: CVUploadModalP
         )}
 
         {currentStep === 'error' && (
-          <>
-            <DialogHeader className="text-center space-y-3">
-              <div className="w-16 h-16 mx-auto rounded-full bg-destructive/10 flex items-center justify-center">
-                <AlertTriangle className="w-8 h-8 text-destructive" />
-              </div>
-              <DialogTitle className="text-2xl font-bold">Couldn't Read Your CV</DialogTitle>
-              <p className="text-muted-foreground text-sm">
+          <div className="flex flex-col items-center text-center gap-5 py-4">
+            <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+              <AlertTriangle className="w-8 h-8 text-destructive" />
+            </div>
+
+            <div className="space-y-1.5">
+              <h2 className="text-xl font-bold text-foreground">Couldn't Read Your CV</h2>
+              <p className="text-sm text-muted-foreground max-w-sm">
                 {errorMessage || 'Something went wrong while processing your CV.'}
               </p>
-            </DialogHeader>
-            <div className="mt-6 space-y-3 text-sm text-muted-foreground bg-muted rounded-lg p-4">
-              <p className="font-medium text-foreground">Common causes:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Scanned/image-only PDFs (no selectable text)</li>
-                <li>Password-protected or encrypted files</li>
-                <li>Very large files (&gt;10MB)</li>
-                <li>Corrupted or unsupported format</li>
+            </div>
+
+            <div className="w-full rounded-xl border border-border bg-card p-4 text-left space-y-2">
+              <p className="text-sm font-semibold text-foreground">Common causes:</p>
+              <ul className="text-sm text-muted-foreground space-y-1.5">
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 text-destructive">•</span>
+                  Scanned / image-only PDFs — no selectable text
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 text-destructive">•</span>
+                  Password-protected or encrypted files
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 text-destructive">•</span>
+                  Very large files (over 10 MB)
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 text-destructive">•</span>
+                  Corrupted or unsupported format
+                </li>
               </ul>
             </div>
-            <div className="flex gap-3 justify-center mt-6">
-              <Button onClick={resetModal}>
-                <RefreshCw className="h-4 w-4 mr-2" />
+
+            <div className="flex gap-3 w-full justify-center">
+              <Button onClick={resetModal} className="gap-2">
+                <RefreshCw className="h-4 w-4" />
                 Try Again
               </Button>
               <Button variant="outline" onClick={handleSkip}>
                 Skip for Now
               </Button>
             </div>
-          </>
+          </div>
         )}
 
         {currentStep === 'results' && analysisData && (
