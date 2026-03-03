@@ -1,7 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { ArrowLeft, MoreVertical } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatInput } from "../shared/ChatInput";
 import { MobileChatBubble } from "./MobileChatBubble";
 import { useChat } from "@/hooks/useChat";
@@ -16,6 +15,7 @@ interface MobileChatThreadProps {
 export function MobileChatThread({ threadId, currentUserId, onBack }: MobileChatThreadProps) {
   const { messages, thread, loading, sending, sendMessage } = useChat(threadId);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -33,9 +33,15 @@ export function MobileChatThread({ threadId, currentUserId, onBack }: MobileChat
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#F4F1ED]">
-      {/* Header */}
-      <div className="flex items-center gap-2 px-3 pt-safe-top pb-3 border-b border-border/40 bg-white sticky top-0 z-10 shadow-sm">
+    <div
+      className="flex flex-col overflow-hidden bg-[#F4F1ED]"
+      style={{ height: '100dvh' }}
+    >
+      {/* Header — fixed at top */}
+      <div
+        className="flex items-center gap-2 px-3 pb-3 border-b border-border/40 bg-white flex-shrink-0 shadow-sm z-10"
+        style={{ paddingTop: 'env(safe-area-inset-top, 12px)' }}
+      >
         <button
           onClick={onBack}
           className="p-2.5 rounded-full hover:bg-muted transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0"
@@ -68,8 +74,8 @@ export function MobileChatThread({ threadId, currentUserId, onBack }: MobileChat
         </button>
       </div>
 
-      {/* Messages */}
-      <ScrollArea className="flex-1">
+      {/* Messages — scrollable middle */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div className="px-4 py-5 space-y-1">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-center px-6 mt-8">
@@ -96,10 +102,13 @@ export function MobileChatThread({ threadId, currentUserId, onBack }: MobileChat
             </>
           )}
         </div>
-      </ScrollArea>
+      </div>
 
-      {/* Input area */}
-      <div className="px-4 py-3 border-t border-border/40 bg-white sticky bottom-0 pb-safe-bottom shadow-[0_-1px_8px_0_rgba(0,0,0,0.06)]">
+      {/* Input — fixed at bottom */}
+      <div
+        className="px-4 py-3 border-t border-border/40 bg-white flex-shrink-0 shadow-[0_-1px_8px_0_rgba(0,0,0,0.06)]"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 12px)' }}
+      >
         <ChatInput
           onSend={(body) => sendMessage(body)}
           disabled={sending}
