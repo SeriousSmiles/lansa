@@ -70,13 +70,15 @@ export interface MatchCreatedEmailData {
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
 
-function logoHtml(bgColor: string = '#1a56db'): string {
-  return `<div style="display:inline-block;background:${bgColor};border-radius:6px;padding:5px 14px;margin-bottom:14px;">
-    <span style="color:#ffffff;font-size:17px;font-weight:900;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">LANSA</span>
+const LANSA_LOGO_B64 = 'PHN2ZyB3aWR0aD0iMTk1IiBoZWlnaHQ9IjI3OCIgdmlld0JveD0iMCAwIDE5NSAyNzgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xOTIuMjQgNzkuNDI5N0MxOTMuMzE1IDc5LjM3OCAxOTQuMjI1IDgwLjE3ODYgMTk0LjI5OSA4MS4yNDAyQzE5OC4yODEgMTM4LjI1NiAxNjIuNDQ0IDIwMC45OTggMTE1LjY0IDI1Mi43NDVDMTE0LjkzNCAyNTMuNTI1IDExMy42MzMgMjUyLjgyIDExMy44ODkgMjUxLjgwNUMxMTcuOTYgMjM1LjY1MiAxMTguNjA0IDIyMS4yODggMTE1LjgyMSAyMDguNzFDOTMuNTU4MyAyNDQuNjI5IDQxLjQ2MjQgMjcyLjE4NCAzLjE3OTY5IDI3Ny45NjRDMC4zODIgMjc4LjM4NiAtMS4wOTQ4NyAyNzUuMDgxIDAuOTYwOTM4IDI3My4xNTdDNTMuNjI4OCAyMjMuODgzIDcyLjMzNjIgMjAyLjE3NCA5MC4yMTM5IDE3NC4xNDNDNjMuOTk2NyAxODguMDA1IDQyLjMzNDIgMTk3Ljc4OCAyMi4wOTY3IDIwMS4yMThDMTkuOTIxNSAyMDEuNTg2IDE4LjIxMzkgMTk5LjQ4MiAxOC45NDYzIDE5Ny40MjRDNTEuNzQ5MSAxMDUuMjUyIDEzMC43MiA4Mi4zODkyIDE5Mi4yNCA3OS40Mjk3Wk0xMTUuMTcxIDBDMTM0LjkxMSAwIDE1MC45MTQgMTYuODkxNiAxNTAuOTE0IDM3LjcyODVDMTUwLjkxNCA1OC41NjU2IDEzNC45MTEgNzUuNDU4IDExNS4xNzEgNzUuNDU4Qzk1LjQzMDYgNzUuNDU3OSA3OS40Mjc3IDU4LjU2NTUgNzkuNDI3NyAzNy43Mjg1Qzc5LjQyNzkgMTYuODkxNyA5NS40MzA3IDAuMDAwMTA4OTUgMTE1LjE3MSAwWiIgZmlsbD0iIzFBMUY3MSIvPgo8L3N2Zz4=';
+
+function logoHtml(): string {
+  return `<div style="display:inline-block;background:#ffffff;border-radius:50px;padding:8px 16px;margin-bottom:14px;">
+    <img src="data:image/svg+xml;base64,${LANSA_LOGO_B64}" alt="Lansa" width="32" height="46" style="display:block;border:0;outline:none;" />
   </div>`;
 }
 
-function wrapper(headerBg: string, headerContent: string, bodyContent: string, footerNote: string = ''): string {
+function wrapper(headerBg: string, headerContent: string, bodyContent: string, footerNote: string = '', contentBg: string = '#ffffff'): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lansa</title></head>
@@ -92,7 +94,7 @@ function wrapper(headerBg: string, headerContent: string, bodyContent: string, f
         </tr>
         <!-- BODY -->
         <tr>
-          <td style="background-color:#ffffff;padding:36px 36px 28px;border-radius:0 0 12px 12px;">
+          <td style="background-color:${contentBg};padding:36px 36px 28px;border-radius:0 0 12px 12px;">
             ${bodyContent}
           </td>
         </tr>
@@ -153,7 +155,7 @@ function badge(text: string, bg: string, color: string): string {
 
 export function generateInvitationEmail(data: InvitationEmailData): { subject: string; html: string } {
   const header = `
-    ${logoHtml('#1a56db')}
+    ${logoHtml()}
     <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">🎉 You're Invited!</h1>
     <p style="margin:8px 0 0;font-size:15px;color:rgba(255,255,255,0.88);font-family:Arial,Helvetica,sans-serif;">Join your team on Lansa</p>`;
 
@@ -174,7 +176,7 @@ export function generateInvitationEmail(data: InvitationEmailData): { subject: s
 
 export function generateRequestNotificationEmail(data: RequestEmailData): { subject: string; html: string } {
   const header = `
-    ${logoHtml('#1a56db')}
+    ${logoHtml()}
     <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">📬 New Join Request</h1>
     <p style="margin:8px 0 0;font-size:15px;color:rgba(255,255,255,0.88);font-family:Arial,Helvetica,sans-serif;">Action required in your organization</p>`;
 
@@ -193,7 +195,7 @@ export function generateRequestNotificationEmail(data: RequestEmailData): { subj
 
 export function generateApprovalEmail(data: ApprovalEmailData): { subject: string; html: string } {
   const header = `
-    ${logoHtml('#059669')}
+    ${logoHtml()}
     <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">✅ Request Approved!</h1>
     <p style="margin:8px 0 0;font-size:15px;color:rgba(255,255,255,0.88);font-family:Arial,Helvetica,sans-serif;">Welcome to ${data.organizationName}</p>`;
 
@@ -213,7 +215,7 @@ export function generateApprovalEmail(data: ApprovalEmailData): { subject: strin
 
 export function generateRejectionEmail(organizationName: string, recipientName: string): { subject: string; html: string } {
   const header = `
-    ${logoHtml('#374151')}
+    ${logoHtml()}
     <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">Update on Your Request</h1>`;
 
   const body = `
@@ -232,11 +234,11 @@ export function generateSegmentChangeEmail(data: SegmentChangeEmailData): { subj
   const segmentConfig = {
     purple: {
       title: "🎉 You're an Advocate!",
-      headerBg: '#7e22ce',
-      logoBg: '#9333ea',
-      accentColor: '#9333ea',
+      headerBg: '#6d28d9',
+      contentBg: '#faf5ff',
+      accentColor: '#7e22ce',
       highlightBg: '#f3e8ff',
-      highlightBorder: '#9333ea',
+      highlightBorder: '#7e22ce',
       highlightText: '#4c1d95',
       message: "Amazing work! You've become one of our top advocates. Your active engagement and diverse use of Lansa features is inspiring.",
       tips: ['Share your success story with peers', 'Help others by mentoring', 'Explore advanced features'],
@@ -244,11 +246,11 @@ export function generateSegmentChangeEmail(data: SegmentChangeEmailData): { subj
     },
     green: {
       title: '🌱 You\'re Engaged!',
-      headerBg: '#059669',
-      logoBg: '#10b981',
-      accentColor: '#10b981',
+      headerBg: '#047857',
+      contentBg: '#f0fdf4',
+      accentColor: '#059669',
       highlightBg: '#d1fae5',
-      highlightBorder: '#10b981',
+      highlightBorder: '#059669',
       highlightText: '#065f46',
       message: "Great to see you actively using Lansa! You're getting consistent value from the platform.",
       tips: ["Try new features you haven't explored", 'Complete your profile for better opportunities', 'Connect with more professionals'],
@@ -256,11 +258,11 @@ export function generateSegmentChangeEmail(data: SegmentChangeEmailData): { subj
     },
     orange: {
       title: '💡 Unlock More Potential',
-      headerBg: '#d97706',
-      logoBg: '#f59e0b',
-      accentColor: '#f59e0b',
+      headerBg: '#b45309',
+      contentBg: '#fffbeb',
+      accentColor: '#d97706',
       highlightBg: '#fef3c7',
-      highlightBorder: '#f59e0b',
+      highlightBorder: '#d97706',
       highlightText: '#92400e',
       message: "We've noticed you're using some features, but there's so much more Lansa can offer you.",
       tips: ['Explore AI-powered profile insights', 'Try our job matching feature', 'Update your skills and experience', 'Complete growth prompts in your dashboard'],
@@ -268,11 +270,11 @@ export function generateSegmentChangeEmail(data: SegmentChangeEmailData): { subj
     },
     red: {
       title: '👋 We Miss You!',
-      headerBg: '#dc2626',
-      logoBg: '#ef4444',
-      accentColor: '#ef4444',
+      headerBg: '#b91c1c',
+      contentBg: '#fff5f5',
+      accentColor: '#dc2626',
       highlightBg: '#fee2e2',
-      highlightBorder: '#ef4444',
+      highlightBorder: '#dc2626',
       highlightText: '#7f1d1d',
       message: "It's been a while since we've seen you on Lansa. We've made improvements and would love to have you back!",
       tips: ['Check out our new features', 'Update your profile to attract opportunities', 'See personalized job recommendations', 'Connect with your professional network'],
@@ -286,7 +288,7 @@ export function generateSegmentChangeEmail(data: SegmentChangeEmailData): { subj
   const tipsList = config.tips.map(t => `<li style="margin:6px 0;font-size:14px;color:#374151;font-family:Arial,Helvetica,sans-serif;">${t}</li>`).join('');
 
   const header = `
-    ${logoHtml(config.logoBg)}
+    ${logoHtml()}
     <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">${config.title}</h1>
     <p style="margin:8px 0 0;font-size:15px;color:rgba(255,255,255,0.88);font-family:Arial,Helvetica,sans-serif;">${config.sub}</p>`;
 
@@ -306,7 +308,7 @@ export function generateSegmentChangeEmail(data: SegmentChangeEmailData): { subj
 
   return {
     subject: subjectMap[data.newSegment] || 'Your Lansa journey update',
-    html: wrapper(config.headerBg, header, body, "Questions? Reply to this email — we're here to help!")
+    html: wrapper(config.headerBg, header, body, "Questions? Reply to this email — we're here to help!", config.contentBg)
   };
 }
 
@@ -314,7 +316,7 @@ export function generateChatRequestEmail(data: ChatRequestEmailData): { subject:
   const orgLine = data.organizationName ? ` from <strong>${data.organizationName}</strong>` : '';
 
   const header = `
-    ${logoHtml('#1a56db')}
+    ${logoHtml()}
     <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">✉️ Connection Request</h1>
     <p style="margin:8px 0 0;font-size:15px;color:rgba(255,255,255,0.88);font-family:Arial,Helvetica,sans-serif;">Someone wants to connect with you</p>`;
 
@@ -345,7 +347,7 @@ export function generateChatAcceptedEmail(data: ChatAcceptedEmailData): { subjec
   const withOrg = data.organizationName ? `${data.otherPartyName} from ${data.organizationName}` : data.otherPartyName;
 
   const header = `
-    ${logoHtml('#1a56db')}
+    ${logoHtml()}
     <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">🎉 Connection Made!</h1>
     <p style="margin:8px 0 0;font-size:15px;color:rgba(255,255,255,0.88);font-family:Arial,Helvetica,sans-serif;">Your chat is now open</p>`;
 
@@ -367,7 +369,7 @@ export function generateNewMessageEmail(data: NewMessageEmailData): { subject: s
   const preview = data.messagePreview.length >= 120 ? data.messagePreview.slice(0, 120) + '…' : data.messagePreview;
 
   const header = `
-    ${logoHtml('#374151')}
+    ${logoHtml()}
     <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">💬 New Message</h1>`;
 
   const body = `
@@ -395,7 +397,7 @@ export function generateNewMessageEmail(data: NewMessageEmailData): { subject: s
 
 export function generateEmployerInterestEmail(data: EmployerInterestEmailData): { subject: string; html: string } {
   const header = `
-    ${logoHtml('#059669')}
+    ${logoHtml()}
     <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">💚 An Employer is Interested!</h1>
     <p style="margin:8px 0 0;font-size:15px;color:rgba(255,255,255,0.88);font-family:Arial,Helvetica,sans-serif;">Your profile caught someone's attention</p>`;
 
@@ -414,7 +416,7 @@ export function generateEmployerInterestEmail(data: EmployerInterestEmailData): 
 
 export function generateEmployerNudgeEmail(data: EmployerInterestEmailData): { subject: string; html: string } {
   const header = `
-    ${logoHtml('#d97706')}
+    ${logoHtml()}
     <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">⚡ Super Interest Received!</h1>
     <p style="margin:8px 0 0;font-size:15px;color:rgba(255,255,255,0.88);font-family:Arial,Helvetica,sans-serif;">An employer really wants to connect with you</p>`;
 
@@ -433,7 +435,7 @@ export function generateEmployerNudgeEmail(data: EmployerInterestEmailData): { s
 
 export function generateMatchCreatedEmail(data: MatchCreatedEmailData): { subject: string; html: string } {
   const header = `
-    ${logoHtml('#6d28d9')}
+    ${logoHtml()}
     <h1 style="margin:0;font-size:30px;font-weight:900;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">🎉 It's a Match!</h1>
     <p style="margin:8px 0 0;font-size:15px;color:rgba(255,255,255,0.88);font-family:Arial,Helvetica,sans-serif;">Both of you expressed mutual interest</p>`;
 
