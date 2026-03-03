@@ -23,24 +23,24 @@ export function DesktopChatLayout({ activeThreadId, onSelectThread }: DesktopCha
   const dashboardPath = userType === 'employer' ? '/employer-dashboard' : '/dashboard';
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-[1200px] mx-auto h-screen flex flex-col px-6 lg:px-12 py-6">
+    <div className="min-h-screen bg-muted/30">
+      <div className="max-w-[1280px] mx-auto h-screen flex flex-col px-6 lg:px-10 py-6">
         {/* Top nav bar */}
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-5">
           <button
             onClick={() => navigate(dashboardPath)}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-            Back to Dashboard
+            <span>Back to Dashboard</span>
           </button>
-          <span className="text-muted-foreground/40">·</span>
-          <h1 className="text-lg font-semibold text-foreground">Messages</h1>
+          <span className="text-border">·</span>
+          <h1 className="text-base font-semibold text-foreground">Messages</h1>
         </div>
 
-        <div className="flex-1 flex rounded-2xl border border-border overflow-hidden bg-card shadow-sm min-h-0">
+        <div className="flex-1 flex rounded-2xl border border-border/60 overflow-hidden bg-card shadow-md min-h-0">
           {/* Left: Thread List */}
-          <div className="w-[300px] flex-shrink-0 flex flex-col">
+          <div className="w-[320px] flex-shrink-0 flex flex-col bg-card">
             <ChatThreadList
               threads={threads}
               activeThreadId={activeThreadId}
@@ -51,7 +51,7 @@ export function DesktopChatLayout({ activeThreadId, onSelectThread }: DesktopCha
           </div>
 
           {/* Right: Active Thread or Empty State */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col min-w-0 bg-background/60">
             {activeThreadId ? (
               <ChatThreadView
                 key={activeThreadId}
@@ -59,13 +59,13 @@ export function DesktopChatLayout({ activeThreadId, onSelectThread }: DesktopCha
                 currentUserId={user.id}
               />
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-center px-8">
-                <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
-                  <MessageCircle className="w-8 h-8 text-muted-foreground/50" />
+              <div className="flex flex-col items-center justify-center h-full text-center px-10">
+                <div className="w-20 h-20 rounded-3xl bg-muted flex items-center justify-center mb-5">
+                  <MessageCircle className="w-10 h-10 text-muted-foreground/40" />
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">Your messages</h3>
-                <p className="text-sm text-muted-foreground max-w-xs">
-                  Select a conversation from the left to start messaging. Chats open after both parties connect.
+                <h3 className="text-lg font-bold text-foreground mb-2">Select a conversation</h3>
+                <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
+                  Choose a conversation from the left to start messaging.
                 </p>
               </div>
             )}

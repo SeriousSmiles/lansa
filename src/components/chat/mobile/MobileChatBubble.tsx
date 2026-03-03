@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import type { ChatMessage } from "@/services/chatService";
 
 interface MobileChatBubbleProps {
@@ -23,33 +23,39 @@ export function MobileChatBubble({
 }: MobileChatBubbleProps) {
   const displayName = message.sender_display_name || senderName || "Unknown";
   const initials = displayName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
-  const timeStr = formatDistanceToNow(new Date(message.created_at), { addSuffix: false });
+  const timeStr = format(new Date(message.created_at), "h:mm a");
   const isEmployerMessage = !isSelf && !!senderOrgName;
 
   return (
-    <div className={cn("flex items-end gap-2 mb-1", isSelf ? "flex-row-reverse" : "flex-row")}>
+    <div className={cn(
+      "flex items-end gap-2",
+      isSelf ? "flex-row-reverse" : "flex-row",
+      showSenderInfo ? "mt-4" : "mt-1"
+    )}>
       {/* Avatar for other party */}
-      {!isSelf && showSenderInfo ? (
-        <Avatar className="w-8 h-8 flex-shrink-0 mb-1">
-          <AvatarImage src={senderImage} alt={displayName} />
-          <AvatarFallback className={cn(
-            "text-[10px] font-semibold text-white",
-            isEmployerMessage ? "bg-[#2B7FE8]" : "bg-muted-foreground"
-          )}>
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-      ) : !isSelf ? (
-        <div className="w-8 flex-shrink-0" />
+      {!isSelf ? (
+        showSenderInfo ? (
+          <Avatar className="w-8 h-8 flex-shrink-0 mb-1">
+            <AvatarImage src={senderImage} alt={displayName} />
+            <AvatarFallback
+              className="text-[10px] font-bold text-white"
+              style={{ background: isEmployerMessage ? "#2B7FE8" : "#F2713B" }}
+            >
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+        ) : (
+          <div className="w-8 flex-shrink-0" />
+        )
       ) : null}
 
-      <div className={cn("max-w-[72%] flex flex-col", isSelf ? "items-end" : "items-start")}>
+      <div className={cn("max-w-[74%] flex flex-col gap-1", isSelf ? "items-end" : "items-start")}>
         {/* Sender info (other party, first in group) */}
         {!isSelf && showSenderInfo && (
-          <div className="flex items-center gap-1 mb-1 px-1">
-            <span className="text-xs font-semibold text-foreground/80">{displayName}</span>
+          <div className="flex items-center gap-1 px-1">
+            <span className="text-xs font-semibold text-foreground/75">{displayName}</span>
             {senderOrgName && (
-              <span className="text-xs text-muted-foreground">· {senderOrgName}</span>
+              <span className="text-xs text-muted-foreground/60">· {senderOrgName}</span>
             )}
           </div>
         )}
@@ -57,18 +63,18 @@ export function MobileChatBubble({
         {/* Bubble */}
         <div
           className={cn(
-            "px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words",
+            "px-4 py-2.5 text-[15px] leading-relaxed break-words",
             isSelf
-              ? "bg-[#F2713B] text-white rounded-br-md"
+              ? "bg-[#F2713B] text-white rounded-[20px] rounded-br-[6px] shadow-sm"
               : isEmployerMessage
-                ? "bg-[#2B7FE8] text-white rounded-bl-md"
-                : "bg-muted text-foreground rounded-bl-md"
+                ? "bg-[#2B7FE8] text-white rounded-[20px] rounded-bl-[6px] shadow-sm"
+                : "bg-muted text-foreground rounded-[20px] rounded-bl-[6px] border border-border/30"
           )}
         >
           {message.body}
         </div>
 
-        <span className="text-[10px] text-muted-foreground mt-1 px-1">{timeStr}</span>
+        <span className="text-[10px] text-muted-foreground/60 px-1">{timeStr}</span>
       </div>
     </div>
   );
