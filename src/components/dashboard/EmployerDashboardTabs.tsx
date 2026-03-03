@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, FileText, BarChart3, Settings, CreditCard } from "lucide-react";
 import { gsap } from "gsap";
@@ -24,6 +24,7 @@ export function EmployerDashboardTabs({ businessData }: EmployerDashboardTabsPro
   const tabsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { canManageOrgSettings } = useOrgPermissions();
+  const [activeTab, setActiveTab] = useState("overview");
   
   useEffect(() => {
     if (tabsRef.current) {
@@ -40,7 +41,7 @@ export function EmployerDashboardTabs({ businessData }: EmployerDashboardTabsPro
   
   return (
     <div ref={tabsRef}>
-      <Tabs defaultValue="overview" className="mb-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <TabsList className={`grid w-full grid-cols-${tabCount}`}>
           <TabsTrigger value="overview" className="flex items-center gap-1.5 transition-colors hover:bg-muted">
             <Building2 className="h-4 w-4" />
@@ -71,7 +72,7 @@ export function EmployerDashboardTabs({ businessData }: EmployerDashboardTabsPro
         </TabsList>
         
         <TabsContent value="overview" className="pt-4">
-          <EmployerOverviewTab businessData={businessData} />
+          <EmployerOverviewTab businessData={businessData} onTabChange={setActiveTab} />
         </TabsContent>
         
         <TabsContent value="jobs" className="pt-4 animate-fade-in">

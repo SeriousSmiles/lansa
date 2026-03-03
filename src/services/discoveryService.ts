@@ -51,13 +51,30 @@ export const discoveryService = {
     certifiedOnly: boolean = false
   ): Promise<DiscoveryProfile[]> {
     try {
-      // Fetch profiles from public view
-      console.log('Fetching profiles from user_profiles_public, certifiedOnly:', certifiedOnly);
+      // Step 1: Fetch already-swiped candidate IDs to exclude them
+      const { data: swipeHistory } = await supabase
+        .from('swipes')
+        .select('target_user_id')
+        .eq('swiper_user_id', userId)
+        .eq('context', context);
+
+      const swipedIds = swipeHistory?.map(s => s.target_user_id) || [];
+
+      // Step 2: Fetch profiles, excluding already-swiped ones and self
+      console.log('Fetching profiles from user_profiles_public, certifiedOnly:', certifiedOnly, 'excluding', swipedIds.length, 'swiped profiles');
       
-      const { data: publicProfiles, error } = await supabase
+      let query = supabase
         .from('user_profiles_public')
         .select('*')
+        .neq('user_id', userId)
         .limit(limit);
+
+      // Exclude already-swiped candidates
+      if (swipedIds.length > 0) {
+        query = query.not('user_id', 'in', `(${swipedIds.join(',')})`);
+      }
+
+      const { data: publicProfiles, error } = await query;
 
       console.log('Query result:', { data: publicProfiles, error });
 
@@ -68,10 +85,6 @@ export const discoveryService = {
 
       if (!publicProfiles || publicProfiles.length === 0) {
         console.log('No profiles returned from user_profiles_public');
-        const errorMessage = certifiedOnly 
-          ? 'No certified candidates found. All available certified professionals have been reviewed.'
-          : 'No candidates found matching your criteria.';
-        console.log(errorMessage);
         return [];
       }
 
@@ -181,7 +194,6 @@ export const discoveryService = {
   async getJobListings(_userId: string, _filters: DiscoveryFilters = {}, _limit: number = 10) {
     try {
       const mockJobs: never[] = [];
-
       return mockJobs;
     } catch (error) {
       console.error('Error fetching job listings:', error);
