@@ -4,9 +4,11 @@ import { useChatThreads } from "@/hooks/useChatThreads";
 import { MobileChatThread } from "./MobileChatThread";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ChatThread } from "@/services/chatService";
+import { useUserState } from "@/contexts/UserStateProvider";
+import { useNavigate } from "react-router-dom";
 
 interface MobileChatInboxProps {
   activeThreadId: string | null;
@@ -83,6 +85,8 @@ export function MobileChatInbox({
 }: MobileChatInboxProps) {
   const { user } = useAuth();
   const { threads, loading } = useChatThreads();
+  const { userType } = useUserState();
+  const navigate = useNavigate();
 
   if (!user) return null;
 
@@ -102,12 +106,25 @@ export function MobileChatInbox({
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
       <div className="px-4 pt-safe-top pb-4 border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-10">
-        <h1 className="text-xl font-bold text-foreground">Messages</h1>
-        {!loading && threads.length > 0 && (
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {threads.length} conversation{threads.length !== 1 ? "s" : ""}
-          </p>
-        )}
+        <div className="flex items-center gap-3">
+          {userType === 'employer' && (
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="p-1.5 -ml-1 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Back to dashboard"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )}
+          <div className="flex-1">
+            <h1 className="text-xl font-bold text-foreground">Messages</h1>
+            {!loading && threads.length > 0 && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {threads.length} conversation{threads.length !== 1 ? "s" : ""}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Thread List */}
