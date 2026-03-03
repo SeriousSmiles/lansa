@@ -39,8 +39,8 @@ export function MobileChatThread({ threadId, currentUserId, onBack }: MobileChat
     >
       {/* Header — fixed at top */}
       <div
-        className="flex items-center gap-2 px-3 pb-3 border-b border-border/40 bg-white flex-shrink-0 shadow-sm z-10"
-        style={{ paddingTop: 'env(safe-area-inset-top, 12px)' }}
+        className="flex items-center gap-2 px-4 pb-4 border-b border-border/40 bg-white flex-shrink-0 shadow-sm z-10"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)' }}
       >
         <button
           onClick={onBack}
@@ -106,8 +106,8 @@ export function MobileChatThread({ threadId, currentUserId, onBack }: MobileChat
 
       {/* Input — fixed at bottom */}
       <div
-        className="px-4 py-3 border-t border-border/40 bg-white flex-shrink-0 shadow-[0_-1px_8px_0_rgba(0,0,0,0.06)]"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 12px)' }}
+        className="px-4 border-t border-border/40 bg-white flex-shrink-0 shadow-[0_-1px_8px_0_rgba(0,0,0,0.06)]"
+        style={{ paddingTop: '12px', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
       >
         <ChatInput
           onSend={(body) => sendMessage(body)}
