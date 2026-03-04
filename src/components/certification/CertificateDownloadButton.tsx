@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Download, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { buttonVariants } from "@/components/ui/button";
 import CertificateDoc, { CertificateDocProps } from "@/components/pdf/templates/pdf/CertificateDoc";
 import { CertResult, Certification } from "@/types/certification";
 
@@ -11,13 +12,6 @@ interface CertificateDownloadButtonProps {
   userId: string;
   compact?: boolean;
 }
-
-const buttonBase =
-  "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 cursor-pointer select-none";
-const buttonPrimary =
-  "bg-primary text-primary-foreground hover:bg-primary/90";
-const buttonSizeLg = "h-11 px-8 text-base";
-const buttonSizeMd = "h-9 px-4 text-sm";
 
 export default function CertificateDownloadButton({
   result,
@@ -42,11 +36,11 @@ export default function CertificateDownloadButton({
     fetchName();
   }, [userId]);
 
+  const btnClass = buttonVariants({ variant: "primary", size: compact ? "default" : "lg" });
+
   if (loading || !candidateName) {
     return (
-      <div
-        className={`${buttonBase} ${buttonPrimary} ${compact ? buttonSizeMd : buttonSizeLg} opacity-50 pointer-events-none ${compact ? "w-full" : "flex-1"}`}
-      >
+      <div className={`${btnClass} opacity-50 pointer-events-none w-full`}>
         <Loader2 className="h-4 w-4 animate-spin" />
         {compact ? "Preparing…" : "Preparing Certificate…"}
       </div>
@@ -74,9 +68,7 @@ export default function CertificateDownloadButton({
       className={compact ? "w-full" : "flex-1"}
     >
       {({ loading: pdfLoading }) => (
-        <div
-          className={`${buttonBase} ${buttonPrimary} ${compact ? buttonSizeMd : buttonSizeLg} w-full ${pdfLoading ? "opacity-50 pointer-events-none" : ""}`}
-        >
+        <div className={`${btnClass} w-full ${pdfLoading ? "opacity-50 pointer-events-none" : ""}`}>
           {pdfLoading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />

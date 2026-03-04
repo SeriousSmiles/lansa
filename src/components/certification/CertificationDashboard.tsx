@@ -133,8 +133,8 @@ export default function CertificationDashboard({ userId }: CertificationDashboar
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-6 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="py-8 px-4 flex items-start justify-center min-h-screen bg-background">
+      <div className="w-full max-w-4xl bg-card rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_24px_rgba(0,0,0,0.08)] p-8">
         {/* Back Button */}
         <Button
           variant="ghost"
