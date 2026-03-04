@@ -1,59 +1,74 @@
 
-## Candidate Listing Activation — Plan
+## Diagnosis — Confirmed Gap
 
-### What's missing
-There is **no UI** that lets a certified seeker toggle `visible_to_employers = true` in `user_profiles`. Without this being `true`, the `sync_user_profiles_public` trigger won't sync their row into the browse feed — so even certified users are invisible to employers unless `visible_to_employers` is set.
+**The employer notification pipeline for job applications is completely missing.** Here's what exists vs. what's needed:
 
-The `StudentAnalyticsCard` also checks `catalogue_entries.is_active` but the actual feed uses `user_profiles_public` which is driven by `visible_to_employers`. These are misaligned.
+| Step | Exists? |
+|---|---|
+| Candidate submits application via `apply-for-job-v2` | ✅ |
+| Notification inserted into `notifications` table for employer | ❌ |
+| `trigger_chat_notification_email` fires → sends email | ❌ (no notification row = no trigger) |
+| `job_application_received` email template | ❌ |
 
-### What to build
+The `apply-for-job-v2` edge function inserts the application record and records an interaction — but never creates a `notifications` row for the employer and never sends an email. The DB trigger `trigger_chat_notification_email` only fires when a row is inserted into `notifications` and only handles specific types (`chat_request_received`, `match_created`, etc.) — `job_application_received` is not one of them.
 
-#### 1. Listing Activation Toggle — new `ListingActivationCard` component
-A clear card on the seeker dashboard (inside the Overview tab) that:
-- Only shows for **certified** users (`lansa_certified = true AND verified = true`)
-- Reads the current `visible_to_employers` value from `user_profiles`
-- Shows status: **"You're Listed"** (active, green) or **"Activate Your Listing"** (inactive, CTA)
-- Has a toggle/button to set `visible_to_employers = true/false`
-- On activate: upserts `visible_to_employers = true` → triggers `sync_user_profiles_public` → candidate appears in employer browse feed
-- On deactivate: sets `visible_to_employers = false` → removes from feed
+## What to Build
 
-#### 2. Fix `StudentAnalyticsCard` listing check
-Replace `catalogue_entries.is_active` check with `user_profiles.visible_to_employers` to match the actual discovery mechanism.
+### 1. Add notification insert inside `apply-for-job-v2`
+After successful application insert, also insert a row into `notifications` for the employer (`job.created_by`):
+```
+type: 'job_application_received'
+user_id: job.created_by  ← employer
+title: 'New application received!'
+message: '[Candidate Name] applied for [Job Title]'
+action_url: '/dashboard/jobs/[job_id]/applicants'
+metadata: { applicant_id, job_id, application_id, applicant_name }
+```
 
-#### 3. Re-enable `visible_to_employers` filter in `discoveryService`
-Currently `discoveryService` only cross-references `user_certifications` for certified status. It does not verify `visible_to_employers`. This means a certified user with `visible_to_employers = false` who has a row in `user_profiles_public` from an old trigger run might still appear. Add an explicit filter: only show profiles where the underlying user has `visible_to_employers = true`.
+### 2. Add `job_application_received` to `trigger_chat_notification_email` DB trigger function
+Update the allowed `notification_type` whitelist in `trigger_chat_notification_email()` to include `job_application_received` — so the pg_net call to `send-chat-email` fires.
 
-The safest approach: add `.eq('visible_to_employers', true)` to the `user_profiles_public` query — but `user_profiles_public` doesn't have that column. Instead, after fetching from `user_profiles_public`, cross-reference `user_profiles` for `visible_to_employers = true` — OR rely on the trigger cleanup (when `visible_to_employers = false`, the trigger deletes the row from `user_profiles_public`). Since the trigger already handles this, the browse feed is safe — we just need the activation UI.
+Currently the trigger function has:
+```sql
+IF NEW.type NOT IN (
+  'chat_request_received', 'chat_request_accepted', 'message_received',
+  'employer_interest_received', 'employer_nudge_received', 'match_created'
+) THEN RETURN NEW;
+```
+Add `'job_application_received'` to this list.
 
-### Files to change
+### 3. Add `job_application_received` handler in `send-chat-email`
+Add a new branch that generates the employer notification email using a new `generateJobApplicationEmail` template.
+
+### 4. Add `generateJobApplicationEmail` template in `_shared/emailTemplates.ts`
+Clean, professional email to the employer:
+- Subject: "New application for [Job Title]"
+- Body: candidate name, job title, cover note preview (if any), CTA button → employer job applicants page
+- Style: matches existing template system (blue header, white body)
+
+## Files to Edit
 
 | File | Change |
 |---|---|
-| `src/components/dashboard/overview/ListingActivationCard.tsx` | **New** — toggle card for certified seekers |
-| `src/components/dashboard/overview/OverviewTab.tsx` | Add `ListingActivationCard` below `GrowthCardSection`, only for seeker role |
-| `src/components/dashboard/overview/StudentAnalyticsCard.tsx` | Fix listing check: read `user_profiles.visible_to_employers` instead of `catalogue_entries.is_active` |
+| `supabase/functions/apply-for-job-v2/index.ts` | Fetch applicant name + job title, insert `notifications` row for employer after successful application |
+| `supabase/functions/send-chat-email/index.ts` | Add `job_application_received` handler branch |
+| `supabase/functions/_shared/emailTemplates.ts` | Add `generateJobApplicationEmail` function + interface |
+| DB migration | Update `trigger_chat_notification_email` function to include `job_application_received` in the whitelist |
 
-### Card design
+## Flow After Fix
+
 ```
-┌─────────────────────────────────────────────────┐
-│  🟢 Your Profile is Live                        │
-│  Employers can discover you in the browse feed. │
-│                                                 │
-│  [  Pause Listing  ]   Listed since: Jan 2026   │
-└─────────────────────────────────────────────────┘
-
-or when inactive:
-
-┌─────────────────────────────────────────────────┐
-│  ⚡ Activate Your Listing                        │
-│  You're certified. Start appearing to employers │
-│  who are actively searching for talent like you │
-│                                                 │
-│  [  Go Live Now  ]                              │
-└─────────────────────────────────────────────────┘
+Candidate clicks Apply
+    ↓
+apply-for-job-v2 inserts application
+    ↓
+apply-for-job-v2 inserts notification row (type: job_application_received) for employer
+    ↓
+trigger_chat_notification_email DB trigger fires
+    ↓
+net.http_post → send-chat-email edge function
+    ↓
+generateJobApplicationEmail → Resend → employer inbox
 ```
 
-The card is only visible to certified users (will check `user_certifications.lansa_certified AND verified = true`). Non-certified users continue to see the certification prompt pathway.
-
-### Safety guarantee for existing browse feature
-No changes to `discoveryService.ts` or `CandidateBrowseTab.tsx`. The browse feature is untouched. The `sync_user_profiles_public` trigger already removes profiles when `visible_to_employers` is set to `false`, so deactivating naturally removes candidates from the feed.
+Rate limiting already built-in (15 min guard in `chat_email_log`) — employer won't be spammed if multiple candidates apply quickly.
