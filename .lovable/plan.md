@@ -1,74 +1,71 @@
 
-## Root Cause Diagnosis
+## Certificate PDF Download — Full Plan
 
-The shared profile link **IS technically broken for unauthenticated visitors** (anyone without a Lansa account). Here's exactly why:
+### What this builds
+A real, beautiful A4 Landscape PDF Certificate downloadable from the `ReflectionReport` page (the post-exam results screen) using `@react-pdf/renderer` — the same engine already used for resume PDFs in this project. No new dependencies needed.
 
-### What's happening
-
-1. The route `/profile/share/:userId` in `App.tsx` is **NOT wrapped in a `<Guard>`** — correct, it's public.
-2. The page calls `supabase.from('user_profiles_public').select('*').eq('user_id', userId)`.
-3. The RLS policy `"Public can view shared profiles"` has `USING (true)` — anyone should be able to read.
-4. The profile **exists** in `user_profiles_public` for `a2dda0cd-eace-415d-a070-6cf6c8035ebe`.
-5. The UUID regex in `useSharedProfileData` correctly extracts the ID from the slug.
-
-**So why does it show "Profile not found"?**
-
-The Supabase client used is the **standard anon client** — which is correct. But the `user_profiles_public` table was just converted to use **`WITH (security_invoker = true)`** in the last security migration. 
-
-The `security_invoker = true` was applied to the **`catalogue_students` VIEW and `chat_participants_view` VIEW** — not the `user_profiles_public` TABLE itself. However, the **`catalogue_students` view** queries `user_profiles_public`, and if that view now enforces the caller's role, unauthenticated callers hitting `user_profiles_public` directly need just the table's RLS policies.
-
-**The real problem:** Looking more carefully — the profile data IS in `user_profiles_public`, and the RLS allows public reads. The issue is that **`John Nathan Stehpens` has `is_public = false`** in `user_profiles`. The `sync_user_profiles_public` trigger logic says:
+### Certificate design
+A4 Landscape (842 × 595pt). Two-zone layout:
 
 ```
-should_be_public := NEW.is_public OR (COALESCE(NEW.certified, false) AND COALESCE(NEW.visible_to_employers, false));
+┌─────────────────────────────────────────────────────────────────────┐
+│  LEFT ACCENT BAR (dark)  │         MAIN CERTIFICATE BODY            │
+│  ┌──────────────────┐    │                                           │
+│  │  LANSA SVG SEAL  │    │  This certifies that                     │
+│  │  (custom badge)  │    │  ── FULL NAME ──                         │
+│  │                  │    │  has successfully completed               │
+│  │  ● SCORE: 88%    │    │  OFFICE SECTOR PROFESSIONAL CERTIFICATION│
+│  │  ● Level badge   │    │                                           │
+│  └──────────────────┘    │  Category Scores (4 mini bars)           │
+│                           │                                           │
+│                           │  ── AI Summary (1-2 lines) ──           │
+│                           │                                           │
+│                           │  Issued: Jan 2026  │ Code: XXXX-YYYY     │
+│                           │  Verify at lansa.online/verify/CODE      │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-His `certified = true` and `visible_to_employers = true`, so `should_be_public = true` — his row **should** be synced. And it IS — confirmed the row exists in `user_profiles_public`.
+**The SVG Badge** (real SVG paths, no icon libraries):
+- Outer ring with tick marks (like a compass rose / seal)
+- Inner circle with "LANSA" wordmark
+- Sector label arc text around the ring
+- Star/diamond accent at top
+- Color: gold/amber for Standard, purple gradient for High Performer
 
-**The actual bug: The `lansa.online` domain is a custom domain pointing to the Lovable preview/published app.** When someone opens `https://lansa.online/profile/share/john-...` they are NOT logged in. The Supabase client initializes with no session → `auth.role() = 'anon'`.
+### Data on the certificate
+- Candidate full name (from `user_profiles`)
+- Sector name (Office / Service / Technical / Digital)
+- Level (Certified / High Performer)
+- Total score %
+- Category scores: Mindset, Workplace Intelligence, Performance Habits, Applied Thinking
+- AI summary text (first 200 chars)
+- Date issued
+- Verification code
+- Verify URL: `lansa.online/verify/[code]`
 
-The `"Public can view shared profiles"` policy is `FOR SELECT USING (true)` — this grants both `anon` and `authenticated` roles access. **This should work.**
+### Files to create/edit
 
-Let me check if there's a different issue — the URL `lansa.online` vs `lansa.lovable.app`. The route exists in the SPA, so deep links only work if the server redirects all paths to `index.html`. **This is the real issue**: the custom domain `lansa.online` may not have the SPA catch-all redirect configured, meaning `/profile/share/...` returns a 404 from the server rather than loading the React app.
-
-**Additionally**: The Supabase client in the browser needs the profile URL to reach the Lovable app with proper SPA routing. The Lovable published app at `lansa.lovable.app` DOES have this configured. The custom domain `lansa.online` depends on how it was configured.
-
-**To confirm the actual issue, test with:**
-`https://lansa.lovable.app/profile/share/john-nathan-stehpens-a2dda0cd-eace-415d-a070-6cf6c8035ebe`
-
-If that works but `lansa.online/...` doesn't → it's a custom domain SPA routing issue (requires dashboard fix, no code change needed).
-
-If BOTH fail → there's a code/RLS issue.
-
-## What I can fix in code (regardless of domain issue)
-
-There is one genuine code bug: the `useSharedProfileData` hook uses the Supabase client which **might** have its session from the previous security fix affecting things. More importantly, I should add better error logging so it's easier to distinguish "no row found" vs "permission denied" vs "network error".
-
-Also: the Supabase client query for public profiles should use the **service role** approach or at minimum ensure it's using the anon key correctly for truly public data.
-
-## Plan
-
-### 1. Add diagnostic logging in `useSharedProfileData`
-Distinguish between RLS denial (403), no row (data is null), and network errors so we know exactly what's failing.
-
-### 2. Ensure the Supabase client always reads `user_profiles_public` correctly for unauthenticated users
-The anon client already should work. But as a safety measure — verify the query has no `.maybeSingle()` issues and returns proper error codes.
-
-### 3. Show a more informative fallback
-Instead of just "Profile not found", show different messages for:
-- Profile is private (exists but not public)  
-- Profile doesn't exist
-- Network/auth error
-
-### What requires manual action
-- If `lansa.online` is the custom domain: check in the Lovable dashboard that **SPA routing / catch-all redirect** is enabled for the custom domain. All paths must return `index.html`.
-
-## Files to change
-
-| File | Change |
+| File | Action |
 |---|---|
-| `src/hooks/useSharedProfileData.ts` | Improve error handling to log the exact Supabase error code, distinguish null data from auth errors |
-| `src/pages/SharedProfile.tsx` | Pass error state through, show contextual message |
-| `src/components/profile/shared/ProfileNotFound.tsx` | Show contextual message based on error type |
+| `src/components/pdf/templates/pdf/CertificateDoc.tsx` | New — the `@react-pdf/renderer` Document for the certificate |
+| `src/components/certification/CertificateDownloadButton.tsx` | New — button component that fetches profile + builds the PDF |
+| `src/components/certification/ReflectionReport.tsx` | Replace `handleDownloadCertificate` alert stub with real button |
 
-The fix is small — the main investigation outcome is: **most likely this is a custom domain SPA routing issue**, but the code improvements will also surface exactly what's failing.
+### How it works
+1. User clicks "Download Certificate" on the ReflectionReport page
+2. `CertificateDownloadButton` already has `result` + `certification` data passed as props
+3. It fetches the user's `name` from `user_profiles` (already available in the parent component via `userId`)
+4. Renders `<PDFDownloadLink>` from `@react-pdf/renderer` wrapping `CertificateDoc`
+5. Browser downloads `lansa-certificate-[sector].pdf`
+
+### SVG Badge approach in react-pdf
+`@react-pdf/renderer` supports SVG via `<Svg>`, `<Path>`, `<Circle>`, `<G>`, `<Text>` from the same package. The badge will be:
+- A `<Svg>` component embedded in the PDF (not an image file)
+- Outer decorative ring using `<Circle>` with dashed stroke
+- 12 tick marks using `<Line>` elements in a loop pattern (defined as path data)
+- Central circle with "LANSA" text
+- Sector name below
+- Gold/amber color scheme for Standard, amber-to-deep-gold for High Performer
+- A checkmark path at the top of the ring
+
+This is a real SVG design with geometric precision — not an icon library component.
