@@ -7,6 +7,7 @@ import {
   generateEmployerInterestEmail,
   generateEmployerNudgeEmail,
   generateMatchCreatedEmail,
+  generateJobApplicationEmail,
 } from '../_shared/emailTemplates.ts';
 
 const corsHeaders = {
@@ -189,6 +190,23 @@ Deno.serve(async (req) => {
         recipientEmail: profile.email,
         otherPartyName,
         threadUrl: action_url || '/chat',
+      });
+    } else if (notification_type === 'job_application_received') {
+      const applicantName = metadata?.applicant_name || 'A candidate';
+      const jobId = metadata?.job_id || '';
+      // Extract job title from message: `"<title>"`
+      const jobTitleMatch = message.match(/"([^"]+)"/);
+      const jobTitle = jobTitleMatch?.[1] || 'a job';
+      const coverNote = metadata?.cover_note || undefined;
+      emailContent = generateJobApplicationEmail({
+        recipientName,
+        recipientEmail: profile.email,
+        applicantName,
+        jobTitle,
+        coverNote,
+        applicantsUrl: action_url
+          ? `https://lansa.online${action_url}`
+          : `https://lansa.online/dashboard`,
       });
     } else {
       console.log('[send-chat-email] Unknown notification type, skipping');

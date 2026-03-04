@@ -475,3 +475,44 @@ export function generateMatchCreatedEmail(data: MatchCreatedEmailData): { subjec
     html: wrapper('#6d28d9', header, body, 'You can manage your notification preferences in your Lansa settings.')
   };
 }
+
+// ─── Job Application Received (employer notification) ─────────────────────────
+
+export interface JobApplicationEmailData {
+  recipientName: string;
+  recipientEmail: string;
+  applicantName: string;
+  jobTitle: string;
+  coverNote?: string;
+  applicantsUrl: string;
+}
+
+export function generateJobApplicationEmail(data: JobApplicationEmailData): { subject: string; html: string } {
+  const header = `
+    ${logoHtml()}
+    <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">📋 New Application!</h1>
+    <p style="margin:8px 0 0;font-size:15px;color:rgba(255,255,255,0.88);font-family:Arial,Helvetica,sans-serif;">A candidate applied to your job post</p>`;
+
+  const coverNoteBlock = data.coverNote ? `
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:20px 0;">
+      <tr>
+        <td style="background-color:#eff6ff;border-left:4px solid #1a56db;border-radius:0 8px 8px 0;padding:16px 20px;">
+          <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;font-family:Arial,Helvetica,sans-serif;">Cover Note</p>
+          <p style="margin:0;font-size:15px;color:#1f2937;font-style:italic;font-family:Arial,Helvetica,sans-serif;">"${data.coverNote.slice(0, 200)}${data.coverNote.length > 200 ? '…' : ''}"</p>
+        </td>
+      </tr>
+    </table>` : '';
+
+  const body = `
+    ${p(`Hi ${data.recipientName},`)}
+    ${p(`<strong>${data.applicantName}</strong> has applied for your job posting:`)}
+    ${infoTable([['Job Title', data.jobTitle], ['Applicant', data.applicantName]])}
+    ${coverNoteBlock}
+    ${p('Review their full profile and application in your dashboard to take action.')}
+    ${ctaButton('View Application', data.applicantsUrl, '#1a56db')}`;
+
+  return {
+    subject: `New application for "${data.jobTitle}" from ${data.applicantName}`,
+    html: wrapper('#1a56db', header, body, 'You can manage all job applications from your Lansa employer dashboard.')
+  };
+}

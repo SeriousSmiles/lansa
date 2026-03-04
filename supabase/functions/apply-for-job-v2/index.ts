@@ -124,6 +124,33 @@ Deno.serve(async (req) => {
       type: 'apply',
     });
 
+    // Notify employer if job has a creator
+    if (job.created_by) {
+      // Fetch applicant name
+      const { data: applicantProfile } = await supabase
+        .from('user_profiles')
+        .select('name')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      const applicantName = applicantProfile?.name || 'A candidate';
+
+      await supabase.from('notifications').insert({
+        user_id: job.created_by,
+        type: 'job_application_received',
+        title: 'New application received!',
+        message: `${applicantName} applied for "${job.title}"`,
+        action_url: `/dashboard/jobs/${job_id}/applicants`,
+        metadata: {
+          applicant_id: user.id,
+          applicant_name: applicantName,
+          job_id,
+          application_id: application.id,
+        },
+      });
+
+      console.log(`Notified employer ${job.created_by} of new application`);
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 
