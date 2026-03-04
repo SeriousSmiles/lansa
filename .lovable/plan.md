@@ -1,121 +1,74 @@
 
-## Security Audit — Full Analysis & Plan
+## Root Cause Diagnosis
 
-All 18 findings have been categorized. Here's what's real, what's a false positive, and what the actual changes are.
+The shared profile link **IS technically broken for unauthenticated visitors** (anyone without a Lansa account). Here's exactly why:
 
----
+### What's happening
 
-## VERDICT ON EVERY FINDING
+1. The route `/profile/share/:userId` in `App.tsx` is **NOT wrapped in a `<Guard>`** — correct, it's public.
+2. The page calls `supabase.from('user_profiles_public').select('*').eq('user_id', userId)`.
+3. The RLS policy `"Public can view shared profiles"` has `USING (true)` — anyone should be able to read.
+4. The profile **exists** in `user_profiles_public` for `a2dda0cd-eace-415d-a070-6cf6c8035ebe`.
+5. The UUID regex in `useSharedProfileData` correctly extracts the ID from the slug.
 
-### Errors to Fix (Database)
+**So why does it show "Profile not found"?**
 
-**1. `chat_email_log` — RLS disabled**
-This table has policies but RLS is not enabled. The infrastructure memory confirms: "RLS is disabled on `chat_email_log` to allow the postgres superuser role to insert email logs via trigger." This is intentional and correct — the trigger runs as postgres superuser which bypasses RLS anyway. The existing `USING (false)` policy already blocks all API access. **We mark this as ignored with justification** rather than enabling RLS, since enabling it and keeping `USING (false)` would still block the trigger — wrong outcome.
+The Supabase client used is the **standard anon client** — which is correct. But the `user_profiles_public` table was just converted to use **`WITH (security_invoker = true)`** in the last security migration. 
 
-**2. `Security Definer View` — `catalogue_students` and `chat_participants_view`**
-These views bypass RLS. `catalogue_students` is the employer browse feed — it needs to be readable by authenticated employers only. `chat_participants_view` exposes names/avatars for chat UI — needs to be readable by authenticated users who are thread participants. Both need to convert to `security_invoker = true` so they respect the RLS on their underlying tables.
+The `security_invoker = true` was applied to the **`catalogue_students` VIEW and `chat_participants_view` VIEW** — not the `user_profiles_public` TABLE itself. However, the **`catalogue_students` view** queries `user_profiles_public`, and if that view now enforces the caller's role, unauthenticated callers hitting `user_profiles_public` directly need just the table's RLS policies.
 
-**3. `RLS Disabled in Public` — some table has no RLS**
-Needs to be identified specifically and fixed.
+**The real problem:** Looking more carefully — the profile data IS in `user_profiles_public`, and the RLS allows public reads. The issue is that **`John Nathan Stehpens` has `is_public = false`** in `user_profiles`. The `sync_user_profiles_public` trigger logic says:
 
-**4. `Policy Exists RLS Disabled`** — already handled by the `chat_email_log` ignore above.
-
-### Errors to Fix (Access Control)
-
-**5. `user_profiles_public` — publicly readable, exposing names/emails/phones**
-This is by design — this IS the public student profile page. BUT the scanner correctly notes email and phone are exposed. The `sync_user_profiles_public` trigger already gates email/phone behind `privacy_settings`. The SELECT policy for "public" is correct for sharing profile links. **Mark as ignored with context** — privacy controls are already in place via the trigger.
-
-**6. `cert_certifications` — anyone can enumerate all certifications**
-The policy `Anyone can view certifications by verification code` uses `USING (true)` which actually allows enumeration without a code. Fix: change to only allow access when filtering by a known `verification_code`. However — employers viewing the catalogue also see certification status. This needs a two-part policy: authenticated users can read all, unauthenticated only by code.
-
-### Warnings to Fix
-
-**7. `parse-cv` — no ownership validation**
-Active function, called from client with the logged-in user's own userId. Needs ownership check: extract JWT, verify `claims.sub === userId`.
-
-**8. Legacy AI functions with `verify_jwt=false`** — `analyze-skill-reframe`, `analyze-90day-goal`, `generate-power-mirror`, `generate-interactive-profile-guidance` — confirmed ACTIVE in client code (called from onboarding flow and profile). These consume OpenAI credits without authentication. Fix: add JWT validation in code for each function (keep `verify_jwt=false` since the new Supabase signing-keys system requires this pattern, but add `getClaims()` check).
-
-**9. Permissive INSERT policies (`WITH CHECK (true)`)**
-- `notifications`: inserted by SECURITY DEFINER triggers only (postgres superuser) — API-level INSERT with `WITH CHECK (true)` for authenticated users means any user could insert a notification for any other user. Fix: restrict to `user_id = auth.uid()` only.
-- `organization_audit_log`: written by `log_org_action()` SECURITY DEFINER function — direct INSERT policy for authenticated users is unnecessary. Fix: remove direct INSERT policy.
-- `segment_email_log`: written by `trigger_segment_change_email` DB trigger (postgres superuser, bypasses RLS) — direct INSERT policy for public is unnecessary. Fix: remove.
-- `companies` and `organizations`: intentional for employer onboarding. **Mark as ignored.**
-
-**10. `Function Search Path Mutable`** — 2 functions: `update_product_updates_updated_at` and `update_updated_at_column` — simple triggers that don't query tables. Add `SET search_path = public` to both.
-
-**11. `has_org_role` missing** — FALSE POSITIVE. Function exists in DB. **Mark as ignored.**
-
-**12. `client_role_checks`** — FALSE POSITIVE confirmed by scanner itself. **Mark as ignored.**
-
-**13. Leaked Password Protection** — Supabase dashboard setting, cannot fix via code. Mark with note directing to Auth dashboard.
-
-**14. Postgres version** — Supabase dashboard upgrade, cannot fix via code. Mark with note.
-
-**15. `catalogue_students` view no RLS** — Addressed by converting to `security_invoker = true` (#2 above) which causes it to inherit underlying table RLS.
-
-**16. `chat_participants_view` no RLS** — Same as above.
-
----
-
-## Changes
-
-### 1. Database Migration
-```sql
--- Fix security_definer views → security_invoker
-CREATE OR REPLACE VIEW public.catalogue_students WITH (security_invoker = true) AS ...
-CREATE OR REPLACE VIEW public.chat_participants_view WITH (security_invoker = true) AS ...
-
--- Fix mutable search_path on 2 trigger functions  
-CREATE OR REPLACE FUNCTION public.update_product_updates_updated_at()
-  ... SET search_path = public ...
-CREATE OR REPLACE FUNCTION public.update_updated_at_column()
-  ... SET search_path = public ...
-
--- Fix notifications INSERT — users could write notifications for other users
-DROP POLICY IF EXISTS "..." ON public.notifications;
-CREATE POLICY "Users can insert own notifications" ON public.notifications
-  FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
-
--- Fix organization_audit_log — remove direct INSERT for authenticated users
--- (log_org_action SECURITY DEFINER function handles this)
-DROP POLICY IF EXISTS direct authenticated INSERT on organization_audit_log;
-
--- Fix segment_email_log — remove public INSERT
--- (trigger_segment_change_email runs as postgres, bypasses RLS)
-DROP POLICY IF EXISTS public INSERT on segment_email_log;
-
--- Fix cert_certifications SELECT — prevent unauthenticated enumeration
--- Keep public access but require verification_code OR be authenticated
-DROP POLICY "Anyone can view certifications by verification code";
-CREATE POLICY "View certifications" ON public.cert_certifications
-  FOR SELECT USING (
-    auth.role() = 'authenticated'  -- employers and logged-in users
-    OR verification_code IS NOT NULL  -- public verification link usage
-  );
+```
+should_be_public := NEW.is_public OR (COALESCE(NEW.certified, false) AND COALESCE(NEW.visible_to_employers, false));
 ```
 
-### 2. `parse-cv/index.ts` — Add ownership validation
-After reading the JWT, verify `claims.sub === userId`. Uses `getClaims()` pattern.
+His `certified = true` and `visible_to_employers = true`, so `should_be_public = true` — his row **should** be synced. And it IS — confirmed the row exists in `user_profiles_public`.
 
-### 3. `analyze-skill-reframe`, `analyze-90day-goal`, `generate-power-mirror`, `generate-interactive-profile-guidance`
-Add JWT auth check at the top of each function using `getClaims()`. The client already sends the auth header via `supabase.functions.invoke()` (Supabase client automatically attaches it).
+**The actual bug: The `lansa.online` domain is a custom domain pointing to the Lovable preview/published app.** When someone opens `https://lansa.online/profile/share/john-...` they are NOT logged in. The Supabase client initializes with no session → `auth.role() = 'anon'`.
 
-### 4. Security finding management
-- Mark `chat_email_log` RLS as ignored (intentional design, postgres trigger bypasses RLS)
-- Mark `user_profiles_public` public read as ignored (by-design public profiles)
-- Mark `has_org_role_missing` as ignored (function exists)
-- Mark `client_role_checks` as ignored (cosmetic only, RLS enforces server-side)
-- Mark leaked password and postgres version as "requires dashboard action"
-- Mark `companies`/`organizations` permissive INSERT as ignored (onboarding design)
+The `"Public can view shared profiles"` policy is `FOR SELECT USING (true)` — this grants both `anon` and `authenticated` roles access. **This should work.**
 
-### Files to change
+Let me check if there's a different issue — the URL `lansa.online` vs `lansa.lovable.app`. The route exists in the SPA, so deep links only work if the server redirects all paths to `index.html`. **This is the real issue**: the custom domain `lansa.online` may not have the SPA catch-all redirect configured, meaning `/profile/share/...` returns a 404 from the server rather than loading the React app.
 
-| Target | Change |
+**Additionally**: The Supabase client in the browser needs the profile URL to reach the Lovable app with proper SPA routing. The Lovable published app at `lansa.lovable.app` DOES have this configured. The custom domain `lansa.online` depends on how it was configured.
+
+**To confirm the actual issue, test with:**
+`https://lansa.lovable.app/profile/share/john-nathan-stehpens-a2dda0cd-eace-415d-a070-6cf6c8035ebe`
+
+If that works but `lansa.online/...` doesn't → it's a custom domain SPA routing issue (requires dashboard fix, no code change needed).
+
+If BOTH fail → there's a code/RLS issue.
+
+## What I can fix in code (regardless of domain issue)
+
+There is one genuine code bug: the `useSharedProfileData` hook uses the Supabase client which **might** have its session from the previous security fix affecting things. More importantly, I should add better error logging so it's easier to distinguish "no row found" vs "permission denied" vs "network error".
+
+Also: the Supabase client query for public profiles should use the **service role** approach or at minimum ensure it's using the anon key correctly for truly public data.
+
+## Plan
+
+### 1. Add diagnostic logging in `useSharedProfileData`
+Distinguish between RLS denial (403), no row (data is null), and network errors so we know exactly what's failing.
+
+### 2. Ensure the Supabase client always reads `user_profiles_public` correctly for unauthenticated users
+The anon client already should work. But as a safety measure — verify the query has no `.maybeSingle()` issues and returns proper error codes.
+
+### 3. Show a more informative fallback
+Instead of just "Profile not found", show different messages for:
+- Profile is private (exists but not public)  
+- Profile doesn't exist
+- Network/auth error
+
+### What requires manual action
+- If `lansa.online` is the custom domain: check in the Lovable dashboard that **SPA routing / catch-all redirect** is enabled for the custom domain. All paths must return `index.html`.
+
+## Files to change
+
+| File | Change |
 |---|---|
-| DB migration | Fix views, fix trigger functions search_path, fix INSERT policies, fix cert_certifications |
-| `supabase/functions/parse-cv/index.ts` | Add `getClaims()` ownership check |
-| `supabase/functions/analyze-skill-reframe/index.ts` | Add JWT auth |
-| `supabase/functions/analyze-90day-goal/index.ts` | Add JWT auth |
-| `supabase/functions/generate-power-mirror/index.ts` | Add JWT auth |
-| `supabase/functions/generate-interactive-profile-guidance/index.ts` | Add JWT auth |
-| Security findings | Mark 6 findings as ignored/noted with justification |
+| `src/hooks/useSharedProfileData.ts` | Improve error handling to log the exact Supabase error code, distinguish null data from auth errors |
+| `src/pages/SharedProfile.tsx` | Pass error state through, show contextual message |
+| `src/components/profile/shared/ProfileNotFound.tsx` | Show contextual message based on error type |
+
+The fix is small — the main investigation outcome is: **most likely this is a custom domain SPA routing issue**, but the code improvements will also surface exactly what's failing.
