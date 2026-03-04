@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Award, Download, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Award, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import gsap from "gsap";
 import { CategoryCard } from "./CategoryCard";
 import { StrengthsFocusCard } from "./StrengthsFocusCard";
 import { ReviewDrawer } from "./ReviewDrawer";
 import { CertResult, Certification } from "@/types/certification";
+import CertificateDownloadButton from "./CertificateDownloadButton";
 
 interface ReflectionReportProps {
   resultId: string;
@@ -107,9 +108,7 @@ export default function ReflectionReport({ resultId, userId }: ReflectionReportP
     setLoading(false);
   };
 
-  const handleDownloadCertificate = () => {
-    alert('Certificate download coming soon!');
-  };
+  const handleDownloadCertificate = () => {}; // replaced by CertificateDownloadButton
 
   if (loading) {
     return (
@@ -220,11 +219,12 @@ export default function ReflectionReport({ resultId, userId }: ReflectionReportP
               📝 Review Your Answers
             </Button>
           )}
-          {result.pass_fail && (
-            <Button onClick={handleDownloadCertificate} className="flex-1" size="lg">
-              <Download className="mr-2 h-4 w-4" />
-              Download Certificate
-            </Button>
+          {result.pass_fail && certification && (
+            <CertificateDownloadButton
+              result={result}
+              certification={certification}
+              userId={userId}
+            />
           )}
           <Button 
             onClick={() => navigate('/certification')}
