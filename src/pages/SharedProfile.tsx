@@ -8,14 +8,14 @@ import { useSharedProfileData } from "@/hooks/useSharedProfileData";
 export default function SharedProfile() {
   // Get the URL parameter which could be either just userId or name-userId format
   const { userId: urlParam } = useParams();
-  const { isLoading, profileData } = useSharedProfileData(urlParam);
+  const { isLoading, profileData, profileError } = useSharedProfileData(urlParam);
 
   if (isLoading) {
     return <ProfileLoadingState />;
   }
   
   if (!profileData) {
-    return <ProfileNotFound />;
+    return <ProfileNotFound errorType={profileError} />;
   }
 
   return <SharedProfileContainer profileData={profileData} urlParam={urlParam} />;

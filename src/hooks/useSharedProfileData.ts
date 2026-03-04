@@ -72,9 +72,12 @@ export interface SharedProfileData {
  * ```
  */
 
+export type ProfileError = 'not_found' | 'permission_denied' | 'network_error' | null;
+
 export function useSharedProfileData(urlParam: string | undefined) {
   const [isLoading, setIsLoading] = useState(true);
   const [profileData, setProfileData] = useState<SharedProfileData | null>(null);
+  const [profileError, setProfileError] = useState<ProfileError>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
   // Function to extract user ID from URL parameter
@@ -145,12 +148,19 @@ export function useSharedProfileData(urlParam: string | undefined) {
         .maybeSingle() as { data: PublicProfileFields | null; error: any };
         
       if (profileError) {
-        console.error("Error fetching profile:", profileError);
-        throw profileError;
+        console.error("Error fetching profile — code:", profileError.code, "message:", profileError.message, "details:", profileError.details);
+        if (profileError.code === 'PGRST301' || profileError.message?.includes('permission') || profileError.message?.includes('policy')) {
+          setProfileError('permission_denied');
+        } else {
+          setProfileError('network_error');
+        }
+        setIsLoading(false);
+        return;
       }
       
       if (!profileData) {
-        console.log("No profile found for userId:", userId);
+        console.log("No profile row found for userId:", userId, "— profile may not be public or does not exist");
+        setProfileError('not_found');
         setIsLoading(false);
         return;
       }
@@ -246,10 +256,11 @@ export function useSharedProfileData(urlParam: string | undefined) {
       setProfileData(profile);
     } catch (error) {
       console.error("Error loading shared profile data:", error);
+      setProfileError('network_error');
     }
     
     setIsLoading(false);
   };
 
-  return { isLoading, profileData };
+  return { isLoading, profileData, profileError };
 }
