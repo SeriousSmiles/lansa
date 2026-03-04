@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
-import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import CertificateDoc, { CertificateDocProps } from "@/components/pdf/templates/pdf/CertificateDoc";
@@ -12,6 +11,13 @@ interface CertificateDownloadButtonProps {
   userId: string;
   compact?: boolean;
 }
+
+const buttonBase =
+  "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 cursor-pointer select-none";
+const buttonPrimary =
+  "bg-primary text-primary-foreground hover:bg-primary/90";
+const buttonSizeLg = "h-11 px-8 text-base";
+const buttonSizeMd = "h-9 px-4 text-sm";
 
 export default function CertificateDownloadButton({
   result,
@@ -48,10 +54,12 @@ export default function CertificateDownloadButton({
 
   if (loading || !candidateName) {
     return (
-      <Button disabled className={compact ? "w-full" : "flex-1"} size={compact ? "default" : "lg"}>
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      <div
+        className={`${buttonBase} ${buttonPrimary} ${compact ? buttonSizeMd : buttonSizeLg} opacity-50 pointer-events-none ${compact ? "w-full" : "flex-1"}`}
+      >
+        <Loader2 className="h-4 w-4 animate-spin" />
         {compact ? "Preparing…" : "Preparing Certificate…"}
-      </Button>
+      </div>
     );
   }
 
@@ -72,22 +80,25 @@ export default function CertificateDownloadButton({
     <PDFDownloadLink
       document={<CertificateDoc {...docProps} />}
       fileName={fileName}
+      style={{ textDecoration: "none" }}
       className={compact ? "w-full" : "flex-1"}
     >
       {({ loading: pdfLoading }) => (
-        <Button className="w-full" size={compact ? "default" : "lg"} disabled={pdfLoading}>
+        <div
+          className={`${buttonBase} ${buttonPrimary} ${compact ? buttonSizeMd : buttonSizeLg} w-full ${pdfLoading ? "opacity-50 pointer-events-none" : ""}`}
+        >
           {pdfLoading ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               {compact ? "Generating…" : "Generating PDF…"}
             </>
           ) : (
             <>
-              <Download className="mr-2 h-4 w-4" />
+              <Download className="h-4 w-4" />
               {compact ? "Download" : "Download Certificate"}
             </>
           )}
-        </Button>
+        </div>
       )}
     </PDFDownloadLink>
   );

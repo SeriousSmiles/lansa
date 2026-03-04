@@ -36,7 +36,11 @@ export default function Certification() {
 
   // Show result page if resultId is present
   if (resultId) {
-    return <ReflectionReport resultId={resultId} userId={userId!} />;
+    return (
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8">
+        <ReflectionReport resultId={resultId} userId={userId!} />
+      </div>
+    );
   }
 
   // Show exam flow if sector is selected
@@ -45,5 +49,9 @@ export default function Certification() {
   }
 
   // Show dashboard
-  return <CertificationDashboard userId={userId!} />;
+  return (
+    <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8">
+      <CertificationDashboard userId={userId!} />
+    </div>
+  );
 }
