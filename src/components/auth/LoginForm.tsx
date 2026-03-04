@@ -7,7 +7,6 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUserAnswers, hasCompletedOnboarding } from "@/services/question";
 import { supabase } from "@/integrations/supabase/client";
 
 interface LoginFormData {
@@ -46,27 +45,8 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
         return;
       }
       
-      // Get the current session to check user ID
-      const { data: { session } } = await supabase.auth.getSession();
-
-      // Failsafe: if session missing, just send to onboarding
-      if (!session?.user?.id) {
-        navigate('/onboarding', { replace: true });
-        return;
-      }
-
-      // Check if user has completed onboarding and get user type
-      const userAnswers = await getUserAnswers(session.user.id);
-      const onboardingCompleted = hasCompletedOnboarding(userAnswers);
-      const userType = userAnswers?.user_type as 'job_seeker' | 'employer' | undefined;
-
-      if (onboardingCompleted && userType) {
-        // Redirect to appropriate dashboard based on user type
-        const destination = userType === 'employer' ? '/employer-dashboard' : '/dashboard';
-        navigate(destination, { replace: true, state: { fromRedirect: true } });
-      } else {
-        navigate('/onboarding', { replace: true, state: { fromRedirect: true } });
-      }
+      // Let DefaultRoute + UnifiedAuthProvider handle all routing decisions
+      navigate('/', { replace: true });
       
     } catch (error: any) {
       if (process.env.NODE_ENV === 'development') {
