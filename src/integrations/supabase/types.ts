@@ -964,13 +964,6 @@ export type Database = {
             foreignKeyName: "job_applications_v2_applicant_user_id_fkey"
             columns: ["applicant_user_id"]
             isOneToOne: false
-            referencedRelation: "chat_participants_view"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "job_applications_v2_applicant_user_id_fkey"
-            columns: ["applicant_user_id"]
-            isOneToOne: false
             referencedRelation: "user_profiles"
             referencedColumns: ["user_id"]
           },
@@ -1019,13 +1012,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "job_listings_v2"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "job_interactions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "chat_participants_view"
-            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "job_interactions_user_id_fkey"
@@ -1187,13 +1173,6 @@ export type Database = {
             foreignKeyName: "job_listings_v2_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "chat_participants_view"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "job_listings_v2_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
             referencedRelation: "user_profiles"
             referencedColumns: ["user_id"]
           },
@@ -1235,13 +1214,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "job_listings_v2"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "job_recommendations_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "chat_participants_view"
-            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "job_recommendations_user_id_fkey"
@@ -1571,13 +1543,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "fk_organization_memberships_user_profiles"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "chat_participants_view"
-            referencedColumns: ["user_id"]
-          },
           {
             foreignKeyName: "fk_organization_memberships_user_profiles"
             columns: ["user_id"]
@@ -2527,13 +2492,6 @@ export type Database = {
             foreignKeyName: "user_job_prefs_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
-            referencedRelation: "chat_participants_view"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "user_job_prefs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
             referencedRelation: "user_profiles"
             referencedColumns: ["user_id"]
           },
@@ -3134,15 +3092,7 @@ export type Database = {
           title: string | null
           user_id: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "organization_memberships_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
