@@ -1,41 +1,30 @@
 
-## Two separate concerns from the two images
+## The Bug
 
-### Image 1 — Certification Dashboard (`/certification`)
+In `JobDetailPanel.tsx`, the mobile `DrawerContent` has `max-h-[85vh] overflow-hidden` (line 332). This correctly constrains the height and hides overflow.
 
-**Issues to fix:**
+Inside, `JobDetailContent` uses a `flex flex-col h-full` layout with an inner `flex-1 overflow-y-auto` scrollable div. This pattern works — but only when the parent has a **defined height**. 
 
-1. **Orange "Download" button style mismatch** — `CertificateDownloadButton` renders its own hardcoded `buttonPrimary` class (`bg-primary text-primary-foreground hover:bg-primary/90`) but with inline string classes instead of using the `Button` component. It renders as a `<PDFDownloadLink>` with manual classes. The "Start Exam" / "Retake Exam" button correctly uses `<Button variant="primary">` which has the full box-shadow treatment. The Download button's manual class string misses all the inset shadows that make it look embossed — it looks flat. **Fix**: Replace the manual class strings in `CertificateDownloadButton.tsx` with the `buttonVariants` utility so it matches exactly.
+`max-h-[85vh]` does not establish a fixed height — it sets a maximum. The `DrawerContent` itself doesn't have `h-[85vh]` or `flex flex-col`, so the inner `flex-1` has no concrete height to grow against. The child's `overflow-y-auto` never activates because the container just expands to fit all content (up to the max), never triggering a scroll.
 
-2. **Button height mismatch** — Download button is `h-11` (size lg), Retake Exam button `h-11` too but they appear different because the CertificateDownloadButton uses `px-8 text-base` while layout wraps them in `flex-col sm:flex-row`. They need to be `size="lg"` equivalents. **Fix**: Align both to consistent sizing using the shared Button styles.
+The `DrawerContent` component from `drawer.tsx` also renders as `flex flex-col` but the `h-auto` default lets it grow freely.
 
-3. **Background gradient** — The page uses `min-h-screen bg-gradient-to-br from-background via-background to-primary/5` which fills the full viewport. The reference image shows all content inside a centered card with a subtle raised shadow. **Fix**: Change the layout in `CertificationDashboard.tsx` to remove the full-page gradient and instead wrap the content in a centered surface card (`bg-card rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_24px_rgba(0,0,0,0.04)]`). No scroll needed means the container will be naturally sized.
+## Fix — One line change in `JobDetailPanel.tsx`
 
----
+Change `DrawerContent` to have a fixed height instead of just a max-height, and ensure `flex flex-col` is present so the inner `flex-1` layout works:
 
-### Image 2 — Seeker Dashboard (`/dashboard`) — Masonry grid
+```tsx
+// Before:
+<DrawerContent className="max-h-[85vh] overflow-hidden">
 
-**Issue:** The "Who's Interested in You" section renders below the analytics/certification grid as a separate full-width row (`space-y-6` stacking). In the reference image it sits **beside** the analytics card (same height, flush), forming a 3-column masonry-like layout where:
-- Col 1-2: Analytics card (tall) 
-- Col 3: Certification card (same height as analytics)
-- Col 3 continues: "Who's Interested" list sits right underneath the certification card, at the same height zone as the analytics card
-
-**Fix in `OverviewTab.tsx`**: Restructure the grid so `WhoIsInterestedSection` is moved inside the 3-column grid as a continuation of the right column, stacked below `CertificationCard`. This creates the visual masonry where the right column has two stacked items (Certification + Who's Interested) and the left column has one tall Analytics card.
-
-```text
-┌──────────────────────────┬──────────────────┐
-│                          │  CertificationCard│
-│  StudentAnalyticsCard    ├──────────────────┤
-│                          │ WhoIsInterested  │
-└──────────────────────────┴──────────────────┘
+// After:
+<DrawerContent className="h-[85vh] overflow-hidden flex flex-col">
 ```
 
----
+With `h-[85vh]` (fixed height), the `flex-1` inner div now has a concrete boundary to fill against, and `overflow-y-auto` on the scrollable content area activates correctly.
 
-### Files to edit
+## File to change
 
 | File | Change |
 |---|---|
-| `src/components/certification/CertificateDownloadButton.tsx` | Replace manual class string with `buttonVariants({ variant: "primary", size: "lg" })` import |
-| `src/components/certification/CertificationDashboard.tsx` | Remove full-page gradient bg, wrap content in a centered card tile. Keep inner padding, remove `min-h-screen`. |
-| `src/components/dashboard/overview/OverviewTab.tsx` | Move `WhoIsInterestedSection` into the right column of the 3-col grid, stacked below `CertificationCard`, so both columns are the same visual height |
+| `src/components/jobs/JobDetailPanel.tsx` | Line 332: `max-h-[85vh] overflow-hidden` → `h-[85vh] overflow-hidden flex flex-col` |
