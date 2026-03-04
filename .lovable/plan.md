@@ -1,24 +1,37 @@
 
-## Two fixes to unblock the download button
+## Problem
 
-### Fix 1 — Wrong column names in user_profiles query (causes 400 → button stays loading forever)
-`CertificateDownloadButton.tsx` line 35 queries:
-```
-.select("full_name, first_name, last_name")
-```
-The `user_profiles` table has none of these columns — it only has `name`. This returns a 400, `data` is null, and `candidateName` is set to "Professional" (acceptable fallback), BUT the loading state correctly resolves. Actually the real issue is the button state never gets past "Preparing…" because loading stays true until fetchName resolves — and it DOES resolve (to "Professional"). So fix 1 is cosmetic but important: change the query to `.select("name")` and use `data.name`.
+When an employer receives a `job_application_received` notification, clicking it (in-app) or the CTA button in the email should take them directly to the job's applicants list with the review drawer open. Right now:
 
-### Fix 2 — Invalid font family `Helvetica-Oblique` in CertificateDoc (causes PDF generation to throw, download never triggers)
-`@react-pdf/renderer` does NOT accept `Helvetica-Oblique` as a `fontFamily`. The correct approach is:
-```js
-fontFamily: 'Helvetica',
-fontStyle: 'italic',
-```
-This is the actual blocker — the PDF generation throws `Could not resolve font for Helvetica-Oblique`, so the blob is never created and the download link never activates.
+- **In-app notification**: `action_url` is set to `/dashboard/jobs/${job_id}/applicants` (a route that doesn't exist). Nothing happens.
+- **Email CTA**: The email passes `applicantsUrl: https://lansa.online${action_url}`, which is the same broken path.
+
+## Solution
+
+The employer dashboard doesn't use URL routes for tabs or drawers — it's a single-page component. The correct approach is to use URL search params to carry intent, then read them on load to open the right tab + sheet.
+
+### How it will work
+
+1. **New action_url format** in `apply-for-job-v2/index.ts`:  
+   Change from `/dashboard/jobs/${job_id}/applicants`  
+   To `/employer-dashboard?tab=jobs&jobId=${job_id}`
+
+2. **`EmployerDashboard.tsx`**: Read `?tab=jobs&jobId=xxx` from the URL using `useSearchParams`. If present, pass `defaultTab="jobs"` and `openJobId={jobId}` as props down to `EmployerDashboardTabs`.
+
+3. **`EmployerDashboardTabs.tsx`**: Accept `defaultTab` and `openJobId` props. Initialize `activeTab` from `defaultTab`. Pass `openJobId` to `JobManagementTab`.
+
+4. **`JobManagementTab.tsx`**: Accept `openJobId?: string` prop. On mount (after jobs load), if `openJobId` matches one of the listings, call `setSelectedJobId(openJobId)` + `setShowApplicationsSheet(true)` automatically.
+
+5. **Backfill migration**: Update existing `job_application_received` notifications that have the old `action_url` format to use the new one.
 
 ### Files to edit
 
 | File | Change |
 |---|---|
-| `src/components/certification/CertificateDownloadButton.tsx` | Change `.select("full_name, first_name, last_name")` → `.select("name")` and use `data.name` |
-| `src/components/pdf/templates/pdf/CertificateDoc.tsx` | Replace `fontFamily: 'Helvetica-Oblique'` with `fontFamily: 'Helvetica', fontStyle: 'italic'` |
+| `supabase/functions/apply-for-job-v2/index.ts` | Change `action_url` to `/employer-dashboard?tab=jobs&jobId=${job_id}` |
+| `src/pages/EmployerDashboard.tsx` | Read URL params, pass `defaultTab`/`openJobId` down |
+| `src/components/dashboard/EmployerDashboardTabs.tsx` | Accept + forward `defaultTab`, `openJobId` |
+| `src/components/dashboard/employer/JobManagementTab.tsx` | Accept `openJobId`, auto-open `ApplicationsSheet` on mount |
+| SQL migration | Fix existing notification `action_url`s |
+
+The email CTA (`applicantsUrl`) in `send-chat-email/index.ts` will automatically use the correct URL since it reads from `action_url`.
