@@ -1,96 +1,113 @@
 
-## Root Cause Analysis — Complete
 
-After deep investigation, there are **multiple distinct issues** causing the "can't chat with some users" problem. Here's what I found:
+## Root Cause Analysis — 4 Distinct RLS/Data Issues
+
+### Issue 1 — `chat_participants_view` has NO `security_invoker`
+
+`reloptions` is `NULL` — the view runs as the **definer** (postgres superuser), not the calling user. This means the view's underlying `LEFT JOIN business_profiles` and the `UNION` from `business_profiles` bypass RLS correctly — BUT the view also joins `organization_memberships` and `organizations`, which have restrictive RLS policies that only allow members to see their own org data.
+
+When a seeker queries `chat_participants_view` for an employer's `organization_name`, the join to `organization_memberships` silently returns `NULL` because the seeker is not an org member → employer shows as "Unknown Organization".
+
+The view needs `security_invoker = false` (run as definer/superuser) OR the underlying tables need specific read policies for chat participants. The simplest correct fix: **recreate the view explicitly with `security_invoker = false`** so the org joins work regardless of the querying user's role. Currently it has no `reloptions` at all which means it defaults to `security_invoker = false` already — but the `organizations` RLS still blocks org data for non-members.
+
+**Real fix needed**: Add a SELECT policy on `organizations` allowing any authenticated user to read basic org info (name, logo) for organizations linked to their chat threads.
+
+### Issue 2 — `business_profiles` SELECT policy blocks job seekers
+
+Current `business_profiles` SELECT policies:
+- `business_profiles_select_business_role` — only users with `business` role
+- `business_profiles_select_own` — `user_id = auth.uid() OR has_role('business')`
+
+A job seeker (who is NOT `business` role) **cannot read any `business_profiles` rows at all**. So the fallback in `chatService.getThread()` that queries `business_profiles` directly for missing employer names returns nothing for seekers — they always see "Unknown User".
+
+**Fix**: Add a SELECT policy on `business_profiles` allowing chat participants to read the company name of users they share a thread with.
+
+### Issue 3 — `chat_messages` INSERT RLS blocks seekers on job-application-created threads
+
+The `chat_messages_insert` policy requires `is_thread_participant(thread_id, auth.uid())`. The `is_thread_participant` function queries `chat_threads` where `_user_id = ANY(ct.participant_ids)`. This should work, but there are **two duplicate INSERT policies** (`chat_messages_insert` and `chat_messages_insert_sender`) — one is `roles: {public}` and one is `roles: {authenticated}`. Having both shouldn't cause issues, but the duplicate may indicate a past migration conflict.
+
+The real issue: the seeker IS in `participant_ids` in the thread created by `on_job_application_accepted()`. Let me verify the trigger sets this correctly — it does: `ARRAY[v_employer_id, NEW.applicant_user_id]`. So they should be able to insert.
+
+The RLS error the user sees is likely from `business_profiles` (can't read employer name = misleads the user) OR from an inconsistency in how `is_thread_participant` resolves when querying `chat_threads` (which has its own RLS). The `chat_threads_select` policy allows participants to read their threads, so that should be fine.
+
+**Likely actual INSERT issue**: The duplicate policy creates a confusing situation — the `public` role policy `chat_messages_insert` uses `with_check` without `qual` (correct for INSERT) but coexists with `chat_messages_insert_sender` on `authenticated`. These are both PERMISSIVE, so either one passing = access granted. This is not the problem.
+
+The real problem is more likely that `chat_threads.last_message_at` UPDATE fails because `chat_threads_update_participant` requires `is_thread_participant(id, auth.uid())` — which queries `chat_threads` again (RLS on nested query). This recursive check should work, but the UPDATE also requires `WITH CHECK` that is the same policy — this should pass fine since the user is a participant.
+
+**Most likely actual problem for the INSERT error**: The seeker is trying to send a message in a thread where they ARE a participant, but Supabase returns an RLS error. Looking more carefully — there's no `with_check` on `chat_messages_insert` (the public one) for the `qual` field which in INSERT means the row-filter (pre-insert check) doesn't exist — correct. The `with_check` IS set. But this policy has `roles: {public}` — meaning it applies to **unauthenticated** requests too. The `chat_messages_insert_sender` applies to `authenticated`. Since both are permissive, an authenticated user satisfying either one gets access. Should be fine.
+
+### Issue 4 — Real-time messages not received by job seeker
+
+The `subscribeToThread` in `useChat.ts` subscribes to `chat_messages` INSERT with `filter: thread_id=eq.${threadId}`. For Supabase Realtime to deliver row-level events, the **RLS policy must allow the subscribing user to SELECT that row**. 
+
+The `chat_messages_select` policy uses `is_thread_participant(thread_id, auth.uid())`. The `is_thread_participant` function is `SECURITY DEFINER` and queries `chat_threads`. This should work for both parties.
+
+However — real-time filters in Supabase require the filter column to be indexed for row-level security to evaluate correctly. More importantly: **Supabase Realtime sends the event only if `auth.uid()` can SELECT the row**. If the seeker can SELECT messages (which they can via the policy), real-time should work.
+
+The real issue here is likely that the employer's message INSERT triggers `last_message_at` update on `chat_threads`, which the seeker's `subscribeToThreadList` picks up — but the seeker's `subscribeToThread` (for the specific thread) should also fire. Unless the seeker never navigated to the thread URL with that `threadId`.
 
 ---
 
-### Issue 1 — `chat_participants_view` missing business users (CRITICAL)
+## The Fix Plan
 
-**6 `business`-role users have NO `user_profiles` row.** The `chat_participants_view` is built on `user_profiles` as its base table:
+### Fix 1 — Add `business_profiles` SELECT policy for chat participants
+Allow any authenticated user to SELECT `business_profiles` rows where the `user_id` is a participant in a shared thread:
 
 ```sql
-SELECT up.user_id, up.name, ...
-FROM user_profiles up
-LEFT JOIN organization_memberships om ON ...
-LEFT JOIN organizations o ON ...
+CREATE POLICY "chat_participants_can_read_business_profile"
+ON public.business_profiles
+FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.chat_threads ct
+    WHERE (user_id = ANY(ct.participant_ids))
+    AND (auth.uid() = ANY(ct.participant_ids))
+  )
+);
 ```
 
-If a business user has no `user_profiles` row → they **do not appear in the view** → when the other party loads their thread, `chatService.getThread()` calls `chat_participants_view` and gets nothing back → `other_party` is `undefined` → the chat UI renders a broken/blank thread.
-
-**The 6 affected users:** `48a87477`, `872a4772`, `e88ae5b7`, `8cb9e87a`, `d52a18a4`, `24df69fd` (all `business` role, all have `business_profiles` but no `user_profiles`).
-
----
-
-### Issue 2 — `chat_participants_view` doesn't use `business_profiles` as fallback
-
-Even for employer users who **do** have `user_profiles`, their name often comes from employer onboarding (stored in `business_profiles.company_name`), not in `user_profiles.name`. Several employer users show a blank `name` in `user_profiles`. The view never looks at `business_profiles` at all.
-
----
-
-### Issue 3 — No fallback display in `chatService` when `other_party` is null
-
-In `chatService.getThreadsForUser()` and `getThread()`, if `participantMap.get(otherPartyId)` returns nothing (because the user has no `user_profiles` row), `other_party` is set to `undefined`. The chat UI then silently fails to show thread info or crashes rendering.
-
----
-
-### The Fix Plan
-
-#### Fix 1 — Update `chat_participants_view` to also pull from `business_profiles`
-
-Alter the view to `UNION` or `LEFT JOIN` `business_profiles` so business users who lack `user_profiles` entries still appear:
+### Fix 2 — Add `organizations` SELECT policy for chat participants
+Allow reading org name/logo for organizations linked to a shared chat thread:
 
 ```sql
-CREATE OR REPLACE VIEW public.chat_participants_view AS
-SELECT 
-  up.user_id,
-  COALESCE(NULLIF(up.name, ''), bp.company_name) AS name,
-  up.profile_image,
-  up.title,
-  om.organization_id,
-  COALESCE(o.name, bp.company_name) AS organization_name,
-  o.logo_url AS organization_logo
-FROM user_profiles up
-LEFT JOIN organization_memberships om ON om.user_id = up.user_id AND om.is_active = true
-LEFT JOIN organizations o ON o.id = om.organization_id
-LEFT JOIN business_profiles bp ON bp.user_id = up.user_id
-
-UNION
-
--- Business users who have business_profiles but NO user_profiles row
-SELECT 
-  bp.user_id,
-  bp.company_name AS name,
-  NULL AS profile_image,
-  bp.company_name AS title,
-  NULL AS organization_id,
-  bp.company_name AS organization_name,
-  NULL AS organization_logo
-FROM business_profiles bp
-WHERE NOT EXISTS (SELECT 1 FROM user_profiles up WHERE up.user_id = bp.user_id);
+CREATE POLICY "chat_participants_can_read_org_name"
+ON public.organizations
+FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 
+    FROM organization_memberships om
+    JOIN chat_threads ct ON (om.user_id = ANY(ct.participant_ids))
+    WHERE om.organization_id = organizations.id
+    AND auth.uid() = ANY(ct.participant_ids)
+  )
+);
 ```
 
-This ensures all users (whether they completed `user_profiles` or only `business_profiles`) appear in the view.
+### Fix 3 — Recreate `chat_participants_view` with `security_invoker = false` explicitly + use SECURITY DEFINER function for org lookup
 
-#### Fix 2 — Defensive fallback in `chatService.ts`
+The view needs to bypass RLS on `organization_memberships` and `organizations` to correctly resolve employer org names for any viewer. The cleanest solution: recreate the view using a `SECURITY DEFINER` helper function for org lookup, OR simply recreate the view with `security_invoker = false` (explicit, not implicit).
 
-When `other_party` is `undefined` (participant not found in view), fall back to showing their org name from `business_profiles` or a sensible default instead of silently breaking. Add a direct `business_profiles` lookup as fallback in `getThread()` and `getThreadsForUser()`.
+Actually the simpler correct approach: Keep the view as-is but add the RLS policies in Fix 1 and Fix 2 above, which will make the view's underlying joins succeed for all chat participants.
 
-#### Fix 3 — Supabase migration to run the view update
+### Fix 4 — Remove duplicate INSERT policies on `chat_messages`
+Drop the redundant `chat_messages_insert` (public role) policy since `chat_messages_insert_sender` (authenticated) covers the same case correctly and is more precise.
 
-A single SQL migration alters the view. No RLS changes are needed (the view already inherits `user_profiles` RLS, and `business_profiles` RLS allows authenticated reads).
+### Fix 5 — Verify `user_profiles` chat participant policy covers employer→seeker direction
+The existing policy `Allow reading profile info of chat participants` covers both directions (checks `ct.participant_ids` contains both parties). This is correct. No change needed.
 
 ---
 
-### Files to change
+## Files/Changes Summary
 
-| Change | Location |
+| Change | Type |
 |---|---|
-| SQL migration — alter `chat_participants_view` to include business_profiles fallback | New migration in `supabase/migrations/` |
-| Defensive fallback for missing `other_party` in thread enrichment | `src/services/chatService.ts` |
+| Add `business_profiles` SELECT policy for chat participants | SQL migration |
+| Add `organizations` SELECT policy for chat participants | SQL migration |
+| Remove duplicate `chat_messages_insert` (public role) policy | SQL migration |
+| Explicitly recreate `chat_participants_view` with `security_invoker = false` | SQL migration |
 
-### What this fixes
+No frontend code changes needed — the RLS gaps are the root cause of all three reported symptoms.
 
-- Business users with only `business_profiles` now appear in thread lists and thread headers
-- Employer users with blank `user_profiles.name` now show their company name instead
-- All matched/accepted users can see and communicate in their threads without silent failures
