@@ -5,6 +5,7 @@ import { StudentAnalyticsCard } from "./StudentAnalyticsCard";
 // import { HireRateProgress } from "../HireRateProgress";
 import { CertificationCard } from "./CertificationCard";
 import { WhoIsInterestedSection } from "@/components/dashboard/WhoIsInterestedSection";
+import { ListingActivationCard } from "./ListingActivationCard";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface OverviewTabProps {
@@ -21,6 +22,9 @@ export function OverviewTab({ userName, role, goal, insight, highlightActions, i
 
   return (
     <div className="space-y-6">
+      {/* Listing Activation — only renders for certified seekers */}
+      <ListingActivationCard />
+
       {/* Analytics and Certification Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">

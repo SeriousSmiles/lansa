@@ -50,15 +50,14 @@ export function StudentAnalyticsCard() {
 
         setIsCertified(true);
 
-        // Check if user is listed in catalogue
-        const { data: catalogueEntry } = await supabase
-          .from('catalogue_entries')
-          .select('is_active, created_at')
+        // Check if user is listed (visible_to_employers in user_profiles)
+        const { data: profileData } = await supabase
+          .from('user_profiles')
+          .select('visible_to_employers, updated_at')
           .eq('user_id', user.id)
-          .eq('is_active', true)
           .single();
 
-        if (!catalogueEntry) {
+        if (!profileData?.visible_to_employers) {
           setIsListed(false);
           setIsLoading(false);
           return;
@@ -90,7 +89,7 @@ export function StudentAnalyticsCard() {
             rightSwipes,
             nudges,
             matches,
-            listedSince: catalogueEntry.created_at,
+            listedSince: profileData.updated_at,
             totalSwipes,
             matchRate,
           });
