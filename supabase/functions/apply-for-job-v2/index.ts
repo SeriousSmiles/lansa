@@ -139,7 +139,7 @@ Deno.serve(async (req) => {
         type: 'job_application_received',
         title: 'New application received!',
         message: `${applicantName} applied for "${job.title}"`,
-        action_url: `/dashboard/jobs/${job_id}/applicants`,
+        action_url: `/employer-dashboard?tab=jobs&jobId=${job_id}`,
         metadata: {
           applicant_id: user.id,
           applicant_name: applicantName,

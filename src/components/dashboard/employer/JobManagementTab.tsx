@@ -28,7 +28,7 @@ interface JobListing {
   image_url?: string;
 }
 
-export function JobManagementTab() {
+export function JobManagementTab({ openJobId }: { openJobId?: string }) {
   const [jobListings, setJobListings] = useState<JobListing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -68,6 +68,17 @@ export function JobManagementTab() {
   useEffect(() => {
     loadJobListings();
   }, [activeOrganization?.id, user?.id]);
+
+  // Auto-open applications sheet when openJobId is provided (from notification deep-link)
+  useEffect(() => {
+    if (!openJobId || jobListings.length === 0) return;
+    const job = jobListings.find(j => j.id === openJobId);
+    if (job) {
+      setSelectedJobId(job.id);
+      setSelectedJobTitle(job.title);
+      setShowApplicationsSheet(true);
+    }
+  }, [openJobId, jobListings]);
 
   const handleCreateJob = () => {
     setEditingJob(null);

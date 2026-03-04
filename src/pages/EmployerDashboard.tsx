@@ -14,7 +14,7 @@ import { MobileEmployerTabs } from "@/components/mobile/employer/MobileEmployerT
 import { PendingRequestBanner } from "@/components/organization/PendingRequestBanner";
 import { QuickActionsWidget } from "@/components/organization/QuickActionsWidget";
 import { LansaLoader } from "@/components/shared/LansaLoader";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { RefreshCw } from "lucide-react";
 
 interface BusinessData {
@@ -27,6 +27,9 @@ interface BusinessData {
 
 export default function EmployerDashboard() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get("tab") || "overview";
+  const openJobId = searchParams.get("jobId") || undefined;
   const [businessData, setBusinessData] = useState<BusinessData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshingDashboard, setIsRefreshingDashboard] = useState(false);
@@ -255,7 +258,7 @@ export default function EmployerDashboard() {
                   Refresh
                 </Button>
               </div>
-              <EmployerDashboardTabs businessData={businessData} />
+              <EmployerDashboardTabs businessData={businessData} defaultTab={defaultTab} openJobId={openJobId} />
             </div>
           </div>
         </DashboardLayout>
