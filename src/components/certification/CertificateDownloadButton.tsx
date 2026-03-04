@@ -10,12 +10,14 @@ interface CertificateDownloadButtonProps {
   result: CertResult;
   certification: Certification;
   userId: string;
+  compact?: boolean;
 }
 
 export default function CertificateDownloadButton({
   result,
   certification,
   userId,
+  compact = false,
 }: CertificateDownloadButtonProps) {
   const [candidateName, setCandidateName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,9 +48,9 @@ export default function CertificateDownloadButton({
 
   if (loading || !candidateName) {
     return (
-      <Button disabled className="flex-1" size="lg">
+      <Button disabled className={compact ? "w-full" : "flex-1"} size={compact ? "default" : "lg"}>
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        Preparing Certificate…
+        {compact ? "Preparing…" : "Preparing Certificate…"}
       </Button>
     );
   }
@@ -70,19 +72,19 @@ export default function CertificateDownloadButton({
     <PDFDownloadLink
       document={<CertificateDoc {...docProps} />}
       fileName={fileName}
-      className="flex-1"
+      className={compact ? "w-full" : "flex-1"}
     >
       {({ loading: pdfLoading }) => (
-        <Button className="w-full" size="lg" disabled={pdfLoading}>
+        <Button className="w-full" size={compact ? "default" : "lg"} disabled={pdfLoading}>
           {pdfLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating PDF…
+              {compact ? "Generating…" : "Generating PDF…"}
             </>
           ) : (
             <>
               <Download className="mr-2 h-4 w-4" />
-              Download Certificate
+              {compact ? "Download" : "Download Certificate"}
             </>
           )}
         </Button>

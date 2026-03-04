@@ -6,12 +6,17 @@ import { Card } from "@/components/ui/card";
 import { Briefcase, Users, Wrench, Monitor, Award, TrendingUp, ArrowLeft } from "lucide-react";
 import gsap from "gsap";
 import { PaymentModal } from "./PaymentModal";
+import CertificateDownloadButton from "./CertificateDownloadButton";
+import { CertResult, Certification } from "@/types/certification";
 
 interface SectorProgress {
   sector: string;
+  resultId: string | null;
   lastScore: number | null;
   passed: boolean;
   lastAttempt: string | null;
+  fullResult: CertResult | null;
+  certification: Certification | null;
 }
 
 interface CertificationDashboardProps {
@@ -73,21 +78,38 @@ export default function CertificationDashboard({ userId }: CertificationDashboar
   const loadProgress = async () => {
     const { data: results } = await supabase
       .from('cert_results')
-      .select('sector, total_score, pass_fail, created_at')
+      .select('id, sector, total_score, pass_fail, created_at, category_scores, ai_summary_text, insights, strengths, focus_areas, session_id, per_question_reflections, high_performer')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
+
+    // Fetch all certifications for this user
+    const { data: certifications } = await supabase
+      .from('cert_certifications')
+      .select('*')
+      .eq('user_id', userId);
 
     const progressMap: Record<string, SectorProgress> = {};
     
     SECTORS.forEach(s => {
       const sectorResults = results?.filter(r => r.sector === s.id);
       const latest = sectorResults?.[0];
-      
+      const cert = certifications?.find(c => c.result_id === latest?.id) || null;
+
       progressMap[s.id] = {
         sector: s.id,
+        resultId: latest?.id || null,
         lastScore: latest?.total_score || null,
         passed: latest?.pass_fail || false,
         lastAttempt: latest?.created_at || null,
+        fullResult: latest ? {
+          ...latest,
+          category_scores: latest.category_scores as Record<string, number>,
+          strengths: (latest.strengths || []) as string[],
+          focus_areas: (latest.focus_areas || []) as string[],
+          insights: (latest.insights || {}) as any,
+          per_question_reflections: (Array.isArray(latest.per_question_reflections) ? latest.per_question_reflections : []) as any[],
+        } as CertResult : null,
+        certification: cert as any as Certification | null,
       };
     });
 
@@ -112,7 +134,7 @@ export default function CertificationDashboard({ userId }: CertificationDashboar
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-12 px-4">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         {/* Back Button */}
         <Button
           variant="ghost"
@@ -238,14 +260,25 @@ export default function CertificationDashboard({ userId }: CertificationDashboar
                     </div>
                   )}
 
-                  {/* CTA Button */}
-                  <Button 
-                    onClick={() => handleStartExam(sector.id)}
-                    className="w-full"
-                    size="lg"
-                  >
-                    {prog?.lastScore ? 'Retake Exam' : 'Start Exam'}
-                  </Button>
+                  {/* CTA Buttons */}
+                  <div className={`flex gap-2 ${prog?.passed && prog.fullResult && prog.certification ? 'flex-col sm:flex-row' : ''}`}>
+                    {prog?.passed && prog.fullResult && prog.certification && (
+                      <CertificateDownloadButton
+                        result={prog.fullResult}
+                        certification={prog.certification}
+                        userId={userId}
+                        compact
+                      />
+                    )}
+                    <Button 
+                      onClick={() => handleStartExam(sector.id)}
+                      className="w-full"
+                      size="lg"
+                      variant={prog?.passed ? "outline" : "primary"}
+                    >
+                      {prog?.lastScore ? 'Retake Exam' : 'Start Exam'}
+                    </Button>
+                  </div>
 
                   {prog?.lastAttempt && (
                     <p className="text-xs text-muted-foreground mt-2 text-center">
