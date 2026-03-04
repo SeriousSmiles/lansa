@@ -1,74 +1,33 @@
 
-## Diagnosis — Confirmed Gap
+## Two changes needed
 
-**The employer notification pipeline for job applications is completely missing.** Here's what exists vs. what's needed:
+### 1. Container width fix — both certification pages
+Both `CertificationDashboard` and `ReflectionReport` currently use `max-w-7xl` / `max-w-6xl` which spans very wide on large screens. Change both to `max-w-4xl` for a properly centered, readable layout. The ExamFlow page likely needs the same check.
 
-| Step | Exists? |
-|---|---|
-| Candidate submits application via `apply-for-job-v2` | ✅ |
-| Notification inserted into `notifications` table for employer | ❌ |
-| `trigger_chat_notification_email` fires → sends email | ❌ (no notification row = no trigger) |
-| `job_application_received` email template | ❌ |
+### 2. Per-exam download button on CertificationDashboard
+The dashboard already fetches `cert_results` (sector, pass_fail, created_at). It needs to also fetch `cert_certifications` for passed sectors, then show a "Download Certificate" button on each passed sector card alongside the "Retake Exam" button.
 
-The `apply-for-job-v2` edge function inserts the application record and records an interaction — but never creates a `notifications` row for the employer and never sends an email. The DB trigger `trigger_chat_notification_email` only fires when a row is inserted into `notifications` and only handles specific types (`chat_request_received`, `match_created`, etc.) — `job_application_received` is not one of them.
+**Data to load additionally in `CertificationDashboard`:**
+- Query `cert_certifications` filtered by `user_id` for all sectors
+- Map `result_id` → certification record per sector (we need `result_id` from `cert_results` to cross-reference)
 
-## What to Build
-
-### 1. Add notification insert inside `apply-for-job-v2`
-After successful application insert, also insert a row into `notifications` for the employer (`job.created_by`):
+**Sector card UI when passed:**
 ```
-type: 'job_application_received'
-user_id: job.created_by  ← employer
-title: 'New application received!'
-message: '[Candidate Name] applied for [Job Title]'
-action_url: '/dashboard/jobs/[job_id]/applicants'
-metadata: { applicant_id, job_id, application_id, applicant_name }
+┌──────────────────────────────────────┐
+│  ✓ Certified  [score ring]           │
+│                                      │
+│  [Download Certificate] [Retake]     │
+│  Last attempt: Jan 2026              │
+└──────────────────────────────────────┘
 ```
+The download button reuses the existing `CertificateDownloadButton` component. Since `CertificateDownloadButton` expects a full `CertResult` object, we'll need to also fetch the full `cert_results` row (add `id` to the select query) so we can pass it correctly.
 
-### 2. Add `job_application_received` to `trigger_chat_notification_email` DB trigger function
-Update the allowed `notification_type` whitelist in `trigger_chat_notification_email()` to include `job_application_received` — so the pg_net call to `send-chat-email` fires.
-
-Currently the trigger function has:
-```sql
-IF NEW.type NOT IN (
-  'chat_request_received', 'chat_request_accepted', 'message_received',
-  'employer_interest_received', 'employer_nudge_received', 'match_created'
-) THEN RETURN NEW;
-```
-Add `'job_application_received'` to this list.
-
-### 3. Add `job_application_received` handler in `send-chat-email`
-Add a new branch that generates the employer notification email using a new `generateJobApplicationEmail` template.
-
-### 4. Add `generateJobApplicationEmail` template in `_shared/emailTemplates.ts`
-Clean, professional email to the employer:
-- Subject: "New application for [Job Title]"
-- Body: candidate name, job title, cover note preview (if any), CTA button → employer job applicants page
-- Style: matches existing template system (blue header, white body)
-
-## Files to Edit
+### Files to edit
 
 | File | Change |
 |---|---|
-| `supabase/functions/apply-for-job-v2/index.ts` | Fetch applicant name + job title, insert `notifications` row for employer after successful application |
-| `supabase/functions/send-chat-email/index.ts` | Add `job_application_received` handler branch |
-| `supabase/functions/_shared/emailTemplates.ts` | Add `generateJobApplicationEmail` function + interface |
-| DB migration | Update `trigger_chat_notification_email` function to include `job_application_received` in the whitelist |
+| `src/components/certification/CertificationDashboard.tsx` | Constrain max-width to `max-w-4xl`, fetch full result `id` + certifications per sector, add download button to passed sector cards |
+| `src/components/certification/ReflectionReport.tsx` | Constrain max-width to `max-w-4xl` |
+| `src/components/certification/CertificateDownloadButton.tsx` | Accept optional `compact` prop for smaller button variant on cards |
 
-## Flow After Fix
-
-```
-Candidate clicks Apply
-    ↓
-apply-for-job-v2 inserts application
-    ↓
-apply-for-job-v2 inserts notification row (type: job_application_received) for employer
-    ↓
-trigger_chat_notification_email DB trigger fires
-    ↓
-net.http_post → send-chat-email edge function
-    ↓
-generateJobApplicationEmail → Resend → employer inbox
-```
-
-Rate limiting already built-in (15 min guard in `chat_email_log`) — employer won't be spammed if multiple candidates apply quickly.
+The `ExamFlow` page itself is full-screen by design (exam UX) so we leave it alone.
