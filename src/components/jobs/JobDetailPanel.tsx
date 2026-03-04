@@ -329,7 +329,7 @@ export function JobDetailPanel({ job, isOpen, onClose, onApply, disableApply }: 
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DrawerContent className="max-h-[85vh] overflow-hidden">
+        <DrawerContent className="h-[85vh] overflow-hidden flex flex-col">
           <DrawerHeader className="sr-only">
             <DrawerTitle>{job.title}</DrawerTitle>
             <DrawerDescription>Job details for {job.title}</DrawerDescription>
