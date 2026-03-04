@@ -18,13 +18,15 @@ interface BusinessData {
 
 interface EmployerDashboardTabsProps {
   businessData: BusinessData | null;
+  defaultTab?: string;
+  openJobId?: string;
 }
 
-export function EmployerDashboardTabs({ businessData }: EmployerDashboardTabsProps) {
+export function EmployerDashboardTabs({ businessData, defaultTab, openJobId }: EmployerDashboardTabsProps) {
   const tabsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { canManageOrgSettings } = useOrgPermissions();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(defaultTab || "overview");
   
   useEffect(() => {
     if (tabsRef.current) {
@@ -76,7 +78,7 @@ export function EmployerDashboardTabs({ businessData }: EmployerDashboardTabsPro
         </TabsContent>
         
         <TabsContent value="jobs" className="pt-4 animate-fade-in">
-          <JobManagementTab />
+          <JobManagementTab openJobId={openJobId} />
         </TabsContent>
         
         <TabsContent value="analytics" className="pt-4 animate-fade-in">
