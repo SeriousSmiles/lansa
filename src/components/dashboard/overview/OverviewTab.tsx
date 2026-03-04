@@ -25,18 +25,16 @@ export function OverviewTab({ userName, role, goal, insight, highlightActions, i
       {/* Listing Activation — only renders for certified seekers */}
       <ListingActivationCard />
 
-      {/* Analytics and Certification Cards */}
+      {/* Analytics and Certification + Who's Interested — masonry grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 h-full">
           <StudentAnalyticsCard />
         </div>
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 flex flex-col gap-4">
           <CertificationCard />
+          <WhoIsInterestedSection />
         </div>
       </div>
-
-      {/* Who's Interested Section */}
-      <WhoIsInterestedSection />
       
       
       {/* Hidden incomplete features */}
