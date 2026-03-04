@@ -1,71 +1,59 @@
 
-## Certificate PDF Download — Full Plan
+## Candidate Listing Activation — Plan
 
-### What this builds
-A real, beautiful A4 Landscape PDF Certificate downloadable from the `ReflectionReport` page (the post-exam results screen) using `@react-pdf/renderer` — the same engine already used for resume PDFs in this project. No new dependencies needed.
+### What's missing
+There is **no UI** that lets a certified seeker toggle `visible_to_employers = true` in `user_profiles`. Without this being `true`, the `sync_user_profiles_public` trigger won't sync their row into the browse feed — so even certified users are invisible to employers unless `visible_to_employers` is set.
 
-### Certificate design
-A4 Landscape (842 × 595pt). Two-zone layout:
+The `StudentAnalyticsCard` also checks `catalogue_entries.is_active` but the actual feed uses `user_profiles_public` which is driven by `visible_to_employers`. These are misaligned.
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  LEFT ACCENT BAR (dark)  │         MAIN CERTIFICATE BODY            │
-│  ┌──────────────────┐    │                                           │
-│  │  LANSA SVG SEAL  │    │  This certifies that                     │
-│  │  (custom badge)  │    │  ── FULL NAME ──                         │
-│  │                  │    │  has successfully completed               │
-│  │  ● SCORE: 88%    │    │  OFFICE SECTOR PROFESSIONAL CERTIFICATION│
-│  │  ● Level badge   │    │                                           │
-│  └──────────────────┘    │  Category Scores (4 mini bars)           │
-│                           │                                           │
-│                           │  ── AI Summary (1-2 lines) ──           │
-│                           │                                           │
-│                           │  Issued: Jan 2026  │ Code: XXXX-YYYY     │
-│                           │  Verify at lansa.online/verify/CODE      │
-└─────────────────────────────────────────────────────────────────────┘
-```
+### What to build
 
-**The SVG Badge** (real SVG paths, no icon libraries):
-- Outer ring with tick marks (like a compass rose / seal)
-- Inner circle with "LANSA" wordmark
-- Sector label arc text around the ring
-- Star/diamond accent at top
-- Color: gold/amber for Standard, purple gradient for High Performer
+#### 1. Listing Activation Toggle — new `ListingActivationCard` component
+A clear card on the seeker dashboard (inside the Overview tab) that:
+- Only shows for **certified** users (`lansa_certified = true AND verified = true`)
+- Reads the current `visible_to_employers` value from `user_profiles`
+- Shows status: **"You're Listed"** (active, green) or **"Activate Your Listing"** (inactive, CTA)
+- Has a toggle/button to set `visible_to_employers = true/false`
+- On activate: upserts `visible_to_employers = true` → triggers `sync_user_profiles_public` → candidate appears in employer browse feed
+- On deactivate: sets `visible_to_employers = false` → removes from feed
 
-### Data on the certificate
-- Candidate full name (from `user_profiles`)
-- Sector name (Office / Service / Technical / Digital)
-- Level (Certified / High Performer)
-- Total score %
-- Category scores: Mindset, Workplace Intelligence, Performance Habits, Applied Thinking
-- AI summary text (first 200 chars)
-- Date issued
-- Verification code
-- Verify URL: `lansa.online/verify/[code]`
+#### 2. Fix `StudentAnalyticsCard` listing check
+Replace `catalogue_entries.is_active` check with `user_profiles.visible_to_employers` to match the actual discovery mechanism.
 
-### Files to create/edit
+#### 3. Re-enable `visible_to_employers` filter in `discoveryService`
+Currently `discoveryService` only cross-references `user_certifications` for certified status. It does not verify `visible_to_employers`. This means a certified user with `visible_to_employers = false` who has a row in `user_profiles_public` from an old trigger run might still appear. Add an explicit filter: only show profiles where the underlying user has `visible_to_employers = true`.
 
-| File | Action |
+The safest approach: add `.eq('visible_to_employers', true)` to the `user_profiles_public` query — but `user_profiles_public` doesn't have that column. Instead, after fetching from `user_profiles_public`, cross-reference `user_profiles` for `visible_to_employers = true` — OR rely on the trigger cleanup (when `visible_to_employers = false`, the trigger deletes the row from `user_profiles_public`). Since the trigger already handles this, the browse feed is safe — we just need the activation UI.
+
+### Files to change
+
+| File | Change |
 |---|---|
-| `src/components/pdf/templates/pdf/CertificateDoc.tsx` | New — the `@react-pdf/renderer` Document for the certificate |
-| `src/components/certification/CertificateDownloadButton.tsx` | New — button component that fetches profile + builds the PDF |
-| `src/components/certification/ReflectionReport.tsx` | Replace `handleDownloadCertificate` alert stub with real button |
+| `src/components/dashboard/overview/ListingActivationCard.tsx` | **New** — toggle card for certified seekers |
+| `src/components/dashboard/overview/OverviewTab.tsx` | Add `ListingActivationCard` below `GrowthCardSection`, only for seeker role |
+| `src/components/dashboard/overview/StudentAnalyticsCard.tsx` | Fix listing check: read `user_profiles.visible_to_employers` instead of `catalogue_entries.is_active` |
 
-### How it works
-1. User clicks "Download Certificate" on the ReflectionReport page
-2. `CertificateDownloadButton` already has `result` + `certification` data passed as props
-3. It fetches the user's `name` from `user_profiles` (already available in the parent component via `userId`)
-4. Renders `<PDFDownloadLink>` from `@react-pdf/renderer` wrapping `CertificateDoc`
-5. Browser downloads `lansa-certificate-[sector].pdf`
+### Card design
+```
+┌─────────────────────────────────────────────────┐
+│  🟢 Your Profile is Live                        │
+│  Employers can discover you in the browse feed. │
+│                                                 │
+│  [  Pause Listing  ]   Listed since: Jan 2026   │
+└─────────────────────────────────────────────────┘
 
-### SVG Badge approach in react-pdf
-`@react-pdf/renderer` supports SVG via `<Svg>`, `<Path>`, `<Circle>`, `<G>`, `<Text>` from the same package. The badge will be:
-- A `<Svg>` component embedded in the PDF (not an image file)
-- Outer decorative ring using `<Circle>` with dashed stroke
-- 12 tick marks using `<Line>` elements in a loop pattern (defined as path data)
-- Central circle with "LANSA" text
-- Sector name below
-- Gold/amber color scheme for Standard, amber-to-deep-gold for High Performer
-- A checkmark path at the top of the ring
+or when inactive:
 
-This is a real SVG design with geometric precision — not an icon library component.
+┌─────────────────────────────────────────────────┐
+│  ⚡ Activate Your Listing                        │
+│  You're certified. Start appearing to employers │
+│  who are actively searching for talent like you │
+│                                                 │
+│  [  Go Live Now  ]                              │
+└─────────────────────────────────────────────────┘
+```
+
+The card is only visible to certified users (will check `user_certifications.lansa_certified AND verified = true`). Non-certified users continue to see the certification prompt pathway.
+
+### Safety guarantee for existing browse feature
+No changes to `discoveryService.ts` or `CandidateBrowseTab.tsx`. The browse feature is untouched. The `sync_user_profiles_public` trigger already removes profiles when `visible_to_employers` is set to `false`, so deactivating naturally removes candidates from the feed.
