@@ -62,53 +62,51 @@ export function CertificationCard() {
 
   return (
     <Card className="hover:shadow-lg transition-shadow duration-300">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className={`h-12 w-12 rounded-full flex items-center justify-center ${
-              hasCertifications 
-                ? 'bg-gradient-to-br from-green-400 to-green-600' 
-                : 'bg-gradient-to-br from-primary to-accent'
-            }`}>
-              {hasCertifications ? (
-                <CheckCircle className="h-6 w-6 text-white" />
-              ) : (
-                <Award className="h-6 w-6 text-white" />
-              )}
-            </div>
-            <div>
-              <h3 className="font-bold text-lg">
-                {hasCertifications ? 'Professional Certifications' : 'Get Certified'}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {hasCertifications 
-                  ? `${totalCerts} sector${totalCerts > 1 ? 's' : ''} certified`
-                  : 'Prove your professional readiness'
-                }
-              </p>
-            </div>
-          </div>
+      <CardContent className="p-6 flex flex-col items-center text-center gap-4">
+
+        {/* Icon */}
+        <div className={`h-14 w-14 rounded-full flex items-center justify-center ${
+          hasCertifications
+            ? 'bg-gradient-to-br from-green-400 to-green-600'
+            : 'bg-gradient-to-br from-primary to-accent'
+        }`}>
+          {hasCertifications ? (
+            <CheckCircle className="h-7 w-7 text-white" />
+          ) : (
+            <Award className="h-7 w-7 text-white" />
+          )}
+        </div>
+
+        {/* Title & subtitle */}
+        <div>
+          <h3 className="font-bold text-lg leading-tight">
+            {hasCertifications ? 'Professional Certifications' : 'Get Certified'}
+          </h3>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {hasCertifications
+              ? `${totalCerts} sector${totalCerts > 1 ? 's' : ''} certified`
+              : 'Prove your professional readiness'
+            }
+          </p>
         </div>
 
         {hasCertifications ? (
-          <div className="space-y-3">
-            {/* Latest Score Display */}
+          <>
+            {/* Latest Score */}
             {latestResult && (
-              <div className="bg-muted/50 rounded-lg p-3 flex items-center justify-between">
-                <div>
+              <div className="w-full bg-muted/50 rounded-lg p-3 flex items-center justify-between">
+                <div className="text-left">
                   <p className="text-xs text-muted-foreground">Latest Score</p>
                   <p className="text-sm font-medium">
-                    {latestResult.sector.charAt(0).toUpperCase() + latestResult.sector.slice(1)} - {latestResult.total_score}%
+                    {latestResult.sector.charAt(0).toUpperCase() + latestResult.sector.slice(1)} — {latestResult.total_score}%
                   </p>
                 </div>
-                <TrendingUp className={`h-5 w-5 ${
-                  latestResult.pass_fail ? 'text-green-500' : 'text-orange-500'
-                }`} />
+                <TrendingUp className={`h-5 w-5 ${latestResult.pass_fail ? 'text-green-500' : 'text-orange-500'}`} />
               </div>
             )}
 
-            {/* Certified Sectors */}
-            <div className="flex flex-wrap gap-2">
+            {/* Certified sector chips */}
+            <div className="flex flex-wrap justify-center gap-2">
               {certifications.map((cert, i) => (
                 <span
                   key={i}
@@ -120,46 +118,29 @@ export function CertificationCard() {
               ))}
             </div>
 
-            <Button 
-              onClick={() => navigate('/certification')}
-              variant="outline"
-              className="w-full"
-            >
+            <Button onClick={() => navigate('/certification')} variant="outline" className="w-full">
               View Dashboard
             </Button>
-          </div>
+          </>
         ) : (
-          <div className="space-y-3">
+          <>
             <p className="text-sm text-muted-foreground">
               Complete sector-specific exams to earn professional certifications that employers can verify.
             </p>
-            
-            <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <div className="h-2 w-2 rounded-full bg-primary" />
-                <span>AI-powered feedback</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="h-2 w-2 rounded-full bg-primary" />
-                <span>4 key pillars</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="h-2 w-2 rounded-full bg-primary" />
-                <span>Instant results</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="h-2 w-2 rounded-full bg-primary" />
-                <span>Public verification</span>
-              </div>
+
+            <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground w-full">
+              {['AI-powered feedback', '4 key pillars', 'Instant results', 'Public verification'].map((item) => (
+                <div key={item} className="flex items-center gap-1 justify-center">
+                  <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0" />
+                  <span>{item}</span>
+                </div>
+              ))}
             </div>
 
-            <Button 
-              onClick={() => navigate('/certification')}
-              className="w-full"
-            >
+            <Button onClick={() => navigate('/certification')} className="w-full">
               Start Your First Exam
             </Button>
-          </div>
+          </>
         )}
       </CardContent>
     </Card>
