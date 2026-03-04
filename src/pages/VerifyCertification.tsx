@@ -120,7 +120,8 @@ export default function VerifyCertification() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8">
+        <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-green-600 mb-4 shadow-xl">
@@ -210,6 +211,7 @@ export default function VerifyCertification() {
           <Button onClick={() => navigate('/certification')}>
             Start Your Certification
           </Button>
+        </div>
         </div>
       </div>
     </div>
