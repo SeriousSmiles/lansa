@@ -133,66 +133,66 @@ export default function CertificationDashboard({ userId }: CertificationDashboar
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-6 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Back Button */}
         <Button
           variant="ghost"
           onClick={() => navigate('/dashboard')}
-          className="mb-6"
+          className="mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Dashboard
         </Button>
 
         {/* Header */}
-        <div className="text-center mb-12">
-          <Award className="h-16 w-16 mx-auto mb-4 text-primary" />
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+        <div className="text-center mb-6">
+          <Award className="h-12 w-12 mx-auto mb-3 text-primary" />
+          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Lansa Certification
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base text-muted-foreground max-w-2xl mx-auto">
             Prove your professional readiness. Get certified in your sector and stand out to employers.
           </p>
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <Card className="p-6">
-            <div className="flex items-center gap-4">
-              <TrendingUp className="h-8 w-8 text-primary" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <TrendingUp className="h-7 w-7 text-primary" />
               <div>
-                <p className="text-sm text-muted-foreground">Certifications Earned</p>
-                <p className="text-2xl font-bold">
+                <p className="text-xs text-muted-foreground">Certifications Earned</p>
+                <p className="text-xl font-bold">
                   {Object.values(progress).filter(p => p.passed).length}
                 </p>
               </div>
             </div>
           </Card>
-          <Card className="p-6">
-            <div className="flex items-center gap-4">
-              <Award className="h-8 w-8 text-accent" />
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <Award className="h-7 w-7 text-accent" />
               <div>
-                <p className="text-sm text-muted-foreground">Highest Score</p>
-                <p className="text-2xl font-bold">
+                <p className="text-xs text-muted-foreground">Highest Score</p>
+                <p className="text-xl font-bold">
                   {Math.max(...Object.values(progress).map(p => p.lastScore || 0), 0).toFixed(0)}%
                 </p>
               </div>
             </div>
           </Card>
-          <Card className="p-6">
-            <div className="flex items-center gap-4">
-              <Briefcase className="h-8 w-8 text-green-500" />
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <Briefcase className="h-7 w-7 text-green-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Available Exams</p>
-                <p className="text-2xl font-bold">{SECTORS.length}</p>
+                <p className="text-xs text-muted-foreground">Available Exams</p>
+                <p className="text-xl font-bold">{SECTORS.length}</p>
               </div>
             </div>
           </Card>
         </div>
 
         {/* Sector Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {SECTORS.map((sector) => {
             const Icon = sector.icon;
             const prog = progress[sector.id];
@@ -201,7 +201,7 @@ export default function CertificationDashboard({ userId }: CertificationDashboar
             return (
               <Card 
                 key={sector.id}
-                className="sector-card relative overflow-hidden p-8 hover:shadow-2xl transition-all duration-300"
+                className="sector-card relative overflow-hidden p-6 hover:shadow-2xl transition-all duration-300"
               >
                 {/* Gradient Background */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${sector.gradient} opacity-5`} />
@@ -290,14 +290,6 @@ export default function CertificationDashboard({ userId }: CertificationDashboar
             );
           })}
         </div>
-
-        {/* Call to Action */}
-        <Card className="mt-12 p-8 text-center bg-gradient-to-r from-primary/10 to-accent/10">
-          <h3 className="text-2xl font-bold mb-3">Ready to Stand Out?</h3>
-          <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-            Complete your certification and share your verified professional readiness with employers across the Caribbean.
-          </p>
-        </Card>
 
         {/* Payment Modal */}
         <PaymentModal
