@@ -172,24 +172,24 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
         return;
       }
 
-      setSession(currentSession);
       const userId = currentSession.user.id;
 
-      // Set basic user info immediately (email-based display name as fallback)
-      setUser(prev => ({
-        id: userId,
-        email: currentSession.user.email,
-        displayName: prev?.displayName || currentSession.user.email?.split('@')[0] || 'Lansa User',
-      }));
-
-      // Fetch all data in one batch
+      // Fetch all data BEFORE setting session — prevents race condition where
+      // isAuthenticated becomes true before hasCompletedOnboarding is set,
+      // causing DefaultRoute to incorrectly redirect to /onboarding.
       const data = await fetchAllUserData(userId);
 
       // Update display name if we got one from DB
-      if (data.displayName) {
-        setUser(prev => prev ? { ...prev, displayName: data.displayName } : null);
-      } else {
-        // Check localStorage fallback for new users
+      // Now set ALL state atomically — session + user data in same render cycle
+      // This prevents DefaultRoute from seeing isAuthenticated=true before hasCompletedOnboarding is set
+      setSession(currentSession);
+      setUser({
+        id: userId,
+        email: currentSession.user.email,
+        displayName: data.displayName || currentSession.user.email?.split('@')[0] || 'Lansa User',
+      });
+
+      if (!data.displayName) {
         const localName = localStorage.getItem('userName');
         if (localName) {
           setUser(prev => prev ? { ...prev, displayName: localName } : null);
