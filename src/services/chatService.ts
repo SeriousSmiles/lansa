@@ -66,6 +66,25 @@ export const chatService = {
 
     const participantMap = new Map(participants?.map(p => [p.user_id, p]) ?? []);
 
+    // Fallback: fetch business_profiles for any IDs still missing from the view
+    const missingIds = uniqueIds.filter(id => !participantMap.has(id));
+    if (missingIds.length > 0) {
+      const { data: bpFallback } = await supabase
+        .from('business_profiles')
+        .select('user_id, company_name')
+        .in('user_id', missingIds);
+      bpFallback?.forEach(bp => {
+        participantMap.set(bp.user_id, {
+          user_id: bp.user_id,
+          name: bp.company_name,
+          profile_image: null,
+          title: bp.company_name,
+          organization_name: bp.company_name,
+          organization_logo: null,
+        });
+      });
+    }
+
     // Fetch last message per thread
     const threadIds = threads.map(t => t.id);
     const { data: lastMessages } = await supabase
@@ -113,6 +132,13 @@ export const chatService = {
           title: p.title ?? null,
           organization_name: p.organization_name ?? null,
           organization_logo: p.organization_logo ?? null,
+        } : otherPartyId ? {
+          user_id: otherPartyId,
+          name: 'Unknown User',
+          profile_image: null,
+          title: null,
+          organization_name: null,
+          organization_logo: null,
         } : undefined,
         last_message: lastMessageMap.get(t.id),
         unread_count: unreadMap.get(t.id) ?? 0,
@@ -303,6 +329,33 @@ export const chatService = {
           organization_name: p.organization_name ?? null,
           organization_logo: p.organization_logo ?? null,
         };
+      } else {
+        // Fallback: try business_profiles directly
+        const { data: bp } = await supabase
+          .from('business_profiles')
+          .select('user_id, company_name')
+          .eq('user_id', otherPartyId)
+          .maybeSingle();
+        if (bp) {
+          otherParty = {
+            user_id: bp.user_id,
+            name: bp.company_name,
+            profile_image: null,
+            title: bp.company_name,
+            organization_name: bp.company_name,
+            organization_logo: null,
+          };
+        } else {
+          // Last resort: show a placeholder so the thread still renders
+          otherParty = {
+            user_id: otherPartyId,
+            name: 'Unknown User',
+            profile_image: null,
+            title: null,
+            organization_name: null,
+            organization_logo: null,
+          };
+        }
       }
     }
 
