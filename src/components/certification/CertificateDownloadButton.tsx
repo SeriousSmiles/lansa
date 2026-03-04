@@ -32,21 +32,11 @@ export default function CertificateDownloadButton({
     async function fetchName() {
       const { data } = await supabase
         .from("user_profiles")
-        .select("full_name, first_name, last_name")
+        .select("name")
         .eq("user_id", userId)
         .single();
 
-      if (data) {
-        const name =
-          (data as any).full_name ||
-          [(data as any).first_name, (data as any).last_name]
-            .filter(Boolean)
-            .join(" ") ||
-          "Professional";
-        setCandidateName(name);
-      } else {
-        setCandidateName("Professional");
-      }
+      setCandidateName((data as any)?.name || "Professional");
       setLoading(false);
     }
     fetchName();

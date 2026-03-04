@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     lineHeight: 1.6,
     marginTop: 6,
-    fontFamily: 'Helvetica-Oblique',
+    fontFamily: 'Helvetica',
   },
   // Footer
   footerRow: {
