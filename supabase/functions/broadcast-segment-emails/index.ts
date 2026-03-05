@@ -99,9 +99,11 @@ Deno.serve(async (req) => {
       actionsMap[a.user_id][a.action_type] = (actionsMap[a.user_id][a.action_type] || 0) + 1;
     });
 
-    // Build rate-limit set
-    const recentEmailKeys = new Set<string>();
-    recentLogsResult.data?.forEach(l => recentEmailKeys.add(`${l.user_id}:${l.new_segment}`));
+    // Build rate-limit set: ANY email to this user within the window blocks ALL segments.
+    // This prevents the race condition where transition emails (send-segment-email) and
+    // manual broadcasts (this function) both fire within the same rate-limit window.
+    const recentlyEmailedUserIds = new Set<string>();
+    recentLogsResult.data?.forEach(l => recentlyEmailedUserIds.add(l.user_id));
 
     let sent = 0;
     let skipped_rate_limited = 0;
@@ -116,10 +118,9 @@ Deno.serve(async (req) => {
 
       const segment = user.color_auto || 'red';
 
-      // Rate-limit check: purple has its own key; others check any recent send
-      const isRateLimited = segment === 'purple'
-        ? recentEmailKeys.has(`${user.user_id}:purple`)
-        : recentLogsResult.data?.some(l => l.user_id === user.user_id) ?? false;
+      // Unified rate-limit: block if ANY segment email was sent to this user within RATE_LIMIT_DAYS,
+      // regardless of which system sent it (transition trigger or manual broadcast).
+      const isRateLimited = recentlyEmailedUserIds.has(user.user_id);
 
       if (isRateLimited) { skipped_rate_limited++; continue; }
 
