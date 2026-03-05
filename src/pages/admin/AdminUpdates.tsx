@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Pencil, Trash2, Loader2, RefreshCw } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, RefreshCw, Bell, BellOff } from 'lucide-react';
 import { adminProductUpdatesService } from '@/services/adminProductUpdatesService';
 import { ProductUpdate } from '@/services/productUpdatesService';
 import { UpdateFormDialog } from '@/components/admin/updates/UpdateFormDialog';
@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { supabase } from '@/integrations/supabase/client';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,7 +35,9 @@ export default function AdminUpdates() {
   const [showFormDialog, setShowFormDialog] = useState(false);
   const [editingUpdate, setEditingUpdate] = useState<ProductUpdate | undefined>();
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [notifyConfirm, setNotifyConfirm] = useState<ProductUpdate | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [notifyingId, setNotifyingId] = useState<string | null>(null);
 
   const loadUpdates = async () => {
     setIsLoading(true);
@@ -86,6 +89,37 @@ export default function AdminUpdates() {
     }
   };
 
+  const handleNotifyUsers = async (update: ProductUpdate) => {
+    setNotifyConfirm(null);
+    setNotifyingId(update.id);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase.functions.invoke('send-product-update-email', {
+        body: { update_id: update.id },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Notification sent!',
+        description: `${data.sent} users notified about "${update.title}". ${data.failed > 0 ? `${data.failed} failed.` : ''}`,
+      });
+    } catch (err: any) {
+      console.error('[notify-users]', err);
+      toast({
+        title: 'Failed to send notifications',
+        description: err.message || 'Unknown error',
+        variant: 'destructive',
+      });
+    } finally {
+      setNotifyingId(null);
+    }
+  };
+
   const handleFormSuccess = async () => {
     await loadUpdates();
   };
@@ -125,11 +159,12 @@ export default function AdminUpdates() {
       ) : (
         <div className="space-y-3 md:space-y-4">
           {updates.map((update) => {
-            const config = categoryConfig[update.category];
+            const config = categoryConfig[update.category as keyof typeof categoryConfig] || { label: update.category, color: 'bg-gray-500' };
             const IconComponent = update.icon_name && AVAILABLE_ICONS[update.icon_name as keyof typeof AVAILABLE_ICONS]
               ? AVAILABLE_ICONS[update.icon_name as keyof typeof AVAILABLE_ICONS].icon
               : null;
             const isPast = new Date(update.published_at) <= new Date();
+            const isNotifying = notifyingId === update.id;
 
             return (
               <div key={update.id} className="border rounded-lg p-3 md:p-4 hover:bg-accent/50 transition-colors">
@@ -169,7 +204,25 @@ export default function AdminUpdates() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col md:flex-row gap-1 md:gap-2">
+                  <div className="flex flex-col md:flex-row gap-1 md:gap-2 shrink-0">
+                    {/* Notify Users button — only for published updates */}
+                    {isPast && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setNotifyConfirm(update)}
+                        disabled={isNotifying}
+                        title="Email all users about this update"
+                        className="gap-1.5 text-xs"
+                      >
+                        {isNotifying ? (
+                          <Loader2 className="h-3 w-3 md:h-4 md:w-4 animate-spin" />
+                        ) : (
+                          <Bell className="h-3 w-3 md:h-4 md:w-4" />
+                        )}
+                        <span className="hidden md:inline">Notify</span>
+                      </Button>
+                    )}
                     <Button size="sm" variant="outline" onClick={() => handleEdit(update)}>
                       <Pencil className="h-3 w-3 md:h-4 md:w-4" />
                     </Button>
@@ -198,6 +251,7 @@ export default function AdminUpdates() {
         update={editingUpdate}
       />
 
+      {/* Delete Confirmation */}
       <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -213,6 +267,33 @@ export default function AdminUpdates() {
               disabled={isDeleting}
             >
               {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Notify Users Confirmation */}
+      <AlertDialog open={!!notifyConfirm} onOpenChange={() => setNotifyConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5" />
+              Notify All Users?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This will send an email notification about <strong>"{notifyConfirm?.title}"</strong> to all users with a Lansa account.
+              <br /><br />
+              This action cannot be undone. Make sure this update is ready to share before proceeding.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => notifyConfirm && handleNotifyUsers(notifyConfirm)}
+              className="gap-2"
+            >
+              <Bell className="h-4 w-4" />
+              Send Notification
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

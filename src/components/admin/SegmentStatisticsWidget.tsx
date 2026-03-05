@@ -1,12 +1,26 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 import { useSegmentStatistics } from '@/hooks/admin/useSegmentStatistics';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Mail, Users, Activity, AlertTriangle, Info } from 'lucide-react';
+import { TrendingUp, Mail, Users, Activity, AlertTriangle, Info, Send, Loader2, CheckCircle2 } from 'lucide-react';
 import { COLOR_CONFIG } from '@/utils/adminColors';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const SEGMENT_COLORS = {
   purple: '#9333ea',
@@ -56,8 +70,51 @@ function SegmentBadge({ segment }: { segment: string | null }) {
   );
 }
 
+interface BroadcastResult {
+  sent: number;
+  skipped_rate_limited: number;
+  skipped_no_email: number;
+}
+
 export function SegmentStatisticsWidget() {
   const { data: stats, isLoading } = useSegmentStatistics(30);
+  const { toast } = useToast();
+  const [showBroadcastConfirm, setShowBroadcastConfirm] = useState(false);
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
+  const [broadcastResult, setBroadcastResult] = useState<BroadcastResult | null>(null);
+
+  const handleBroadcast = async () => {
+    setShowBroadcastConfirm(false);
+    setIsBroadcasting(true);
+    setBroadcastResult(null);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase.functions.invoke('broadcast-segment-emails', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (error) throw error;
+
+      const result = data as BroadcastResult;
+      setBroadcastResult(result);
+      toast({
+        title: `Broadcast complete`,
+        description: `${result.sent} emails sent, ${result.skipped_rate_limited} rate-limited, ${result.skipped_no_email} skipped`,
+      });
+    } catch (err: any) {
+      console.error('[broadcast]', err);
+      toast({
+        title: 'Broadcast failed',
+        description: err.message || 'Unknown error',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBroadcasting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -122,7 +179,7 @@ export function SegmentStatisticsWidget() {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="flex items-center gap-1.5">
                 <CardTitle className="text-sm font-medium">Drifting Alerts</CardTitle>
-                <InfoTooltip content="Emails sent when a user's engagement score dropped to the Drifting (red) segment. These are 'come back' nudge emails sent to inactive users. Previously mislabelled as 'Re-engagement'." />
+                <InfoTooltip content="Emails sent when a user's engagement score dropped to the Drifting (red) segment. These are 'come back' nudge emails sent to inactive users." />
               </div>
               <AlertTriangle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -137,7 +194,7 @@ export function SegmentStatisticsWidget() {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="flex items-center gap-1.5">
                 <CardTitle className="text-sm font-medium">Recoveries</CardTitle>
-                <InfoTooltip content="Users who were previously Drifting (red) and whose score moved back up to Underused, Engaged, or Advocate — triggering a positive re-engagement email. This is the key success metric for the nudge system." />
+                <InfoTooltip content="Users who were previously Drifting (red) and whose score moved back up to Underused, Engaged, or Advocate — triggering a positive re-engagement email." />
               </div>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -147,6 +204,65 @@ export function SegmentStatisticsWidget() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Broadcast Panel */}
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Send className="h-4 w-4 text-primary" />
+              Broadcast Segment Emails
+            </CardTitle>
+            <CardDescription>
+              Send a personalised email to every user based on their current segment — nudging them toward the next tier. Respects a 5-day rate limit per user.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <Button
+                onClick={() => setShowBroadcastConfirm(true)}
+                disabled={isBroadcasting}
+                className="gap-2"
+              >
+                {isBroadcasting ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" />Sending…</>
+                ) : (
+                  <><Send className="h-4 w-4" />Send Segment Emails to All Users</>
+                )}
+              </Button>
+
+              {broadcastResult && (
+                <div className="flex items-center gap-3 text-sm bg-background border rounded-lg px-4 py-2.5">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <div>
+                    <span className="font-semibold text-emerald-700">{broadcastResult.sent} sent</span>
+                    <span className="text-muted-foreground mx-1.5">·</span>
+                    <span className="text-muted-foreground">{broadcastResult.skipped_rate_limited} rate-limited</span>
+                    <span className="text-muted-foreground mx-1.5">·</span>
+                    <span className="text-muted-foreground">{broadcastResult.skipped_no_email} skipped</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Legend */}
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              {[
+                { color: 'bg-red-400', label: 'Drifting', desc: '"Come back" nudge' },
+                { color: 'bg-orange-400', label: 'Underused', desc: 'Next feature suggestion' },
+                { color: 'bg-green-500', label: 'Engaged', desc: '"Keep going" push' },
+                { color: 'bg-purple-500', label: 'Advocate', desc: 'Recognition email ⭐' },
+              ].map(item => (
+                <div key={item.label} className="flex items-start gap-1.5">
+                  <div className={`w-2 h-2 rounded-full ${item.color} mt-0.5 shrink-0`} />
+                  <div>
+                    <div className="font-medium text-foreground">{item.label}</div>
+                    <div className="text-muted-foreground">{item.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Charts */}
         <Card>
@@ -167,7 +283,7 @@ export function SegmentStatisticsWidget() {
                     <TabsTrigger value="distribution">Distribution</TabsTrigger>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs text-xs">
-                    Current snapshot of all users grouped by engagement segment. Uses color_auto (calculated by scoring engine) unless an admin has manually set color_admin to override it.
+                    Current snapshot of all users grouped by engagement segment.
                   </TooltipContent>
                 </Tooltip>
                 <Tooltip>
@@ -175,7 +291,7 @@ export function SegmentStatisticsWidget() {
                     <TabsTrigger value="emails">Email Metrics</TabsTrigger>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs text-xs">
-                    Daily count of automated nudge emails sent, grouped by the destination segment that triggered them. Each data point = a logged send event in segment_email_log within the last 30 days.
+                    Daily count of automated nudge emails sent, grouped by destination segment.
                   </TooltipContent>
                 </Tooltip>
                 <Tooltip>
@@ -183,7 +299,7 @@ export function SegmentStatisticsWidget() {
                     <TabsTrigger value="log">Email Log</TabsTrigger>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs text-xs">
-                    The 50 most recent automated emails sent — showing which user received it, what segment they moved from and to, and when it was sent.
+                    The 50 most recent automated emails sent.
                   </TooltipContent>
                 </Tooltip>
               </TabsList>
@@ -274,7 +390,7 @@ export function SegmentStatisticsWidget() {
                 <div className="text-sm text-muted-foreground space-y-1 border rounded-lg p-3 bg-muted/30">
                   <p>📊 Each bar = emails sent on that day, stacked by which segment the user moved <strong>into</strong>.</p>
                   <p>📧 <strong>{stats.summary.averageEmailsPerDay.toFixed(1)}</strong> avg emails/day in the last 30 days</p>
-                  <p className="text-xs text-muted-foreground/70">Transitions chart shows email send events — not raw user segment changes. One email = one send event in segment_email_log.</p>
+                  <p className="text-xs text-muted-foreground/70">Transitions chart shows email send events — not raw user segment changes.</p>
                 </div>
               </TabsContent>
 
@@ -288,30 +404,10 @@ export function SegmentStatisticsWidget() {
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="border-b bg-muted/50">
-                        <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                          <Tooltip>
-                            <TooltipTrigger asChild><span className="cursor-help border-b border-dashed border-muted-foreground/40">User</span></TooltipTrigger>
-                            <TooltipContent className="text-xs">Name and email of the user who received this automated email</TooltipContent>
-                          </Tooltip>
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                          <Tooltip>
-                            <TooltipTrigger asChild><span className="cursor-help border-b border-dashed border-muted-foreground/40">From → To</span></TooltipTrigger>
-                            <TooltipContent className="text-xs">The segment transition that triggered this email. "From" = their previous segment. "To" = their new segment after scoring.</TooltipContent>
-                          </Tooltip>
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                          <Tooltip>
-                            <TooltipTrigger asChild><span className="cursor-help border-b border-dashed border-muted-foreground/40">Email Type</span></TooltipTrigger>
-                            <TooltipContent className="text-xs">The type of email sent: "drifting_alert" = nudge to come back, "recovery" = positive email for return, "engaged" = encouragement, "underused" = prompts to use more features</TooltipContent>
-                          </Tooltip>
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                          <Tooltip>
-                            <TooltipTrigger asChild><span className="cursor-help border-b border-dashed border-muted-foreground/40">Sent At</span></TooltipTrigger>
-                            <TooltipContent className="text-xs">Timestamp when the email was dispatched via the Supabase Edge Function</TooltipContent>
-                          </Tooltip>
-                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-muted-foreground">User</th>
+                        <th className="px-3 py-2 text-left font-medium text-muted-foreground">From → To</th>
+                        <th className="px-3 py-2 text-left font-medium text-muted-foreground">Email Type</th>
+                        <th className="px-3 py-2 text-left font-medium text-muted-foreground">Sent At</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -323,15 +419,20 @@ export function SegmentStatisticsWidget() {
                         </tr>
                       )}
                       {stats.emailLogEntries.map((entry) => {
-                        const emailType = entry.new_segment === 'red'
-                          ? 'Drifting Alert'
-                          : (entry.old_segment === 'red' ? 'Recovery' : entry.new_segment === 'green' ? 'Engaged' : 'Underused');
+                        const isBroadcast = entry.old_segment === entry.new_segment;
+                        const emailType = isBroadcast
+                          ? `Broadcast (${segmentLabel(entry.new_segment)})`
+                          : entry.new_segment === 'red'
+                            ? 'Drifting Alert'
+                            : (entry.old_segment === 'red' ? 'Recovery' : entry.new_segment === 'green' ? 'Engaged' : entry.new_segment === 'purple' ? 'Advocate ⭐' : 'Underused');
                         const typeColors: Record<string, string> = {
                           'Drifting Alert': 'bg-red-50 text-red-700 border-red-200',
                           'Recovery': 'bg-emerald-50 text-emerald-700 border-emerald-200',
                           'Engaged': 'bg-green-50 text-green-700 border-green-200',
                           'Underused': 'bg-orange-50 text-orange-700 border-orange-200',
+                          'Advocate ⭐': 'bg-purple-50 text-purple-700 border-purple-200',
                         };
+                        const broadcastColor = 'bg-blue-50 text-blue-700 border-blue-200';
                         return (
                           <tr key={entry.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                             <td className="px-3 py-2.5">
@@ -346,7 +447,7 @@ export function SegmentStatisticsWidget() {
                               </div>
                             </td>
                             <td className="px-3 py-2.5">
-                              <span className={`text-xs px-1.5 py-0.5 rounded border font-medium ${typeColors[emailType] || 'bg-muted text-muted-foreground'}`}>
+                              <span className={`text-xs px-1.5 py-0.5 rounded border font-medium ${isBroadcast ? broadcastColor : (typeColors[emailType] || 'bg-muted text-muted-foreground')}`}>
                                 {emailType}
                               </span>
                             </td>
@@ -364,6 +465,36 @@ export function SegmentStatisticsWidget() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Broadcast Confirmation Dialog */}
+      <AlertDialog open={showBroadcastConfirm} onOpenChange={setShowBroadcastConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send Segment Emails to All Users?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <span className="block">
+                This will send a personalised email to every user based on their current segment:
+              </span>
+              <span className="block text-sm space-y-1 mt-2">
+                <span className="block">🔴 <strong>Drifting</strong> → "Come back" nudge</span>
+                <span className="block">🟠 <strong>Underused</strong> → Next feature suggestion</span>
+                <span className="block">🟢 <strong>Engaged</strong> → "You're on fire" push</span>
+                <span className="block">🟣 <strong>Advocate</strong> → Recognition email ⭐</span>
+              </span>
+              <span className="block mt-2 text-xs text-muted-foreground">
+                Users who received any segment email in the last 5 days will be skipped. This cannot be undone.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBroadcast} className="gap-2">
+              <Send className="h-4 w-4" />
+              Send Now
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </TooltipProvider>
   );
 }

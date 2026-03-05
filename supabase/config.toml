@@ -149,3 +149,9 @@ verify_jwt = false
 [functions.parse-cv]
 verify_jwt = false
 
+[functions.broadcast-segment-emails]
+verify_jwt = false
+
+[functions.send-product-update-email]
+verify_jwt = false
+
