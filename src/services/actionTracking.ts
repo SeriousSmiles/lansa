@@ -2,15 +2,37 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export type ActionType = 
+  // Core navigation
+  | 'dashboard_visited'
+  | 'onboarding_completed'
+  | 'recommended_action_clicked'
+  // Profile & visibility
   | 'profile_updated'
-  | 'pitch_generated' 
   | 'profile_shared'
-  | 'profile_viewed'
+  | 'pitch_generated'
+  | 'visible_to_employers_enabled'
+  // AI tools (seeker)
+  | 'power_skill_reframed'
+  | 'ai_mirror_used'
+  | 'story_created'
   | 'insight_opened'
   | 'insight_interacted'
-  | 'onboarding_completed'
-  | 'dashboard_visited'
-  | 'recommended_action_clicked';
+  // Planning & growth
+  | 'goal_90day_created'
+  | 'growth_prompt_completed'
+  // Resume
+  | 'resume_exported'
+  // Jobs (seeker)
+  | 'job_applied'
+  | 'job_swiped'
+  // Certification
+  | 'certification_started'
+  | 'certification_completed'
+  // Employer actions
+  | 'job_posted'
+  | 'application_reviewed'
+  | 'candidate_accepted'
+  | 'candidate_rejected';
 
 export interface ActionMetadata {
   [key: string]: any;
@@ -38,8 +60,6 @@ export async function trackUserAction(
 
     if (error) {
       console.error('Failed to track user action:', error);
-    } else {
-      console.log(`Tracked action: ${actionType}`, metadata);
     }
   } catch (error) {
     console.error('Error tracking user action:', error);
@@ -56,7 +76,6 @@ export async function getUserActionSummary(userId: string) {
 
     if (error) throw error;
 
-    // Process actions into summary
     const summary = {
       totalActions: data?.length || 0,
       lastActions: data?.slice(0, 10) || [],
