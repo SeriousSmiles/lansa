@@ -32,9 +32,10 @@ Deno.serve(async (req) => {
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
-      .in('role', ['admin', 'superadmin']);
+      .eq('role', 'admin')
+      .maybeSingle();
 
-    if (!roleData || roleData.length === 0) {
+    if (!roleData) {
       return new Response(JSON.stringify({ error: 'Admin access required' }), { status: 403, headers: corsHeaders });
     }
 
