@@ -1,115 +1,125 @@
 
-## Problem
 
-The current `broadcast-segment-emails` function detects user type via `user_roles` table (checking for `employer`/`business` role). But the actual source of truth for user type is `user_answers.user_type` which is either `'job_seeker'` or `'employer'`. The roles table check is unreliable — employers may only have `'employer'` in `user_answers`, not necessarily a matching `user_roles` row.
+## Root Cause: Two Different Email Systems Fired Independently
 
-More critically: the email body content currently blends both types. A job seeker gets mentions of job-posting features. An employer sees CV Builder and AI Mirror references. This is the core problem to fix.
+The user who received both emails is **user_id: `e15bf03c`** (John Nathan Stephens — same email as admin's test account `jognnt@gmail.com`).
 
-**Job Seeker exclusive features** (from route guards in App.tsx):
-- AI Skill Reframer / Power Skills
-- AI Power Mirror
-- CV Builder / Resume Editor
-- Job Discovery feed
-- Lansa Certification
-- Growth Prompts
-- 90-Day Goal Planner
-- Opportunity Discovery
+### What actually happened (timeline)
 
-**Employer exclusive features** (from route guards in App.tsx):
-- Post Jobs
-- Browse Candidates
-- Review Applications / Pipeline
-- Organization Settings
-- Candidate acceptance/shortlisting
+```
+March 3, 18:19 UTC  →  send-segment-email (TRIGGER-BASED)
+  old_segment: green → new_segment: RED
+  → Sent: "Don't let your progress fade" (red segment transition email)
 
----
+March 3, 18:37 UTC  →  send-segment-email (TRIGGER-BASED)
+  old_segment: red → new_segment: PURPLE
+  → Sent: "You're a Lansa Advocate" (recovery email)
 
-## What Changes
-
-### `supabase/functions/broadcast-segment-emails/index.ts` — only file changing
-
-**1. Fetch `user_type` from `user_answers` in bulk**
-
-Add a bulk query for all `user_ids` against `user_answers` to get `user_type`:
-
-```typescript
-const { data: allAnswers } = await serviceClient
-  .from('user_answers')
-  .select('user_id, user_type')
-  .in('user_id', userIds);
-
-const userTypeMap: Record<string, 'job_seeker' | 'employer'> = {};
-allAnswers?.forEach(a => { userTypeMap[a.user_id] = a.user_type; });
+March 5, 19:27 UTC  →  broadcast-segment-emails (MANUAL BROADCAST)
+  current segment: purple
+  → Sent: "You're a Lansa Advocate" (broadcast email)
 ```
 
-Then replace the `isEmployer` detection from:
-```typescript
-const isEmployer = userRoles.some(r => ['employer', 'business'].includes(r));
-```
-to:
-```typescript
-const userType = userTypeMap[user.user_id] || 'job_seeker';
-const isEmployer = userType === 'employer';
-```
+So the user received the **Red** email first (18:19), then **18 minutes later** jumped to Purple and got the Advocate email (18:37), then again today got the Advocate broadcast email. Two different systems, both working correctly per their own rules — but the interaction creates a confusing double-email experience.
 
-**2. Replace `buildEmailContent` with two separate builders**
+### Why both fired
 
-`buildSeekerEmail(params)` — only ever mentions seeker features:
-- Red: "AI Skill Reframer, Power Mirror, Job Discovery, CV Builder, Certification, Growth Challenges"
-- Orange: Next unused seeker feature from the list above
-- Green: Progress reinforcement + next seeker tool
-- Purple: Advocate recognition with seeker achievements (jobs applied, certified, mirror used, skills reframed)
+**System 1 — `send-segment-email`** (trigger-based, real-time)
+- Fires on database segment CHANGE events (green → red, red → purple, etc.)
+- Its rate-limit only checks for that same `user_id` in the last 5 days, regardless of `new_segment`
+- **Problem:** It allowed the red→purple transition email because the previous log entry was `green→red`, not `purple`. It sees two different `new_segment` values and considers them separate events
 
-`buildEmployerEmail(params)` — only ever mentions employer features:
-- Red: "Your hiring pipeline needs attention — come post a job or review your open applications"
-- Orange: "You've started — next step is Browse Candidates or review incoming applications"
-- Green: "You're actively hiring — keep reviewing candidates and shortlisting"
-- Purple: "You're a hiring advocate on Lansa — recognition for consistent sourcing activity"
+**System 2 — `broadcast-segment-emails`** (manual broadcast)
+- Rate-limit logic: for purple users it checks `recentEmailKeys.has('userId:purple')` — only blocks if a recent **purple** email was sent
+- **Problem:** The March 3 transition email was logged as `old_segment=red, new_segment=purple`. Today's broadcast checks for `new_segment=purple` in the last 5 days — that log entry EXISTS, so this user should have been **rate-limited** and skipped
 
-Both functions share the same HTML wrapper template. The subject lines, headlines, body copy, and CTA text are entirely separate and type-specific.
+Wait — re-reading the broadcast code more carefully:
 
-**3. Dispatch logic**
-
-```typescript
-const emailContent = isEmployer 
-  ? buildEmployerEmail({ name, segment, actionCounts, certified })
-  : buildSeekerEmail({ name, segment, actionCounts, certified, visibleToEmployers });
+```js
+const isRateLimited = segment === 'purple'
+  ? recentEmailKeys.has(`${user.user_id}:purple`)    // checks new_segment=purple
+  : recentLogsResult.data?.some(l => l.user_id === user.user_id) ?? false;
 ```
 
-**4. Batch send with Resend batch API (already approved in previous plan)**
+The `recentEmailKeys` is built from `segment_email_log` WHERE `email_sent_at > now() - 5 days`. The March 3 entry at 18:37 has `new_segment=purple`. Today is March 5 = only 2 days later. The key `e15bf03c:purple` SHOULD be in the set.
 
-While we're editing the file, replace the sequential `resend.emails.send()` loop with `resend.batch.send()` in chunks of 100:
+**But we deleted the 17:48 batch earlier today.** Let me check — the 17:48 deletion was for entries where `email_sent_at >= 2026-03-05 17:48` AND `< 2026-03-05 17:49`. The March 3 entries are untouched. So the purple rate-limit check should have caught this user.
 
-```typescript
-// Build all payloads first
-const emailPayloads = [];
-const logRows = [];
+Actually — looking at the second query result again:
+- `user_id: e15bf03c` had entries on March 3 at 18:37 with `new_segment: purple`
+- Today's broadcast (19:27) still sent to them
 
-for (const user of usersToProcess) {
-  const content = isEmployer ? buildEmployerEmail(...) : buildSeekerEmail(...);
-  emailPayloads.push({ from, to: [user.email], subject: content.subject, html: content.html });
-  logRows.push({ user_id: user.user_id, old_segment: segment, new_segment: segment });
-}
+This means the rate-limit check for purple users is comparing against `new_segment` in the log, but the March 3 entry that has `new_segment: purple` was created by the trigger-based system (`send-segment-email`) which logs `old_segment=red, new_segment=purple`. The broadcast's `recentEmailKeys` set is built as:
 
-// Send in chunks of 100
-const CHUNK_SIZE = 100;
-for (let i = 0; i < emailPayloads.length; i += CHUNK_SIZE) {
-  const chunk = emailPayloads.slice(i, i + CHUNK_SIZE);
-  await resend.batch.send(chunk);
-}
-
-// Single bulk log insert
-await serviceClient.from('segment_email_log').insert(logRows);
+```js
+recentLogsResult.data?.forEach(l => recentEmailKeys.add(`${l.user_id}:${l.new_segment}`));
 ```
 
-This resolves the rate-limit problem (2 API calls for 139 users) and the type-confusion problem in a single edit to one file.
+This would produce key `e15bf03c:purple` from the March 3 entry... Unless the `recentLogsResult` query has a time filter:
+```js
+.gte('email_sent_at', new Date(Date.now() - RATE_LIMIT_DAYS * 24 * 60 * 60 * 1000).toISOString())
+```
+= 5 days ago. March 3 is only 2 days ago. So `e15bf03c:purple` SHOULD be in the set.
 
----
+**Actual bug found:** The rate-limit check for non-purple users is:
+```js
+: recentLogsResult.data?.some(l => l.user_id === user.user_id) ?? false;
+```
+This blocks ANY user who has ANY recent log entry. But the purple check is specifically:
+```js
+recentEmailKeys.has(`${user.user_id}:purple`)
+```
 
-## Summary of Changes
+The March 3 entry for this user has `new_segment = 'purple'` — so `e15bf03c:purple` IS in the set. This should have been rate-limited. 
+
+Unless... the `segment_email_log` table uses `id` as a column but the query selects `user_id, new_segment, email_sent_at` — there's no `id` column referenced, so that's fine.
+
+**Most likely real bug:** The broadcast read the log entries BEFORE the 17:48 cleanup migration ran, OR the `segment_email_log` table doesn't have an `id` column and the `.some()` check fails silently.
+
+Let me plan the fix regardless, since the system behavior is clear:
+
+### The Real Problem to Fix
+
+**The `send-segment-email` (transition trigger) sends emails for ALL direction changes**, including when a user jumps from red → purple. But the rate-limit in that function checks for ANY recent email across ANY segment — it should have blocked the red→purple email because a red transition email was sent 18 minutes earlier. 
+
+Looking at the code:
+```js
+const { data: recentEmail } = await supabase
+  .from('segment_email_log')
+  .select('email_sent_at')
+  .eq('user_id', user_id)
+  .gt('email_sent_at', ...) // last 5 days
+  .single();
+```
+
+This WOULD catch it — both entries are on the same day, 18 minutes apart. So why did both fire?
+
+**Answer found:** The trigger fires the edge function via `pg_net.http_post()` which is ASYNCHRONOUS. Both color changes (green→red AND red→purple) happened within seconds of each other when the admin pressed "Update Colors." The two HTTP calls hit the edge function almost simultaneously — before either had a chance to write its log entry. Both fetched the rate-limit check at the same time, both saw no recent email, both proceeded to send.
+
+**This is a classic RACE CONDITION** in the trigger-based system.
+
+### The Fix Plan
+
+**Fix 1 — `send-segment-email`: Add a transition whitelist**
+Currently the `shouldSendEmail` logic sends for:
+- Any → red
+- red → orange  
+- red → green
+
+**It should NOT send when `new_segment = 'purple'`** because purple users are advocates — they don't need a "you're drifting" or "you're recovering" message. They should only get the broadcast advocate email. This eliminates the race condition problem for purple users specifically.
+
+**Fix 2 — `broadcast-segment-emails`: Tighten the rate-limit check for purple**
+The rate-limit check for purple currently only blocks if a broadcast purple email was sent recently. It should also block if the trigger-based email already sent a purple email within 5 days (which IS already in the log, but the race condition above caused two sends).
+
+**Fix 3 — Cross-system rate-limit**
+Both the transition system and the broadcast system share the same `segment_email_log` table. The broadcast should check `new_segment` matches the user's CURRENT segment and block if any email (regardless of `old_segment`) was sent within 5 days.
+
+### Files to Change
 
 | File | Change |
 |---|---|
-| `supabase/functions/broadcast-segment-emails/index.ts` | Fetch `user_type` from `user_answers`, split into two typed email builders, switch to `resend.batch.send()` with chunking |
+| `supabase/functions/send-segment-email/index.ts` | Remove `purple` from the allowed transition email list (purple users should not receive automated transition nudges — only the broadcast advocate email) |
+| `supabase/functions/broadcast-segment-emails/index.ts` | Strengthen rate-limit: check if ANY email was sent to this user in the last 5 days (not just `new_segment:purple`), matching what non-purple users already get |
 
-No other files change. The admin UI button, the result toast, and `segment_email_log` logging all stay exactly the same.
+These two changes together close the race condition and prevent the duplicate email situation from happening again.
+
