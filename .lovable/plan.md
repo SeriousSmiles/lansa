@@ -1,86 +1,109 @@
 
-## What the Current Trends Page Is Showing — And Where It's Wrong
+## What Needs to Be Built
 
-### What Each Tab Currently Shows
-
-**Distribution tab**: Pie chart + 4 colored cards showing how many users are in each engagement segment RIGHT NOW, based on `color_auto` (or `color_admin` if admin-overridden). This is accurate in real-time.
-
-**Email Metrics tab**: A line chart of emails sent per day from `segment_email_log`. The data IS there (153 emails logged today alone) but the UI shows "4 Emails Sent" in the top card — this is a **data accuracy bug**: the summary cards are filtering to only `email_sent_at > startDate` but the hook query calculates `totalEmailsSent` from the email log, which only shows entries since today's re-scoring run. The chart itself shows the correct picture.
-
-**Transitions tab**: Stacked bar chart showing which segment emails triggered transitions INTO (red/orange/green) on each day. This is sourced from `segment_email_log` — the bars show "emails that triggered a color change" not "users who changed segments". The label is misleading — it says "segment transitions" but it's actually email send events grouped by destination segment.
-
-### The "Re-engagement" and "Recoveries" Confusion
-
-- **Re-engagement** (currently = 1): Emails sent TO users whose `new_segment` = `red`. These are nudge emails sent when someone's score dropped to Drifting. The name "Re-engagement" is misleading — it sounds like "they came back" but actually means "we emailed them because they went drifting".
-- **Recoveries** (currently = 1): Emails sent where `old_segment` = `red` AND `new_segment` != `red`. This means a user WAS drifting, then became more active, scored into orange/green/purple, and an email was triggered for that uplift. This is the POSITIVE metric — someone came back.
-
-The real data (from direct DB query): 115 "to drifting", 11 recoveries, 15 to engaged, 19 to underused — today alone. The UI is showing stale/wrong counts because the `segment_email_log` table timestamps are all `2026-03-05 17:48:05` (the backfill run), so the 30-day window calculation is off.
-
-### The 139 vs 145 User Discrepancy
-
-The admin UI queries `user_profiles` (139 rows). Supabase `auth.users` has 145. The 6 missing users signed up but never completed onboarding — no `user_profiles` row was created for them. They are completely invisible to all admin tracking.
+### Request Summary
+1. **Broadcast emails to all 139 users** — each user gets an email based on their current segment (red/orange/green/purple), designed to nudge them toward the next tier. Purple users get an "Advocate — well done" email.
+2. **Product Updates trigger email notifications** — when a product update is published, all users with an email get notified via Resend.
+3. **Admin can verify 139 accounts received the email.**
 
 ---
 
-## The Plan
+### Current State Analysis
 
-### 1. Fix the data accuracy problems in `useSegmentStatistics.ts`
+**Segment emails today:**
+- `send-segment-email` only fires on `color_auto` *transitions* (DB trigger). It will never send to users whose color doesn't change.
+- The function skips purple entirely (line 41–48) — only red, orange, and red→green/orange recovery trigger emails.
+- There is no batch broadcast capability anywhere.
 
-The hook calculates:
-- `reEngagementEmails` = emails where `new_segment === 'red'` — rename label to "Drifting Alerts Sent" 
-- `recoveryEmails` = emails where `old_segment === 'red' AND new_segment !== 'red'` — rename to "Users Recovered"
-- The `totalEmailsSent` count is correct but needs to include ALL-TIME or a clearly labeled time window
-
-### 2. Add a new "Email Log" section to the Trends page
-
-Show an actual table of emails sent: recipient name, from-segment → to-segment, date, email subject/type. This is what the admin specifically asked for ("I want to see what email was sent to users").
-
-Data is already available in `segment_email_log` joined with `user_profiles`.
-
-### 3. Rename metrics to be accurate and add tooltips everywhere
-
-**Summary card labels:**
-- "Re-engagement" → "Drifting Alerts" with tooltip: "Number of automated emails sent when a user's engagement score dropped to the Drifting (red) segment in the last 30 days. These are 'come back' nudges."
-- "Recoveries" → "Recoveries" with tooltip: "Users who were previously Drifting (red) and moved to a higher segment (Underused, Engaged, or Advocate), triggering an encouraging email."
-
-**Tab labels with tooltips:**
-- "Distribution" → tooltip: "Current snapshot of all users grouped by engagement segment. Uses color_auto (calculated) unless an admin has manually set color_admin."
-- "Email Metrics" → tooltip: "Daily count of automated nudge emails sent via segment changes. Each data point = a logged send event in segment_email_log."
-- "Transitions" → tooltip: "Shows the destination segment of each automated email send event. A bar means 'an email was sent because a user moved INTO this segment on this day.'"
-
-### 4. Add tooltips to ALL admin page components
-
-**In `SegmentStatisticsWidget.tsx`:**
-- Every summary card title/metric gets a `<Tooltip>` from Radix UI (already imported in the app)
-- Tab triggers get tooltips explaining what each view shows
-- Colored segment cards below the pie get tooltips explaining what Purple/Green/Orange/Red means
-
-**In `AdminUsers.tsx`:**
-- Stats bar at the top (Total, Active, Certified, color counts) get tooltips
-- Filter labels in `EnhancedFiltersPanel` get tooltips
-- Column headers in the user table get tooltips
-
-**In `UserDrawer.tsx`:**
-- "Days Inactive" tooltip: "Days since the user's last recorded action in user_actions or chat message sent."
-- "Total Actions" tooltip: "Total count of tracked actions across all time, including dashboard visits, AI tool usage, job applications, and more."
-- "Profile Score" tooltip: "Weighted completion score: Name 20%, Email 10%, Photo 15%, About 15%, Title 10%, Skills 15%, Experience 15%."
-- Signal heatmap row tooltips: Per-signal explanations (e.g., "AI Mirror Used — number of times this user ran the AI Power Mirror review")
-- "Manual Override" section tooltip: "Admin color overrides take precedence over the auto-calculated color_auto and will not be overwritten by the scoring engine."
-- Intent stage radio options each get tooltip
-
-### 5. Add the missing 6 auth users note
-
-Add a small info banner to `AdminUsers.tsx` noting that `auth.users` count (145) exceeds profile count (139) — 6 users signed up but never completed onboarding.
+**Product Updates today:**
+- `product_updates` table exists, admin can create/publish updates.
+- Users see them in-app via `user_seen_updates` table.
+- **No email notification exists** — nothing fires when an update is published.
 
 ---
 
-## Files to Change
+### What Will Be Built
 
-| File | Change |
-|---|---|
-| `src/components/admin/SegmentStatisticsWidget.tsx` | Add tooltips to all cards/tabs, add email log table, fix metric labels |
-| `src/hooks/admin/useSegmentStatistics.ts` | Fetch email log with user names, fix label semantics |
-| `src/components/admin/UserDrawer.tsx` | Add tooltips to all sections and signal rows |
-| `src/pages/admin/AdminUsers.tsx` | Add tooltips to stat cards and the 6-user discrepancy notice |
+#### Part 1 — Broadcast Email Edge Function (`broadcast-segment-emails`)
 
-No DB changes needed — the data is already there.
+A new edge function callable by admin that:
+1. Fetches all 139 `user_profiles` with `email`, `name`, `color_auto`, `certified`, `visible_to_employers`, `user_id`
+2. For each user, fetches their `user_actions` counts and `user_roles`
+3. Determines the segment email to send:
+   - **Red** → "Don't let your progress fade" — nudge toward first high-value action
+   - **Orange** → "You're building momentum" — suggest next feature they haven't used
+   - **Green** → "You're on fire — keep going" — encourage consistency + next tool
+   - **Purple** → NEW: "You're a Lansa Advocate — great work" — recognition email
+4. Respects a rate-limit: skips users who received a segment email within the last 5 days (checks `segment_email_log`)
+5. Logs each send to `segment_email_log` with `old_segment = current_color, new_segment = current_color` (same-segment broadcast marker)
+6. Returns a results summary: `{ sent: 127, skipped_rate_limited: 10, skipped_no_email: 2 }`
+
+The Purple/Advocate email template needs to be **built** — it doesn't exist in `send-segment-email` today (that function skips all transitions to green/purple unless coming from red).
+
+**Admin trigger:** A new "Send Segment Emails" button on the AdminTrends page (next to the existing admin actions area), with a confirmation dialog and result toast.
+
+#### Part 2 — Product Update Email Notification (`send-product-update-email`)
+
+A new edge function that:
+1. Accepts `{ update_id }` in the request body
+2. Fetches the `product_updates` row (title, description, category, version, link_url, icon_name)
+3. Fetches all 139 emails from `user_profiles` where `email IS NOT NULL`
+4. Sends a branded HTML email to every user with:
+   - Update title, category badge (Feature/Improvement/Fix/Announcement), description
+   - Version badge if present
+   - CTA button linking to `https://lansa.online/dashboard` (or `link_url` if provided)
+   - Lansa branding consistent with other emails
+5. Returns `{ sent: N, failed: M }`
+
+**DB trigger on `product_updates`:** When `published_at <= now()` and the update transitions to published state, fire the edge function. Since Supabase doesn't support conditional schedule triggers easily, we'll use an **INSERT trigger** + a check: only fire if `published_at <= NOW()` (i.e. not a future-scheduled post). Scheduled posts will need the admin to manually send, so we add a "Send Email Notification" button on the AdminUpdates page.
+
+**AdminUpdates UI:** Add a "Notify Users" button per update row (only visible for published/past updates) that calls the edge function.
+
+#### Part 3 — Broadcast Result Visibility (AdminTrends)
+
+Add a new "Broadcast" section to `SegmentStatisticsWidget.tsx`:
+- "Send Segment Emails to All Users" button with confirmation dialog
+- After completion: shows result (e.g., "127 emails sent, 10 rate-limited, 2 had no email")
+- This calls the new `broadcast-segment-emails` function using the admin's auth token
+
+#### Part 4 — Purple/Advocate Email Template
+
+Add a new `buildAdvocateEmailContent()` into both the `send-segment-email` and `broadcast-segment-emails` functions. Template:
+- Subject: `You're a Lansa Advocate, [Name] — thank you`
+- Headline: `You're at the top, [Name]. We see you.`
+- Body: Recognition for consistent use, encouragement to share Lansa, mention of their achievements (certified if applicable, jobs applied, AI tools used)
+- CTA: "See Your Impact" → dashboard
+
+---
+
+### Files to Create/Edit
+
+| File | Action | What |
+|---|---|---|
+| `supabase/functions/broadcast-segment-emails/index.ts` | **CREATE** | Batch email function for all 139 users |
+| `supabase/functions/send-product-update-email/index.ts` | **CREATE** | Product update notification to all users |
+| `src/components/admin/SegmentStatisticsWidget.tsx` | **EDIT** | Add broadcast button + result summary |
+| `src/pages/admin/AdminUpdates.tsx` | **EDIT** | Add "Notify Users" button per published update |
+| `supabase/functions/send-segment-email/index.ts` | **EDIT** | Add purple/advocate email template + fix green transition |
+| `supabase/config.toml` | **EDIT** | Register new functions with `verify_jwt = false` |
+
+---
+
+### Rate Limiting Strategy
+
+The broadcast function checks `segment_email_log` for entries within the last 5 days. This means:
+- Users who already got a segment email recently (from score transitions) will be skipped.
+- First-time broadcast will hit most of the 139.
+- The admin sees exactly how many were sent vs skipped.
+
+To ensure the **Advocate (purple) email** can also be sent to users who recently got a different segment email (it's a recognition, not a nudge), we'll use a different log key: `old_segment = 'purple', new_segment = 'purple'` as a distinct check — only skip if they received a purple email within 5 days.
+
+---
+
+### No DB Migration Needed
+
+All data is already in place:
+- `segment_email_log` already tracks sends
+- `user_profiles` has emails
+- `product_updates` table exists
+- No new tables required
