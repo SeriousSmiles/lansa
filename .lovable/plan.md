@@ -1,109 +1,115 @@
 
-## What Needs to Be Built
+## Problem
 
-### Request Summary
-1. **Broadcast emails to all 139 users** — each user gets an email based on their current segment (red/orange/green/purple), designed to nudge them toward the next tier. Purple users get an "Advocate — well done" email.
-2. **Product Updates trigger email notifications** — when a product update is published, all users with an email get notified via Resend.
-3. **Admin can verify 139 accounts received the email.**
+The current `broadcast-segment-emails` function detects user type via `user_roles` table (checking for `employer`/`business` role). But the actual source of truth for user type is `user_answers.user_type` which is either `'job_seeker'` or `'employer'`. The roles table check is unreliable — employers may only have `'employer'` in `user_answers`, not necessarily a matching `user_roles` row.
 
----
+More critically: the email body content currently blends both types. A job seeker gets mentions of job-posting features. An employer sees CV Builder and AI Mirror references. This is the core problem to fix.
 
-### Current State Analysis
+**Job Seeker exclusive features** (from route guards in App.tsx):
+- AI Skill Reframer / Power Skills
+- AI Power Mirror
+- CV Builder / Resume Editor
+- Job Discovery feed
+- Lansa Certification
+- Growth Prompts
+- 90-Day Goal Planner
+- Opportunity Discovery
 
-**Segment emails today:**
-- `send-segment-email` only fires on `color_auto` *transitions* (DB trigger). It will never send to users whose color doesn't change.
-- The function skips purple entirely (line 41–48) — only red, orange, and red→green/orange recovery trigger emails.
-- There is no batch broadcast capability anywhere.
-
-**Product Updates today:**
-- `product_updates` table exists, admin can create/publish updates.
-- Users see them in-app via `user_seen_updates` table.
-- **No email notification exists** — nothing fires when an update is published.
-
----
-
-### What Will Be Built
-
-#### Part 1 — Broadcast Email Edge Function (`broadcast-segment-emails`)
-
-A new edge function callable by admin that:
-1. Fetches all 139 `user_profiles` with `email`, `name`, `color_auto`, `certified`, `visible_to_employers`, `user_id`
-2. For each user, fetches their `user_actions` counts and `user_roles`
-3. Determines the segment email to send:
-   - **Red** → "Don't let your progress fade" — nudge toward first high-value action
-   - **Orange** → "You're building momentum" — suggest next feature they haven't used
-   - **Green** → "You're on fire — keep going" — encourage consistency + next tool
-   - **Purple** → NEW: "You're a Lansa Advocate — great work" — recognition email
-4. Respects a rate-limit: skips users who received a segment email within the last 5 days (checks `segment_email_log`)
-5. Logs each send to `segment_email_log` with `old_segment = current_color, new_segment = current_color` (same-segment broadcast marker)
-6. Returns a results summary: `{ sent: 127, skipped_rate_limited: 10, skipped_no_email: 2 }`
-
-The Purple/Advocate email template needs to be **built** — it doesn't exist in `send-segment-email` today (that function skips all transitions to green/purple unless coming from red).
-
-**Admin trigger:** A new "Send Segment Emails" button on the AdminTrends page (next to the existing admin actions area), with a confirmation dialog and result toast.
-
-#### Part 2 — Product Update Email Notification (`send-product-update-email`)
-
-A new edge function that:
-1. Accepts `{ update_id }` in the request body
-2. Fetches the `product_updates` row (title, description, category, version, link_url, icon_name)
-3. Fetches all 139 emails from `user_profiles` where `email IS NOT NULL`
-4. Sends a branded HTML email to every user with:
-   - Update title, category badge (Feature/Improvement/Fix/Announcement), description
-   - Version badge if present
-   - CTA button linking to `https://lansa.online/dashboard` (or `link_url` if provided)
-   - Lansa branding consistent with other emails
-5. Returns `{ sent: N, failed: M }`
-
-**DB trigger on `product_updates`:** When `published_at <= now()` and the update transitions to published state, fire the edge function. Since Supabase doesn't support conditional schedule triggers easily, we'll use an **INSERT trigger** + a check: only fire if `published_at <= NOW()` (i.e. not a future-scheduled post). Scheduled posts will need the admin to manually send, so we add a "Send Email Notification" button on the AdminUpdates page.
-
-**AdminUpdates UI:** Add a "Notify Users" button per update row (only visible for published/past updates) that calls the edge function.
-
-#### Part 3 — Broadcast Result Visibility (AdminTrends)
-
-Add a new "Broadcast" section to `SegmentStatisticsWidget.tsx`:
-- "Send Segment Emails to All Users" button with confirmation dialog
-- After completion: shows result (e.g., "127 emails sent, 10 rate-limited, 2 had no email")
-- This calls the new `broadcast-segment-emails` function using the admin's auth token
-
-#### Part 4 — Purple/Advocate Email Template
-
-Add a new `buildAdvocateEmailContent()` into both the `send-segment-email` and `broadcast-segment-emails` functions. Template:
-- Subject: `You're a Lansa Advocate, [Name] — thank you`
-- Headline: `You're at the top, [Name]. We see you.`
-- Body: Recognition for consistent use, encouragement to share Lansa, mention of their achievements (certified if applicable, jobs applied, AI tools used)
-- CTA: "See Your Impact" → dashboard
+**Employer exclusive features** (from route guards in App.tsx):
+- Post Jobs
+- Browse Candidates
+- Review Applications / Pipeline
+- Organization Settings
+- Candidate acceptance/shortlisting
 
 ---
 
-### Files to Create/Edit
+## What Changes
 
-| File | Action | What |
-|---|---|---|
-| `supabase/functions/broadcast-segment-emails/index.ts` | **CREATE** | Batch email function for all 139 users |
-| `supabase/functions/send-product-update-email/index.ts` | **CREATE** | Product update notification to all users |
-| `src/components/admin/SegmentStatisticsWidget.tsx` | **EDIT** | Add broadcast button + result summary |
-| `src/pages/admin/AdminUpdates.tsx` | **EDIT** | Add "Notify Users" button per published update |
-| `supabase/functions/send-segment-email/index.ts` | **EDIT** | Add purple/advocate email template + fix green transition |
-| `supabase/config.toml` | **EDIT** | Register new functions with `verify_jwt = false` |
+### `supabase/functions/broadcast-segment-emails/index.ts` — only file changing
+
+**1. Fetch `user_type` from `user_answers` in bulk**
+
+Add a bulk query for all `user_ids` against `user_answers` to get `user_type`:
+
+```typescript
+const { data: allAnswers } = await serviceClient
+  .from('user_answers')
+  .select('user_id, user_type')
+  .in('user_id', userIds);
+
+const userTypeMap: Record<string, 'job_seeker' | 'employer'> = {};
+allAnswers?.forEach(a => { userTypeMap[a.user_id] = a.user_type; });
+```
+
+Then replace the `isEmployer` detection from:
+```typescript
+const isEmployer = userRoles.some(r => ['employer', 'business'].includes(r));
+```
+to:
+```typescript
+const userType = userTypeMap[user.user_id] || 'job_seeker';
+const isEmployer = userType === 'employer';
+```
+
+**2. Replace `buildEmailContent` with two separate builders**
+
+`buildSeekerEmail(params)` — only ever mentions seeker features:
+- Red: "AI Skill Reframer, Power Mirror, Job Discovery, CV Builder, Certification, Growth Challenges"
+- Orange: Next unused seeker feature from the list above
+- Green: Progress reinforcement + next seeker tool
+- Purple: Advocate recognition with seeker achievements (jobs applied, certified, mirror used, skills reframed)
+
+`buildEmployerEmail(params)` — only ever mentions employer features:
+- Red: "Your hiring pipeline needs attention — come post a job or review your open applications"
+- Orange: "You've started — next step is Browse Candidates or review incoming applications"
+- Green: "You're actively hiring — keep reviewing candidates and shortlisting"
+- Purple: "You're a hiring advocate on Lansa — recognition for consistent sourcing activity"
+
+Both functions share the same HTML wrapper template. The subject lines, headlines, body copy, and CTA text are entirely separate and type-specific.
+
+**3. Dispatch logic**
+
+```typescript
+const emailContent = isEmployer 
+  ? buildEmployerEmail({ name, segment, actionCounts, certified })
+  : buildSeekerEmail({ name, segment, actionCounts, certified, visibleToEmployers });
+```
+
+**4. Batch send with Resend batch API (already approved in previous plan)**
+
+While we're editing the file, replace the sequential `resend.emails.send()` loop with `resend.batch.send()` in chunks of 100:
+
+```typescript
+// Build all payloads first
+const emailPayloads = [];
+const logRows = [];
+
+for (const user of usersToProcess) {
+  const content = isEmployer ? buildEmployerEmail(...) : buildSeekerEmail(...);
+  emailPayloads.push({ from, to: [user.email], subject: content.subject, html: content.html });
+  logRows.push({ user_id: user.user_id, old_segment: segment, new_segment: segment });
+}
+
+// Send in chunks of 100
+const CHUNK_SIZE = 100;
+for (let i = 0; i < emailPayloads.length; i += CHUNK_SIZE) {
+  const chunk = emailPayloads.slice(i, i + CHUNK_SIZE);
+  await resend.batch.send(chunk);
+}
+
+// Single bulk log insert
+await serviceClient.from('segment_email_log').insert(logRows);
+```
+
+This resolves the rate-limit problem (2 API calls for 139 users) and the type-confusion problem in a single edit to one file.
 
 ---
 
-### Rate Limiting Strategy
+## Summary of Changes
 
-The broadcast function checks `segment_email_log` for entries within the last 5 days. This means:
-- Users who already got a segment email recently (from score transitions) will be skipped.
-- First-time broadcast will hit most of the 139.
-- The admin sees exactly how many were sent vs skipped.
+| File | Change |
+|---|---|
+| `supabase/functions/broadcast-segment-emails/index.ts` | Fetch `user_type` from `user_answers`, split into two typed email builders, switch to `resend.batch.send()` with chunking |
 
-To ensure the **Advocate (purple) email** can also be sent to users who recently got a different segment email (it's a recognition, not a nudge), we'll use a different log key: `old_segment = 'purple', new_segment = 'purple'` as a distinct check — only skip if they received a purple email within 5 days.
-
----
-
-### No DB Migration Needed
-
-All data is already in place:
-- `segment_email_log` already tracks sends
-- `user_profiles` has emails
-- `product_updates` table exists
-- No new tables required
+No other files change. The admin UI button, the result toast, and `segment_email_log` logging all stay exactly the same.
