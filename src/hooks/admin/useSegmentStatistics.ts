@@ -26,6 +26,16 @@ export interface EmailDeliveryMetrics {
   from_red: number;
 }
 
+export interface EmailLogEntry {
+  id: string;
+  user_id: string;
+  user_name: string | null;
+  user_email: string | null;
+  old_segment: string | null;
+  new_segment: string;
+  email_sent_at: string;
+}
+
 export function useSegmentStatistics(days: number = 30) {
   return useQuery({
     queryKey: ['admin-segment-statistics', days],
@@ -54,7 +64,15 @@ export function useSegmentStatistics(days: number = 30) {
         }
       });
       
-      // Get segment change history from email log
+      // Get ALL-TIME segment email log for summary counts
+      const { data: allEmailLog, error: allEmailError } = await supabase
+        .from('segment_email_log')
+        .select('old_segment, new_segment, email_sent_at, user_id')
+        .order('email_sent_at', { ascending: false });
+      
+      if (allEmailError) throw allEmailError;
+
+      // Get windowed data for charts
       const { data: emailLog, error: emailError } = await supabase
         .from('segment_email_log')
         .select('old_segment, new_segment, email_sent_at')
@@ -62,23 +80,45 @@ export function useSegmentStatistics(days: number = 30) {
         .order('email_sent_at', { ascending: true });
       
       if (emailError) throw emailError;
+
+      // Fetch email log with user names for the log table (last 50)
+      const { data: emailLogWithUsers } = await supabase
+        .from('segment_email_log')
+        .select('id, user_id, old_segment, new_segment, email_sent_at')
+        .order('email_sent_at', { ascending: false })
+        .limit(50);
+
+      // Build email log entries with user names
+      let emailLogEntries: EmailLogEntry[] = [];
+      if (emailLogWithUsers && emailLogWithUsers.length > 0) {
+        const userIds = [...new Set(emailLogWithUsers.map(e => e.user_id))];
+        const { data: userProfiles } = await supabase
+          .from('user_profiles')
+          .select('user_id, name, email')
+          .in('user_id', userIds);
+
+        const userMap = new Map(userProfiles?.map(u => [u.user_id, u]) || []);
+
+        emailLogEntries = emailLogWithUsers.map(entry => {
+          const profile = userMap.get(entry.user_id);
+          return {
+            id: entry.id,
+            user_id: entry.user_id,
+            user_name: profile?.name || null,
+            user_email: profile?.email || null,
+            old_segment: entry.old_segment,
+            new_segment: entry.new_segment,
+            email_sent_at: entry.email_sent_at,
+          };
+        });
+      }
       
-      // Group by date for trend analysis
-      const changesByDate = new Map<string, Map<string, number>>();
+      // Group windowed data by date for trend charts
       const emailsByDate = new Map<string, EmailDeliveryMetrics>();
       
       emailLog?.forEach(log => {
-        const date = format(new Date(log.email_sent_at), 'yyyy-MM-dd');
-        const transitionKey = `${log.old_segment || 'new'}_to_${log.new_segment}`;
+        const date = format(new Date(log.email_sent_at), 'MMM d');
         
-        // Track changes
-        if (!changesByDate.has(date)) {
-          changesByDate.set(date, new Map());
-        }
-        const dateChanges = changesByDate.get(date)!;
-        dateChanges.set(transitionKey, (dateChanges.get(transitionKey) || 0) + 1);
-        
-        // Track emails
         if (!emailsByDate.has(date)) {
           emailsByDate.set(date, {
             date,
@@ -95,42 +135,30 @@ export function useSegmentStatistics(days: number = 30) {
         if (log.new_segment === 'red') metrics.to_red++;
         if (log.new_segment === 'orange') metrics.to_orange++;
         if (log.new_segment === 'green') metrics.to_green++;
-        if (log.old_segment === 'red') metrics.from_red++;
+        if (log.old_segment === 'red' && log.new_segment !== 'red') metrics.from_red++;
       });
       
-      // Convert maps to arrays for charting
-      const segmentChanges: SegmentChangeEvent[] = [];
-      changesByDate.forEach((changes, date) => {
-        changes.forEach((count, transition) => {
-          const [from, to] = transition.split('_to_');
-          segmentChanges.push({
-            date,
-            old_segment: from === 'new' ? null : from,
-            new_segment: to,
-            count
-          });
-        });
-      });
-      
-      const emailMetrics = Array.from(emailsByDate.values()).sort((a, b) => 
+      const emailMetrics = Array.from(emailsByDate.values()).sort((a, b) =>
         a.date.localeCompare(b.date)
       );
       
-      // Calculate key metrics
-      const totalEmailsSent = emailLog?.length || 0;
-      const reEngagementEmails = emailLog?.filter(e => e.new_segment === 'red').length || 0;
-      const recoveryEmails = emailLog?.filter(e => e.old_segment === 'red' && e.new_segment !== 'red').length || 0;
+      // Calculate key metrics from ALL-TIME data
+      const totalEmailsSent = allEmailLog?.length || 0;
+      // "Drifting Alerts" = emails sent when user entered the red segment
+      const driftingAlertEmails = allEmailLog?.filter(e => e.new_segment === 'red').length || 0;
+      // "Recoveries" = emails sent when user came back FROM drifting
+      const recoveryEmails = allEmailLog?.filter(e => e.old_segment === 'red' && e.new_segment !== 'red').length || 0;
       
       return {
         distribution,
-        segmentChanges,
         emailMetrics,
+        emailLogEntries,
         summary: {
           totalEmailsSent,
-          reEngagementEmails,
+          driftingAlertEmails,
           recoveryEmails,
           averageEmailsPerDay: emailMetrics.length > 0 
-            ? totalEmailsSent / emailMetrics.length 
+            ? (emailLog?.length || 0) / emailMetrics.length 
             : 0
         }
       };
