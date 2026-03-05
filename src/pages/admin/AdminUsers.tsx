@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ColorChip } from '@/components/admin/ColorChip';
 import { getEffectiveColor, INTENT_CONFIG, UserColor, IntentStage } from '@/utils/adminColors';
 import { RefreshCw, Download, Info, AlertCircle } from 'lucide-react';
+import { IncompleteSignupsPanel } from '@/components/admin/IncompleteSignupsPanel';
 import { UserDrawer } from '@/components/admin/UserDrawer';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { EnhancedFiltersPanel, FilterOptions } from '@/components/admin/EnhancedFiltersPanel';
@@ -347,13 +348,8 @@ export default function AdminUsers() {
           </div>
         )}
 
-        {/* Incomplete signup notice */}
-        <div className="mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
-          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-          <span>
-            <strong>Note:</strong> Supabase auth.users has <strong>145</strong> accounts, but only <strong>{stats?.total || 139}</strong> have completed profiles. The {145 - (stats?.total || 139)} missing users signed up but abandoned before finishing onboarding — they have no profile row and are invisible to tracking.
-          </span>
-        </div>
+        {/* Incomplete signups panel */}
+        <IncompleteSignupsPanel />
         
         {/* Stats Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 md:gap-3 mb-4 md:mb-6">
