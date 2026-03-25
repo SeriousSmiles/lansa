@@ -29,6 +29,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
   // Base state
   const [userAnswers, setUserAnswers] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isProfilePublic, setIsProfilePublic] = useState(false);
   const [professionalGoal, setProfessionalGoal] = useState("");
   const [biggestChallenge, setBiggestChallenge] = useState("");
   const { toast } = useToast();
