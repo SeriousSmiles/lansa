@@ -6,11 +6,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { AICareerPlanModal } from "./AICareerPlanModal";
 
-export function AICareerPlanCard() {
+interface AICareerPlanCardProps {
+  autoOpen?: boolean;
+}
+
+export function AICareerPlanCard({ autoOpen }: AICareerPlanCardProps) {
   const { user } = useAuth();
   const [isComplete, setIsComplete] = useState<boolean | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [powerSkillPreview, setPowerSkillPreview] = useState<string | null>(null);
+  const [autoOpenHandled, setAutoOpenHandled] = useState(false);
 
   useEffect(() => {
     if (user?.id) checkCareerPlanStatus();
