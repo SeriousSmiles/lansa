@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronRight, ChevronLeft, BookOpen, Heart, Target, Zap, Sparkles, Copy, Save } from 'lucide-react';
 import { useStoryBuilder, type StoryResponses, type StoryGenerationOptions } from '@/hooks/useStoryBuilder';
 import { useToast } from '@/hooks/use-toast';
+import { trackUserAction } from '@/services/actionTracking';
 
 interface StoryStep {
   id: string;
@@ -99,6 +100,8 @@ export function StoryBuilderFlow() {
 
       const result = await generateStory(storyResponses, options);
       setGeneratedStory(result.story);
+      // Track story_created — fires assign_user_color scoring via DB trigger
+      await trackUserAction('story_created', { format_type: formatType, tone });
     } catch (error) {
       console.error('Failed to generate story:', error);
     }

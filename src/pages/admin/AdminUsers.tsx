@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { LoadingSpinner } from '@/components/loading/LoadingSpinner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -43,6 +43,7 @@ function InfoTooltip({ content }: { content: string }) {
 
 export default function AdminUsers() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -57,6 +58,22 @@ export default function AdminUsers() {
     visibilityFilter: 'all',
     dateRange: 'all',
   });
+
+  // ── Realtime: auto-refresh table when user_profiles changes ──────────────
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-users-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'user_profiles' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+          queryClient.invalidateQueries({ queryKey: ['admin-users-stats'] });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient]);
 
   const { data: stats } = useQuery({
     queryKey: ['admin-users-stats'],
@@ -164,6 +181,25 @@ export default function AdminUsers() {
       return filtered;
     }
   });
+
+  // Fetch auth sign-in data for last_sign_in_at fallback display
+  const { data: authData } = useQuery({
+    queryKey: ['admin-users-auth-data'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_users_with_auth_data');
+      if (error) {
+        console.warn('Could not fetch auth data:', error.message);
+        return [] as { user_id: string; last_sign_in_at: string | null }[];
+      }
+      return (data || []) as { user_id: string; last_sign_in_at: string | null }[];
+    },
+    staleTime: 60_000, // cache for 1 min — auth data changes rarely
+  });
+
+  // Build a lookup map: user_id → last_sign_in_at
+  const authDataMap = new Map<string, string | null>(
+    (authData || []).map(r => [r.user_id, r.last_sign_in_at])
+  );
 
   const { containerRef, isRefreshing: isPulling } = usePullToRefresh({
     onRefresh: async () => {
@@ -609,12 +645,29 @@ export default function AdminUsers() {
                         </span>
                       </td>
                       <td className="p-4">
-                        <span className="text-sm text-muted-foreground">
-                          {user.last_active_at
-                            ? new Date(user.last_active_at).toLocaleDateString()
-                            : 'Never'
-                          }
-                        </span>
+                        {(() => {
+                          const tracked = user.last_active_at;
+                          const signIn = authDataMap.get(user.user_id);
+                          const best = tracked ?? signIn ?? null;
+                          const isFromSignIn = !tracked && !!signIn;
+                          return best ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className={`text-sm cursor-help ${isFromSignIn ? 'text-muted-foreground/70 italic' : 'text-muted-foreground'}`}>
+                                  {new Date(best).toLocaleDateString()}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent className="text-xs max-w-xs">
+                                {isFromSignIn
+                                  ? 'Last sign-in from auth.users (no tracked actions yet)'
+                                  : 'Last tracked action (user_actions or chat message)'
+                                }
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <span className="text-sm text-muted-foreground/50">Never</span>
+                          );
+                        })()}
                       </td>
                       <td className="p-4">
                         <Button
