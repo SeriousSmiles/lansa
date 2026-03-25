@@ -245,7 +245,7 @@ export function StudentOnboardingContainer() {
         );
         
       default:
-        return <StudentWelcomeCard onStart={handleWelcomeComplete} />;
+        return null; // safety guard — never render welcome card unexpectedly
     }
   };
 
