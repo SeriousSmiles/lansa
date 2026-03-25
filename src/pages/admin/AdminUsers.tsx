@@ -645,12 +645,29 @@ export default function AdminUsers() {
                         </span>
                       </td>
                       <td className="p-4">
-                        <span className="text-sm text-muted-foreground">
-                          {user.last_active_at
-                            ? new Date(user.last_active_at).toLocaleDateString()
-                            : 'Never'
-                          }
-                        </span>
+                        {(() => {
+                          const tracked = user.last_active_at;
+                          const signIn = authDataMap.get(user.user_id);
+                          const best = tracked ?? signIn ?? null;
+                          const isFromSignIn = !tracked && !!signIn;
+                          return best ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className={`text-sm cursor-help ${isFromSignIn ? 'text-muted-foreground/70 italic' : 'text-muted-foreground'}`}>
+                                  {new Date(best).toLocaleDateString()}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent className="text-xs max-w-xs">
+                                {isFromSignIn
+                                  ? 'Last sign-in from auth.users (no tracked actions yet)'
+                                  : 'Last tracked action (user_actions or chat message)'
+                                }
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <span className="text-sm text-muted-foreground/50">Never</span>
+                          );
+                        })()}
                       </td>
                       <td className="p-4">
                         <Button
