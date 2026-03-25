@@ -23,10 +23,12 @@ export default function Dashboard() {
   const [aiInsight, setAiInsight] = useState<string | undefined>();
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [openAIPlan, setOpenAIPlan] = useState(false);
   const { user } = useAuth();
   const { track } = useActionTracking();
   const mountedRef = useRef(true);
   const initializingRef = useRef(false);
+  const location = useLocation();
   
   useEffect(() => {
     return () => {
