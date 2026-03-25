@@ -402,7 +402,7 @@ export function QRCodeModal({ isOpen, onClose, userName }: QRCodeModalProps) {
                     onClick={shareCard}
                     disabled={!compositeDataUrl}
                     className="w-full flex items-center gap-2"
-                    variant="default"
+                    variant="primary"
                   >
                     <Share className="h-4 w-4" />
                     {canShareFiles ? 'Share Profile Card' : 'Download & Share'}
