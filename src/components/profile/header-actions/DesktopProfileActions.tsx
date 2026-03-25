@@ -188,7 +188,7 @@ export function DesktopProfileActions({
                 <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
                   profileData.isProfilePublic ? "bg-primary/15" : "bg-muted"
                 }`}>
-                  <IconGlobe className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
+                  <Globe className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
                     profileData.isProfilePublic ? "text-primary" : "text-muted-foreground"
                   }`} />
                 </div>
