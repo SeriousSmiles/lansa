@@ -37,9 +37,13 @@ import powerMirrorImage from "@/assets/onboarding/power-mirror-realistic.jpg";
 
 interface AIOnboardingFlowProps {
   initialStep?: string;
+  /** When provided, called instead of navigating on completion (dashboard modal mode) */
+  onComplete?: () => void;
+  /** When true, removes full-screen chrome since it lives inside a modal */
+  modalMode?: boolean;
 }
 
-export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowProps) {
+export function AIOnboardingFlow({ initialStep = 'welcome', onComplete: onCompleteProp, modalMode = false }: AIOnboardingFlowProps) {
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [isLoading, setIsLoading] = useState(false);
   const [demographicsData, setDemographicsData] = useState({

@@ -6,6 +6,7 @@ import { StudentAnalyticsCard } from "./StudentAnalyticsCard";
 import { CertificationCard } from "./CertificationCard";
 import { WhoIsInterestedSection } from "@/components/dashboard/WhoIsInterestedSection";
 import { ListingActivationCard } from "./ListingActivationCard";
+import { AICareerPlanCard } from "./AICareerPlanCard";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface OverviewTabProps {
