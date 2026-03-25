@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import lansaLogoUrl from '@/assets/lansa-logo-blue.png';
 
 // Lansa brand color
 const LANSA_BRAND = '#1A1F71';
