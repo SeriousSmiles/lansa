@@ -3124,6 +3124,14 @@ export type Database = {
         Returns: Json
       }
       generate_cert_verification_code: { Args: never; Returns: string }
+      get_users_with_auth_data: {
+        Args: never
+        Returns: {
+          email_confirmed_at: string
+          last_sign_in_at: string
+          user_id: string
+        }[]
+      }
       has_org_role: {
         Args: { _org_id: string; _role: string; _user_id: string }
         Returns: boolean
@@ -3156,6 +3164,10 @@ export type Database = {
           _user_id: string
         }
         Returns: string
+      }
+      sync_last_sign_in_to_profile: {
+        Args: { p_signed_in_at?: string; p_user_id: string }
+        Returns: undefined
       }
       update_all_user_colors: {
         Args: never

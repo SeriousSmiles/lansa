@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile } from "../useProfileData";
+import { trackUserAction } from "@/services/actionTracking";
 
 interface UseProfileDataCoreProps {
   userId: string | undefined;

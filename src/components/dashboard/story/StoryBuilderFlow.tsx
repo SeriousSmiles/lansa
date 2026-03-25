@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronRight, ChevronLeft, BookOpen, Heart, Target, Zap, Sparkles, Copy, Save } from 'lucide-react';
 import { useStoryBuilder, type StoryResponses, type StoryGenerationOptions } from '@/hooks/useStoryBuilder';
 import { useToast } from '@/hooks/use-toast';
+import { trackUserAction } from '@/services/actionTracking';
 
 interface StoryStep {
   id: string;
