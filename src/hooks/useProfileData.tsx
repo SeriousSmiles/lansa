@@ -106,6 +106,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
       populateFromExistingProfile(profileData, answers, profileBasics, profileSkills, profileLanguages, profileExperience, profileEducation, profileImage);
       setProfessionalGoal(profileData.professional_goal || "");
       setBiggestChallenge(profileData.biggest_challenge || "Identifying my unique value proposition");
+      setIsProfilePublic(profileData.is_public || false);
     } else {
       // If no profile exists, use generated data
       populateFromGeneratedData(answers, userId, profileBasics, profileSkills, profileLanguages, profileExperience, profileEducation);
@@ -159,6 +160,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     // User data
     user: { id: userId },
     userName: profileBasics.userName,
+    isProfilePublic,
     setUserName: profileBasics.setUserName,
     userAnswers,
     role,
