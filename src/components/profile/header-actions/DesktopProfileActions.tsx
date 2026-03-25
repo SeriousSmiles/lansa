@@ -208,42 +208,21 @@ export function DesktopProfileActions({
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
-                  profileData.isProfilePublic ? "bg-green-100" : "bg-muted"
+                  profileData.isProfilePublic ? "bg-primary/15" : "bg-muted"
                 }`}>
                   <IconGlobe className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
-                    profileData.isProfilePublic ? "text-green-600" : "text-muted-foreground"
+                    profileData.isProfilePublic ? "text-primary" : "text-muted-foreground"
                   }`} />
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="text-xs sm:text-sm font-medium text-foreground">
-                    Shareable Profile Link
-                  </span>
-                  <span className="text-[10px] sm:text-xs text-muted-foreground">
-                    {profileData.isProfilePublic
-                      ? "On — anyone with the link can view it"
-                      : "Off — your profile URL is private"}
-                  </span>
-                </div>
-              </div>
-              <Switch
-                checked={profileData.isProfilePublic}
-                onCheckedChange={() => safeHandler(handleToggleShareableLink, "Toggle shareable link")()}
-                disabled={isUpdatingPublic}
-                className="flex-shrink-0"
-              />
-            </div>
-          </Card>
-
-          {/* Toggle 2: Appear to Employers — certified users only */}
-          {isCertified ? (
-            <Card className="p-3 sm:p-4 border border-border">
+...
+              {isCertified ? (
+            <Card className="p-3 sm:p-4 border border-border mb-2">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                   <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
-                    visibleToEmployers ? "bg-blue-100" : "bg-muted"
+                    visibleToEmployers ? "bg-secondary/20" : "bg-muted"
                   }`}>
                     <IconEye className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
-                      visibleToEmployers ? "text-blue-600" : "text-muted-foreground"
+                      visibleToEmployers ? "text-secondary-foreground" : "text-muted-foreground"
                     }`} />
                   </div>
                   <div className="flex flex-col min-w-0">
