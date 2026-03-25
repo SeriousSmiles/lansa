@@ -16,7 +16,7 @@ import { useUserState } from "@/contexts/UserStateProvider";
 import { useProfileData } from "@/hooks/useProfileData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { safeHandler } from "@/config/demo";
+
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DesktopProfileActionsProps {
