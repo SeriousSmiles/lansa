@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
@@ -8,7 +8,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { PDFDownloadDialog } from "../../pdf/PDFDownloadDialog";
-import { IconPalette, IconDownload, IconMenu2, IconGlobe, IconBolt } from "@tabler/icons-react";
+import { IconPalette, IconDownload, IconMenu2, IconGlobe, IconEye, IconBolt } from "@tabler/icons-react";
 import { DesignerSidebar } from "../dialogs/DesignerSidebar";
 import { DesktopQuickActionsModal } from "../dialogs/DesktopQuickActionsModal";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,7 +18,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { safeHandler } from "@/config/demo";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { LIGHT_PALETTES, DARK_PALETTES } from "@/utils/colorUtils";
 
 interface DesktopProfileActionsProps {
   userId?: string;
@@ -60,39 +59,78 @@ export function DesktopProfileActions({
   const { userType } = useUserState();
   const profileData = useProfileData(userId);
   const isMobile = useIsMobile();
-  const [isProfilePublic, setIsProfilePublic] = useState(false);
-  const [isUpdatingPublicStatus, setIsUpdatingPublicStatus] = useState(false);
+
+  const [isUpdatingPublic, setIsUpdatingPublic] = useState(false);
   const [isDesignerOpen, setIsDesignerOpen] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // Check if user is Lansa certified
-  const isLansaCertified = userProfile?.certifications?.some((cert: any) => 
-    cert.name?.toLowerCase().includes('lansa') || cert.organization?.toLowerCase().includes('lansa')
-  ) || false;
+  // Proper certification check from user_certifications table
+  const [isCertified, setIsCertified] = useState(false);
+  const [isUpdatingEmployer, setIsUpdatingEmployer] = useState(false);
+  const [visibleToEmployers, setVisibleToEmployers] = useState(false);
 
-  const handleMakeProfilePublic = async () => {
-    if (!isLansaCertified) {
-      toast.error("This feature is only available for Lansa Certified users");
-      return;
-    }
+  useEffect(() => {
+    if (!user?.id) return;
+    // Fetch real certification status
+    supabase
+      .from('user_certifications')
+      .select('lansa_certified, verified')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        setIsCertified(!!data?.lansa_certified && !!data?.verified);
+      });
+    // Fetch employer visibility status
+    supabase
+      .from('user_profiles')
+      .select('visible_to_employers')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        setVisibleToEmployers(!!data?.visible_to_employers);
+      });
+  }, [user?.id]);
 
-    setIsUpdatingPublicStatus(true);
+  // Toggle 1: Shareable profile link (available to ALL users)
+  const handleToggleShareableLink = async () => {
+    setIsUpdatingPublic(true);
     try {
+      const newValue = !profileData.isProfilePublic;
+      await profileData.updateIsPublic(newValue);
+      toast.success(
+        newValue
+          ? "Your profile link is now public — anyone with the link can view it."
+          : "Your profile link is now private."
+      );
+    } catch {
+      toast.error("Failed to update profile link visibility.");
+    } finally {
+      setIsUpdatingPublic(false);
+    }
+  };
+
+  // Toggle 2: Appear to employers (certified users only)
+  const handleToggleEmployerVisibility = async () => {
+    if (!isCertified) return;
+    setIsUpdatingEmployer(true);
+    try {
+      const newValue = !visibleToEmployers;
       const { error } = await supabase
         .from('user_profiles')
-        .update({ is_public: !isProfilePublic })
+        .update({ visible_to_employers: newValue })
         .eq('user_id', user?.id);
-
       if (error) throw error;
-
-      setIsProfilePublic(!isProfilePublic);
-      toast.success(isProfilePublic ? "Profile is now private" : "Profile is now public and available for matching");
-    } catch (error) {
-      console.error('Error updating profile visibility:', error);
-      toast.error("Failed to update profile visibility");
+      setVisibleToEmployers(newValue);
+      toast.success(
+        newValue
+          ? "You're now visible to employers in search."
+          : "You're no longer visible in employer search."
+      );
+    } catch {
+      toast.error("Failed to update employer visibility.");
     } finally {
-      setIsUpdatingPublicStatus(false);
+      setIsUpdatingEmployer(false);
     }
   };
 
@@ -101,10 +139,7 @@ export function DesktopProfileActions({
       {/* Quick Actions - Standalone prominent button - Hidden on mobile */}
       {!isMobile && (
         <Button
-          onClick={() => {
-            console.info('[DesktopProfileActions] Quick Actions clicked');
-            setIsQuickActionsOpen(true);
-          }}
+          onClick={() => setIsQuickActionsOpen(true)}
           variant="primary"
           size="sm"
           className="bg-primary text-primary-foreground hover:bg-primary/90"
@@ -136,9 +171,7 @@ export function DesktopProfileActions({
           <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
             {/* Download Resume Card */}
             <PDFDownloadDialog profileData={profileData}>
-              <Card 
-                className="p-0 overflow-hidden cursor-pointer hover:shadow-lg transition-shadow border border-border"
-              >
+              <Card className="p-0 overflow-hidden cursor-pointer hover:shadow-lg transition-shadow border border-border">
                 <div className="flex flex-col items-center gap-2 sm:gap-3 p-3 sm:p-4">
                   <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-primary/10 flex items-center justify-center">
                     <IconDownload className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
@@ -165,33 +198,90 @@ export function DesktopProfileActions({
             </Card>
           </div>
 
-          {/* Visibility Toggle at bottom */}
-          <Card className="p-3 sm:p-4 border border-border">
+          {/* Visibility section header */}
+          <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1 mb-2">
+            Visibility Settings
+          </p>
+
+          {/* Toggle 1: Shareable Profile Link — available to ALL users */}
+          <Card className="p-3 sm:p-4 border border-border mb-2">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                  <IconGlobe className="h-4 w-4 sm:h-5 sm:w-5 text-accent-foreground" />
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                  profileData.isProfilePublic ? "bg-green-100" : "bg-muted"
+                }`}>
+                  <IconGlobe className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
+                    profileData.isProfilePublic ? "text-green-600" : "text-muted-foreground"
+                  }`} />
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="text-xs sm:text-sm font-medium text-foreground truncate">
-                    Profile Visibility
+                  <span className="text-xs sm:text-sm font-medium text-foreground">
+                    Shareable Profile Link
                   </span>
-                  <span className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                    {isProfilePublic ? "Public" : "Private"} 
-                    {!isLansaCertified && " • Lansa Only"}
+                  <span className="text-[10px] sm:text-xs text-muted-foreground">
+                    {profileData.isProfilePublic
+                      ? "On — anyone with the link can view it"
+                      : "Off — your profile URL is private"}
                   </span>
                 </div>
               </div>
               <Switch
-                checked={isProfilePublic}
-                onCheckedChange={() => {
-                  safeHandler(handleMakeProfilePublic, "Make Profile Public")();
-                }}
-                disabled={!isLansaCertified || isUpdatingPublicStatus}
+                checked={profileData.isProfilePublic}
+                onCheckedChange={() => safeHandler(handleToggleShareableLink, "Toggle shareable link")()}
+                disabled={isUpdatingPublic}
                 className="flex-shrink-0"
               />
             </div>
           </Card>
+
+          {/* Toggle 2: Appear to Employers — certified users only */}
+          {isCertified ? (
+            <Card className="p-3 sm:p-4 border border-border">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                    visibleToEmployers ? "bg-blue-100" : "bg-muted"
+                  }`}>
+                    <IconEye className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
+                      visibleToEmployers ? "text-blue-600" : "text-muted-foreground"
+                    }`} />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs sm:text-sm font-medium text-foreground">
+                      Appear to Employers
+                    </span>
+                    <span className="text-[10px] sm:text-xs text-muted-foreground">
+                      {visibleToEmployers
+                        ? "On — employers can find you in search"
+                        : "Off — not visible in employer search"}
+                    </span>
+                  </div>
+                </div>
+                <Switch
+                  checked={visibleToEmployers}
+                  onCheckedChange={() => safeHandler(handleToggleEmployerVisibility, "Toggle employer visibility")()}
+                  disabled={isUpdatingEmployer}
+                  className="flex-shrink-0"
+                />
+              </div>
+            </Card>
+          ) : (
+            <Card className="p-3 sm:p-4 border border-border border-dashed opacity-60">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                  <IconEye className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs sm:text-sm font-medium text-muted-foreground">
+                    Appear to Employers
+                  </span>
+                  <span className="text-[10px] sm:text-xs text-muted-foreground">
+                    Available after Lansa Certification
+                  </span>
+                </div>
+              </div>
+            </Card>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
