@@ -8,7 +8,8 @@ import {
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { PDFDownloadDialog } from "../../pdf/PDFDownloadDialog";
-import { IconPalette, IconDownload, IconMenu2, IconGlobe, IconEye, IconBolt } from "@tabler/icons-react";
+import { Globe, Eye } from "lucide-react";
+import { IconPalette, IconDownload, IconMenu2, IconBolt } from "@tabler/icons-react";
 import { DesignerSidebar } from "../dialogs/DesignerSidebar";
 import { DesktopQuickActionsModal } from "../dialogs/DesktopQuickActionsModal";
 import { useAuth } from "@/contexts/AuthContext";
