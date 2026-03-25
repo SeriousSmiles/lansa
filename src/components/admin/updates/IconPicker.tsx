@@ -6,7 +6,8 @@
 import { useState } from 'react';
 import { Rocket, Sparkles, Bug, Megaphone, Zap, Star, Gift, Bell, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import * as PopoverPrimitive from '@radix-ui/react-popover';
+import { cn } from '@/lib/utils';
 
 export const AVAILABLE_ICONS = {
   rocket: { icon: Rocket, label: 'Rocket' },
