@@ -21,6 +21,16 @@ export function AICareerPlanCard({ autoOpen }: AICareerPlanCardProps) {
     if (user?.id) checkCareerPlanStatus();
   }, [user?.id]);
 
+  // Auto-open modal if triggered from dashboard navigation state (e.g., from profile AI prompt)
+  useEffect(() => {
+    if (autoOpen && !autoOpenHandled && isComplete === false) {
+      setIsModalOpen(true);
+      setAutoOpenHandled(true);
+    }
+  }, [autoOpen, autoOpenHandled, isComplete]);
+
+
+
   const checkCareerPlanStatus = async () => {
     if (!user?.id) return;
     const { data } = await supabase
