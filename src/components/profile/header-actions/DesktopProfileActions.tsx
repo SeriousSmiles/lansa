@@ -16,7 +16,7 @@ import { useUserState } from "@/contexts/UserStateProvider";
 import { useProfileData } from "@/hooks/useProfileData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { safeHandler } from "@/config/demo";
+
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DesktopProfileActionsProps {
@@ -204,7 +204,7 @@ export function DesktopProfileActions({
               </div>
               <Switch
                 checked={profileData.isProfilePublic}
-                onCheckedChange={() => safeHandler(handleToggleShareableLink, "Toggle shareable link")()}
+                onCheckedChange={handleToggleShareableLink}
                 disabled={isUpdatingPublic}
                 className="flex-shrink-0"
               />
@@ -236,7 +236,7 @@ export function DesktopProfileActions({
                 </div>
                 <Switch
                   checked={visibleToEmployers}
-                  onCheckedChange={() => safeHandler(handleToggleEmployerVisibility, "Toggle employer visibility")()}
+                  onCheckedChange={handleToggleEmployerVisibility}
                   disabled={isUpdatingEmployer}
                   className="flex-shrink-0"
                 />
