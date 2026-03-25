@@ -107,6 +107,7 @@ export function DashboardTabs({
             insight={insight}
             highlightActions={highlightActions}
             isLoading={isLoading}
+            openAIPlan={openAIPlan}
           />
         </TabsContent>
         
