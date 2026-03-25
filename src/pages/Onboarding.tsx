@@ -161,10 +161,10 @@ export default function Onboarding() {
         // ✅ Mark onboarding complete immediately — no AI gate required
         const { markOnboardingComplete } = await import('@/services/onboarding/unifiedOnboardingService');
         await markOnboardingComplete(user.id, 'job_seeker');
+        // Defer navigation — wait for context to confirm hasCompletedOnboarding=true
+        // so Guard on /profile doesn't see a stale false and flash back to /onboarding
+        pendingNavigation.current = { path: '/profile', state: { fromOnboarding: true } };
         if (refreshUserState) await refreshUserState();
-
-        // Send user to profile — PostOnboardingChoice modal will fire there
-        navigate('/profile', { replace: true, state: { fromOnboarding: true } });
       } catch (error) {
         console.error("Error saving career path:", error);
         toast.error("Failed to save your career path selection.");
