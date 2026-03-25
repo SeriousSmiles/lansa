@@ -1,135 +1,110 @@
 
-## Full Audit Summary
+This is an architectural consultation question — no code changes needed. The answer is a clear written assessment.
 
-### Two separate visibility systems — both broken in different ways
+## Assessment of the Current Architecture
 
-**System 1: `is_public` — Shareable profile link**
-- What it does: Makes the `/profile/share/[name]-[id]` URL viewable by anyone
-- DB column: `user_profiles.is_public` (boolean)
-- Status:
-  - `ProfileCard.tsx` reads `isProfilePublic` correctly from `useProfileData` ✅
-  - `ProfileNotFound.tsx` sets `is_public: true` correctly ✅
-  - `DesktopProfileActions.tsx` (the hamburger menu on `/profile`) has its own LOCAL `useState(false)` — it **never reads from DB** and **never initializes from `profileData.isProfilePublic`** ❌
-  - The toggle in the hamburger menu is **permanently disabled** unless the user has a cert with "lansa" in the name field — this is a fragile string match on `userProfile.certifications`, not the actual `user_certifications` table ❌
-  - Result: The toggle in the profile page hamburger menu is always OFF and always locked
+### What the system actually looks like right now
 
-**System 2: `visible_to_employers` — Employer browse feed**
-- What it does: Makes the user appear in the employer candidate browse catalogue
-- DB column: `user_profiles.visible_to_employers` (boolean)
-- Status:
-  - `ListingActivationCard.tsx` reads and updates correctly ✅
-  - Gated correctly behind `user_certifications.lansa_certified = true` ✅
-  - Works well — no changes needed here
+The codebase has three distinct layers handling user routing:
+
+**Layer 1 — Route Guard (`Guard.tsx`)**
+A single component that evaluates: `auth → admin → onboarding → userType` in one pass. This is the most well-structured part of the system. Clean, declarative, readable.
+
+**Layer 2 — Auth Context (`UnifiedAuthProvider.tsx`)**
+Single source of truth for all user state. Fetches everything in one `Promise.all` batch. State is set atomically to prevent render races. This is solid architecture.
+
+**Layer 3 — Onboarding Page (`Onboarding.tsx`)**
+This is the if/else structure the user is asking about. It manages 5+ parallel state booleans (`showTypeSelection`, `showCareerSegmentation`, `showMentorOnboarding`, `userIntent`, `careerPath`) to determine which component to render. This is where the flash bugs keep coming from, and where adding a new user type costs the most.
+
+There is also a `onboardingFlowRegistry.ts` — a data-driven registry that exists but is **not actually connected to `Onboarding.tsx`**. The page doesn't use it at all. It's documentation-as-code that was built with good intentions but never wired in.
 
 ---
 
-## What needs fixing
+## Is the if/else structure the right pattern?
 
-### The core problem in `DesktopProfileActions.tsx`
-1. `const [isProfilePublic, setIsProfilePublic] = useState(false)` — ignores the `profileData.isProfilePublic` that IS already fetched from DB (it calls `useProfileData(userId)` but doesn't use its `isProfilePublic` value)
-2. Certification gate uses string-match on `userProfile?.certifications` — wrong source
-3. The label "Lansa Only" is confusing — `is_public` (shareable link) should be available to ALL users, not just certified ones. The certification gate should only apply to `visible_to_employers`
+**Short answer: No, but the fix is not a full rewrite — it's a targeted structural upgrade to `Onboarding.tsx` only.**
 
-### Clarity problem for users
-The current UI has ONE "Profile Visibility" toggle with a vague "Public/Private" label. Users don't understand:
-- What "public" means (is it to employers? to anyone? for the link?)
-- Why it's locked
-- What they need to do to unlock it
+The rest of the stack (Guard, UnifiedAuthProvider, App.tsx routes) is genuinely well-built for the scope of this company. Those don't need to change.
+
+The specific problem is that `Onboarding.tsx` uses **parallel boolean flags** instead of a **single state machine**. Here's why that's fragile:
+
+**Current pattern (boolean flags):**
+```
+showTypeSelection = true
+showCareerSegmentation = false
+showMentorOnboarding = false
+userIntent = null
+```
+Any combination of these 4+ booleans is technically possible, including contradictory ones. React's async batching means there are windows where the values don't agree, which is exactly what causes the flash — for one render frame, none of the top conditions match, so the fallthrough fires.
+
+**The more stable pattern (state machine):**
+```
+onboardingStep = 'type_selection' | 'career_path' | 'mentor_flow' | 'create_org' | 'join_org' | 'completing'
+```
+One value. One source of truth. Impossible to have contradictory state. No fallthrough case needed. Adding a new user type = adding one new string to the union type and one case to a switch statement. No touching of existing cases.
 
 ---
 
-## Plan
+## What would the upgrade look like?
 
-### File 1: `src/components/profile/header-actions/DesktopProfileActions.tsx`
+**The only file that changes is `Onboarding.tsx`.** Nothing in Guard, UnifiedAuthProvider, App.tsx, or any of the per-user-type components changes.
 
-**Problem:** Local state ignores DB value. Certification gate is wrong.
-
-**Fix:**
-1. Remove `const [isProfilePublic, setIsProfilePublic] = useState(false)` — replace with `profileData.isProfilePublic` (already fetched from DB on line 61)
-2. Remove the `isLansaCertified` string-match hack entirely
-3. The `is_public` toggle should be available to **all users** (no gate). Any user can share their profile link
-4. Update `handleMakeProfilePublic` to call `supabase.update({ is_public: !profileData.isProfilePublic })` and rely on the hook's state, then call a local refresh
-5. Split the visibility section into two clearly labeled toggles:
+Replace the 5 booleans with one `step` enum:
 
 ```
-Toggle 1: "Shareable Profile Link"
-  Icon: Link icon (Globe)
-  Subtitle when OFF: "Off — your profile URL is private"
-  Subtitle when ON:  "On — anyone with the link can view it"
-  Available to: ALL users (no gate)
-
-Toggle 2: "Appear to Employers"  [only shown if certified]
-  Icon: Briefcase / Eye
-  Subtitle when OFF: "Off — not visible in employer search"
-  Subtitle when ON:  "On — employers can find you"
-  Available to: certified users only (reads from user_certifications)
+type OnboardingStep =
+  | 'type_selection'
+  | 'career_path'
+  | 'mentor_flow'
+  | 'create_org'
+  | 'join_org'
+  | 'completing'          // shows LansaLoader while async completes
 ```
 
-This replaces the existing single vague toggle.
-
-### File 2: `src/hooks/useProfileData.tsx`
-
-**Addition:** Expose an `updateIsPublic` function from the hook (similar to `updateProfessionalGoal`) so the toggle in `DesktopProfileActions` can update state through the hook rather than bypassing it with local state. This keeps the DB update and state in sync.
-
-```ts
-const updateIsPublic = async (value: boolean) => {
-  const { error } = await supabase
-    .from('user_profiles')
-    .update({ is_public: value })
-    .eq('user_id', userId);
-  if (!error) setIsProfilePublic(value);
-};
+The render becomes a single `switch(step)`:
+```tsx
+switch (step) {
+  case 'type_selection':   return <UserTypeSelection />
+  case 'career_path':      return <CareerPathSegmentation />
+  case 'mentor_flow':      return <MentorOnboarding />
+  case 'create_org':       return <OrganizationOnboardingForm />
+  case 'join_org':         return <JoinOrganizationFlow />
+  case 'completing':       return <LansaLoader />
+  default:                 return null  // impossible to reach
+}
 ```
 
-Return it in the hook's return object.
+Adding `freelancer` in the future = add `'freelancer_flow'` to the union, add a case to the switch, add `<FreelancerOnboarding />`. One surgical change, nothing else moves.
 
-### File 3: `src/hooks/profile/profileTypes.ts`
-
-Add `updateIsPublic: (value: boolean) => Promise<void>` to the `ProfileDataReturn` interface.
-
-### File 4: `src/components/profile/header-actions/DesktopProfileActions.tsx` — certification check
-
-Replace the string-match certification check with an actual query to `user_certifications`:
-
-```ts
-const [isCertified, setIsCertified] = useState(false);
-useEffect(() => {
-  if (!user?.id) return;
-  supabase.from('user_certifications')
-    .select('lansa_certified, verified')
-    .eq('user_id', user.id)
-    .single()
-    .then(({ data }) => setIsCertified(!!data?.lansa_certified && !!data?.verified));
-}, [user?.id]);
-```
-
-The "Appear to Employers" toggle only renders when `isCertified = true`.
+The `onboardingFlowRegistry.ts` that already exists would then actually connect — each registry entry maps a `userType` to a `step`, so routing logic becomes a lookup rather than hand-coded conditions.
 
 ---
 
-## What the user will see after this fix
+## Honest assessment — is this worth doing now?
 
-**In the hamburger menu on `/profile`:**
+**Yes, but it is a focused, bounded change** — not a system rewrite. The scope is:
 
-```
-┌──────────────────────────────────────────────────┐
-│  [Globe icon]  Shareable Profile Link             │
-│                Off — your profile URL is private  │  [Switch]
-└──────────────────────────────────────────────────┘
+- `Onboarding.tsx` — replace boolean flags with step enum, eliminate fallthrough
+- Connect `onboardingFlowRegistry.ts` so it's actually used
+- Fix the flash bug permanently as a side effect
 
-(Only shown if certified):
-┌──────────────────────────────────────────────────┐
-│  [Eye icon]    Appear to Employers                │
-│                Off — not visible in employer feed │  [Switch]
-└──────────────────────────────────────────────────┘
-```
+The auth context, route guards, and per-user-type onboarding components are all structurally sound and don't need to change. The DB schema and triggers are also not part of this problem.
 
-Each toggle has a clear title and a dynamic subtitle that tells the user exactly what the current state means. No more "Lansa Only" lock confusing non-certified users. The shareable link toggle is always available.
+**Cost:** Medium. One complex file rewritten cleanly.
+**Benefit:** Eliminates the flash bug permanently, makes adding new user types a 10-minute task instead of a 2-hour debugging session, makes the code readable by anyone new to the codebase.
 
-## What does NOT change
-- `ListingActivationCard.tsx` — already works correctly, no changes
-- `ProfileNotFound.tsx` — already works correctly, no changes
-- `ProfileCard.tsx` — already works correctly, no changes
-- `useSharedProfileData` — no changes
-- DB schema — no changes
-- All other flows — no changes
+---
+
+## Summary table
+
+| Layer | Current State | Recommendation |
+|---|---|---|
+| `Guard.tsx` | Well-structured, declarative | No changes |
+| `UnifiedAuthProvider.tsx` | Solid, atomic state | No changes |
+| `App.tsx` routes | Clean, declarative | No changes |
+| `Onboarding.tsx` | Fragile parallel booleans | Upgrade to step enum |
+| `onboardingFlowRegistry.ts` | Exists but unused | Wire it in |
+| `unifiedOnboardingService.ts` | Solid | No changes |
+| `DefaultRoute.tsx` | Simple, correct | No changes |
+
+The system is not poorly built overall. It has one structural weakness in one file that has been the source of recurring bugs. Fixing that one file properly will make the entire onboarding system stable for all current and future user types.
