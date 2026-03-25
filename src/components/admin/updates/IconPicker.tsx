@@ -3,6 +3,7 @@
  * Allows admin to select an icon for product updates
  */
 
+import { useState } from 'react';
 import { Rocket, Sparkles, Bug, Megaphone, Zap, Star, Gift, Bell, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -26,12 +27,14 @@ interface IconPickerProps {
 }
 
 export function IconPicker({ value, onChange }: IconPickerProps) {
+  const [open, setOpen] = useState(false);
+
   const SelectedIcon = value && AVAILABLE_ICONS[value as keyof typeof AVAILABLE_ICONS]
     ? AVAILABLE_ICONS[value as keyof typeof AVAILABLE_ICONS].icon
     : Rocket;
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" className="w-full justify-start">
           <SelectedIcon className="h-4 w-4 mr-2" />
@@ -45,10 +48,10 @@ export function IconPicker({ value, onChange }: IconPickerProps) {
           {Object.entries(AVAILABLE_ICONS).map(([key, { icon: Icon, label }]) => (
             <Button
               key={key}
-              variant={value === key ? 'primary' : 'ghost'}
+              variant={value === key ? 'default' : 'ghost'}
               size="sm"
               className="flex flex-col items-center p-2 h-auto"
-              onClick={() => onChange(key)}
+              onClick={() => { onChange(key); setOpen(false); }}
             >
               <Icon className="h-5 w-5" />
               <span className="text-xs mt-1">{label}</span>
