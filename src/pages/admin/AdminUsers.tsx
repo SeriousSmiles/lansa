@@ -43,6 +43,7 @@ function InfoTooltip({ content }: { content: string }) {
 
 export default function AdminUsers() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -57,6 +58,22 @@ export default function AdminUsers() {
     visibilityFilter: 'all',
     dateRange: 'all',
   });
+
+  // ── Realtime: auto-refresh table when user_profiles changes ──────────────
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-users-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'user_profiles' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+          queryClient.invalidateQueries({ queryKey: ['admin-users-stats'] });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient]);
 
   const { data: stats } = useQuery({
     queryKey: ['admin-users-stats'],
