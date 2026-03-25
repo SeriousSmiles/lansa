@@ -163,6 +163,7 @@ export default function Dashboard() {
                   insight={insight}
                   highlightActions={highlightActions}
                   isLoading={isLoadingInsight}
+                  openAIPlan={openAIPlan}
                 />
               </section>
             </div>

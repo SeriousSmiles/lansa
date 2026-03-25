@@ -17,6 +17,7 @@ interface DashboardTabsProps {
   insight: string;
   highlightActions: boolean;
   isLoading: boolean;
+  openAIPlan?: boolean;
 }
 
 export function DashboardTabs({
@@ -25,7 +26,8 @@ export function DashboardTabs({
   goal,
   insight,
   highlightActions,
-  isLoading
+  isLoading,
+  openAIPlan
 }: DashboardTabsProps) {
   const { user } = useAuth();
   const tabsRef = useRef<HTMLDivElement>(null);
