@@ -133,6 +133,25 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     }
   };
 
+  // Function to update is_public visibility
+  const updateIsPublic = async (value: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ is_public: value })
+        .eq('user_id', userId);
+      if (error) throw error;
+      setIsProfilePublic(value);
+    } catch (error) {
+      toast({
+        title: "Error updating visibility",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   // Function to update biggest challenge
   const updateBiggestChallenge = async (challenge: string) => {
     try {
