@@ -8,6 +8,8 @@ import { AIModal } from "@/components/ai/AIModal";
 import { fetchAISuggestion } from "@/lib/aiHelpers";
 import { toast as sonnerToast } from "sonner";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { supabase } from "@/integrations/supabase/client";
+import { AIActivationPrompt } from "./AIActivationPrompt";
 
 interface AboutMeSectionProps {
   role: string;
@@ -33,6 +35,8 @@ export function AboutMeSection({
   const [isLoadingAI, setIsLoadingAI] = useState(false);
   const [aiUsed, setAiUsed] = useState(false);
   const [lastAIContent, setLastAIContent] = useState<string>("");
+  const [showActivationPrompt, setShowActivationPrompt] = useState(false);
+  const [hasPowerSkills, setHasPowerSkills] = useState<boolean | null>(null);
   const { toast } = useToast();
   
   const defaultAboutText = `Based on your onboarding answers, you identified as a ${role.toLowerCase()} 
@@ -40,6 +44,16 @@ export function AboutMeSection({
   clarity journey, and we're here to help you achieve your goals.`;
 
   const displayAboutText = aboutText || defaultAboutText;
+
+  // Check if user has power skills (Career Goal Plan completed)
+  useEffect(() => {
+    if (!userId) return;
+    supabase
+      .from('user_power_skills')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .then(({ count }) => setHasPowerSkills((count ?? 0) > 0));
+  }, [userId]);
 
   // Reset aiUsed when content changes from what AI was applied to
   useEffect(() => {
@@ -76,13 +90,24 @@ export function AboutMeSection({
       return;
     }
 
+    // If user hasn't completed Career Goal Plan, show activation prompt first
+    if (hasPowerSkills === false) {
+      setShowActivationPrompt(true);
+      return;
+    }
+
+    proceedWithAI();
+  };
+
+  const proceedWithAI = async () => {
+    setShowActivationPrompt(false);
     setIsLoadingAI(true);
     setShowAI(true);
     setAiResult(null);
 
     try {
       const result = await fetchAISuggestion({
-        user_id: userId,
+        user_id: userId!,
         section: 'About Me',
         content: displayAboutText,
       });
@@ -167,6 +192,13 @@ export function AboutMeSection({
           )}
         </div>
       </div>
+
+      {/* AI Activation Prompt — shown before calling AI when Career Goal Plan not complete */}
+      {showActivationPrompt && (
+        <div className="mb-4">
+          <AIActivationPrompt onUseGeneral={proceedWithAI} />
+        </div>
+      )}
       
       {isEditingAbout ? (
         <div className="space-y-4 mb-4">
@@ -213,3 +245,4 @@ export function AboutMeSection({
     </>
   );
 }
+

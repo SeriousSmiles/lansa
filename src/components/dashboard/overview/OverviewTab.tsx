@@ -6,6 +6,7 @@ import { StudentAnalyticsCard } from "./StudentAnalyticsCard";
 import { CertificationCard } from "./CertificationCard";
 import { WhoIsInterestedSection } from "@/components/dashboard/WhoIsInterestedSection";
 import { ListingActivationCard } from "./ListingActivationCard";
+import { AICareerPlanCard } from "./AICareerPlanCard";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface OverviewTabProps {
@@ -15,15 +16,19 @@ interface OverviewTabProps {
   insight: string;
   highlightActions: boolean;
   isLoading: boolean;
+  openAIPlan?: boolean;
 }
 
-export function OverviewTab({ userName, role, goal, insight, highlightActions, isLoading }: OverviewTabProps) {
+export function OverviewTab({ userName, role, goal, insight, highlightActions, isLoading, openAIPlan }: OverviewTabProps) {
   const { user } = useAuth();
 
   return (
     <div className="space-y-6">
       {/* Listing Activation — only renders for certified seekers */}
       <ListingActivationCard />
+
+      {/* AI Career Plan card — shown to all job seekers */}
+      <AICareerPlanCard autoOpen={openAIPlan} />
 
       {/* Analytics and Certification + Who's Interested — masonry grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -43,3 +48,4 @@ export function OverviewTab({ userName, role, goal, insight, highlightActions, i
     </div>
   );
 }
+

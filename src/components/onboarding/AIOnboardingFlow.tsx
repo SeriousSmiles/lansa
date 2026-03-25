@@ -37,9 +37,13 @@ import powerMirrorImage from "@/assets/onboarding/power-mirror-realistic.jpg";
 
 interface AIOnboardingFlowProps {
   initialStep?: string;
+  /** When provided, called instead of navigating on completion (dashboard modal mode) */
+  onComplete?: () => void;
+  /** When true, removes full-screen chrome since it lives inside a modal */
+  modalMode?: boolean;
 }
 
-export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowProps) {
+export function AIOnboardingFlow({ initialStep = 'welcome', onComplete: onCompleteProp, modalMode = false }: AIOnboardingFlowProps) {
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [isLoading, setIsLoading] = useState(false);
   const [demographicsData, setDemographicsData] = useState({
@@ -221,13 +225,20 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
     try {
       setIsLoading(true);
       
-      // Use unified onboarding service
+      // If invoked from dashboard modal — just call the callback (onboarding already marked complete)
+      if (onCompleteProp) {
+        toast.success('Career Goal Plan complete! Your AI coach is now personalised.');
+        if (refreshUserState) await refreshUserState();
+        onCompleteProp();
+        return;
+      }
+      
+      // Standalone onboarding path (legacy / fallback)
       const { markOnboardingComplete } = await import('@/services/onboarding/unifiedOnboardingService');
       const { getPostOnboardingDestination } = await import('@/services/navigation/onboardingNavigationService');
       
       await markOnboardingComplete(user.id, 'job_seeker');
       
-      // Ensure app state reflects completion before routing
       if (refreshUserState) {
         await refreshUserState();
       }
@@ -243,6 +254,7 @@ export function AIOnboardingFlow({ initialStep = 'welcome' }: AIOnboardingFlowPr
       setIsLoading(false);
     }
   };
+
 
   const getStepNumber = () => {
     const steps = ['welcome', 'demographics', 'skill', 'goal', 'summary'];

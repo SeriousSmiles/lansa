@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef } from "react";
+import { useLocation } from "react-router-dom";
+
 import { 
   getUserAnswers, 
   getProfileRole, 
@@ -23,10 +25,21 @@ export default function Dashboard() {
   const [aiInsight, setAiInsight] = useState<string | undefined>();
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [openAIPlan, setOpenAIPlan] = useState(false);
   const { user } = useAuth();
   const { track } = useActionTracking();
   const mountedRef = useRef(true);
   const initializingRef = useRef(false);
+  const location = useLocation();
+
+  // Read openAIPlan from navigation state (set by AIActivationPrompt) and clear it
+  useEffect(() => {
+    if (location.state?.openAIPlan) {
+      setOpenAIPlan(true);
+      // Clear state so refresh doesn't re-open
+      window.history.replaceState({}, '', location.pathname);
+    }
+  }, []);
   
   useEffect(() => {
     return () => {
@@ -150,6 +163,7 @@ export default function Dashboard() {
                   insight={insight}
                   highlightActions={highlightActions}
                   isLoading={isLoadingInsight}
+                  openAIPlan={openAIPlan}
                 />
               </section>
             </div>
