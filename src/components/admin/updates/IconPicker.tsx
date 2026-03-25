@@ -48,7 +48,7 @@ export function IconPicker({ value, onChange }: IconPickerProps) {
           {Object.entries(AVAILABLE_ICONS).map(([key, { icon: Icon, label }]) => (
             <Button
               key={key}
-              variant={value === key ? 'default' : 'ghost'}
+              variant={value === key ? 'outline' : 'ghost'}
               size="sm"
               className="flex flex-col items-center p-2 h-auto"
               onClick={() => { onChange(key); setOpen(false); }}
