@@ -233,25 +233,23 @@ export function QRCodeModal({ isOpen, onClose, userName }: QRCodeModalProps) {
       const qrImg = await loadImage(qrDataURL);
       ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
 
-      // ── "Powered by Lansa" badge ──────────────────────────────────
-      // Measure each piece first so we can centre the whole line precisely
-      const prefixFont = `400 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-      const brandFont  = `bold 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-      const iconR = 6;          // radius of the small Lansa dot icon
-      const gap   = 5;          // gap between icon and "Lansa" text
+      // ── "Powered by [Lansa logo]" badge ──────────────────────────
+      const prefixFont = `400 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
 
       ctx.font = prefixFont;
       const prefixW = ctx.measureText('Powered by ').width;
 
-      ctx.font = brandFont;
-      const brandW  = ctx.measureText('Lansa').width;
+      // Load real Lansa combination mark logo
+      const logoImg = await loadImage(lansaLogoUrl);
+      // Scale logo to 26px tall, preserve aspect ratio
+      const logoH = 26;
+      const logoW = (logoImg.naturalWidth / logoImg.naturalHeight) * logoH;
 
-      // Total content width: "Powered by " + icon circle diameter + gap + "Lansa"
-      const contentW = prefixW + iconR * 2 + gap + brandW;
-      const badgeH   = 36;
-      const badgePad = 20;
+      const contentW = prefixW + logoW;
+      const badgeH   = 44;
+      const badgePad = 24;
       const badgeW   = contentW + badgePad * 2;
-      const badgeY   = H - 52;
+      const badgeY   = H - 60;
       const badgeX   = (W - badgeW) / 2;
       const midY     = badgeY + badgeH / 2;
 
@@ -262,10 +260,8 @@ export function QRCodeModal({ isOpen, onClose, userName }: QRCodeModalProps) {
       ctx.fill();
       ctx.restore();
 
-      // Draw content left-to-right from the computed starting x
-      let cursorX = badgeX + badgePad;
-
       // "Powered by "
+      let cursorX = badgeX + badgePad;
       ctx.save();
       ctx.font = prefixFont;
       ctx.fillStyle = '#6B7280';
@@ -275,28 +271,8 @@ export function QRCodeModal({ isOpen, onClose, userName }: QRCodeModalProps) {
       cursorX += prefixW;
       ctx.restore();
 
-      // Small Lansa brand dot (canvas-drawn, no image load needed)
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(cursorX + iconR, midY, iconR, 0, Math.PI * 2);
-      ctx.fillStyle = LANSA_BRAND;
-      ctx.fill();
-      // White inner dot to mimic the Lansa icon
-      ctx.beginPath();
-      ctx.arc(cursorX + iconR, midY - iconR * 0.2, iconR * 0.35, 0, Math.PI * 2);
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fill();
-      ctx.restore();
-      cursorX += iconR * 2 + gap;
-
-      // "Lansa"
-      ctx.save();
-      ctx.font = brandFont;
-      ctx.fillStyle = LANSA_BRAND;
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('Lansa', cursorX, midY);
-      ctx.restore();
+      // Lansa combination mark logo image
+      ctx.drawImage(logoImg, cursorX, midY - logoH / 2, logoW, logoH);
 
       const dataUrl = canvas.toDataURL('image/png');
       setCompositeDataUrl(dataUrl);
