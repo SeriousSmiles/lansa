@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/UnifiedAuthProvider";
 import { useUserState } from "@/contexts/UnifiedAuthProvider";
@@ -28,11 +28,23 @@ export default function Onboarding() {
   const [careerPath, setCareerPath] = useState<CareerPath | null>(null);
   const [showTypeSelection, setShowTypeSelection] = useState(true);
   const [showCareerSegmentation, setShowCareerSegmentation] = useState(false);
+  // Deferred navigation: set this AFTER refreshUserState(), navigate only once
+  // hasCompletedOnboarding becomes true — prevents Guard flash/race condition.
+  const pendingNavigation = useRef<{ path: string; state?: any } | null>(null);
   const { user } = useAuth();
-  const { refreshUserState } = useUserState();
+  const { refreshUserState, hasCompletedOnboarding } = useUserState();
   const navigate = useNavigate();
   const location = useLocation();
   const { navigateAfterOnboarding, isNavigating } = useOnboardingNavigation();
+
+  // Fire deferred navigation only after context confirms onboarding is complete
+  useEffect(() => {
+    if (hasCompletedOnboarding && pendingNavigation.current) {
+      const { path, state } = pendingNavigation.current;
+      pendingNavigation.current = null;
+      navigate(path, { replace: true, state });
+    }
+  }, [hasCompletedOnboarding, navigate]);
 
   // Load existing progress — Guard already prevents onboarded users from reaching this page
   useEffect(() => {
