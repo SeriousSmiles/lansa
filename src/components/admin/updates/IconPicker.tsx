@@ -46,39 +46,37 @@ export function IconPicker({ value, onChange }: IconPickerProps) {
           {selectedLabel}
         </Button>
       </PopoverPrimitive.Trigger>
-      <PopoverPrimitive.Portal>
-        <PopoverPrimitive.Content
-          className={cn(
-            'z-[9999] w-80 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none',
-            'data-[state=open]:animate-in data-[state=closed]:animate-out',
-            'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-            'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
-          )}
-          sideOffset={4}
-        >
-          <div className="grid grid-cols-5 gap-2">
-            {Object.entries(AVAILABLE_ICONS).map(([key, { icon: Icon, label }]) => (
-              <button
-                key={key}
-                type="button"
-                className={cn(
-                  'flex flex-col items-center p-2 rounded-md text-sm transition-colors',
-                  value === key
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-accent hover:text-accent-foreground'
-                )}
-                onClick={() => {
-                  onChange(key);
-                  setOpen(false);
-                }}
-              >
-                <Icon className="h-5 w-5" />
-                <span className="text-xs mt-1 leading-none">{label}</span>
-              </button>
-            ))}
-          </div>
-        </PopoverPrimitive.Content>
-      </PopoverPrimitive.Portal>
+      <PopoverPrimitive.Content
+        className={cn(
+          'z-[9999] w-80 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none',
+          'data-[state=open]:animate-in data-[state=closed]:animate-out',
+          'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+          'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+        )}
+        sideOffset={4}
+      >
+        <div className="grid grid-cols-5 gap-2">
+          {Object.entries(AVAILABLE_ICONS).map(([key, { icon: Icon, label }]) => (
+            <button
+              key={key}
+              type="button"
+              className={cn(
+                'flex flex-col items-center p-2 rounded-md text-sm transition-colors cursor-pointer',
+                value === key
+                  ? 'bg-primary text-primary-foreground'
+                  : 'hover:bg-accent hover:text-accent-foreground'
+              )}
+              onClick={() => {
+                onChange(key);
+                setOpen(false);
+              }}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="text-xs mt-1 leading-none">{label}</span>
+            </button>
+          ))}
+        </div>
+      </PopoverPrimitive.Content>
     </PopoverPrimitive.Root>
   );
 }
