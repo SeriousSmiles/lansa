@@ -224,6 +224,7 @@ export function useProfileData(userId: string | undefined): ProfileDataReturn {
     updateUserTitle: profileBasics.updateUserTitle,
     updateProfessionalGoal,
     updateBiggestChallenge,
+    updateIsPublic,
     updateLocation: profileBasics.updateLocation,
     
     // Skills functions
