@@ -31,6 +31,15 @@ export default function Dashboard() {
   const mountedRef = useRef(true);
   const initializingRef = useRef(false);
   const location = useLocation();
+
+  // Read openAIPlan from navigation state (set by AIActivationPrompt) and clear it
+  useEffect(() => {
+    if (location.state?.openAIPlan) {
+      setOpenAIPlan(true);
+      // Clear state so refresh doesn't re-open
+      window.history.replaceState({}, '', location.pathname);
+    }
+  }, []);
   
   useEffect(() => {
     return () => {
