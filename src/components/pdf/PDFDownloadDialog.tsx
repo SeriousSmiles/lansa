@@ -94,6 +94,20 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
           await generatePDF(pdfData, selectedTemplate);
         }
       }
+
+      // Insert into resume_exports so the DB trigger track_resume_exported fires,
+      // which inserts a user_actions row and recalculates the user's color score.
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('resume_exports').insert({
+          user_id: user.id,
+          format: exportFormat,
+          design_id: null,
+          file_url: 'downloaded',
+          file_hash: `${user.id}-${Date.now()}`,
+        });
+      }
+
       setIsOpen(false);
     } catch (error) {
       console.error('Failed to download resume:', error);
