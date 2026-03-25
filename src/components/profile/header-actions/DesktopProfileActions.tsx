@@ -31,7 +31,6 @@ interface DesktopProfileActionsProps {
   onActionComplete?: () => void;
   onOpenGuidedSetup?: () => void;
   userProfile?: any;
-  // Palette system props
   currentPalette?: string;
   activePalette?: any;
   onPaletteChange?: (paletteId: string) => Promise<void>;
@@ -42,11 +41,8 @@ export function DesktopProfileActions({
   userId,
   userName,
   coverColor,
-  highlightColor,
   textColor,
   isDarkTheme,
-  onCoverColorChange,
-  onHighlightColorChange,
   onActionComplete,
   onOpenGuidedSetup,
   userProfile,
@@ -64,35 +60,27 @@ export function DesktopProfileActions({
   const [isDesignerOpen, setIsDesignerOpen] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  // Proper certification check from user_certifications table
   const [isCertified, setIsCertified] = useState(false);
-  const [isUpdatingEmployer, setIsUpdatingEmployer] = useState(false);
   const [visibleToEmployers, setVisibleToEmployers] = useState(false);
+  const [isUpdatingEmployer, setIsUpdatingEmployer] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
-    // Fetch real certification status
     supabase
       .from('user_certifications')
       .select('lansa_certified, verified')
       .eq('user_id', user.id)
       .maybeSingle()
-      .then(({ data }) => {
-        setIsCertified(!!data?.lansa_certified && !!data?.verified);
-      });
-    // Fetch employer visibility status
+      .then(({ data }) => setIsCertified(!!data?.lansa_certified && !!data?.verified));
+
     supabase
       .from('user_profiles')
       .select('visible_to_employers')
       .eq('user_id', user.id)
       .maybeSingle()
-      .then(({ data }) => {
-        setVisibleToEmployers(!!data?.visible_to_employers);
-      });
+      .then(({ data }) => setVisibleToEmployers(!!data?.visible_to_employers));
   }, [user?.id]);
 
-  // Toggle 1: Shareable profile link (available to ALL users)
   const handleToggleShareableLink = async () => {
     setIsUpdatingPublic(true);
     try {
@@ -100,8 +88,8 @@ export function DesktopProfileActions({
       await profileData.updateIsPublic(newValue);
       toast.success(
         newValue
-          ? "Your profile link is now public — anyone with the link can view it."
-          : "Your profile link is now private."
+          ? "Profile link is now public — anyone with the link can view it."
+          : "Profile link is now private."
       );
     } catch {
       toast.error("Failed to update profile link visibility.");
@@ -110,7 +98,6 @@ export function DesktopProfileActions({
     }
   };
 
-  // Toggle 2: Appear to employers (certified users only)
   const handleToggleEmployerVisibility = async () => {
     if (!isCertified) return;
     setIsUpdatingEmployer(true);
@@ -136,7 +123,6 @@ export function DesktopProfileActions({
 
   return (
     <div className="flex items-center gap-2">
-      {/* Quick Actions - Standalone prominent button - Hidden on mobile */}
       {!isMobile && (
         <Button
           onClick={() => setIsQuickActionsOpen(true)}
@@ -149,27 +135,22 @@ export function DesktopProfileActions({
         </Button>
       )}
 
-      {/* Actions Menu */}
       <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
         <DropdownMenuTrigger asChild>
-          <Button 
-            variant={isDarkTheme ? "contrast" : "outline"} 
+          <Button
+            variant={isDarkTheme ? "contrast" : "outline"}
             size="sm"
-            style={{
-              borderColor: `${coverColor}50`,
-              color: textColor
-            }}
+            style={{ borderColor: `${coverColor}50`, color: textColor }}
           >
             <IconMenu2 className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent 
-          align="end" 
+        <DropdownMenuContent
+          align="end"
           className="w-[calc(100vw-2rem)] sm:w-[400px] p-3 sm:p-4 bg-background border border-border z-50"
         >
-          {/* Card-based action buttons */}
+          {/* Primary action cards */}
           <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
-            {/* Download Resume Card */}
             <PDFDownloadDialog profileData={profileData}>
               <Card className="p-0 overflow-hidden cursor-pointer hover:shadow-lg transition-shadow border border-border">
                 <div className="flex flex-col items-center gap-2 sm:gap-3 p-3 sm:p-4">
@@ -181,29 +162,25 @@ export function DesktopProfileActions({
               </Card>
             </PDFDownloadDialog>
 
-            {/* Open Designer Card */}
-            <Card 
+            <Card
               className="p-0 overflow-hidden cursor-pointer hover:shadow-lg transition-shadow border border-border"
-              onClick={() => {
-                setIsDropdownOpen(false);
-                setIsDesignerOpen(true);
-              }}
+              onClick={() => { setIsDropdownOpen(false); setIsDesignerOpen(true); }}
             >
               <div className="flex flex-col items-center gap-2 sm:gap-3 p-3 sm:p-4">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-violet-100 flex items-center justify-center">
-                  <IconPalette className="h-6 w-6 sm:h-8 sm:w-8 text-violet-600" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-accent/20 flex items-center justify-center">
+                  <IconPalette className="h-6 w-6 sm:h-8 sm:w-8 text-accent-foreground" />
                 </div>
                 <span className="text-xs sm:text-sm font-medium text-foreground text-center">Open Designer</span>
               </div>
             </Card>
           </div>
 
-          {/* Visibility section header */}
+          {/* Visibility section */}
           <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1 mb-2">
             Visibility Settings
           </p>
 
-          {/* Toggle 1: Shareable Profile Link — available to ALL users */}
+          {/* Toggle 1: Shareable profile link — ALL users */}
           <Card className="p-3 sm:p-4 border border-border mb-2">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -213,9 +190,30 @@ export function DesktopProfileActions({
                   <IconGlobe className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
                     profileData.isProfilePublic ? "text-primary" : "text-muted-foreground"
                   }`} />
-...
-              {isCertified ? (
-            <Card className="p-3 sm:p-4 border border-border mb-2">
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs sm:text-sm font-medium text-foreground">
+                    Shareable Profile Link
+                  </span>
+                  <span className="text-[10px] sm:text-xs text-muted-foreground">
+                    {profileData.isProfilePublic
+                      ? "On — anyone with the link can view it"
+                      : "Off — your profile URL is private"}
+                  </span>
+                </div>
+              </div>
+              <Switch
+                checked={profileData.isProfilePublic}
+                onCheckedChange={() => safeHandler(handleToggleShareableLink, "Toggle shareable link")()}
+                disabled={isUpdatingPublic}
+                className="flex-shrink-0"
+              />
+            </div>
+          </Card>
+
+          {/* Toggle 2: Appear to employers — certified users only */}
+          {isCertified ? (
+            <Card className="p-3 sm:p-4 border border-border">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                   <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
@@ -245,7 +243,7 @@ export function DesktopProfileActions({
               </div>
             </Card>
           ) : (
-            <Card className="p-3 sm:p-4 border border-border border-dashed opacity-60">
+            <Card className="p-3 sm:p-4 border border-dashed border-border opacity-60">
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
                   <IconEye className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
@@ -264,7 +262,6 @@ export function DesktopProfileActions({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Modals */}
       <DesignerSidebar
         isOpen={isDesignerOpen}
         onClose={() => setIsDesignerOpen(false)}
