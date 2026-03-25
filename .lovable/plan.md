@@ -1,57 +1,135 @@
 
-## Root Cause Analysis
+## Full Audit Summary
 
-### Problem 1 — "View Full Profile" goes to Not Found
-`ProfileCard.tsx` navigates to `/profile/share/${urlName}-${user.id}` which maps to the `SharedProfile` page. This page queries `user_profiles_public` — a **separate table** that only gets populated when `user_profiles.is_public = true` (via a DB trigger). New users who haven't explicitly made their profile public have no row in `user_profiles_public`, so `useSharedProfileData` returns `profileData = null` and renders `ProfileNotFound`.
+### Two separate visibility systems — both broken in different ways
 
-The route itself exists and is correct. The issue is purely that the user's profile is not yet public.
+**System 1: `is_public` — Shareable profile link**
+- What it does: Makes the `/profile/share/[name]-[id]` URL viewable by anyone
+- DB column: `user_profiles.is_public` (boolean)
+- Status:
+  - `ProfileCard.tsx` reads `isProfilePublic` correctly from `useProfileData` ✅
+  - `ProfileNotFound.tsx` sets `is_public: true` correctly ✅
+  - `DesktopProfileActions.tsx` (the hamburger menu on `/profile`) has its own LOCAL `useState(false)` — it **never reads from DB** and **never initializes from `profileData.isProfilePublic`** ❌
+  - The toggle in the hamburger menu is **permanently disabled** unless the user has a cert with "lansa" in the name field — this is a fragile string match on `userProfile.certifications`, not the actual `user_certifications` table ❌
+  - Result: The toggle in the profile page hamburger menu is always OFF and always locked
 
-### Problem 2 — "Return to Login" logs the user out
-`ProfileNotFound` has a button `onClick={() => navigate("/auth")}`. The `/auth` route in `App.tsx` maps to the `<Login />` page, which effectively signs the user out of their current session visually — they see the login screen even though they're logged in. For a logged-in user viewing their own profile link, this is completely wrong.
-
-### Problem 3 — The button fires for users without a name
-`handleCardClick` only navigates if `user?.id && userName`. If `userName` is empty (incomplete profile), clicking the button silently does nothing — no feedback at all.
+**System 2: `visible_to_employers` — Employer browse feed**
+- What it does: Makes the user appear in the employer candidate browse catalogue
+- DB column: `user_profiles.visible_to_employers` (boolean)
+- Status:
+  - `ListingActivationCard.tsx` reads and updates correctly ✅
+  - Gated correctly behind `user_certifications.lansa_certified = true` ✅
+  - Works well — no changes needed here
 
 ---
 
-## The Fix Plan
+## What needs fixing
 
-### 1. `ProfileCard.tsx` — Smart navigation based on profile state
+### The core problem in `DesktopProfileActions.tsx`
+1. `const [isProfilePublic, setIsProfilePublic] = useState(false)` — ignores the `profileData.isProfilePublic` that IS already fetched from DB (it calls `useProfileData(userId)` but doesn't use its `isProfilePublic` value)
+2. Certification gate uses string-match on `userProfile?.certifications` — wrong source
+3. The label "Lansa Only" is confusing — `is_public` (shareable link) should be available to ALL users, not just certified ones. The certification gate should only apply to `visible_to_employers`
 
-Instead of navigating directly to the share URL (which fails for non-public profiles), detect the profile state first:
+### Clarity problem for users
+The current UI has ONE "Profile Visibility" toggle with a vague "Public/Private" label. Users don't understand:
+- What "public" means (is it to employers? to anyone? for the link?)
+- Why it's locked
+- What they need to do to unlock it
 
-- If `isProfilePublic` is true → navigate to `/profile/share/...` as today
-- If `isProfilePublic` is false → navigate to `/profile/share/...` but pass `state: { isOwnProfile: true }` so the page knows to show a helpful "make public" prompt rather than the generic Not Found
-- If `userName` is empty (incomplete profile) → navigate to `/profile` with a toast hint to complete their profile first
+---
 
-We need to know if the profile is public. `useProfileData` already loads from `user_profiles` — check if that hook exposes `is_public`, or add a small check.
+## Plan
 
-### 2. `ProfileNotFound.tsx` — Context-aware with logged-in user support
+### File 1: `src/components/profile/header-actions/DesktopProfileActions.tsx`
 
-Add support for a new `isOwnProfile` prop (passed via router state):
+**Problem:** Local state ignores DB value. Certification gate is wrong.
 
-- When `isOwnProfile = true` (logged-in user viewing their own not-yet-public profile): show a clear, helpful screen — "Your profile is private" with a CTA button "Make Profile Public" that calls the Supabase update (`is_public: true`) and then re-navigates to the share URL
-- Keep the existing "Return to Login" button only for the case where `isOwnProfile` is false (a stranger viewing someone else's private/missing profile)
-- Fix the "Return to Login" for the logged-in case: replace `navigate("/auth")` with `navigate("/dashboard")` — never log users out
+**Fix:**
+1. Remove `const [isProfilePublic, setIsProfilePublic] = useState(false)` — replace with `profileData.isProfilePublic` (already fetched from DB on line 61)
+2. Remove the `isLansaCertified` string-match hack entirely
+3. The `is_public` toggle should be available to **all users** (no gate). Any user can share their profile link
+4. Update `handleMakeProfilePublic` to call `supabase.update({ is_public: !profileData.isProfilePublic })` and rely on the hook's state, then call a local refresh
+5. Split the visibility section into two clearly labeled toggles:
 
-### 3. Files to change
+```
+Toggle 1: "Shareable Profile Link"
+  Icon: Link icon (Globe)
+  Subtitle when OFF: "Off — your profile URL is private"
+  Subtitle when ON:  "On — anyone with the link can view it"
+  Available to: ALL users (no gate)
 
-| File | Change |
-|---|---|
-| `src/hooks/useProfileData.ts` (or wherever `useProfileData` is defined) | Expose `isProfilePublic` field from the loaded `user_profiles` data |
-| `src/components/dashboard/overview/ProfileCard.tsx` | In `handleCardClick`: check `isProfilePublic` and pass `state: { isOwnProfile: true }` when navigating. Add fallback if `userName` is empty → navigate to `/profile` with toast |
-| `src/pages/SharedProfile.tsx` | Read `location.state?.isOwnProfile` and pass it down to `ProfileNotFound` |
-| `src/components/profile/shared/ProfileNotFound.tsx` | Add `isOwnProfile` prop. When true: show "Your profile isn't public yet" with a "Make Profile Public" CTA button that updates `is_public = true` in DB then redirects to the share URL. Fix the back button to go to `/dashboard` (not `/auth`) for logged-in users |
+Toggle 2: "Appear to Employers"  [only shown if certified]
+  Icon: Briefcase / Eye
+  Subtitle when OFF: "Off — not visible in employer search"
+  Subtitle when ON:  "On — employers can find you"
+  Available to: certified users only (reads from user_certifications)
+```
 
-### What the user now sees
+This replaces the existing single vague toggle.
 
-1. Clicks "View Full Profile" → profile not public → lands on a clean "Your profile is private" page with a prominent "Make it Public" button
-2. Clicks that button → profile becomes public → instantly redirected to their live shareable profile URL
-3. If a stranger visits a private/nonexistent profile → same page but with the existing "not found" messaging and a "Go to Login" button (not "Return to Login" which implies logging out)
-4. No user is ever accidentally sent to the login screen
+### File 2: `src/hooks/useProfileData.tsx`
 
-### What does NOT change
-- Route definitions in `App.tsx` — no changes
-- `useSharedProfileData` hook — no changes
-- DB schema or triggers — no changes
-- All other flows (employer, mentor) — no changes
+**Addition:** Expose an `updateIsPublic` function from the hook (similar to `updateProfessionalGoal`) so the toggle in `DesktopProfileActions` can update state through the hook rather than bypassing it with local state. This keeps the DB update and state in sync.
+
+```ts
+const updateIsPublic = async (value: boolean) => {
+  const { error } = await supabase
+    .from('user_profiles')
+    .update({ is_public: value })
+    .eq('user_id', userId);
+  if (!error) setIsProfilePublic(value);
+};
+```
+
+Return it in the hook's return object.
+
+### File 3: `src/hooks/profile/profileTypes.ts`
+
+Add `updateIsPublic: (value: boolean) => Promise<void>` to the `ProfileDataReturn` interface.
+
+### File 4: `src/components/profile/header-actions/DesktopProfileActions.tsx` — certification check
+
+Replace the string-match certification check with an actual query to `user_certifications`:
+
+```ts
+const [isCertified, setIsCertified] = useState(false);
+useEffect(() => {
+  if (!user?.id) return;
+  supabase.from('user_certifications')
+    .select('lansa_certified, verified')
+    .eq('user_id', user.id)
+    .single()
+    .then(({ data }) => setIsCertified(!!data?.lansa_certified && !!data?.verified));
+}, [user?.id]);
+```
+
+The "Appear to Employers" toggle only renders when `isCertified = true`.
+
+---
+
+## What the user will see after this fix
+
+**In the hamburger menu on `/profile`:**
+
+```
+┌──────────────────────────────────────────────────┐
+│  [Globe icon]  Shareable Profile Link             │
+│                Off — your profile URL is private  │  [Switch]
+└──────────────────────────────────────────────────┘
+
+(Only shown if certified):
+┌──────────────────────────────────────────────────┐
+│  [Eye icon]    Appear to Employers                │
+│                Off — not visible in employer feed │  [Switch]
+└──────────────────────────────────────────────────┘
+```
+
+Each toggle has a clear title and a dynamic subtitle that tells the user exactly what the current state means. No more "Lansa Only" lock confusing non-certified users. The shareable link toggle is always available.
+
+## What does NOT change
+- `ListingActivationCard.tsx` — already works correctly, no changes
+- `ProfileNotFound.tsx` — already works correctly, no changes
+- `ProfileCard.tsx` — already works correctly, no changes
+- `useSharedProfileData` — no changes
+- DB schema — no changes
+- All other flows — no changes
