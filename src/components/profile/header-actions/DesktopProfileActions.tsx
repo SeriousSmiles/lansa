@@ -204,7 +204,7 @@ export function DesktopProfileActions({
               </div>
               <Switch
                 checked={profileData.isProfilePublic}
-                onCheckedChange={() => safeHandler(handleToggleShareableLink, "Toggle shareable link")()}
+                onCheckedChange={handleToggleShareableLink}
                 disabled={isUpdatingPublic}
                 className="flex-shrink-0"
               />
@@ -236,7 +236,7 @@ export function DesktopProfileActions({
                 </div>
                 <Switch
                   checked={visibleToEmployers}
-                  onCheckedChange={() => safeHandler(handleToggleEmployerVisibility, "Toggle employer visibility")()}
+                  onCheckedChange={handleToggleEmployerVisibility}
                   disabled={isUpdatingEmployer}
                   className="flex-shrink-0"
                 />
