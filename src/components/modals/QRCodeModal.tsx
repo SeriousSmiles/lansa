@@ -210,7 +210,7 @@ export function QRCodeModal({ isOpen, onClose, userName }: QRCodeModalProps) {
       ctx.restore();
 
       // ── QR Code ──────────────────────────────────────────────────
-      const qrSize = 220;
+      const qrSize = 280;
       const qrX = (W - qrSize) / 2;
       const qrY = nameY + 38 + 28 + 12;
 
