@@ -8,6 +8,7 @@ import { AnimatedCard } from "@/components/dashboard/AnimatedCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfileData } from "@/hooks/useProfileData";
 import { User, MapPin, Briefcase, GraduationCap, Building2, Award } from "lucide-react";
+import { toast } from "sonner";
 import { PDFDownloadButton } from "@/components/pdf/PDFDownloadButton";
 
 // Utility to darken a hex color by a percentage (0-100)
@@ -63,14 +64,29 @@ export function ProfileCard({ role, goal }: ProfileCardProps) {
     educationItems,
     coverColor, 
     highlightColor,
-    isLoading 
+    isLoading,
+    isProfilePublic,
   } = profileData;
 
   const handleCardClick = () => {
-    if (user?.id && userName) {
-      // Create SEO-friendly URL with user name and ID
-      const urlName = userName.toLowerCase().replace(/\s+/g, '-');
-      navigate(`/profile/share/${urlName}-${user.id}`);
+    if (!user?.id) return;
+
+    if (!userName) {
+      toast.info("Complete your profile first", {
+        description: "Add your name on the profile page to generate your shareable link.",
+      });
+      navigate('/profile');
+      return;
+    }
+
+    const urlName = userName.toLowerCase().replace(/\s+/g, '-');
+    const shareUrl = `/profile/share/${urlName}-${user.id}`;
+
+    if (isProfilePublic) {
+      navigate(shareUrl);
+    } else {
+      // Profile exists but isn't public — show the make-public prompt
+      navigate(shareUrl, { state: { isOwnProfile: true, userId: user.id, shareUrl } });
     }
   };
 
