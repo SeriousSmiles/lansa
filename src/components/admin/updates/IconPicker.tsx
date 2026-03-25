@@ -6,7 +6,8 @@
 import { useState } from 'react';
 import { Rocket, Sparkles, Bug, Megaphone, Zap, Star, Gift, Bell, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import * as PopoverPrimitive from '@radix-ui/react-popover';
+import { cn } from '@/lib/utils';
 
 export const AVAILABLE_ICONS = {
   rocket: { icon: Rocket, label: 'Rocket' },
@@ -33,32 +34,51 @@ export function IconPicker({ value, onChange }: IconPickerProps) {
     ? AVAILABLE_ICONS[value as keyof typeof AVAILABLE_ICONS].icon
     : Rocket;
 
+  const selectedLabel = value && AVAILABLE_ICONS[value as keyof typeof AVAILABLE_ICONS]
+    ? AVAILABLE_ICONS[value as keyof typeof AVAILABLE_ICONS].label
+    : 'Select Icon';
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
+      <PopoverPrimitive.Trigger asChild>
         <Button variant="outline" className="w-full justify-start">
           <SelectedIcon className="h-4 w-4 mr-2" />
-          {value && AVAILABLE_ICONS[value as keyof typeof AVAILABLE_ICONS]
-            ? AVAILABLE_ICONS[value as keyof typeof AVAILABLE_ICONS].label
-            : 'Select Icon'}
+          {selectedLabel}
         </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80">
-        <div className="grid grid-cols-5 gap-2">
-          {Object.entries(AVAILABLE_ICONS).map(([key, { icon: Icon, label }]) => (
-            <Button
-              key={key}
-              variant={value === key ? 'outline' : 'ghost'}
-              size="sm"
-              className="flex flex-col items-center p-2 h-auto"
-              onClick={() => { onChange(key); setOpen(false); }}
-            >
-              <Icon className="h-5 w-5" />
-              <span className="text-xs mt-1">{label}</span>
-            </Button>
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>
+      </PopoverPrimitive.Trigger>
+      <PopoverPrimitive.Portal>
+        <PopoverPrimitive.Content
+          className={cn(
+            'z-[9999] w-80 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none',
+            'data-[state=open]:animate-in data-[state=closed]:animate-out',
+            'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+            'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+          )}
+          sideOffset={4}
+        >
+          <div className="grid grid-cols-5 gap-2">
+            {Object.entries(AVAILABLE_ICONS).map(([key, { icon: Icon, label }]) => (
+              <button
+                key={key}
+                type="button"
+                className={cn(
+                  'flex flex-col items-center p-2 rounded-md text-sm transition-colors',
+                  value === key
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-accent hover:text-accent-foreground'
+                )}
+                onClick={() => {
+                  onChange(key);
+                  setOpen(false);
+                }}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="text-xs mt-1 leading-none">{label}</span>
+              </button>
+            ))}
+          </div>
+        </PopoverPrimitive.Content>
+      </PopoverPrimitive.Portal>
+    </PopoverPrimitive.Root>
   );
 }
