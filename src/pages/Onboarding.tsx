@@ -76,8 +76,9 @@ export default function Onboarding() {
                 console.log("Recovery: user has career_path but was stuck — completing onboarding now");
                 const { markOnboardingComplete } = await import('@/services/onboarding/unifiedOnboardingService');
                 await markOnboardingComplete(user.id, 'job_seeker');
+                // Defer navigation — wait for context to confirm hasCompletedOnboarding=true
+                pendingNavigation.current = { path: '/profile', state: { fromOnboarding: true } };
                 if (refreshUserState) await refreshUserState();
-                navigate('/profile', { replace: true, state: { fromOnboarding: true } });
                 return;
               }
               
