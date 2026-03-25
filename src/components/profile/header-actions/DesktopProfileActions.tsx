@@ -220,7 +220,7 @@ export function DesktopProfileActions({
                   <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
                     visibleToEmployers ? "bg-secondary/20" : "bg-muted"
                   }`}>
-                    <IconEye className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
+                    <Eye className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
                       visibleToEmployers ? "text-secondary-foreground" : "text-muted-foreground"
                     }`} />
                   </div>
@@ -247,7 +247,7 @@ export function DesktopProfileActions({
             <Card className="p-3 sm:p-4 border border-dashed border-border opacity-60">
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                  <IconEye className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                  <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="text-xs sm:text-sm font-medium text-muted-foreground">
