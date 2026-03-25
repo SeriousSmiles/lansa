@@ -1,31 +1,35 @@
 
-## What the user wants
+## Root Cause — Conflicting max-widths
 
-1. **Badge**: Replace the canvas-drawn dot + "Lansa" text with the actual Lansa combination mark logo (the full logo PNG with icon + "Lansa" wordmark) rendered inline after "Powered by " — all on one line, sized so the logo is clearly readable but small.
-2. **No heart shape** — the current canvas-drawn dot had a quirky double-arc that read as a heart at small sizes. The real logo replaces this entirely.
-3. **Larger QR code** — increase `qrSize` from 220 to 280 (and grow canvas height accordingly to fit).
+**The real issue**: There are TWO competing width constraints fighting each other:
 
-## Plan
+1. **`DashboardLayout.tsx` (line 129)** — The layout wrapper is `max-w-[1440px]` with `px-4 sm:px-6 md:px-8 lg:px-12`
+2. **`Dashboard.tsx` (line 148)** — The content inside it is `max-w-7xl mx-auto` (max-width: 80rem = 1280px)
 
-### Step 1 — Copy the logo to src/assets
-Copy `user-uploads://Lansa_Combination_Mark_Logo_Blue.png` → `src/assets/lansa-logo-blue.png`
+At a 1891px viewport (the user's current screen), both constraints are active. The layout gives `1440px - (2×48px padding) = 1344px` of usable space. But `max-w-7xl` = `1280px` — this is narrower than the layout's available space, so `mx-auto` centers the 1280px block *within* the 1344px padded area.
 
-### Step 2 — Update `QRCodeModal.tsx`
+The result: the content floats inside the padded area — **not flush left with the nav's logo and links** — because `mx-auto` is re-centering it rather than left-aligning it with the padding that the navbar already uses.
 
-**QR size**: `qrSize` 220 → 280. Canvas height grows from 720 → ~800 to accommodate the larger QR + badge spacing.
+**The fix**: The `DashboardLayout` wrapper already handles the `max-w-[1440px]` centering and all the responsive `px-*` padding to match the navbar. The `Dashboard.tsx` inner div should **not** add its own `max-w-7xl mx-auto` — it just needs to be full-width `w-full` and inherit the layout's padding. The `max-w-7xl` constraint is redundant and misaligning.
 
-**Badge rendering** — replace the entire current badge block (lines 235–298) with:
-1. Load the logo PNG via `loadImage` using a data URL imported at the top of the function. Since `import` of a PNG isn't directly usable in a canvas `loadImage`, we fetch it via a `<img>` with `src` set to the imported asset URL (same pattern as QR image load already used).
-2. Measure "Powered by " text width.
-3. Scale the logo image to a target height of **22px** on canvas (the logo is wide — its aspect ratio is roughly 4:1, so at 22px tall it's ~88px wide — clearly readable at card scale).
-4. Draw inline: `"Powered by "` text (gray) → logo image scaled to 22px tall, vertically centered on the same midY baseline.
-5. Pill background auto-sized to fit: `prefixW + logoDrawW + padding`.
+---
 
-**Font sizes** stay the same (`12px` prefix, `bold 13px` brand — but brand text is now gone since the logo image replaces it).
+## Fix — 1 file change
 
-### Files changing
+### `src/pages/Dashboard.tsx` — line 148
 
-| File | Change |
-|---|---|
-| `src/assets/lansa-logo-blue.png` | Copy from user-uploads |
-| `src/components/modals/QRCodeModal.tsx` | Import logo asset; increase QR size to 280; grow canvas H to 800; replace badge drawing to use real logo image |
+Remove `max-w-7xl mx-auto` from the content wrapper. Keep `w-full` and the top padding:
+
+```tsx
+// BEFORE (line 148)
+<div className="w-full max-w-7xl mx-auto pt-4 md:pt-6">
+
+// AFTER
+<div className="w-full pt-4 md:pt-6">
+```
+
+That's it. The `DashboardLayout` wrapper already provides:
+- `max-w-[1440px] mx-auto` — overall centering
+- `px-4 sm:px-6 md:px-8 lg:px-12` — padding that matches the navbar exactly
+
+The content just needs to be `w-full` to fill that space flush, matching the navbar alignment.
