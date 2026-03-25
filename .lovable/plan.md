@@ -1,60 +1,31 @@
 
-## Root Cause
+## What the user wants
 
-There are **two mismatched padding layers** causing the dashboard to appear "extra wide / shifted right":
+1. **Badge**: Replace the canvas-drawn dot + "Lansa" text with the actual Lansa combination mark logo (the full logo PNG with icon + "Lansa" wordmark) rendered inline after "Powered by " — all on one line, sized so the logo is clearly readable but small.
+2. **No heart shape** — the current canvas-drawn dot had a quirky double-arc that read as a heart at small sizes. The real logo replaces this entirely.
+3. **Larger QR code** — increase `qrSize` from 220 to 280 (and grow canvas height accordingly to fit).
 
-**1. Navbar vs content horizontal padding mismatch**
-- `TopNavbar` inner div: `px-4 sm:px-6 md:px-8 lg:px-12` (up to 48px per side on large screens)
-- `DashboardLayout` main content div: `px-4 sm:px-6 md:px-8` (max 32px per side, no `lg:px-12`)
+## Plan
 
-At `lg` breakpoints the nav is inset 48px but the content is only 32px — the content edge bleeds 16px wider than the navbar on each side, creating the visual overflow to the right.
+### Step 1 — Copy the logo to src/assets
+Copy `user-uploads://Lansa_Combination_Mark_Logo_Blue.png` → `src/assets/lansa-logo-blue.png`
 
-**2. Double-wrapping padding in Dashboard.tsx**
-Inside `DashboardLayout`, `Dashboard.tsx` adds its own `<div className="p-4 md:p-6">` around the content. This nested padding makes the actual content narrower than intended and visually misaligned compared to the nav.
+### Step 2 — Update `QRCodeModal.tsx`
 
----
+**QR size**: `qrSize` 220 → 280. Canvas height grows from 720 → ~800 to accommodate the larger QR + badge spacing.
 
-## Fix — 2 file changes
+**Badge rendering** — replace the entire current badge block (lines 235–298) with:
+1. Load the logo PNG via `loadImage` using a data URL imported at the top of the function. Since `import` of a PNG isn't directly usable in a canvas `loadImage`, we fetch it via a `<img>` with `src` set to the imported asset URL (same pattern as QR image load already used).
+2. Measure "Powered by " text width.
+3. Scale the logo image to a target height of **22px** on canvas (the logo is wide — its aspect ratio is roughly 4:1, so at 22px tall it's ~88px wide — clearly readable at card scale).
+4. Draw inline: `"Powered by "` text (gray) → logo image scaled to 22px tall, vertically centered on the same midY baseline.
+5. Pill background auto-sized to fit: `prefixW + logoDrawW + padding`.
 
-### `src/components/dashboard/DashboardLayout.tsx`
-Add `lg:px-12` to the main content wrapper so it matches the navbar inner div exactly:
+**Font sizes** stay the same (`12px` prefix, `bold 13px` brand — but brand text is now gone since the logo image replaces it).
 
-```tsx
-// BEFORE
-<div ref={mainContentRef} className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 pt-2 md:pt-3">
-
-// AFTER
-<div ref={mainContentRef} className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 pt-2 md:pt-3">
-```
-
-### `src/pages/Dashboard.tsx`
-Remove the double-wrapping `p-4 md:p-6` div since the layout already handles horizontal padding. Keep top spacing via `pt-4`:
-
-```tsx
-// BEFORE
-<DashboardLayout ...>
-  <div className="p-4 md:p-6">
-    <div className="w-full">
-      ...
-    </div>
-  </div>
-</DashboardLayout>
-
-// AFTER
-<DashboardLayout ...>
-  <div className="pt-4 md:pt-6">
-    ...
-  </div>
-</DashboardLayout>
-```
-
-This removes the nested horizontal padding so content aligns perfectly with the navbar items on all screen sizes.
-
----
-
-## Files changing
+### Files changing
 
 | File | Change |
 |---|---|
-| `src/components/dashboard/DashboardLayout.tsx` | Add `lg:px-12` to main content wrapper |
-| `src/pages/Dashboard.tsx` | Remove double-wrap `p-4 md:p-6` div, replace with `pt-4 md:pt-6` |
+| `src/assets/lansa-logo-blue.png` | Copy from user-uploads |
+| `src/components/modals/QRCodeModal.tsx` | Import logo asset; increase QR size to 280; grow canvas H to 800; replace badge drawing to use real logo image |
