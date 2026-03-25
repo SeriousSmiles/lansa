@@ -25,6 +25,7 @@ import { ProfileDataReturn } from "@/hooks/profile/profileTypes";
 import { ResumeTemplate, PDFGenerationOptions } from "@/types/pdf";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { templateRegistry } from "./templateRegistry";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PDFDownloadDialogProps {
   profileData: ProfileDataReturn;
