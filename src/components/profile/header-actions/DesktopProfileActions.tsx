@@ -8,7 +8,8 @@ import {
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { PDFDownloadDialog } from "../../pdf/PDFDownloadDialog";
-import { IconPalette, IconDownload, IconMenu2, IconGlobe, IconEye, IconBolt } from "@tabler/icons-react";
+import { Globe, Eye } from "lucide-react";
+import { IconPalette, IconDownload, IconMenu2, IconBolt } from "@tabler/icons-react";
 import { DesignerSidebar } from "../dialogs/DesignerSidebar";
 import { DesktopQuickActionsModal } from "../dialogs/DesktopQuickActionsModal";
 import { useAuth } from "@/contexts/AuthContext";
@@ -187,7 +188,7 @@ export function DesktopProfileActions({
                 <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
                   profileData.isProfilePublic ? "bg-primary/15" : "bg-muted"
                 }`}>
-                  <IconGlobe className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
+                  <Globe className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
                     profileData.isProfilePublic ? "text-primary" : "text-muted-foreground"
                   }`} />
                 </div>
@@ -219,7 +220,7 @@ export function DesktopProfileActions({
                   <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
                     visibleToEmployers ? "bg-secondary/20" : "bg-muted"
                   }`}>
-                    <IconEye className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
+                    <Eye className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
                       visibleToEmployers ? "text-secondary-foreground" : "text-muted-foreground"
                     }`} />
                   </div>
@@ -246,7 +247,7 @@ export function DesktopProfileActions({
             <Card className="p-3 sm:p-4 border border-dashed border-border opacity-60">
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                  <IconEye className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                  <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="text-xs sm:text-sm font-medium text-muted-foreground">
