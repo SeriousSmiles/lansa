@@ -92,7 +92,7 @@ export function QRCodeModal({ isOpen, onClose, userName }: QRCodeModalProps) {
 
     try {
       const W = 600;
-      const H = 720;
+      const H = 820;
       const PADDING = 40;
 
       const canvas = document.createElement('canvas');
