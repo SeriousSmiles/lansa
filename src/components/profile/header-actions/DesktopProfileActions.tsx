@@ -185,9 +185,7 @@ export function DesktopProfileActions({
           <Card className="p-3 sm:p-4 border border-border mb-2">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
-                  profileData.isProfilePublic ? "bg-primary/15" : "bg-muted"
-                }`}>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg border border-border flex items-center justify-center flex-shrink-0">
                   <Globe className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
                     profileData.isProfilePublic ? "text-primary" : "text-muted-foreground"
                   }`} />
@@ -217,11 +215,9 @@ export function DesktopProfileActions({
             <Card className="p-3 sm:p-4 border border-border">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
-                    visibleToEmployers ? "bg-secondary/20" : "bg-muted"
-                  }`}>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg border border-border flex items-center justify-center flex-shrink-0">
                     <Eye className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
-                      visibleToEmployers ? "text-secondary-foreground" : "text-muted-foreground"
+                      visibleToEmployers ? "text-primary" : "text-muted-foreground"
                     }`} />
                   </div>
                   <div className="flex flex-col min-w-0">
@@ -246,7 +242,7 @@ export function DesktopProfileActions({
           ) : (
             <Card className="p-3 sm:p-4 border border-dashed border-border opacity-60">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg border border-border flex items-center justify-center flex-shrink-0">
                   <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                 </div>
                 <div className="flex flex-col min-w-0">
