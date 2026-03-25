@@ -144,6 +144,7 @@ export interface ProfileDataReturn {
   updateProfessionalGoal: (goal: string) => Promise<void>;
   updateBiggestChallenge: (challenge: string) => Promise<void>;
   updateLocation: (location: string) => Promise<void>;
+  updateIsPublic: (value: boolean) => Promise<void>;
   
   // Skills functions
   addSkill: (skill: string) => Promise<void>;
