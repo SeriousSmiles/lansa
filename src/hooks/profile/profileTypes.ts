@@ -98,6 +98,7 @@ export interface ProfileDataReturn {
   // User data
   user: any;
   userName: string;
+  isProfilePublic: boolean;
   setUserName: (name: string) => void;
   userAnswers: UserAnswers | null;
   role: string;
