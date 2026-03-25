@@ -233,48 +233,69 @@ export function QRCodeModal({ isOpen, onClose, userName }: QRCodeModalProps) {
       ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
 
       // ── "Powered by Lansa" badge ──────────────────────────────────
-      const badgeY = H - 52;
+      // Measure each piece first so we can centre the whole line precisely
+      const prefixFont = `400 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+      const brandFont  = `bold 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+      const iconR = 6;          // radius of the small Lansa dot icon
+      const gap   = 5;          // gap between icon and "Lansa" text
 
-      // Badge pill
-      const badgeW = 160;
-      const badgeH = 36;
-      const badgeX = (W - badgeW) / 2;
+      ctx.font = prefixFont;
+      const prefixW = ctx.measureText('Powered by ').width;
+
+      ctx.font = brandFont;
+      const brandW  = ctx.measureText('Lansa').width;
+
+      // Total content width: "Powered by " + icon circle diameter + gap + "Lansa"
+      const contentW = prefixW + iconR * 2 + gap + brandW;
+      const badgeH   = 36;
+      const badgePad = 20;
+      const badgeW   = contentW + badgePad * 2;
+      const badgeY   = H - 52;
+      const badgeX   = (W - badgeW) / 2;
+      const midY     = badgeY + badgeH / 2;
+
+      // Pill background
       ctx.save();
       ctx.fillStyle = 'rgba(26,31,113,0.06)';
       drawRoundedRect(ctx, badgeX, badgeY, badgeW, badgeH, badgeH / 2);
       ctx.fill();
       ctx.restore();
 
-      // "Powered by" text
+      // Draw content left-to-right from the computed starting x
+      let cursorX = badgeX + badgePad;
+
+      // "Powered by "
       ctx.save();
-      ctx.font = `400 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+      ctx.font = prefixFont;
       ctx.fillStyle = '#6B7280';
-      ctx.textAlign = 'center';
+      ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText('Powered by', W / 2 - 14, badgeY + badgeH / 2);
+      ctx.fillText('Powered by ', cursorX, midY);
+      cursorX += prefixW;
       ctx.restore();
 
-      // "Lansa" text in brand color
+      // Small Lansa brand dot (canvas-drawn, no image load needed)
       ctx.save();
-      ctx.font = `bold 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+      ctx.beginPath();
+      ctx.arc(cursorX + iconR, midY, iconR, 0, Math.PI * 2);
+      ctx.fillStyle = LANSA_BRAND;
+      ctx.fill();
+      // White inner dot to mimic the Lansa icon
+      ctx.beginPath();
+      ctx.arc(cursorX + iconR, midY - iconR * 0.2, iconR * 0.35, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fill();
+      ctx.restore();
+      cursorX += iconR * 2 + gap;
+
+      // "Lansa"
+      ctx.save();
+      ctx.font = brandFont;
       ctx.fillStyle = LANSA_BRAND;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText('Lansa', W / 2 + 2, badgeY + badgeH / 2);
+      ctx.fillText('Lansa', cursorX, midY);
       ctx.restore();
-
-      // Try to draw Lansa dot icon
-      try {
-        const iconImg = await loadImage(`${window.location.origin}/favicon.ico`);
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(W / 2 - 4, badgeY + badgeH / 2, 7, 0, Math.PI * 2);
-        ctx.clip();
-        ctx.drawImage(iconImg, W / 2 - 11, badgeY + badgeH / 2 - 7, 14, 14);
-        ctx.restore();
-      } catch {
-        // No icon — fine
-      }
 
       const dataUrl = canvas.toDataURL('image/png');
       setCompositeDataUrl(dataUrl);
