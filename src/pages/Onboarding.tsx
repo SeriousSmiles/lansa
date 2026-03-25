@@ -14,7 +14,6 @@ import { JoinOrganizationFlow } from "@/components/onboarding/JoinOrganizationFl
 import { StudentOnboardingContainer } from "@/components/onboarding/student/StudentOnboardingContainer";
 import { MentorOnboarding } from "@/components/mentor/MentorOnboarding";
 import { CareerPathSegmentation, type CareerPath } from "@/components/onboarding/CareerPathSegmentation";
-import { AIOnboardingFlow } from "@/components/onboarding/AIOnboardingFlow";
 import { OnboardingErrorBoundary } from "@/components/onboarding/OnboardingErrorBoundary";
 import { useOnboardingNavigation } from "@/hooks/useOnboardingNavigation";
 import { LansaLoader } from "@/components/shared/LansaLoader";
@@ -58,6 +57,17 @@ export default function Onboarding() {
             if (savedIntent) {
               setUserIntent(savedIntent);
               setShowTypeSelection(false);
+
+              // Recovery path: if user_type + career_path are set but onboarding wasn't marked
+              // complete (stuck users from old flow), mark complete and redirect now.
+              if (savedIntent === 'job_seeker' && answers.career_path) {
+                console.log("Recovery: user has career_path but was stuck — completing onboarding now");
+                const { markOnboardingComplete } = await import('@/services/onboarding/unifiedOnboardingService');
+                await markOnboardingComplete(user.id, 'job_seeker');
+                if (refreshUserState) await refreshUserState();
+                navigate('/profile', { replace: true, state: { fromOnboarding: true } });
+                return;
+              }
               
               if (answers.career_path) {
                 setCareerPath(answers.career_path);
@@ -126,6 +136,7 @@ export default function Onboarding() {
     
     if (user?.id) {
       try {
+        // Save career path
         const updatedAnswers = { 
           ...userAnswers, 
           user_type: userType, 
@@ -133,30 +144,18 @@ export default function Onboarding() {
         };
         await saveUserAnswers(user.id, updatedAnswers);
         setUserAnswers(updatedAnswers);
+
+        // ✅ Mark onboarding complete immediately — no AI gate required
+        const { markOnboardingComplete } = await import('@/services/onboarding/unifiedOnboardingService');
+        await markOnboardingComplete(user.id, 'job_seeker');
+        if (refreshUserState) await refreshUserState();
+
+        // Send user to profile — PostOnboardingChoice modal will fire there
+        navigate('/profile', { replace: true, state: { fromOnboarding: true } });
       } catch (error) {
         console.error("Error saving career path:", error);
         toast.error("Failed to save your career path selection.");
       }
-    }
-  };
-
-  const handleSaveAnswers = async (userId: string, answers: any) => {
-    try {
-      const answersWithType = { 
-        ...answers, 
-        user_type: userType,
-        career_path: careerPath 
-      };
-      const result = await saveUserAnswers(userId, answersWithType);
-      if (!result.success) {
-        toast.error("Failed to save your answers. Please try again.");
-        return { success: false };
-      }
-      return result;
-    } catch (error) {
-      console.error("Error in save answers handler:", error);
-      toast.error("Failed to save your answers. Please try again.");
-      return { success: false };
     }
   };
 
@@ -184,8 +183,8 @@ export default function Onboarding() {
   return (
     <OnboardingErrorBoundary>
       <div className="min-h-screen bg-[rgba(253,248,242,1)] flex flex-col">
-        {/* Centered Logo for non-user-type-selection steps (except AIOnboardingFlow which has its own navbar) */}
-        {!showTypeSelection && !(userType === 'job_seeker' && careerPath) && (
+        {/* Centered Logo for non-type-selection steps */}
+        {!showTypeSelection && !showCareerSegmentation && (
           <header className="flex w-full px-4 md:px-6 py-4 items-center justify-center">
             <img
               src="https://cdn.builder.io/api/v1/image/assets/TEMP/41285a6d1f6906d8349429ceb652f953bf730d06?placeholderIfAbsent=true"
@@ -214,8 +213,6 @@ export default function Onboarding() {
               onComplete={handleBusinessOnboardingComplete}
               onBack={handleBackToTypeSelection}
             />
-          ) : userType === 'job_seeker' && careerPath ? (
-            <AIOnboardingFlow />
           ) : (
             <div className="flex flex-col items-center justify-center px-4 py-8">
               <StudentOnboardingContainer />
@@ -230,3 +227,4 @@ export default function Onboarding() {
     </OnboardingErrorBoundary>
   );
 }
+
