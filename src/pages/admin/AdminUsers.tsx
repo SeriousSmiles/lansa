@@ -182,6 +182,25 @@ export default function AdminUsers() {
     }
   });
 
+  // Fetch auth sign-in data for last_sign_in_at fallback display
+  const { data: authData } = useQuery({
+    queryKey: ['admin-users-auth-data'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_users_with_auth_data');
+      if (error) {
+        console.warn('Could not fetch auth data:', error.message);
+        return [] as { user_id: string; last_sign_in_at: string | null }[];
+      }
+      return (data || []) as { user_id: string; last_sign_in_at: string | null }[];
+    },
+    staleTime: 60_000, // cache for 1 min — auth data changes rarely
+  });
+
+  // Build a lookup map: user_id → last_sign_in_at
+  const authDataMap = new Map<string, string | null>(
+    (authData || []).map(r => [r.user_id, r.last_sign_in_at])
+  );
+
   const { containerRef, isRefreshing: isPulling } = usePullToRefresh({
     onRefresh: async () => {
       await refetch();
