@@ -100,6 +100,8 @@ export function StoryBuilderFlow() {
 
       const result = await generateStory(storyResponses, options);
       setGeneratedStory(result.story);
+      // Track story_created — fires assign_user_color scoring via DB trigger
+      await trackUserAction('story_created', { format_type: formatType, tone });
     } catch (error) {
       console.error('Failed to generate story:', error);
     }

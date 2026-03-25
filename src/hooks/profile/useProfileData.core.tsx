@@ -35,6 +35,11 @@ export function useProfileDataCore({ userId }: UseProfileDataCoreProps) {
           .from('user_profiles')
           .update(supabaseData)
           .eq('user_id', userId);
+        
+        if (!result.error) {
+          // Track profile_updated — fires assign_user_color scoring via DB trigger
+          await trackUserAction('profile_updated', { fields: Object.keys(supabaseData) });
+        }
       } else {
         // Create new profile
         result = await supabase
