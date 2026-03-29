@@ -1,54 +1,21 @@
 
 
-# Fix Dashboard Horizontal Overflow on Desktop
+# Constrain Landing Sections to 1440px Max Width
 
-## Root Cause
+## What Changes
 
-The dashboard layout uses CSS Grid with `grid-cols-[320px_1fr]`, but the right column (`section`) and its nested grid children lack `min-w-0`. In CSS Grid, a `1fr` track won't shrink below its content's minimum intrinsic width unless children explicitly set `min-w-0`. On desktop, the combined width of the analytics stats grid, certification card, and "Who's Interested" section exceeds the available space, pushing content past the viewport edge.
+All sections below the hero currently use `max-w-7xl` (1280px) for their inner content containers. This will be updated to `max-w-[1440px]` across all landing components. The hero section (`Header83`) remains untouched.
 
-The `DashboardLayout` wrapper also lacks `overflow-x` clipping as a safety net.
+## Files & Changes
 
-## Changes
-
-### 1. `src/pages/Dashboard.tsx`
-- Add `min-w-0` to the outer grid container and the right-column `<section>` element
-- Add `overflow-x-clip` to the top-level content wrapper
-
-```
-Before: <div className="w-full pt-4 md:pt-6">
-After:  <div className="w-full pt-4 md:pt-6 overflow-x-clip">
-
-Before: <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-After:  <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 min-w-0">
-
-Before: <section>
-After:  <section className="min-w-0">
-```
-
-### 2. `src/components/dashboard/overview/OverviewTab.tsx`
-- Add `min-w-0` to the inner 3-column grid and its `lg:col-span-2` child to prevent the analytics card's 4-stat row from forcing width
-
-```
-Before: <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-After:  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 min-w-0">
-
-Before: <div className="lg:col-span-2 h-full">
-After:  <div className="lg:col-span-2 h-full min-w-0">
-```
-
-### 3. `src/components/dashboard/DashboardLayout.tsx`
-- Add `overflow-x-clip` to the outermost layout div as a final safety net
-
-```
-Before: <div className="flex min-h-screen w-full bg-[rgba(253,248,242,1)] flex-col">
-After:  <div className="flex min-h-screen w-full bg-[rgba(253,248,242,1)] flex-col overflow-x-clip">
-```
-
-## Files
-
-| File | Action |
+| File | Change |
 |---|---|
-| `src/pages/Dashboard.tsx` | Add `overflow-x-clip` + `min-w-0` to grid and section |
-| `src/components/dashboard/overview/OverviewTab.tsx` | Add `min-w-0` to inner grid + col-span-2 child |
-| `src/components/dashboard/DashboardLayout.tsx` | Add `overflow-x-clip` to root wrapper |
+| `src/components/landing/LandingNavbar.tsx` | `max-w-7xl` → `max-w-[1440px]` |
+| `src/components/landing/CaribbeanSection.tsx` | `max-w-7xl` → `max-w-[1440px]` |
+| `src/components/landing/HowItWorksSection.tsx` | `max-w-7xl` → `max-w-[1440px]` |
+| `src/components/landing/TestimonialsSection.tsx` | `max-w-7xl` → `max-w-[1440px]` |
+| `src/components/landing/CTASection.tsx` | `max-w-7xl` → `max-w-[1440px]` |
+| `src/components/landing/LandingFooter.tsx` | `max-w-7xl` → `max-w-[1440px]` |
+
+Each file has a single inner `div` with `mx-auto max-w-7xl px-[5%]` — the only change is swapping the max-width class. No structural or content changes.
 
