@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import QRCode from 'qrcode';
-import lansaLogoUrl from '@/assets/lansa-logo-blue.png';
+import shareCardBgUrl from '@/assets/share-card-bg.png';
+import lansaIconUrl from '@/assets/lansa-icon-brand.svg';
 
-const LANSA_BRAND = '#1A1F71';
 const LANSA_URL = 'https://lansa.online';
 
 export type ShareVariant = 'employer' | 'seeker' | 'mentor';
@@ -70,34 +70,29 @@ export async function generateShareCard(variant: ShareVariant) {
   canvas.height = H;
   const ctx = canvas.getContext('2d')!;
 
-  // Background
-  const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
-  bgGrad.addColorStop(0, '#F8F9FF');
-  bgGrad.addColorStop(1, '#EEF0FA');
-  ctx.fillStyle = bgGrad;
-  drawRoundedRect(ctx, 0, 0, W, H, 32);
-  ctx.fill();
+  // Background image
+  const bgImg = await loadImage(shareCardBgUrl);
+  ctx.drawImage(bgImg, 0, 0, W, H);
 
-  // Top accent bar
-  const accentGrad = ctx.createLinearGradient(0, 0, W, 0);
-  accentGrad.addColorStop(0, LANSA_BRAND);
-  accentGrad.addColorStop(1, '#3D45A0');
-  ctx.fillStyle = accentGrad;
-  drawRoundedRect(ctx, 0, 0, W, 8, 4);
+  // Logo: white circle with icon
+  const circleR = 45;
+  const circleY = 60 + circleR;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(W / 2, circleY, circleR, 0, Math.PI * 2);
+  ctx.fillStyle = '#FFFFFF';
   ctx.fill();
+  ctx.restore();
 
-  // Logo
-  const logoImg = await loadImage(lansaLogoUrl);
-  const logoH = 48;
-  const logoW = (logoImg.naturalWidth / logoImg.naturalHeight) * logoH;
-  const logoY = 50;
-  ctx.drawImage(logoImg, (W - logoW) / 2, logoY, logoW, logoH);
+  const iconImg = await loadImage(lansaIconUrl);
+  const iconSize = 50;
+  ctx.drawImage(iconImg, (W - iconSize) / 2, circleY - iconSize / 2, iconSize, iconSize);
 
   // CTA headline
-  const headlineY = logoY + logoH + 36;
+  const headlineY = circleY + circleR + 30;
   ctx.save();
   ctx.font = 'bold 30px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillStyle = LANSA_BRAND;
+  ctx.fillStyle = '#FFFFFF';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   const headlineLines = drawMultilineText(ctx, content.headline, W / 2, headlineY, 38);
@@ -107,31 +102,21 @@ export async function generateShareCard(variant: ShareVariant) {
   const subtitleY = headlineY + headlineLines * 38 + 8;
   ctx.save();
   ctx.font = '400 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.fillStyle = '#6B7280';
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   ctx.fillText(content.subtitle, W / 2, subtitleY);
   ctx.restore();
 
-  // QR code
+  // QR code (white on transparent, no card behind)
   const qrSize = 280;
   const qrX = (W - qrSize) / 2;
   const qrY = subtitleY + 44;
 
-  // QR card background
-  ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.08)';
-  ctx.shadowBlur = 24;
-  ctx.shadowOffsetY = 4;
-  ctx.fillStyle = '#FFFFFF';
-  drawRoundedRect(ctx, qrX - 16, qrY - 16, qrSize + 32, qrSize + 32, 20);
-  ctx.fill();
-  ctx.restore();
-
   const qrDataURL = await QRCode.toDataURL(LANSA_URL, {
     width: qrSize,
     margin: 1,
-    color: { dark: LANSA_BRAND, light: '#FFFFFF' },
+    color: { dark: '#FFFFFF', light: '#00000000' },
   });
   const qrImg = await loadImage(qrDataURL);
   ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
@@ -148,14 +133,17 @@ export async function generateShareCard(variant: ShareVariant) {
   const pillX = (W - pillW) / 2;
 
   ctx.save();
-  ctx.fillStyle = 'rgba(26,31,113,0.06)';
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 1;
   drawRoundedRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
   ctx.fill();
+  ctx.stroke();
   ctx.restore();
 
   ctx.save();
   ctx.font = urlFont;
-  ctx.fillStyle = LANSA_BRAND;
+  ctx.fillStyle = '#FFFFFF';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(urlText, W / 2, pillY + pillH / 2);
