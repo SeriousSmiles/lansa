@@ -100,7 +100,7 @@ export const TestimonialsSection = () => {
 
   return (
     <section ref={sectionRef} className="bg-background py-20 md:py-28 overflow-hidden">
-      <div className="mx-auto max-w-7xl px-[5%]">
+      <div className="<div className="mx-auto max-w-[1440px] px-[5%]">">
         <div className="mb-14 text-center max-w-2xl mx-auto">
           <h2 className="text-3xl font-bold font-urbanist text-foreground md:text-5xl leading-tight">
             Everyone Took Their Step 1 — Once
