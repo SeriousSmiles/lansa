@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Header83 } from "@/components/hero/Header83";
 import { SEOHead } from "@/components/SEOHead";
+import { ShareLansaCard } from "@/components/ShareLansaCard";
 import homepage1 from "@/assets/homepage-1.png";
 import homepage2 from "@/assets/homepage-2.png";
 import homepage3 from "@/assets/homepage-3.png";
@@ -78,6 +79,9 @@ export default function IndexPage() {
           },
         ]}
       />
+      <div className="fixed bottom-6 right-6 z-50">
+        <ShareLansaCard className="shadow-lg rounded-full px-5 py-3 bg-card border-border/50 hover:bg-accent font-urbanist" />
+      </div>
     </>
   );
 }
