@@ -145,16 +145,16 @@ export default function Dashboard() {
         canonical="https://lansa.online/dashboard"
       />
       <DashboardLayout userName={userName} email={user?.email || ""}>
-        <div className="w-full pt-4 md:pt-6">
+        <div className="w-full pt-4 md:pt-6 overflow-x-clip">
           <div className="flex items-center justify-between mb-4 animate-fade-in">
             <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 min-w-0">
             <aside className="order-last lg:order-first lg:sticky lg:top-4">
               <ProfileCard role={role} goal={goal} />
             </aside>
-            <section>
+            <section className="min-w-0">
               <DashboardTabs
                 userName={userName}
                 role={role}

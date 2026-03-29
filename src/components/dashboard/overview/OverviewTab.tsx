@@ -31,8 +31,8 @@ export function OverviewTab({ userName, role, goal, insight, highlightActions, i
       <AICareerPlanCard autoOpen={openAIPlan} />
 
       {/* Analytics and Certification + Who's Interested — masonry grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 h-full">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 min-w-0">
+        <div className="lg:col-span-2 h-full min-w-0">
           <StudentAnalyticsCard />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-4">
