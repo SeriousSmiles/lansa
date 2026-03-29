@@ -79,6 +79,9 @@ export default function IndexPage() {
           },
         ]}
       />
+      <div className="fixed bottom-6 right-6 z-50">
+        <ShareLansaCard className="shadow-lg rounded-full px-5 py-3 bg-card border-border/50 hover:bg-accent font-urbanist" />
+      </div>
     </>
   );
 }
