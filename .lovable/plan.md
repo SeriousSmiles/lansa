@@ -1,24 +1,36 @@
 
 
-# Move Share Lansa Button to Admin Layout
+# Redesign Share Cards — Gradient Background + White Elements + SVG Icon Logo
 
-## Changes
+## What Changes
 
-### 1. Remove from `src/pages/Index.tsx`
-- Delete the `ShareLansaMenu` import and the fixed bottom-right `<div>` wrapping it (lines 4, 82-84)
+Replace the current light card design with the uploaded gradient background image and switch all visual elements to white. Replace the combination mark logo with the uploaded Lansa SVG icon rendered inside a white circle.
 
-### 2. Add to `src/components/admin/AdminLayout.tsx`
-- Import `ShareLansaMenu`
-- Add it as a fixed bottom-right button in both desktop and mobile admin layouts
-- Desktop: `<div className="fixed bottom-6 right-6 z-50">` after the `</SidebarProvider>`-scoped content
-- Mobile: same fixed positioning inside `AdminMobileLayout` wrapper
+## Visual Result (all 3 variants identical style)
 
-The button will appear on every admin page since `AdminLayout` wraps all `/admin/*` routes via `<Outlet />`.
+- **Background**: The uploaded coral-purple gradient image fills the full 600×820 canvas
+- **Logo**: White circle (90px diameter) centered near top, containing the Lansa bird/flame icon SVG rendered in Lansa brand blue (`#1A1F71`)
+- **Headline**: White, bold — variant-specific text
+- **Subtitle**: White (slightly transparent) — variant-specific text
+- **QR code**: White dots on transparent background (no white card behind it)
+- **URL pill**: Semi-transparent white border pill with white text `lansa.online`
 
-### Files
+## Files
 
 | File | Action |
 |---|---|
-| `src/pages/Index.tsx` | Remove ShareLansaMenu import + rendered element |
-| `src/components/admin/AdminLayout.tsx` | Add ShareLansaMenu (fixed bottom-right) in both mobile and desktop returns |
+| `user-uploads://Lansa_Portrait_background_QR_Code_Card.png` | Copy to `src/assets/share-card-bg.png` |
+| `user-uploads://Lansa_Logo_Icon_SVG-2.svg` | Copy to `src/assets/lansa-icon-brand.svg` |
+| `src/components/ShareLansaCard.tsx` | Rework canvas drawing |
+
+## Changes to `ShareLansaCard.tsx`
+
+1. **Import** the new background image and SVG icon
+2. **Background**: Draw the gradient image stretched to fill the full canvas (600×820) instead of the programmatic gradient + accent bar
+3. **Logo area**: Draw a white filled circle (radius ~45px) centered at top, then draw the SVG icon inside it (load as image)
+4. **Headline**: Change `fillStyle` from `LANSA_BRAND` to `#FFFFFF`
+5. **Subtitle**: Change from `#6B7280` to `rgba(255,255,255,0.8)`
+6. **QR code**: Generate with `{ dark: '#FFFFFF', light: '#00000000' }` (white dots, transparent background) — remove the white card/shadow behind it
+7. **URL pill**: Change from `rgba(26,31,113,0.06)` fill to `rgba(255,255,255,0.15)` with a white 1px stroke border. Text color from `LANSA_BRAND` to `#FFFFFF`
+8. **Remove**: Top accent bar drawing (no longer needed)
 
