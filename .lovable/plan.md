@@ -1,46 +1,45 @@
 
 
-# Share Lansa QR Card — Build Plan
+# Three Audience-Specific Share Cards
 
-## What We're Building
+## What Changes
 
-A "Share Lansa" button on the homepage that, when clicked, generates and downloads a branded QR code card (PNG image) pointing to `https://lansa.online`. The card layout follows the reference image style:
+Replace the single "Share Lansa" button with a button that opens a **bottom sheet** (mobile) presenting three audience-specific QR card options. Each generates a unique card with a tailored headline and subtitle.
 
-1. Lansa logo (top, centered)
-2. CTA phrase (e.g. "Your Career Starts Here")
-3. "Scan to explore Lansa" subtitle
-4. QR code (centered, large, in Lansa brand color)
-5. URL text: `https://lansa.online`
+## Card Variants
 
-## Architecture
+| Audience | Headline | Subtitle | Share text |
+|---|---|---|---|
+| **Employers** | "Find the Right Talent, Faster" | "Scan to hire smarter with Lansa" | "Find verified candidates faster with Lansa" |
+| **Opportunity Seekers** | "Get Trained. Get Certified. Get Hired." | "Scan to start your journey on Lansa" | "Build your career and connect with local businesses on Lansa" |
+| **Mentors & Coaches** | "Grow Your Reach. Train More Talent." | "Scan to join Lansa as a mentor" | "Expand your student pool with warm local leads on Lansa" |
 
-Reuse the same Canvas API + `qrcode` library pattern from the existing `QRCodeModal.tsx`. No modal needed — just generate the card and trigger a download on click.
+All three cards share the same visual layout (logo → headline → subtitle → QR → URL pill) but with different text. The QR code always points to `https://lansa.online`.
 
-## Files to Change
+## Implementation
 
-### 1. `src/components/ShareLansaCard.tsx` (new)
-- Self-contained component: a single `Button` labeled "Share Lansa"
-- On click: generates a canvas (600×820px, matching QRCodeModal dimensions), draws:
-  - Rounded card background (white/soft gradient)
-  - Top accent bar (Lansa brand gradient)
-  - Lansa combination mark logo (`lansa-logo-blue.png`) centered at top
-  - CTA headline: **"Your Career Starts Here"** — bold, Lansa Blue
-  - Subtitle: "Scan to explore Lansa" — grey
-  - QR code (280px, `#1A1F71` dark color) encoding `https://lansa.online`
-  - Bottom URL text: `https://lansa.online` in a pill/badge
-- Triggers download as `lansa-qr-card.png`
-- Also attempts `navigator.share` with the file on mobile (same pattern as QRCodeModal)
-- Shows a toast on success
+### 1. Refactor `ShareLansaCard.tsx`
+- Accept `variant` prop: `'employer' | 'seeker' | 'mentor'`
+- Map variant to `{ headline, subtitle, shareText, filename }` internally
+- Rest of canvas logic stays identical — just swap the text strings
 
-### 2. `src/pages/Index.tsx` (edit)
-- Import `ShareLansaCard`
-- Add it as a floating button or a third button in the hero section's button row (after "Get Started" and "Sign In")
-- Positioned subtly — e.g. a smaller outlined button with a `Share2` icon
+### 2. Create `ShareLansaMenu.tsx` (new)
+- The floating button now opens a small **popover/bottom sheet** with three options:
+  - 🏢 "For Employers"
+  - 🎯 "For Opportunity Seekers"  
+  - 🎓 "For Mentors & Coaches"
+- On mobile (390px viewport): use a `Sheet` (bottom) with three tappable rows
+- Tapping an option triggers the corresponding `ShareLansaCard` generation
+- Clean, minimal UI — Lansa branding, single tap to generate
 
-## Technical Notes
-- Uses `import lansaLogoUrl from '@/assets/lansa-logo-blue.png'` (already exists)
-- Uses `QRCode.toDataURL` from the `qrcode` package (already installed)
-- Canvas drawing helpers (drawRoundedRect, loadImage) extracted inline — same pattern as QRCodeModal
-- No auth required, no Supabase calls — purely client-side
-- Mobile: Web Share API with file; Desktop: direct download + toast
+### 3. Update `Index.tsx`
+- Replace `<ShareLansaCard>` with `<ShareLansaMenu>` in the fixed bottom-right position
+
+## Files
+
+| File | Action |
+|---|---|
+| `src/components/ShareLansaCard.tsx` | Refactor to accept `variant` prop |
+| `src/components/ShareLansaMenu.tsx` | New — selection UI (popover/sheet) |
+| `src/pages/Index.tsx` | Swap component |
 
