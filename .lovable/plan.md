@@ -1,36 +1,104 @@
+# Complete Visitor Landing Page
+
+## Overview
+
+Keep the existing Header83 gallery hero as-is. Add 5 new sections below it to create a complete, polished landing page. Content will be rewritten to match actual Lansa platform capabilities. A shared Navbar and Footer will bookend the page.
+
+## Page Flow (top to bottom)
+
+```text
+┌─────────────────────────────┐
+│  Navbar (sticky)            │  ← New
+├─────────────────────────────┤
+│  Header83 (existing hero)   │  ← Keep as-is
+├─────────────────────────────┤
+│  Layout89 — "Built for the  │  ← New section
+│  Caribbean"                 │
+├─────────────────────────────┤
+│  Layout249 — "How It Works" │  ← New section
+│  3 steps                    │
+├─────────────────────────────┤
+│  Testimonial33 — Scroll-    │  ← New section
+│  animated testimonials      │
+├─────────────────────────────┤
+│  CTA3 — "Your Career Starts │  ← New section
+│  Here"                      │
+├─────────────────────────────┤
+│  Footer                     │  ← New section
+└─────────────────────────────┘
+```
+
+## Section Details & Accurate Content
+
+### 1. Navbar (`src/components/landing/LandingNavbar.tsx`)
+
+- Sticky top navbar with Lansa logo, nav links (How It Works, For Business, Resources), and Sign In / Get Started buttons
+- Mobile: hamburger menu with animated slide-down
+- Links: "For Business" → `/for-business`, "Sign In" → `/login`, "Get Started" → `/signup`
+- Uses framer-motion `AnimatePresence` for mobile menu
+
+### 2. Layout89 — Value Proposition (`src/components/landing/CaribbeanSection.tsx`)
+
+- Tagline: "For Us, By Us"
+- Heading: "Crafted for Caribbean Dreams and Aspirations"
+- Body: Rewritten to match actual platform — AI-powered profile builder, verified certifications, direct business connections, free CV generation
+- Button: "Get Started Free" → `/signup`
+- Full-width image placeholder (can use existing homepage assets)
+
+### 3. Layout249 — How It Works (`src/components/landing/HowItWorksSection.tsx`)
+
+- Tagline: "Simple by Design"
+- Heading: "From Sign-Up to Hired — In Three Steps"
+- **Step 1: "Build Your Profile"** — Sign up free, answer guided questions, and let AI craft your professional profile and CV instantly.
+- **Step 2: "Get Certified"** — Take industry-specific certification exams to verify your skills and stand out to employers.
+- **Step 3: "Connect & Get Hired"** — Employers browse certified talent, match with you, and reach out directly through the platform.
+- Each step has a placeholder image area and numbered layout
+
+### 4. Testimonial33 — Social Proof (`src/components/landing/TestimonialsSection.tsx`)
+
+- Heading: "Everyone Took Their Step 1 — Once"
+- Subheading: "Starting out can feel uncertain — Lansa makes it feel supported."
+- Scroll-animated two-column testimonial cards using `useScroll` + `useTransform` from framer-motion
+- Left column scrolls up, right column scrolls down (parallax effect)
+- 6-8 testimonial cards with Caribbean-appropriate names and realistic quotes about the platform
+- Star ratings, names, roles
+- Responsive: on mobile, single column with vertical scroll animation
+
+### 5. CTA3 — Final Call to Action (`src/components/landing/CTASection.tsx`)
+
+- Heading: "Your Career Starts Here"
+- Body: "Join Lansa today and take control of your professional future. Build your profile, earn certifications, and connect with businesses across the Caribbean."
+- Button: "Sign Up Free" → `/signup`
+- Dark background with full-width image overlay (gradient)
+
+### 6. Footer (`src/components/landing/LandingFooter.tsx`)
+
+- Lansa logo + brief tagline
+- Newsletter email signup
+- Links: Privacy Policy (`/privacy`), Terms of Service (`/terms`), Help (`/help`)
+- Copyright: "© 2026 Lansa All rights reserved."
+- Clean, minimal — matches brand aesthetic
+
+## Files to Create/Edit
 
 
-# Redesign Share Cards — Gradient Background + White Elements + SVG Icon Logo
+| File                                             | Action                                     |
+| ------------------------------------------------ | ------------------------------------------ |
+| `src/components/landing/LandingNavbar.tsx`       | Create — sticky navbar                     |
+| `src/components/landing/CaribbeanSection.tsx`    | Create — value prop section                |
+| `src/components/landing/HowItWorksSection.tsx`   | Create — 3-step process                    |
+| `src/components/landing/TestimonialsSection.tsx` | Create — animated testimonials             |
+| `src/components/landing/CTASection.tsx`          | Create — final CTA                         |
+| `src/components/landing/LandingFooter.tsx`       | Create — footer                            |
+| `src/pages/Index.tsx`                            | Edit — compose all sections below Header83 |
 
-## What Changes
 
-Replace the current light card design with the uploaded gradient background image and switch all visual elements to white. Replace the combination mark logo with the uploaded Lansa SVG icon rendered inside a white circle.
+## Technical Approach
 
-## Visual Result (all 3 variants identical style)
-
-- **Background**: The uploaded coral-purple gradient image fills the full 600×820 canvas
-- **Logo**: White circle (90px diameter) centered near top, containing the Lansa bird/flame icon SVG rendered in Lansa brand blue (`#1A1F71`)
-- **Headline**: White, bold — variant-specific text
-- **Subtitle**: White (slightly transparent) — variant-specific text
-- **QR code**: White dots on transparent background (no white card behind it)
-- **URL pill**: Semi-transparent white border pill with white text `lansa.online`
-
-## Files
-
-| File | Action |
-|---|---|
-| `user-uploads://Lansa_Portrait_background_QR_Code_Card.png` | Copy to `src/assets/share-card-bg.png` |
-| `user-uploads://Lansa_Logo_Icon_SVG-2.svg` | Copy to `src/assets/lansa-icon-brand.svg` |
-| `src/components/ShareLansaCard.tsx` | Rework canvas drawing |
-
-## Changes to `ShareLansaCard.tsx`
-
-1. **Import** the new background image and SVG icon
-2. **Background**: Draw the gradient image stretched to fill the full canvas (600×820) instead of the programmatic gradient + accent bar
-3. **Logo area**: Draw a white filled circle (radius ~45px) centered at top, then draw the SVG icon inside it (load as image)
-4. **Headline**: Change `fillStyle` from `LANSA_BRAND` to `#FFFFFF`
-5. **Subtitle**: Change from `#6B7280` to `rgba(255,255,255,0.8)`
-6. **QR code**: Generate with `{ dark: '#FFFFFF', light: '#00000000' }` (white dots, transparent background) — remove the white card/shadow behind it
-7. **URL pill**: Change from `rgba(26,31,113,0.06)` fill to `rgba(255,255,255,0.15)` with a white 1px stroke border. Text color from `LANSA_BRAND` to `#FFFFFF`
-8. **Remove**: Top accent bar drawing (no longer needed)
-
+- Convert Relume JSX patterns to TypeScript, replace `@relume_io/relume-ui` Button with existing shadcn Button or keep relume where already installed
+- Testimonial33 scroll animation: use `useScroll({ target, offset })` + `useTransform` for parallax columns — same pattern already used in Header83
+- All `react-icons` usage replaced with `lucide-react` equivalents (Star icon for ratings, etc.)
+- Navigation uses `useNavigate` from react-router-dom for internal links
+- Fonts: `font-urbanist` for headings, `font-public-sans` for body — matching existing brand
+- Colors: use existing CSS variables (`--primary`, `--secondary`, `hsl(215,...)` palette)
+- Placeholder images: reuse existing `homepage-*.png` assets where appropriate
