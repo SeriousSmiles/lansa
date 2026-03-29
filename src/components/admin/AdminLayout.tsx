@@ -4,6 +4,7 @@ import { AdminSidebar } from './AdminSidebar';
 import { AdminTopBar } from './AdminTopBar';
 import { AdminMobileLayout } from './mobile/AdminMobileLayout';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ShareLansaMenu } from '@/components/ShareLansaMenu';
 
 export function AdminLayout() {
   const isMobile = useIsMobile();
@@ -12,6 +13,9 @@ export function AdminLayout() {
     return (
       <AdminMobileLayout>
         <Outlet />
+        <div className="fixed bottom-20 right-4 z-50">
+          <ShareLansaMenu className="shadow-lg rounded-full px-4 py-2.5 bg-card border-border/50 hover:bg-accent font-urbanist text-sm" />
+        </div>
       </AdminMobileLayout>
     );
   }
@@ -25,6 +29,9 @@ export function AdminLayout() {
           <main className="flex-1 p-6">
             <Outlet />
           </main>
+        </div>
+        <div className="fixed bottom-6 right-6 z-50">
+          <ShareLansaMenu className="shadow-lg rounded-full px-5 py-3 bg-card border-border/50 hover:bg-accent font-urbanist" />
         </div>
       </div>
     </SidebarProvider>
