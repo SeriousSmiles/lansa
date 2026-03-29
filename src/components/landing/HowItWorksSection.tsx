@@ -36,7 +36,7 @@ export const HowItWorksSection = () => {
 
   return (
     <section id="how-it-works" className="bg-muted/20 py-20 md:py-28">
-      <div className="<div className="mx-auto max-w-[1440px] px-[5%]">">
+      <div className="mx-auto max-w-[1440px] px-[5%]">
         <div className="mb-16 max-w-2xl">
           <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary font-urbanist">
             Simple by Design
