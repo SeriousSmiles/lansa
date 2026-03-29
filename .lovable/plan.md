@@ -1,45 +1,24 @@
 
 
-# Three Audience-Specific Share Cards
+# Move Share Lansa Button to Admin Layout
 
-## What Changes
+## Changes
 
-Replace the single "Share Lansa" button with a button that opens a **bottom sheet** (mobile) presenting three audience-specific QR card options. Each generates a unique card with a tailored headline and subtitle.
+### 1. Remove from `src/pages/Index.tsx`
+- Delete the `ShareLansaMenu` import and the fixed bottom-right `<div>` wrapping it (lines 4, 82-84)
 
-## Card Variants
+### 2. Add to `src/components/admin/AdminLayout.tsx`
+- Import `ShareLansaMenu`
+- Add it as a fixed bottom-right button in both desktop and mobile admin layouts
+- Desktop: `<div className="fixed bottom-6 right-6 z-50">` after the `</SidebarProvider>`-scoped content
+- Mobile: same fixed positioning inside `AdminMobileLayout` wrapper
 
-| Audience | Headline | Subtitle | Share text |
-|---|---|---|---|
-| **Employers** | "Find the Right Talent, Faster" | "Scan to hire smarter with Lansa" | "Find verified candidates faster with Lansa" |
-| **Opportunity Seekers** | "Get Trained. Get Certified. Get Hired." | "Scan to start your journey on Lansa" | "Build your career and connect with local businesses on Lansa" |
-| **Mentors & Coaches** | "Grow Your Reach. Train More Talent." | "Scan to join Lansa as a mentor" | "Expand your student pool with warm local leads on Lansa" |
+The button will appear on every admin page since `AdminLayout` wraps all `/admin/*` routes via `<Outlet />`.
 
-All three cards share the same visual layout (logo → headline → subtitle → QR → URL pill) but with different text. The QR code always points to `https://lansa.online`.
-
-## Implementation
-
-### 1. Refactor `ShareLansaCard.tsx`
-- Accept `variant` prop: `'employer' | 'seeker' | 'mentor'`
-- Map variant to `{ headline, subtitle, shareText, filename }` internally
-- Rest of canvas logic stays identical — just swap the text strings
-
-### 2. Create `ShareLansaMenu.tsx` (new)
-- The floating button now opens a small **popover/bottom sheet** with three options:
-  - 🏢 "For Employers"
-  - 🎯 "For Opportunity Seekers"  
-  - 🎓 "For Mentors & Coaches"
-- On mobile (390px viewport): use a `Sheet` (bottom) with three tappable rows
-- Tapping an option triggers the corresponding `ShareLansaCard` generation
-- Clean, minimal UI — Lansa branding, single tap to generate
-
-### 3. Update `Index.tsx`
-- Replace `<ShareLansaCard>` with `<ShareLansaMenu>` in the fixed bottom-right position
-
-## Files
+### Files
 
 | File | Action |
 |---|---|
-| `src/components/ShareLansaCard.tsx` | Refactor to accept `variant` prop |
-| `src/components/ShareLansaMenu.tsx` | New — selection UI (popover/sheet) |
-| `src/pages/Index.tsx` | Swap component |
+| `src/pages/Index.tsx` | Remove ShareLansaMenu import + rendered element |
+| `src/components/admin/AdminLayout.tsx` | Add ShareLansaMenu (fixed bottom-right) in both mobile and desktop returns |
 
