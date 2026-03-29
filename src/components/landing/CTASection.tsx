@@ -13,7 +13,7 @@ export const CTASection = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/70 to-black/60" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-[5%] text-center">
+      <div className="relative z-10 mx-auto max-w-[1440px] px-[5%] text-center">
         <h2 className="text-3xl font-bold font-urbanist text-white md:text-5xl leading-tight max-w-2xl mx-auto">
           Your Career Starts Here
         </h2>

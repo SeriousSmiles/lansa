@@ -6,7 +6,7 @@ export const LandingFooter = () => {
 
   return (
     <footer className="bg-foreground py-12 md:py-16">
-      <div className="mx-auto max-w-7xl px-[5%]">
+      <div className="mx-auto max-w-[1440px] px-[5%]">
         <div className="flex flex-col items-center gap-8 text-center">
           <img src={lansaLogo} alt="Lansa" className="h-7 brightness-0 invert" />
           <p className="text-sm text-white/60 font-public-sans max-w-md">

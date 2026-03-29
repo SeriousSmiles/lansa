@@ -25,7 +25,7 @@ export const LandingNavbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
-      <div className="mx-auto max-w-7xl flex items-center justify-between px-[5%] py-3">
+      <div className="mx-auto max-w-[1440px] flex items-center justify-between px-[5%] py-3">
         <button onClick={() => navigate("/")} className="flex items-center gap-2">
           <img src={lansaLogo} alt="Lansa" className="h-7" />
         </button>

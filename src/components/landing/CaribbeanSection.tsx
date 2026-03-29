@@ -7,7 +7,7 @@ export const CaribbeanSection = () => {
 
   return (
     <section className="bg-background py-20 md:py-28">
-      <div className="mx-auto max-w-7xl px-[5%]">
+      <div className="mx-auto max-w-[1440px] px-[5%]">
         <div className="grid items-center gap-12 md:grid-cols-2 md:gap-16">
           <div className="flex flex-col gap-6">
             <p className="text-sm font-semibold uppercase tracking-widest text-primary font-urbanist">
