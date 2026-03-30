@@ -55,6 +55,7 @@ import AdminSupport from "./pages/admin/AdminSupport";
 import AdminContent from "./pages/admin/AdminContent";
 import AdminMentors from "./pages/admin/AdminMentors";
 import ForBusiness from "./pages/ForBusiness";
+import Pricing from "./pages/Pricing";
 
 import { UnifiedAuthProvider } from "./contexts/UnifiedAuthProvider";
 import { OrganizationProvider } from "./contexts/OrganizationContext";
@@ -104,6 +105,7 @@ const App: React.FC = () => {
                 <Route path="/profile/share/:userId" element={<SharedProfile />} />
                 <Route path="/not-allowed" element={<NotAllowed />} />
                 <Route path="/for-business" element={<ForBusiness />} />
+                <Route path="/pricing" element={<Pricing />} />
                 <Route path="/verify/:code" element={<VerifyCertification />} />
                 
                 {/* Auth-only routes (no type/onboarding check) */}

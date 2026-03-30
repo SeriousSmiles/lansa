@@ -15,6 +15,12 @@ export const LandingFooter = () => {
           </p>
 
           <div className="flex flex-wrap justify-center gap-6 text-sm font-public-sans">
+            <button onClick={() => navigate("/pricing")} className="text-white/50 hover:text-white/80 transition-colors">
+              Pricing
+            </button>
+            <button onClick={() => navigate("/for-business")} className="text-white/50 hover:text-white/80 transition-colors">
+              For Business
+            </button>
             <button onClick={() => navigate("/privacy")} className="text-white/50 hover:text-white/80 transition-colors">
               Privacy Policy
             </button>
