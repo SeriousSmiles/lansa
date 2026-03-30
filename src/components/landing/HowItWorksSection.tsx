@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { UserPlus, Award, Briefcase } from "lucide-react";
 import homepage5 from "@/assets/homepage-5.png";
 import homepage6 from "@/assets/homepage-6.png";
@@ -10,7 +10,7 @@ const steps = [
     icon: UserPlus,
     title: "Build Your Profile",
     description:
-      "Sign up for free, answer a few guided questions, and let our AI craft your professional profile and CV instantly — no writing experience needed.",
+      "Sign up for free, answer a few guided questions, and let our AI craft your professional profile and CV instantly — no writing experience needed. In under five minutes, you'll have a polished profile ready to share with employers.",
     image: homepage5,
   },
   {
@@ -18,7 +18,7 @@ const steps = [
     icon: Award,
     title: "Get Certified",
     description:
-      "Take industry-specific certification exams to verify your skills. Earn credentials that set you apart and give employers confidence in your abilities.",
+      "Take industry-specific certification exams that validate your real-world skills. Earn Lansa Certified credentials that set you apart and give employers the confidence to reach out first.",
     image: homepage6,
   },
   {
@@ -26,18 +26,22 @@ const steps = [
     icon: Briefcase,
     title: "Connect & Get Hired",
     description:
-      "Employers browse certified talent, match with candidates who fit their needs, and reach out directly through the platform. No guesswork, no gatekeeping.",
+      "Employers browse certified talent, match with candidates who fit their needs, and reach out directly through the platform. No middlemen, no gatekeeping — just real opportunities.",
     image: homepage7,
   },
 ];
 
 export const HowItWorksSection = () => {
-  const navigate = useNavigate();
-
   return (
     <section id="how-it-works" className="bg-muted/20 py-20 md:py-28">
       <div className="mx-auto max-w-[1440px] px-[5%]">
-        <div className="mb-16 max-w-2xl">
+        <motion.div
+          className="mb-16 max-w-2xl"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5 }}
+        >
           <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary font-urbanist">
             Simple by Design
           </p>
@@ -45,12 +49,19 @@ export const HowItWorksSection = () => {
             From Sign-Up to Hired —{" "}
             <span className="text-primary">In Three Steps</span>
           </h2>
-        </div>
+          <p className="mt-4 text-muted-foreground font-public-sans text-base md:text-lg leading-relaxed">
+            We removed every barrier between you and your next opportunity. No résumé writers, no expensive courses, no waiting — just clear steps forward.
+          </p>
+        </motion.div>
 
         <div className="flex flex-col gap-20">
           {steps.map((step, i) => (
-            <div
+            <motion.div
               key={step.num}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.55, delay: 0.1 }}
               className={`grid items-center gap-10 md:grid-cols-2 md:gap-16 ${
                 i % 2 !== 0 ? "md:[direction:rtl]" : ""
               }`}
@@ -78,7 +89,7 @@ export const HowItWorksSection = () => {
                   loading="lazy"
                 />
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

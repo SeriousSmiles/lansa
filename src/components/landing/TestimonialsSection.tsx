@@ -76,7 +76,7 @@ const Stars = ({ count }: { count: number }) => (
 );
 
 const TestimonialCard = ({ t }: { t: Testimonial }) => (
-  <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+  <div className="rounded-2xl border border-border bg-card p-6 shadow-sm transition-shadow duration-300 hover:shadow-md">
     <Stars count={t.stars} />
     <p className="mt-4 text-foreground font-public-sans text-sm leading-relaxed">
       "{t.quote}"
@@ -102,6 +102,9 @@ export const TestimonialsSection = () => {
     <section ref={sectionRef} className="bg-background py-20 md:py-28 overflow-hidden">
       <div className="mx-auto max-w-[1440px] px-[5%]">
         <div className="mb-14 text-center max-w-2xl mx-auto">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary font-urbanist">
+            Real Stories
+          </p>
           <h2 className="text-3xl font-bold font-urbanist text-foreground md:text-5xl leading-tight">
             Everyone Took Their Step 1 — Once
           </h2>

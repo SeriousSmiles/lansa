@@ -15,14 +15,12 @@ export const CTASection = () => {
 
       <div className="relative z-10 mx-auto max-w-[1440px] px-[5%] text-center">
         <h2 className="text-3xl font-bold font-urbanist text-white md:text-5xl leading-tight max-w-2xl mx-auto">
-          Your Career Starts Here
+          Your Future Won't Wait — Neither Should You
         </h2>
         <p className="mt-5 text-white/80 font-public-sans text-base md:text-lg max-w-xl mx-auto leading-relaxed">
-          Join Lansa today and take control of your professional future. Build
-          your profile, earn certifications, and connect with businesses across
-          the Caribbean.
+          Join thousands of Caribbean professionals already building their careers on Lansa. Create your profile, earn certifications, and get discovered — all for free.
         </p>
-        <div className="mt-8">
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Button
             size="lg"
             variant="primary"
@@ -30,6 +28,14 @@ export const CTASection = () => {
             className="font-urbanist font-semibold text-base px-10"
           >
             Sign Up Free
+          </Button>
+          <Button
+            size="lg"
+            variant="ghost"
+            onClick={() => navigate("/pricing")}
+            className="font-urbanist font-semibold text-base text-white hover:text-white hover:bg-white/10"
+          >
+            View Pricing →
           </Button>
         </div>
       </div>

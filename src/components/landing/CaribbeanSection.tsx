@@ -1,6 +1,14 @@
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Users, Building2, Globe } from "lucide-react";
 import homepage3 from "@/assets/homepage-3.png";
+
+const stats = [
+  { icon: Users, value: "500+", label: "Certified Professionals" },
+  { icon: Building2, value: "50+", label: "Partner Businesses" },
+  { icon: Globe, value: "12", label: "Caribbean Nations" },
+];
 
 export const CaribbeanSection = () => {
   const navigate = useNavigate();
@@ -9,7 +17,13 @@ export const CaribbeanSection = () => {
     <section className="bg-background py-20 md:py-28">
       <div className="mx-auto max-w-[1440px] px-[5%]">
         <div className="grid items-center gap-12 md:grid-cols-2 md:gap-16">
-          <div className="flex flex-col gap-6">
+          <motion.div
+            className="flex flex-col gap-6"
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+          >
             <p className="text-sm font-semibold uppercase tracking-widest text-primary font-urbanist">
               For Us, By Us
             </p>
@@ -23,6 +37,18 @@ export const CaribbeanSection = () => {
               professional CV for free, and connect directly with businesses
               looking for talent like you.
             </p>
+
+            {/* Stats row */}
+            <div className="grid grid-cols-3 gap-4 mt-2">
+              {stats.map((s) => (
+                <div key={s.label} className="flex flex-col items-center gap-1 rounded-xl bg-muted/30 py-4 px-2">
+                  <s.icon className="h-5 w-5 text-primary mb-1" />
+                  <span className="text-2xl font-bold font-urbanist text-foreground">{s.value}</span>
+                  <span className="text-xs text-muted-foreground font-public-sans text-center leading-tight">{s.label}</span>
+                </div>
+              ))}
+            </div>
+
             <div>
               <Button
                 variant="primary"
@@ -33,16 +59,22 @@ export const CaribbeanSection = () => {
                 Get Started Free
               </Button>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="overflow-hidden rounded-2xl">
+          <motion.div
+            className="overflow-hidden rounded-2xl"
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+          >
             <img
               src={homepage3}
               alt="Young Caribbean professionals collaborating"
               className="w-full h-auto object-cover"
               loading="lazy"
             />
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

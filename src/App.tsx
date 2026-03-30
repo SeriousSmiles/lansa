@@ -55,6 +55,7 @@ import AdminSupport from "./pages/admin/AdminSupport";
 import AdminContent from "./pages/admin/AdminContent";
 import AdminMentors from "./pages/admin/AdminMentors";
 import ForBusiness from "./pages/ForBusiness";
+import Pricing from "./pages/Pricing";
 
 import { UnifiedAuthProvider } from "./contexts/UnifiedAuthProvider";
 import { OrganizationProvider } from "./contexts/OrganizationContext";
