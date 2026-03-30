@@ -1,87 +1,98 @@
 
 
-# Landing Page Enhancement + Pricing Page
+# Polish Landing Pages — Premium Design Overhaul
 
-## 1. Transparent-to-Solid Navbar (`LandingNavbar.tsx`)
+## Summary
 
-Add scroll-based state using `useState` + `useEffect` with a scroll listener. At `scrollY < 50`, navbar is transparent with white text/logo. After scrolling, it transitions to light background with dark text.
+Remove all gray/muted backgrounds from cards, sections, and hover states. Replace with Lansa brand-colored accents (warm orange tints, blue tints). Redesign the pricing page with a more complex, visually premium layout. Add motion polish across all sections. Hero section remains untouched.
 
-- Track `scrolled` boolean via `window.scrollY > 50`
-- Conditional classes on `<nav>`: `bg-transparent` vs `bg-background/80 backdrop-blur-lg border-b`
-- Nav links: `text-white/80` vs `text-foreground/70`
-- Sign In button: `text-white` vs default
-- Logo: apply `brightness-0 invert` filter when not scrolled (to make blue logo appear white)
-- Mobile hamburger icon: `text-white` vs `text-foreground`
-- Smooth CSS transition on all color/bg changes
+---
 
-## 2. Enhanced Landing Sections
+## 1. Remove Gray Backgrounds Globally
 
-### CaribbeanSection — Add metrics + richer copy
-- Add 3 stat counters below the text (e.g., "500+ Certified Professionals", "50+ Partner Businesses", "12 Caribbean Nations")
-- Upgrade description to highlight specific platform capabilities: AI profile generation, free CV, sector certifications, direct employer connections
+### `src/index.css`
+- Change `--accent` from `25 60% 95%` (grayish peach) to `14 90% 96%` (warm orange tint)
+- Change `--muted` variable to a warmer tone: `14 30% 96%` instead of the current cold gray
+- Ensure `--card` stays white (`0 0% 100%`)
 
-### HowItWorksSection — Add visual polish
-- Add subtle fade-in animations on scroll using framer-motion `whileInView`
-- Add a brief sub-description under the section header
-- Stronger step descriptions with outcome-focused language
+### Components with `bg-muted` references to clean:
+- **`HowItWorksSection.tsx`**: Remove `bg-muted/20` from section, remove `bg-muted` from image containers
+- **`CaribbeanSection.tsx`**: Replace `bg-muted/30` on stat cards with a subtle orange-tinted border style
+- **`TestimonialsSection.tsx`**: Remove gray `bg-card` on testimonial cards, use white with brand-colored left border
+- **`Pricing.tsx`**: Remove `bg-muted/30` from table headers, remove `bg-muted/20` from trust bar, remove `bg-card` from tier cards
 
-### TestimonialsSection — More engaging header
-- Add a tagline above the heading ("Real Stories")
-- Slightly richer card styling with subtle hover elevation
+---
 
-### CTASection — Add secondary action + urgency
-- Add a secondary "Learn More" link below the primary CTA
-- Slightly adjusted copy for more emotional impact
+## 2. CaribbeanSection — Richer Visual
 
-### LandingFooter — Add "Pricing" link + social placeholders
-- Add Pricing link to footer nav
-- Add placeholder social media icons row
+- Remove `bg-muted/30` from stat cards, replace with white background + subtle `border-primary/20` border + slight `shadow-sm`
+- Add a warm gradient accent line or dot to each stat
+- Use `motion` stagger on stat counters for entrance
 
-## 3. New Pricing Page (`src/pages/Pricing.tsx`)
+---
 
-A public standalone page at `/pricing` with:
+## 3. HowItWorksSection — Clean + Vibrant
 
-### Hero area
-- Tagline: "Simple Pricing"
-- Heading: "Start Free. Scale When Ready."
-- Sub: "No contracts, no hidden fees. Upgrade or cancel anytime."
+- Section background: pure white (`bg-background`) instead of `bg-muted/20`
+- Image containers: remove `bg-muted`, use `shadow-lg rounded-2xl` with no background fill
+- Add a subtle primary-colored vertical connector line between steps (desktop only)
+- Add number badges with gradient (`lansa-gradient-primary`) instead of solid `bg-primary`
 
-### Two pricing tiers (reuse data from PricingSlide)
-**For Professionals (Job Seekers):**
-- **Free** — AI profile, CV generation, certification exams, job discovery
-- **Pro (coming soon)** — Priority visibility, advanced analytics, premium badge
+---
 
-**For Businesses:**
-- **Basic — Free** — 10 candidate swipes/month, job posting wizard, in-app messaging, Lansa Certified candidates
-- **Premium — XCG 75/mo** — Unlimited swipes, AI candidate summaries, priority listings, hiring analytics dashboard
+## 4. TestimonialsSection — Brand-Colored Cards
 
-### Feature Comparison Table
-A full-width responsive table below the cards comparing all features across tiers with check/x marks. Columns: Feature | Free | Pro/Premium. Uses the existing shadcn `Table` components.
+- Cards: white bg, no gray. Add a `border-l-4 border-primary` accent on left edge
+- Hover: subtle `shadow-lg` elevation instead of gray background shift
+- Star icons: use `fill-amber-400 text-amber-400` for warmth instead of `fill-primary`
 
-### Bottom trust bar
-- ShieldCheck icon + "Every candidate is Lansa Certified" message
-- CTA button to sign up
+---
 
-### Technical
-- Max-width `1440px` with `px-[5%]` matching all other sections
-- Add route `/pricing` in `App.tsx`
-- Add "Pricing" link to `LandingNavbar` and `LandingFooter`
-- Wrap with `LandingNavbar` + `LandingFooter` for consistent chrome
-- SEOHead with pricing-specific meta
+## 5. CTASection — Keep, Minor Polish
 
-## 4. Route Registration (`App.tsx`)
-- Import and add `<Route path="/pricing" element={<Pricing />} />` in the public routes section
+- Already looks good with image background. Add subtle `backdrop-blur-sm` to the overlay for depth.
+
+---
+
+## 6. LandingFooter — Minor Polish
+
+- Already dark. No gray issues. Add subtle social icon placeholders (Instagram, LinkedIn, Twitter) using lucide icons.
+
+---
+
+## 7. Pricing Page — Complete Redesign
+
+Replace the current basic layout with a more premium, complex design:
+
+### Structure:
+1. **Hero** — Dark gradient background (Lansa blue-to-black) with white text. Centered heading + toggle for "Professionals / Businesses" tab switcher
+2. **Tier Cards** — Full-width 2-column grid (not max-w-3xl). Cards have white bg, no gray. Highlighted card gets a `border-2 border-primary` with a floating "Most Popular" badge. Price numbers are large (text-5xl) with gradient coloring
+3. **Feature Comparison** — Redesigned as a clean alternating-row table (white / very light orange tint rows, no gray header). Check marks use green circles, X marks are muted. Full width within 1440px container
+4. **Trust Bar** — Replace gray bg card with a full-width gradient banner (primary orange-to-blue gradient at 10% opacity), with the ShieldCheck icon animated on scroll entry
+5. **FAQ Accordion** — Add 4-5 common pricing questions below the trust bar using an accordion pattern
+
+### Tab Switcher:
+- A pill-style toggle at the top: "For Professionals" | "For Businesses"
+- Uses `useState` to switch which tier cards + comparison table are shown
+- Smooth `AnimatePresence` transition between the two views
+
+### Visual Details:
+- Tier cards: `rounded-3xl border-2` with generous padding (p-10)
+- Feature list items: use `CircleCheck` icon (lucide) in primary color instead of plain `Check`
+- Price: large bold number with `/mo` in muted smaller text
+- CTA buttons: primary variant for highlighted, outline for others, full-width
+
+---
 
 ## Files
 
 | File | Action |
 |---|---|
-| `src/components/landing/LandingNavbar.tsx` | Edit — scroll-based transparent→solid transition, add Pricing link |
-| `src/components/landing/CaribbeanSection.tsx` | Edit — add stats, richer copy |
-| `src/components/landing/HowItWorksSection.tsx` | Edit — scroll animations, stronger copy |
-| `src/components/landing/TestimonialsSection.tsx` | Edit — add tagline, hover polish |
-| `src/components/landing/CTASection.tsx` | Edit — secondary action, sharper copy |
-| `src/components/landing/LandingFooter.tsx` | Edit — add Pricing link |
-| `src/pages/Pricing.tsx` | Create — full pricing page with tier cards + comparison table |
-| `src/App.tsx` | Edit — add `/pricing` route |
+| `src/index.css` | Edit — warm up `--muted` and `--accent` tokens |
+| `src/components/landing/CaribbeanSection.tsx` | Edit — remove gray bg, add brand borders + motion |
+| `src/components/landing/HowItWorksSection.tsx` | Edit — remove all gray bg, add gradient badges + connector |
+| `src/components/landing/TestimonialsSection.tsx` | Edit — brand-colored card borders, warm stars, no gray |
+| `src/components/landing/CTASection.tsx` | Minor polish — backdrop blur |
+| `src/components/landing/LandingFooter.tsx` | Edit — add social icons |
+| `src/pages/Pricing.tsx` | Rewrite — premium layout with tab switcher, gradient hero, FAQ accordion |
 
