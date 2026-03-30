@@ -40,12 +40,20 @@ export const CaribbeanSection = () => {
 
             {/* Stats row */}
             <div className="grid grid-cols-3 gap-4 mt-2">
-              {stats.map((s) => (
-                <div key={s.label} className="flex flex-col items-center gap-1 rounded-xl bg-muted/30 py-4 px-2">
+              {stats.map((s, i) => (
+                <motion.div
+                  key={s.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: i * 0.1 }}
+                  className="relative flex flex-col items-center gap-1 rounded-xl border border-primary/15 bg-background py-4 px-2 shadow-sm"
+                >
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full lansa-gradient-primary" />
                   <s.icon className="h-5 w-5 text-primary mb-1" />
                   <span className="text-2xl font-bold font-urbanist text-foreground">{s.value}</span>
                   <span className="text-xs text-muted-foreground font-public-sans text-center leading-tight">{s.label}</span>
-                </div>
+                </motion.div>
               ))}
             </div>
 
@@ -62,7 +70,7 @@ export const CaribbeanSection = () => {
           </motion.div>
 
           <motion.div
-            className="overflow-hidden rounded-2xl"
+            className="overflow-hidden rounded-2xl shadow-xl"
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
