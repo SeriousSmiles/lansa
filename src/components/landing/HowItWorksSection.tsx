@@ -33,7 +33,7 @@ const steps = [
 
 export const HowItWorksSection = () => {
   return (
-    <section id="how-it-works" className="bg-muted/20 py-20 md:py-28">
+    <section id="how-it-works" className="bg-background py-20 md:py-28">
       <div className="mx-auto max-w-[1440px] px-[5%]">
         <motion.div
           className="mb-16 max-w-2xl"
@@ -54,7 +54,10 @@ export const HowItWorksSection = () => {
           </p>
         </motion.div>
 
-        <div className="flex flex-col gap-20">
+        <div className="relative flex flex-col gap-20">
+          {/* Vertical connector line (desktop) */}
+          <div className="hidden md:block absolute left-6 top-6 bottom-6 w-px bg-gradient-to-b from-primary/40 via-secondary/40 to-primary/40" />
+
           {steps.map((step, i) => (
             <motion.div
               key={step.num}
@@ -62,13 +65,13 @@ export const HowItWorksSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.55, delay: 0.1 }}
-              className={`grid items-center gap-10 md:grid-cols-2 md:gap-16 ${
+              className={`relative grid items-center gap-10 md:grid-cols-2 md:gap-16 ${
                 i % 2 !== 0 ? "md:[direction:rtl]" : ""
               }`}
             >
               <div className={`flex flex-col gap-5 ${i % 2 !== 0 ? "md:[direction:ltr]" : ""}`}>
                 <div className="flex items-center gap-4">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground font-urbanist font-bold text-lg">
+                  <span className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full lansa-gradient-primary text-white font-urbanist font-bold text-lg shadow-lg">
                     {step.num}
                   </span>
                   <step.icon className="h-6 w-6 text-primary" />
@@ -81,7 +84,7 @@ export const HowItWorksSection = () => {
                 </p>
               </div>
 
-              <div className={`overflow-hidden rounded-2xl bg-muted ${i % 2 !== 0 ? "md:[direction:ltr]" : ""}`}>
+              <div className={`overflow-hidden rounded-2xl shadow-lg ${i % 2 !== 0 ? "md:[direction:ltr]" : ""}`}>
                 <img
                   src={step.image}
                   alt={step.title}

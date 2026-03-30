@@ -69,14 +69,14 @@ const Stars = ({ count }: { count: number }) => (
       <Star
         key={i}
         size={14}
-        className={i < count ? "fill-primary text-primary" : "text-border"}
+        className={i < count ? "fill-amber-400 text-amber-400" : "text-border"}
       />
     ))}
   </div>
 );
 
 const TestimonialCard = ({ t }: { t: Testimonial }) => (
-  <div className="rounded-2xl border border-border bg-card p-6 shadow-sm transition-shadow duration-300 hover:shadow-md">
+  <div className="rounded-2xl border border-border/60 border-l-4 border-l-primary bg-background p-6 shadow-sm transition-shadow duration-300 hover:shadow-lg">
     <Stars count={t.stars} />
     <p className="mt-4 text-foreground font-public-sans text-sm leading-relaxed">
       "{t.quote}"

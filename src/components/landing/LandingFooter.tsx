@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { Instagram, Linkedin, Twitter } from "lucide-react";
 import lansaLogo from "@/assets/lansa-logo-blue.png";
 
 export const LandingFooter = () => {
@@ -30,6 +31,19 @@ export const LandingFooter = () => {
             <button onClick={() => navigate("/help")} className="text-white/50 hover:text-white/80 transition-colors">
               Help
             </button>
+          </div>
+
+          {/* Social icons */}
+          <div className="flex items-center gap-5">
+            <a href="#" className="text-white/40 hover:text-primary transition-colors" aria-label="Instagram">
+              <Instagram size={18} />
+            </a>
+            <a href="#" className="text-white/40 hover:text-primary transition-colors" aria-label="LinkedIn">
+              <Linkedin size={18} />
+            </a>
+            <a href="#" className="text-white/40 hover:text-primary transition-colors" aria-label="Twitter">
+              <Twitter size={18} />
+            </a>
           </div>
 
           <p className="text-xs text-white/40 font-public-sans">
