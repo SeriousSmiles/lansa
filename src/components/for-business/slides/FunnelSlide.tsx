@@ -60,7 +60,7 @@ export function FunnelSlide() {
           style={{ backgroundImage: "url(https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&q=80)" }}
         />
         <div className="absolute inset-0 bg-[hsl(215,85%,12%)]/85" />
-        <div className="relative z-10 h-full flex flex-col justify-center px-6 py-6 md:px-10 md:py-8 lg:px-14 lg:py-12">
+        <div className="relative z-10 flex flex-col justify-center px-6 py-8 md:px-10 md:py-8 lg:px-14 lg:py-12 lg:h-full">
           <div className="absolute top-4 right-4 lg:top-8 lg:right-8 bg-[hsl(var(--lansa-orange))] text-white text-[10px] lg:text-[11px] font-bold px-2.5 py-0.5 lg:px-3 lg:py-1 rounded-full font-['Urbanist']">
             RECOMMENDED
           </div>
