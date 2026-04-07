@@ -112,8 +112,8 @@ export function FeatureShowcaseSlide({ openDetail }: FeatureShowcaseSlideProps) 
                 />
               </div>
               {/* Text side */}
-              <div className="w-[65%] bg-[hsl(var(--lansa-muted))] flex items-center px-10 group-hover:bg-[hsl(215,20%,95%)] transition-colors duration-300">
-                <div>
+              <div className="w-[65%] bg-[hsl(var(--lansa-muted))] flex items-center justify-center px-10 group-hover:bg-[hsl(215,20%,95%)] transition-colors duration-300">
+                <div className="text-center">
                   <h3 className="font-['Urbanist'] mb-1.5">
                     <span className="text-[28px] font-extralight text-foreground">{feat.title} </span>
                     <span className="text-[28px] font-black text-foreground">{feat.titleBold}</span>
