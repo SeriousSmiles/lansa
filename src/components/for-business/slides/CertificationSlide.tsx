@@ -1,5 +1,5 @@
 import { DetailContent } from "../DetailSheet";
-import { Building2, Coffee, Wrench, Monitor, ShieldCheck } from "lucide-react";
+import { Building2, Coffee, Wrench, Monitor } from "lucide-react";
 
 const SECTORS = [
   {
@@ -74,47 +74,58 @@ interface CertificationSlideProps {
 
 export function CertificationSlide({ openDetail }: CertificationSlideProps) {
   return (
-    <div className="w-full h-full bg-gradient-to-br from-[hsl(215,85%,12%)] to-[hsl(215,70%,8%)] flex flex-col items-center justify-center px-[120px] relative overflow-hidden">
-      <div className="absolute w-[500px] h-[500px] rounded-full bg-[hsl(215,85%,55%)] opacity-[0.05] -top-[100px] -right-[100px]" />
+    <div className="w-full h-full flex overflow-hidden">
+      {/* Left — Photo */}
+      <div className="w-[45%] relative">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url(https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&q=80)" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(215,85%,12%)]/30 to-[hsl(215,85%,12%)]" />
+        
+        {/* Floating badge */}
+        <div className="absolute bottom-16 right-12 z-10 bg-white/10 backdrop-blur-md rounded-2xl px-8 py-6 border border-white/10">
+          <p className="text-[48px] font-black text-white font-['Urbanist'] leading-none">100%</p>
+          <p className="text-white/60 text-[14px] font-['Urbanist'] mt-1">Pre-verified talent</p>
+        </div>
+      </div>
 
-      <div className="flex items-center gap-3 mb-4">
-        <ShieldCheck className="h-6 w-6 text-[hsl(var(--lansa-orange))]" />
-        <p className="text-sm font-semibold text-[hsl(var(--lansa-orange))] uppercase tracking-[0.2em]">
+      {/* Right — Content on dark bg */}
+      <div className="w-[55%] bg-gradient-to-br from-[hsl(215,85%,12%)] to-[hsl(215,70%,8%)] flex flex-col justify-center px-16 py-12 relative overflow-hidden">
+        <div className="absolute w-[400px] h-[400px] rounded-full bg-[hsl(215,85%,55%)] opacity-[0.04] -top-[100px] -right-[100px]" />
+
+        <p className="text-[13px] font-semibold text-[hsl(var(--lansa-orange))] uppercase tracking-[0.25em] mb-6 font-['Urbanist']">
           The Lansa Difference
         </p>
-      </div>
-      <h2 className="text-[52px] font-bold text-white font-['Urbanist'] mb-4 leading-tight text-center">
-        Every Candidate is Lansa Certified
-      </h2>
-      <p className="text-lg text-white/60 mb-16 text-center max-w-[700px]">
-        Before any candidate appears in your feed, they've passed a rigorous, sector-specific certification exam. No exceptions.
-      </p>
+        <h2 className="font-['Urbanist'] mb-3">
+          <span className="text-[52px] font-extralight text-white leading-[1.1] block">Every Candidate is</span>
+          <span className="text-[60px] font-black text-white leading-[1.0] block">Lansa Certified</span>
+        </h2>
+        <div className="w-16 h-[2px] bg-[hsl(var(--lansa-orange))] mb-8" />
+        <p className="text-[16px] text-white/50 font-['Urbanist'] font-light mb-12 max-w-[440px] leading-relaxed">
+          Before any candidate appears in your feed, they've passed a rigorous, sector-specific certification exam. No exceptions.
+        </p>
 
-      <div className="grid grid-cols-4 gap-6 w-full max-w-[1400px]">
-        {SECTORS.map((sector, i) => (
-          <button
-            key={i}
-            onClick={() => openDetail(sector.detail)}
-            className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-8 text-center hover:bg-white/10 hover:-translate-y-1 transition-all duration-200 group cursor-pointer"
-          >
-            <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
-              style={{ backgroundColor: `${sector.color}20` }}
+        {/* Sector grid 2x2 */}
+        <div className="grid grid-cols-2 gap-4 max-w-[520px]">
+          {SECTORS.map((sector, i) => (
+            <button
+              key={i}
+              onClick={() => openDetail(sector.detail)}
+              className="bg-white/5 backdrop-blur border border-white/10 rounded-xl p-6 text-left hover:bg-white/10 hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer"
             >
-              <sector.icon className="h-8 w-8" style={{ color: sector.color }} />
-            </div>
-            <h3 className="text-2xl font-bold text-white font-['Urbanist'] mb-2">{sector.title}</h3>
-            <p className="text-sm text-white/50 leading-relaxed">{sector.desc}</p>
-            <p className="text-xs text-[hsl(var(--lansa-orange))] mt-4 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
-              View assessment areas →
-            </p>
-          </button>
-        ))}
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center mb-3"
+                style={{ backgroundColor: `${sector.color}20` }}
+              >
+                <sector.icon className="h-5 w-5" style={{ color: sector.color }} />
+              </div>
+              <h3 className="text-[18px] font-bold text-white font-['Urbanist'] mb-1">{sector.title}</h3>
+              <p className="text-[12px] text-white/40 leading-relaxed">{sector.desc}</p>
+            </button>
+          ))}
+        </div>
       </div>
-
-      <p className="mt-12 text-white/30 text-sm text-center">
-        Every candidate invests in their own certification — only verified professionals appear in your talent pool.
-      </p>
     </div>
   );
 }
