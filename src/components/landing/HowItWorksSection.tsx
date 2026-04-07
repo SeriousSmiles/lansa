@@ -61,7 +61,7 @@ export const HowItWorksSection = () => {
     <section id="how-it-works" className="bg-background">
       <div className="mx-auto max-w-[1440px] px-[5%] py-20 md:py-28">
         <motion.div
-          className="mb-16 max-w-2xl"
+          className="mb-8 max-w-2xl"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
