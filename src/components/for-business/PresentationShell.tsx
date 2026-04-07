@@ -110,9 +110,13 @@ export function PresentationShell() {
 
         {/* Canvas */}
         <div className="absolute inset-0">
-          <SlideRenderer>
-            {renderSlide()}
-          </SlideRenderer>
+          {currentSlide === 0 ? (
+            renderSlide()
+          ) : (
+            <SlideRenderer>
+              {renderSlide()}
+            </SlideRenderer>
+          )}
         </div>
 
         {/* Nav buttons */}
