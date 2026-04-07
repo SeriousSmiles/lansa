@@ -1,43 +1,50 @@
 
 
-# Testimonials Section — Glossy Floating Cards with 3D Tilt
+# Testimonials Section — Darker Blue, Avatar Images, Scroll Effect, Fixed Glare
 
 ## What Changes
 
-Rewrite `TestimonialsSection.tsx` to a Team22-inspired staggered grid layout with glossy, 3D-tilting testimonial cards on a Lansa Blue background. The heading sits behind the cards at a large scale, creating depth. Cards respond to mouse position with a tilt effect and reveal a glare/shine overlay.
+1. **Darker blue background** — switch from `hsl(215 85% 55%)` to a deeper `hsl(215 85% 40%)`
+2. **Add square avatar image** at the top of each card (like the Team22 reference), using avatars from `testimonials.ts`
+3. **Make section taller** with scroll-driven stagger entrance (cards animate in as user scrolls into view)
+4. **Fix glare effect** — glare should be positional (based on tilt angle), NOT follow the cursor. The glare stays fixed relative to a "light source" and only shifts as the card tilts, creating a realistic holographic/glossy feel
+5. **Use GSAP** for the 3D tilt + glare interaction (replacing framer-motion tilt logic) for smoother, more performant animation
 
-## Visual Design
+## Glare Behavior (Key Fix)
 
-- **Section background**: Lansa Blue (`hsl(215 85% 55%)`) with subtle radial gradient highlights
-- **Heading**: Very large, semi-transparent white text centered behind the card grid (using `absolute` positioning + low opacity), creating a "text behind cards" depth effect
-- **Cards**: Lansa Blue tinted surface (`bg-white/10 backdrop-blur-md border border-white/20`) — glossy glass-morphism feel. White text throughout
-- **Staggered grid**: Desktop uses the Team22 pattern — 4 columns with alternating `mt-12` offsets on specific indices so cards feel scattered/floating
-- **Blur depth elements**: Decorative blurred circles (`bg-white/5 blur-3xl`) scattered behind the grid for atmospheric depth
-- **Mobile**: 2-column grid, simplified, no tilt effect
+The current implementation moves the glare radial gradient to match cursor position — that's wrong. The correct behavior:
+- The glare represents a fixed light source (top-left or top-center)
+- As the card tilts via mouse position, the glare shifts slightly in the *opposite* direction of the tilt, simulating light reflection off a glossy surface
+- The glare position is derived from the card's `rotateX`/`rotateY` values, not the raw mouse coordinates
+- This creates the "holographic card" effect seen in the reference video
 
-## 3D Tilt + Glare Effect
+## Card Design Update
 
-Each card tracks `onMouseMove` relative to card center:
-- `rotateX` and `rotateY` calculated from mouse offset (max ~8deg)
-- A glare overlay `div` (white radial gradient, `pointer-events-none`) repositions based on mouse coords
-- `onMouseLeave` resets to flat with a spring transition
-- Uses `framer-motion`'s `motion.div` with `style={{ rotateX, rotateY, transformPerspective: 800 }}`
+Each card will now include:
+- **Square avatar image** at top (aspect-square, rounded-xl, object-cover) — pulled from the `avatar` field in `TESTIMONIALS` data
+- Star rating below the image
+- Quote text
+- Name + role
 
-## Card Content
+Use 8 testimonials from `TESTIMONIALS` array (which has proper avatar URLs).
 
-Use 8 testimonials from the existing data (mix from `leftColumn`, `rightColumn`, and `TESTIMONIALS`). Each card shows:
-- Star rating (amber stars on the glass card)
-- Quote text (white, `font-public-sans`)
-- Name + role (white, `font-urbanist`)
-- No avatar images (keep it clean like current cards)
+## Scroll Entrance Animation
 
-## Stagger Pattern (Desktop)
+- Section gets more vertical padding (`py-28 md:py-36`)
+- GSAP `ScrollTrigger` staggers the cards in on scroll (fade up + slight scale, 0.1s stagger per card)
+- This makes the section feel longer and more immersive as user scrolls through
 
-Indices 1, 3, 7 get `mt-12` for vertical offset. Remaining cards sit flush. This creates the organic scattered layout from the Team22 reference. Cards use `will-change: transform` for GPU acceleration.
+## Technical Approach
+
+- **GSAP** with `ScrollTrigger` for scroll-triggered entrance animation
+- **GSAP** `quickTo` or direct event handlers for 3D tilt on mouse move
+- Glare overlay uses CSS `background` with radial gradient, position computed from tilt angles
+- Cards use `transform-style: preserve-3d` and `perspective` on parent
+- Keep framer-motion import only if needed elsewhere; tilt logic moves to GSAP
 
 ## File
 
 | File | Action |
 |---|---|
-| `src/components/landing/TestimonialsSection.tsx` | Rewrite — glossy tilt cards, blue bg, staggered grid, depth blur |
+| `src/components/landing/TestimonialsSection.tsx` | Rewrite — GSAP tilt/glare, avatars, darker blue, scroll entrance |
 
