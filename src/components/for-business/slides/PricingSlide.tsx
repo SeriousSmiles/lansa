@@ -101,7 +101,7 @@ export function PricingSlide({ openDetail }: PricingSlideProps) {
               ],
               stat: "XCG 75/mo"
             })}
-            className="flex-1 bg-white/5 backdrop-blur-md border border-[hsl(var(--lansa-blue))]/30 rounded-xl lg:rounded-2xl p-6 lg:p-10 text-left hover:bg-white/10 transition-all duration-200 cursor-pointer relative overflow-hidden group"
+            className="flex-1 bg-white/10 backdrop-blur-xl border border-[hsl(var(--lansa-blue))]/40 rounded-xl lg:rounded-2xl p-6 lg:p-10 text-left hover:bg-white/15 transition-all duration-200 cursor-pointer relative overflow-hidden group"
           >
             <div className="absolute top-4 right-4 lg:top-6 lg:right-6 bg-[hsl(var(--lansa-orange))] text-white text-[10px] lg:text-[11px] font-bold px-2.5 py-0.5 lg:px-3 lg:py-1 rounded-full font-['Urbanist']">
               RECOMMENDED
