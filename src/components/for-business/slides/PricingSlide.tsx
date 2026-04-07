@@ -27,7 +27,7 @@ const PREMIUM_FEATURES = [
 
 export function PricingSlide({ openDetail }: PricingSlideProps) {
   return (
-    <div className="w-full h-full relative overflow-hidden">
+    <div className="w-full min-h-full lg:h-full relative overflow-hidden">
       {/* Background photo */}
       <div
         className="absolute inset-0 bg-cover bg-center"

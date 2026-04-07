@@ -21,7 +21,7 @@ const LANSA = [
 
 export function FunnelSlide() {
   return (
-    <div className="w-full h-full flex flex-col lg:flex-row overflow-hidden">
+    <div className="w-full min-h-full lg:h-full flex flex-col lg:flex-row overflow-hidden">
       {/* Traditional */}
       <div className="flex-1 lg:w-1/2 relative">
         <div
