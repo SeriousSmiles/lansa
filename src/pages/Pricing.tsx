@@ -12,6 +12,9 @@ import {
   Crown,
   Building2,
   Rocket,
+  Lock,
+  Clock,
+  Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LandingNavbar } from "@/components/landing/LandingNavbar";
@@ -31,7 +34,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-/* ───── tier data ───── */
+/* ───── Professional tiers ───── */
 
 interface Tier {
   name: string;
@@ -42,6 +45,8 @@ interface Tier {
   features: string[];
   cta: string;
   highlighted?: boolean;
+  comingSoon?: boolean;
+  note?: string;
 }
 
 const professionalTiers: Tier[] = [
@@ -51,17 +56,18 @@ const professionalTiers: Tier[] = [
     icon: Zap,
     features: [
       "AI-powered professional profile",
-      "Free CV generation & download",
-      "Certification exams (all sectors)",
+      "Free CV generation & PDF download",
       "Job discovery feed",
-      "In-app messaging",
+      "In-app messaging with employers",
+      "Mentor educational content",
     ],
+    note: "Certification exams: XCG 25 per exam (2 attempts included)",
     cta: "Get Started Free",
   },
   {
     name: "Pro",
     price: "Coming Soon",
-    badge: "Soon",
+    badge: "Coming Soon",
     icon: Crown,
     features: [
       "Everything in Free",
@@ -72,38 +78,37 @@ const professionalTiers: Tier[] = [
     ],
     cta: "Join Waitlist",
     highlighted: true,
+    comingSoon: true,
   },
 ];
 
-const businessTiers: Tier[] = [
-  {
-    name: "Basic",
-    price: "XCG 0",
-    icon: Building2,
-    features: [
-      "10 candidate swipes / month",
-      "Job posting wizard",
-      "In-app messaging",
-      "Browse Lansa Certified candidates",
-    ],
-    cta: "Start Hiring Free",
-  },
-  {
-    name: "Premium",
-    price: "XCG 75",
-    period: "/mo",
-    badge: "Most Popular",
-    icon: Rocket,
-    features: [
-      "Unlimited candidate swipes",
-      "AI candidate summaries",
-      "Priority job listings",
-      "Hiring analytics dashboard",
-      "Dedicated support",
-    ],
-    cta: "Upgrade to Premium",
-    highlighted: true,
-  },
+/* ───── Business commitment pricing ───── */
+
+interface CommitmentPlan {
+  key: string;
+  label: string;
+  months: number;
+  monthly: number;
+  total: number;
+  savings: number;
+  badge?: string;
+}
+
+const commitmentPlans: CommitmentPlan[] = [
+  { key: "3mo", label: "3 Months", months: 3, monthly: 150, total: 450, savings: 0 },
+  { key: "6mo", label: "6 Months", months: 6, monthly: 125, total: 750, savings: 17, badge: "Save 17%" },
+  { key: "12mo", label: "12 Months", months: 12, monthly: 100, total: 1200, savings: 33, badge: "Best Value" },
+];
+
+const businessFeatures = [
+  "Unlimited candidate swipes",
+  "Job posting wizard",
+  "In-app messaging",
+  "Browse Lansa Certified candidates",
+  "AI candidate summaries",
+  "Priority job listings",
+  "Hiring analytics dashboard",
+  "Dedicated onboarding support",
 ];
 
 /* ───── comparison tables ───── */
@@ -117,30 +122,29 @@ interface CompRow {
 const professionalComparison: CompRow[] = [
   { feature: "AI Profile Generation", free: true, pro: true },
   { feature: "CV Download (PDF)", free: true, pro: true },
-  { feature: "Certification Exams", free: true, pro: true },
+  { feature: "Certification Exams", free: "XCG 25 / exam", pro: "XCG 25 / exam" },
   { feature: "Job Discovery Feed", free: true, pro: true },
   { feature: "In-app Messaging", free: true, pro: true },
+  { feature: "Mentor Content", free: true, pro: true },
   { feature: "Priority Employer Visibility", free: false, pro: true },
   { feature: "Profile Analytics", free: false, pro: true },
   { feature: "Premium Badge", free: false, pro: true },
-  { feature: "Early Feature Access", free: false, pro: true },
 ];
 
 interface BizCompRow {
   feature: string;
-  basic: boolean | string;
-  premium: boolean | string;
+  included: boolean | string;
 }
 
 const businessComparison: BizCompRow[] = [
-  { feature: "Candidate Swipes", basic: "10 / month", premium: "Unlimited" },
-  { feature: "Job Posting Wizard", basic: true, premium: true },
-  { feature: "In-app Messaging", basic: true, premium: true },
-  { feature: "Browse Certified Candidates", basic: true, premium: true },
-  { feature: "AI Candidate Summaries", basic: false, premium: true },
-  { feature: "Priority Listings", basic: false, premium: true },
-  { feature: "Hiring Analytics", basic: false, premium: true },
-  { feature: "Dedicated Support", basic: false, premium: true },
+  { feature: "Candidate Swipes", included: "Unlimited" },
+  { feature: "Job Posting Wizard", included: true },
+  { feature: "In-app Messaging", included: true },
+  { feature: "Browse Certified Candidates", included: true },
+  { feature: "AI Candidate Summaries", included: true },
+  { feature: "Priority Listings", included: true },
+  { feature: "Hiring Analytics", included: true },
+  { feature: "Dedicated Support", included: true },
 ];
 
 /* ───── FAQ ───── */
@@ -148,23 +152,27 @@ const businessComparison: BizCompRow[] = [
 const faqs = [
   {
     q: "Is Lansa really free for professionals?",
-    a: "Yes! Creating your profile, generating your CV, taking certification exams, and discovering jobs are all completely free. The upcoming Pro tier will add premium features, but the core experience stays free forever.",
+    a: "Yes! Creating your profile, generating your CV, discovering jobs, and messaging are all completely free. The only cost is XCG 25 per certification exam, which includes 2 attempts. Certification is what gets you in front of employers — it's the gateway to opportunity.",
   },
   {
     q: "What is XCG?",
-    a: "XCG is the Eastern Caribbean Dollar, the official currency across several Caribbean nations. All Lansa pricing is displayed in XCG for transparency.",
+    a: "XCG stands for Caribbean Guilder (also known as ANG — Antilliaanse Gulden), the official currency of Curaçao and Sint Maarten. All Lansa pricing is displayed in XCG.",
   },
   {
-    q: "Can I cancel my Premium business plan anytime?",
-    a: "Absolutely. There are no contracts or commitments. You can downgrade or cancel at any time from your account settings.",
+    q: "How does the business commitment model work?",
+    a: "Employers choose a commitment period: 3, 6, or 12 months. The longer the commitment, the lower the monthly rate. All plans include the full feature set — unlimited swipes, AI summaries, analytics, and more.",
+  },
+  {
+    q: "Is there a free plan for employers?",
+    a: "There is no free tier for employers. However, we're currently in open beta and offering select pilot companies free access for a limited time. Contact us to learn if you qualify.",
   },
   {
     q: "What does 'Lansa Certified' mean?",
     a: "Lansa Certified means a candidate has passed one or more industry-specific exams on our platform. It gives employers confidence that the person has verified, practical skills.",
   },
   {
-    q: "How do candidate swipes work for businesses?",
-    a: "Swipes let you browse candidate profiles. Each swipe (like or pass) counts toward your monthly limit on the Basic plan. Premium gives you unlimited swipes.",
+    q: "Can I cancel my business subscription?",
+    a: "Your subscription runs for the duration of your chosen commitment period (3, 6, or 12 months). You can choose not to renew at the end of your term. No auto-renewal surprises.",
   },
 ];
 
@@ -180,7 +188,7 @@ const CellValue = ({ value }: { value: boolean | string }) => {
   );
 };
 
-/* ───── TierCard ───── */
+/* ───── TierCard (professionals) ───── */
 
 const TierCard = ({ tier, onAction, delay = 0 }: { tier: Tier; onAction: () => void; delay?: number }) => (
   <motion.div
@@ -189,32 +197,47 @@ const TierCard = ({ tier, onAction, delay = 0 }: { tier: Tier; onAction: () => v
     exit={{ opacity: 0, y: -20 }}
     transition={{ duration: 0.5, delay }}
     className={`relative flex flex-col rounded-3xl border-2 p-8 md:p-10 transition-shadow duration-300 ${
-      tier.highlighted
+      tier.comingSoon
+        ? "border-border/40 bg-muted/30 shadow-sm"
+        : tier.highlighted
         ? "border-primary bg-background shadow-xl hover:shadow-2xl"
         : "border-border/60 bg-background shadow-sm hover:shadow-lg"
     }`}
   >
     {tier.badge && (
-      <span className="absolute -top-3.5 right-6 rounded-full lansa-gradient-primary px-4 py-1 text-xs font-bold text-white font-urbanist shadow-lg">
+      <span className={`absolute -top-3.5 right-6 rounded-full px-4 py-1 text-xs font-bold font-urbanist shadow-lg ${
+        tier.comingSoon
+          ? "bg-muted-foreground/60 text-white"
+          : "lansa-gradient-primary text-white"
+      }`}>
         {tier.badge}
       </span>
     )}
 
     <div className="flex items-center gap-3 mb-6">
-      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${tier.highlighted ? "lansa-gradient-primary" : "bg-primary/10"}`}>
-        <tier.icon className={`h-5 w-5 ${tier.highlighted ? "text-white" : "text-primary"}`} />
+      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+        tier.comingSoon ? "bg-muted-foreground/10" : tier.highlighted ? "lansa-gradient-primary" : "bg-primary/10"
+      }`}>
+        <tier.icon className={`h-5 w-5 ${tier.comingSoon ? "text-muted-foreground" : tier.highlighted ? "text-white" : "text-primary"}`} />
       </div>
-      <h3 className="text-xl font-bold font-urbanist text-foreground">{tier.name}</h3>
+      <h3 className={`text-xl font-bold font-urbanist ${tier.comingSoon ? "text-muted-foreground" : "text-foreground"}`}>{tier.name}</h3>
     </div>
 
-    <div className="flex items-baseline gap-1 mb-8">
-      <span className="text-4xl md:text-5xl font-bold font-urbanist lansa-gradient-text">{tier.price}</span>
+    <div className="flex items-baseline gap-1 mb-4">
+      <span className={`text-4xl md:text-5xl font-bold font-urbanist ${tier.comingSoon ? "text-muted-foreground/50" : "lansa-gradient-text"}`}>{tier.price}</span>
       {tier.period && (
         <span className="text-muted-foreground font-public-sans text-sm">{tier.period}</span>
       )}
     </div>
 
-    <ul className="flex flex-col gap-3.5 flex-1">
+    {tier.note && (
+      <div className="flex items-center gap-2 mb-6 rounded-xl bg-primary/5 border border-primary/10 px-4 py-3">
+        <Award className="h-4 w-4 text-primary shrink-0" />
+        <span className="text-xs font-public-sans text-foreground/70">{tier.note}</span>
+      </div>
+    )}
+
+    <ul className={`flex flex-col gap-3.5 flex-1 ${tier.comingSoon ? "opacity-50" : ""}`}>
       {tier.features.map((f) => (
         <li key={f} className="flex items-start gap-3 text-sm font-public-sans text-foreground/80">
           <CircleCheck className="h-4.5 w-4.5 mt-0.5 text-primary shrink-0" />
@@ -224,9 +247,9 @@ const TierCard = ({ tier, onAction, delay = 0 }: { tier: Tier; onAction: () => v
     </ul>
 
     <Button
-      variant={tier.highlighted ? "primary" : "outline"}
+      variant={tier.comingSoon ? "outline" : tier.highlighted ? "primary" : "outline"}
       size="lg"
-      className="mt-8 w-full font-urbanist font-semibold text-base"
+      className={`mt-8 w-full font-urbanist font-semibold text-base ${tier.comingSoon ? "opacity-70" : ""}`}
       onClick={onAction}
     >
       {tier.cta}
@@ -234,19 +257,133 @@ const TierCard = ({ tier, onAction, delay = 0 }: { tier: Tier; onAction: () => v
   </motion.div>
 );
 
+/* ───── Business Pricing Card ───── */
+
+const BusinessPricingCard = ({ onAction }: { onAction: () => void }) => {
+  const [selected, setSelected] = useState("3mo");
+  const plan = commitmentPlans.find((p) => p.key === selected)!;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-2xl mx-auto"
+    >
+      {/* Open Beta Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="mb-6 rounded-2xl border-2 border-secondary/20 bg-secondary/5 px-6 py-4 text-center"
+      >
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <Sparkles className="h-4 w-4 text-secondary" />
+          <span className="text-sm font-bold font-urbanist text-secondary">Open Beta</span>
+        </div>
+        <p className="text-xs font-public-sans text-muted-foreground">
+          Selected companies are piloting Lansa for free for a limited time.{" "}
+          <button onClick={onAction} className="text-secondary underline underline-offset-2 hover:text-secondary/80 transition-colors">
+            Contact us to apply
+          </button>
+        </p>
+      </motion.div>
+
+      <div className="relative rounded-3xl border-2 border-primary bg-background shadow-xl p-8 md:p-10">
+        <span className="absolute -top-3.5 right-6 rounded-full lansa-gradient-primary px-4 py-1 text-xs font-bold text-white font-urbanist shadow-lg">
+          Full Platform Access
+        </span>
+
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl lansa-gradient-primary">
+            <Rocket className="h-5 w-5 text-white" />
+          </div>
+          <h3 className="text-xl font-bold font-urbanist text-foreground">Lansa for Business</h3>
+        </div>
+
+        {/* Commitment selector */}
+        <div className="grid grid-cols-3 gap-2 mb-8">
+          {commitmentPlans.map((cp) => (
+            <button
+              key={cp.key}
+              onClick={() => setSelected(cp.key)}
+              className={`relative rounded-xl border-2 px-3 py-3 text-center transition-all duration-200 ${
+                selected === cp.key
+                  ? "border-primary bg-primary/5 shadow-md"
+                  : "border-border/60 bg-background hover:border-border"
+              }`}
+            >
+              {cp.badge && (
+                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-secondary text-white text-[10px] font-bold px-2.5 py-0.5 font-urbanist whitespace-nowrap">
+                  {cp.badge}
+                </span>
+              )}
+              <span className={`block text-xs font-urbanist font-semibold mb-1 ${
+                selected === cp.key ? "text-primary" : "text-muted-foreground"
+              }`}>
+                {cp.label}
+              </span>
+              <span className={`block text-lg font-bold font-urbanist ${
+                selected === cp.key ? "text-foreground" : "text-foreground/70"
+              }`}>
+                XCG {cp.monthly}
+              </span>
+              <span className="block text-[10px] text-muted-foreground font-public-sans">/month</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Price display */}
+        <div className="text-center mb-8">
+          <div className="flex items-baseline justify-center gap-2">
+            <span className="text-5xl md:text-6xl font-bold font-urbanist lansa-gradient-text">
+              XCG {plan.monthly}
+            </span>
+            <span className="text-muted-foreground font-public-sans text-sm">/month</span>
+          </div>
+          <p className="text-xs text-muted-foreground font-public-sans mt-2">
+            XCG {plan.total.toLocaleString()} total for {plan.months} months
+            {plan.savings > 0 && (
+              <span className="ml-2 text-secondary font-semibold">· Save {plan.savings}%</span>
+            )}
+          </p>
+        </div>
+
+        {/* Features */}
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
+          {businessFeatures.map((f) => (
+            <li key={f} className="flex items-start gap-3 text-sm font-public-sans text-foreground/80">
+              <CircleCheck className="h-4.5 w-4.5 mt-0.5 text-primary shrink-0" />
+              {f}
+            </li>
+          ))}
+        </ul>
+
+        <Button
+          variant="primary"
+          size="lg"
+          className="w-full font-urbanist font-semibold text-base"
+          onClick={onAction}
+        >
+          Get Started — {plan.label}
+        </Button>
+      </div>
+    </motion.div>
+  );
+};
+
 /* ───── Page ───── */
 
 const Pricing = () => {
   const navigate = useNavigate();
   const [view, setView] = useState<"pro" | "biz">("pro");
 
-  const tiers = view === "pro" ? professionalTiers : businessTiers;
-
   return (
     <div className="min-h-screen bg-background">
       <LandingNavbar />
 
-      {/* Hero — dark gradient */}
+      {/* Hero */}
       <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[hsl(215,85%,15%)] via-[hsl(215,60%,10%)] to-[hsl(0,0%,4%)]" />
         <div className="absolute inset-0 opacity-30">
@@ -269,7 +406,7 @@ const Pricing = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-4xl font-bold font-urbanist text-white md:text-6xl leading-tight max-w-3xl mx-auto"
           >
-            Start Free. Scale When Ready.
+            Free for Talent. Built for Business.
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -277,7 +414,7 @@ const Pricing = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mt-5 text-white/60 font-public-sans text-base md:text-lg max-w-xl mx-auto leading-relaxed"
           >
-            No contracts, no hidden fees. Upgrade or cancel anytime.
+            Professionals use Lansa free. Employers invest in access to certified, verified talent.
           </motion.p>
 
           {/* Tab switcher */}
@@ -315,18 +452,22 @@ const Pricing = () => {
       <section className="py-16 md:py-20 -mt-10 relative z-10">
         <div className="mx-auto max-w-[1440px] px-[5%]">
           <AnimatePresence mode="wait">
-            <motion.div
-              key={view}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.35 }}
-              className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto"
-            >
-              {tiers.map((t, i) => (
-                <TierCard key={t.name} tier={t} onAction={() => navigate("/signup")} delay={i * 0.1} />
-              ))}
-            </motion.div>
+            {view === "pro" ? (
+              <motion.div
+                key="pro"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.35 }}
+                className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto"
+              >
+                {professionalTiers.map((t, i) => (
+                  <TierCard key={t.name} tier={t} onAction={() => navigate("/signup")} delay={i * 0.1} />
+                ))}
+              </motion.div>
+            ) : (
+              <BusinessPricingCard key="biz" onAction={() => navigate("/signup")} />
+            )}
           </AnimatePresence>
         </div>
       </section>
@@ -355,8 +496,8 @@ const Pricing = () => {
                       <TableHeader>
                         <TableRow className="border-b-2 border-border/60">
                           <TableHead className="font-urbanist font-semibold text-foreground">Feature</TableHead>
-                          <TableHead className="text-center font-urbanist font-semibold text-foreground w-28">Free</TableHead>
-                          <TableHead className="text-center font-urbanist font-semibold text-foreground w-28">Pro</TableHead>
+                          <TableHead className="text-center font-urbanist font-semibold text-foreground w-32">Free</TableHead>
+                          <TableHead className="text-center font-urbanist font-semibold text-muted-foreground w-32">Pro (Soon)</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -364,7 +505,7 @@ const Pricing = () => {
                           <TableRow key={row.feature} className={i % 2 === 0 ? "bg-background" : "bg-accent/40"}>
                             <TableCell className="font-public-sans text-sm">{row.feature}</TableCell>
                             <TableCell className="text-center"><CellValue value={row.free} /></TableCell>
-                            <TableCell className="text-center"><CellValue value={row.pro} /></TableCell>
+                            <TableCell className="text-center opacity-50"><CellValue value={row.pro} /></TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -376,16 +517,14 @@ const Pricing = () => {
                       <TableHeader>
                         <TableRow className="border-b-2 border-border/60">
                           <TableHead className="font-urbanist font-semibold text-foreground">Feature</TableHead>
-                          <TableHead className="text-center font-urbanist font-semibold text-foreground w-28">Basic</TableHead>
-                          <TableHead className="text-center font-urbanist font-semibold text-foreground w-28">Premium</TableHead>
+                          <TableHead className="text-center font-urbanist font-semibold text-foreground w-32">Included</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {businessComparison.map((row, i) => (
                           <TableRow key={row.feature} className={i % 2 === 0 ? "bg-background" : "bg-accent/40"}>
                             <TableCell className="font-public-sans text-sm">{row.feature}</TableCell>
-                            <TableCell className="text-center"><CellValue value={row.basic} /></TableCell>
-                            <TableCell className="text-center"><CellValue value={row.premium} /></TableCell>
+                            <TableCell className="text-center"><CellValue value={row.included} /></TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -398,7 +537,7 @@ const Pricing = () => {
         </div>
       </section>
 
-      {/* Trust bar — gradient banner */}
+      {/* Trust bar */}
       <section className="pb-20">
         <div className="mx-auto max-w-[1440px] px-[5%]">
           <motion.div
@@ -408,7 +547,6 @@ const Pricing = () => {
             transition={{ duration: 0.5 }}
             className="relative flex flex-col items-center gap-5 rounded-3xl py-14 px-6 text-center overflow-hidden"
           >
-            {/* Gradient bg */}
             <div className="absolute inset-0 lansa-gradient-primary opacity-[0.08] rounded-3xl" />
             <div className="absolute inset-0 border-2 border-primary/15 rounded-3xl" />
 
