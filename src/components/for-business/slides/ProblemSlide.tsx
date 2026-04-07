@@ -109,7 +109,7 @@ export function ProblemSlide({ industry, openDetail }: ProblemSlideProps) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 bg-white flex flex-col justify-center px-6 py-6 md:px-10 md:py-8 lg:px-16 lg:py-12 lg:w-[45%]">
+      <div className="flex-1 min-h-0 bg-white flex flex-col justify-center px-6 py-6 md:px-10 md:py-8 lg:px-16 lg:py-12 lg:w-[45%] overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
         <h2 className="font-['Urbanist'] mb-2 lg:mb-3">
           <span className="text-[28px] md:text-[40px] lg:text-[60px] font-extralight text-foreground leading-[1.1] block">{data.headlineThin}</span>
           <span className="text-[36px] md:text-[48px] lg:text-[72px] font-black text-foreground leading-[1.0] block">{data.headlineBold}</span>

@@ -181,7 +181,7 @@ export function HeroSlide({ industry, setIndustry }: HeroSlideProps) {
               key={ind.id}
               onClick={() => handleMobileTap(ind.id)}
               className={cn(
-                "relative cursor-pointer overflow-hidden transition-all duration-500 ease-in-out",
+                "relative cursor-pointer overflow-hidden transition-all duration-500 ease-in-out min-h-0",
                 isActive ? "flex-[2.5]" : "flex-1"
               )}
             >
