@@ -113,7 +113,7 @@ export function CertificationSlide({ openDetail }: CertificationSlideProps) {
       </div>
 
       <p className="mt-12 text-white/30 text-sm text-center">
-        Certification is free for candidates and mandatory before they enter the talent pool.
+        Every candidate invests in their own certification — only verified professionals appear in your talent pool.
       </p>
     </div>
   );
