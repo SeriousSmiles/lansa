@@ -1,5 +1,6 @@
-import { motion } from "framer-motion";
-import { UserPlus, Award, Briefcase } from "lucide-react";
+import { motion, useScroll, useTransform, useMotionValue, MotionValue } from "framer-motion";
+import { UserPlus, Award, Briefcase, ArrowRight } from "lucide-react";
+import { useRef } from "react";
 import homepage5 from "@/assets/homepage-5.png";
 import homepage6 from "@/assets/homepage-6.png";
 import homepage7 from "@/assets/homepage-7.png";
@@ -31,10 +32,34 @@ const steps = [
   },
 ];
 
+const useCalculateScales = (totalSections: number, scrollYProgress: MotionValue<number>) => {
+  const scales: MotionValue<number>[] = [];
+  for (let index = 0; index < totalSections; index++) {
+    const sectionFraction = 1 / totalSections;
+    const start = sectionFraction * index;
+    const end = sectionFraction * (index + 1);
+    if (index < totalSections - 1) {
+      scales.push(useTransform(scrollYProgress, [start, end], [1, 0.8]));
+    } else {
+      scales.push(useMotionValue(1));
+    }
+  }
+  return scales;
+};
+
 export const HowItWorksSection = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end 60%"],
+  });
+
+  const scales = useCalculateScales(steps.length, scrollYProgress);
+
   return (
-    <section id="how-it-works" className="bg-background py-20 md:py-28">
-      <div className="mx-auto max-w-[1440px] px-[5%]">
+    <section id="how-it-works" className="bg-background">
+      <div className="mx-auto max-w-[1440px] px-[5%] py-20 md:py-28">
         <motion.div
           className="mb-16 max-w-2xl"
           initial={{ opacity: 0, y: 20 }}
@@ -53,49 +78,81 @@ export const HowItWorksSection = () => {
             We removed every barrier between you and your next opportunity. No résumé writers, no expensive courses, no waiting — just clear steps forward.
           </p>
         </motion.div>
+      </div>
 
-        <div className="relative flex flex-col gap-20">
-          {/* Vertical connector line (desktop) */}
-          <div className="hidden md:block absolute left-6 top-6 bottom-6 w-px bg-gradient-to-b from-primary/40 via-secondary/40 to-primary/40" />
-
-          {steps.map((step, i) => (
-            <motion.div
-              key={step.num}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.55, delay: 0.1 }}
-              className={`relative grid items-center gap-10 md:grid-cols-2 md:gap-16 ${
-                i % 2 !== 0 ? "md:[direction:rtl]" : ""
-              }`}
-            >
-              <div className={`flex flex-col gap-5 ${i % 2 !== 0 ? "md:[direction:ltr]" : ""}`}>
-                <div className="flex items-center gap-4">
-                  <span className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full lansa-gradient-primary text-white font-urbanist font-bold text-lg shadow-lg">
-                    {step.num}
-                  </span>
-                  <step.icon className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-2xl font-bold font-urbanist text-foreground md:text-3xl">
-                  {step.title}
-                </h3>
-                <p className="text-muted-foreground font-public-sans text-base leading-relaxed">
-                  {step.description}
-                </p>
-              </div>
-
-              <div className={`overflow-hidden rounded-2xl shadow-lg ${i % 2 !== 0 ? "md:[direction:ltr]" : ""}`}>
-                <img
-                  src={step.image}
-                  alt={step.title}
-                  className="w-full h-auto object-cover aspect-[4/3]"
-                  loading="lazy"
-                />
-              </div>
-            </motion.div>
-          ))}
-        </div>
+      {/* Scroll-driven stacking container */}
+      <div ref={containerRef} className="relative">
+        {steps.map((step, index) => (
+          <FeatureCard
+            key={step.num}
+            step={step}
+            index={index}
+            scale={scales[index]}
+          />
+        ))}
       </div>
     </section>
+  );
+};
+
+const FeatureCard = ({
+  step,
+  index,
+  scale,
+}: {
+  step: (typeof steps)[0];
+  index: number;
+  scale: MotionValue<number>;
+}) => {
+  const isEven = index % 2 === 0;
+  const Icon = step.icon;
+
+  return (
+    <div className="sticky top-0 flex min-h-screen items-center justify-center px-[5%] py-10 md:py-0">
+      <motion.div
+        style={{ scale }}
+        className="mx-auto w-full max-w-[1440px] overflow-hidden rounded-2xl border border-primary/10 bg-background shadow-xl"
+      >
+        <div
+          className={`grid min-h-[70vh] items-center gap-8 p-8 md:grid-cols-2 md:gap-12 md:p-16 ${
+            !isEven ? "md:[direction:rtl]" : ""
+          }`}
+        >
+          {/* Text */}
+          <div className={`flex flex-col gap-5 ${!isEven ? "md:[direction:ltr]" : ""}`}>
+            <div className="flex items-center gap-4">
+              <span className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full lansa-gradient-primary text-primary-foreground font-urbanist font-bold text-lg shadow-lg">
+                {step.num}
+              </span>
+              <Icon className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="text-2xl font-bold font-urbanist text-foreground md:text-4xl">
+              {step.title}
+            </h3>
+            <p className="text-muted-foreground font-public-sans text-base leading-relaxed md:text-lg">
+              {step.description}
+            </p>
+            <div className="mt-2 flex items-center gap-2">
+              <a
+                href="#"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary font-urbanist hover:underline"
+              >
+                Learn more <ArrowRight className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
+
+          {/* Image */}
+          <div className={`overflow-hidden rounded-2xl ${!isEven ? "md:[direction:ltr]" : ""}`}>
+            <img
+              src={step.image}
+              alt={step.title}
+              className="w-full h-auto object-cover aspect-[4/3] rounded-2xl"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </motion.div>
+    </div>
   );
 };
