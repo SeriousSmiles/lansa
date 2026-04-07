@@ -1,41 +1,43 @@
 
 
-# Replace HowItWorksSection with Scroll-Driven Stacking Cards (Layout408 Pattern)
+# Testimonials Section — Glossy Floating Cards with 3D Tilt
 
 ## What Changes
 
-Replace the current alternating grid layout in `HowItWorksSection.tsx` with a sticky scroll-driven stacking card interaction inspired by the Relume Layout408 component. As the user scrolls, each card stacks on top of the previous one, scaling down previous cards to create a depth effect.
+Rewrite `TestimonialsSection.tsx` to a Team22-inspired staggered grid layout with glossy, 3D-tilting testimonial cards on a Lansa Blue background. The heading sits behind the cards at a large scale, creating depth. Cards respond to mouse position with a tilt effect and reveal a glare/shine overlay.
 
-## Technical Approach
+## Visual Design
 
-Rewrite `HowItWorksSection.tsx` using only existing dependencies (`framer-motion`, `lucide-react`) — no Relume UI or clsx imports needed.
+- **Section background**: Lansa Blue (`hsl(215 85% 55%)`) with subtle radial gradient highlights
+- **Heading**: Very large, semi-transparent white text centered behind the card grid (using `absolute` positioning + low opacity), creating a "text behind cards" depth effect
+- **Cards**: Lansa Blue tinted surface (`bg-white/10 backdrop-blur-md border border-white/20`) — glossy glass-morphism feel. White text throughout
+- **Staggered grid**: Desktop uses the Team22 pattern — 4 columns with alternating `mt-12` offsets on specific indices so cards feel scattered/floating
+- **Blur depth elements**: Decorative blurred circles (`bg-white/5 blur-3xl`) scattered behind the grid for atmospheric depth
+- **Mobile**: 2-column grid, simplified, no tilt effect
 
-### Scroll Mechanics
-- Wrap section in a tall container (`ref` for `useScroll`)
-- Use `useScroll` with `offset: ["start start", "end 60%"]` to track progress
-- Calculate per-card scale values: earlier cards scale to `0.8` as user scrolls past them, last card stays at `1`
-- Each card is `position: sticky; top: 0` so they stack visually
+## 3D Tilt + Glare Effect
 
-### Card Layout
-- Each card is a full-viewport-height sticky panel with a two-column layout (text + image)
-- Alternating layout: odd cards flip text/image sides (same as current behavior)
-- On mobile: single column, stacked vertically (no sticky behavior — just standard flow)
-- Cards get white bg, `rounded-2xl`, `shadow-xl`, and `border border-primary/10`
+Each card tracks `onMouseMove` relative to card center:
+- `rotateX` and `rotateY` calculated from mouse offset (max ~8deg)
+- A glare overlay `div` (white radial gradient, `pointer-events-none`) repositions based on mouse coords
+- `onMouseLeave` resets to flat with a spring transition
+- Uses `framer-motion`'s `motion.div` with `style={{ rotateX, rotateY, transformPerspective: 800 }}`
 
-### Content Preserved
-- Same 3 steps: Build Your Profile, Get Certified, Connect & Get Hired
-- Same images: `homepage5`, `homepage6`, `homepage7`
-- Same icons: `UserPlus`, `Award`, `Briefcase`
-- Same header block: "Simple by Design" tagline + heading + description
-- Add a "Learn more" link-style button per card using `ArrowRight` icon from lucide
+## Card Content
 
-### Responsive
-- Desktop: sticky stacking with scale transforms, two-column card content
-- Mobile: standard stacked cards (no sticky), single column, simplified
+Use 8 testimonials from the existing data (mix from `leftColumn`, `rightColumn`, and `TESTIMONIALS`). Each card shows:
+- Star rating (amber stars on the glass card)
+- Quote text (white, `font-public-sans`)
+- Name + role (white, `font-urbanist`)
+- No avatar images (keep it clean like current cards)
+
+## Stagger Pattern (Desktop)
+
+Indices 1, 3, 7 get `mt-12` for vertical offset. Remaining cards sit flush. This creates the organic scattered layout from the Team22 reference. Cards use `will-change: transform` for GPU acceleration.
 
 ## File
 
 | File | Action |
 |---|---|
-| `src/components/landing/HowItWorksSection.tsx` | Rewrite — scroll-driven stacking card interaction |
+| `src/components/landing/TestimonialsSection.tsx` | Rewrite — glossy tilt cards, blue bg, staggered grid, depth blur |
 
