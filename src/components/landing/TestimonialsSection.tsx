@@ -161,7 +161,7 @@ export const TestimonialsSection = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden"
+      className="relative"
       style={{ backgroundColor: "#191f71" }}
     >
       {/* Decorative blur circles */}
