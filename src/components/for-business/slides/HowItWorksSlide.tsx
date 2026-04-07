@@ -62,23 +62,23 @@ export function HowItWorksSlide({ openDetail }: HowItWorksSlideProps) {
   return (
     <div className="w-full h-full bg-[hsl(215,20%,97%)] flex flex-col">
       {/* Header */}
-      <div className="pt-16 px-[120px] mb-8">
-        <p className="text-[13px] font-semibold text-[hsl(var(--lansa-orange))] uppercase tracking-[0.25em] mb-4 font-['Urbanist']">
+      <div className="pt-8 px-6 md:px-12 lg:pt-16 lg:px-[120px] mb-4 lg:mb-8">
+        <p className="text-[12px] lg:text-[13px] font-semibold text-[hsl(var(--lansa-orange))] uppercase tracking-[0.25em] mb-2 lg:mb-4 font-['Urbanist']">
           How It Works
         </p>
         <h2 className="font-['Urbanist']">
-          <span className="text-[52px] font-extralight text-foreground leading-[1.1]">Three Steps. </span>
-          <span className="text-[52px] font-black text-foreground leading-[1.1]">That's It.</span>
+          <span className="text-[32px] md:text-[40px] lg:text-[52px] font-extralight text-foreground leading-[1.1]">Three Steps. </span>
+          <span className="text-[32px] md:text-[40px] lg:text-[52px] font-black text-foreground leading-[1.1]">That's It.</span>
         </h2>
       </div>
 
       {/* Steps — photo cards */}
-      <div className="flex-1 flex gap-6 px-[120px] pb-16">
+      <div className="flex-1 flex flex-col lg:flex-row gap-4 lg:gap-6 px-6 md:px-12 lg:px-[120px] pb-6 lg:pb-16">
         {STEPS.map((step, i) => (
           <button
             key={i}
             onClick={() => openDetail(step.detail)}
-            className="flex-1 relative rounded-2xl overflow-hidden cursor-pointer group"
+            className="flex-1 relative rounded-xl lg:rounded-2xl overflow-hidden cursor-pointer group min-h-[200px] lg:min-h-0"
           >
             {/* Background photo */}
             <div
@@ -89,23 +89,23 @@ export function HowItWorksSlide({ openDetail }: HowItWorksSlideProps) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20 group-hover:from-black/95 group-hover:via-black/60 transition-all duration-500" />
 
             {/* Watermark number */}
-            <div className="absolute top-4 right-6 z-10">
-              <span className="text-[140px] font-extralight text-white/[0.06] font-['Urbanist'] leading-none select-none">
+            <div className="absolute top-2 right-4 lg:top-4 lg:right-6 z-10">
+              <span className="text-[80px] lg:text-[140px] font-extralight text-white/[0.06] font-['Urbanist'] leading-none select-none">
                 {step.num}
               </span>
             </div>
 
             {/* Content */}
-            <div className="relative z-10 h-full flex flex-col justify-end items-center text-center p-8">
-              <p className="text-[hsl(var(--lansa-orange))] text-[13px] font-bold tracking-widest mb-3 font-['Urbanist']">
+            <div className="relative z-10 h-full flex flex-col justify-end items-center text-center p-5 lg:p-8">
+              <p className="text-[hsl(var(--lansa-orange))] text-[11px] lg:text-[13px] font-bold tracking-widest mb-2 lg:mb-3 font-['Urbanist']">
                 STEP {step.num}
               </p>
-              <h3 className="font-['Urbanist'] mb-3">
-                <span className="text-[32px] font-extralight text-white leading-tight block">{step.title}</span>
-                <span className="text-[32px] font-black text-white leading-tight block">{step.titleBold}</span>
+              <h3 className="font-['Urbanist'] mb-2 lg:mb-3">
+                <span className="text-[22px] lg:text-[32px] font-extralight text-white leading-tight block">{step.title}</span>
+                <span className="text-[22px] lg:text-[32px] font-black text-white leading-tight block">{step.titleBold}</span>
               </h3>
-              <p className="text-white/60 text-[14px] font-['Urbanist'] leading-relaxed max-w-[300px]">{step.desc}</p>
-              <p className="text-[hsl(var(--lansa-orange))] text-[12px] font-semibold mt-4 opacity-0 group-hover:opacity-100 transition-opacity font-['Urbanist']">
+              <p className="text-white/60 text-[13px] lg:text-[14px] font-['Urbanist'] leading-relaxed max-w-[300px]">{step.desc}</p>
+              <p className="text-[hsl(var(--lansa-orange))] text-[12px] font-semibold mt-3 lg:mt-4 opacity-0 group-hover:opacity-100 transition-opacity font-['Urbanist']">
                 Learn more →
               </p>
             </div>

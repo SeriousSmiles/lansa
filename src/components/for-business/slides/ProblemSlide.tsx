@@ -90,48 +90,48 @@ export function ProblemSlide({ industry, openDetail }: ProblemSlideProps) {
   const image = INDUSTRY_IMAGES[industry] || INDUSTRY_IMAGES.other;
 
   return (
-    <div className="w-full h-full flex overflow-hidden">
-      {/* Left — Photo */}
-      <div className="w-[55%] relative">
+    <div className="w-full h-full flex flex-col lg:flex-row overflow-hidden">
+      {/* Photo */}
+      <div className="h-[35vh] md:h-[35%] lg:h-full lg:w-[55%] relative shrink-0">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${image})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b lg:bg-gradient-to-r from-black/20 via-transparent to-black/60" />
         {/* Overlay stat callout */}
-        <div className="absolute bottom-16 left-12 z-10">
-          <p className="text-white/50 text-[13px] font-['Urbanist'] uppercase tracking-[0.2em] mb-2">The Problem</p>
-          <div className="bg-black/40 backdrop-blur-md rounded-2xl px-8 py-6 border border-white/10">
-            <p className="text-[64px] font-black text-white font-['Urbanist'] leading-none">{data.cards[0].stat}</p>
-            <p className="text-white/60 text-[15px] font-['Urbanist'] mt-1">{data.cards[0].label}</p>
+        <div className="absolute bottom-4 left-4 lg:bottom-16 lg:left-12 z-10">
+          <p className="text-white/50 text-[11px] lg:text-[13px] font-['Urbanist'] uppercase tracking-[0.2em] mb-1 lg:mb-2">The Problem</p>
+          <div className="bg-black/40 backdrop-blur-md rounded-xl lg:rounded-2xl px-4 py-3 lg:px-8 lg:py-6 border border-white/10">
+            <p className="text-[36px] lg:text-[64px] font-black text-white font-['Urbanist'] leading-none">{data.cards[0].stat}</p>
+            <p className="text-white/60 text-[12px] lg:text-[15px] font-['Urbanist'] mt-0.5 lg:mt-1">{data.cards[0].label}</p>
           </div>
         </div>
       </div>
 
-      {/* Right — Content */}
-      <div className="w-[45%] bg-white flex flex-col justify-center px-16 py-12">
-        <h2 className="font-['Urbanist'] mb-3">
-          <span className="text-[60px] font-extralight text-foreground leading-[1.1] block">{data.headlineThin}</span>
-          <span className="text-[72px] font-black text-foreground leading-[1.0] block">{data.headlineBold}</span>
+      {/* Content */}
+      <div className="flex-1 bg-white flex flex-col justify-center px-6 py-6 md:px-10 md:py-8 lg:px-16 lg:py-12 lg:w-[45%]">
+        <h2 className="font-['Urbanist'] mb-2 lg:mb-3">
+          <span className="text-[28px] md:text-[40px] lg:text-[60px] font-extralight text-foreground leading-[1.1] block">{data.headlineThin}</span>
+          <span className="text-[36px] md:text-[48px] lg:text-[72px] font-black text-foreground leading-[1.0] block">{data.headlineBold}</span>
         </h2>
-        <p className="text-[17px] text-muted-foreground font-['Urbanist'] font-light mb-12 max-w-[420px] leading-relaxed">
+        <p className="text-[14px] lg:text-[17px] text-muted-foreground font-['Urbanist'] font-light mb-6 lg:mb-12 max-w-[420px] leading-relaxed">
           {data.subtitle}
         </p>
 
         {/* Stat cards */}
-        <div className="space-y-4">
+        <div className="space-y-2 lg:space-y-4">
           {data.cards.map((card, i) => (
             <button
               key={i}
               onClick={() => openDetail(card.detail)}
-              className="w-full flex items-center gap-6 text-left group cursor-pointer hover:bg-[hsl(var(--lansa-muted))] rounded-xl p-4 -ml-4 transition-all duration-200"
+              className="w-full flex items-center gap-4 lg:gap-6 text-left group cursor-pointer hover:bg-[hsl(var(--lansa-muted))] rounded-xl p-3 lg:p-4 -ml-3 lg:-ml-4 transition-all duration-200"
             >
               <div className="shrink-0">
-                <p className="text-[36px] font-black text-[hsl(var(--lansa-blue))] font-['Urbanist'] leading-none">{card.stat}</p>
-                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mt-1">{card.label}</p>
+                <p className="text-[24px] lg:text-[36px] font-black text-[hsl(var(--lansa-blue))] font-['Urbanist'] leading-none">{card.stat}</p>
+                <p className="text-[10px] lg:text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mt-0.5 lg:mt-1">{card.label}</p>
               </div>
-              <div className="flex-1 border-l border-border pl-6">
-                <p className="text-[14px] text-muted-foreground leading-relaxed">{card.desc}</p>
+              <div className="flex-1 border-l border-border pl-4 lg:pl-6">
+                <p className="text-[13px] lg:text-[14px] text-muted-foreground leading-relaxed">{card.desc}</p>
                 <p className="text-[12px] text-[hsl(var(--lansa-orange))] font-semibold mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   Learn more →
                 </p>

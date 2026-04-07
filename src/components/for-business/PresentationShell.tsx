@@ -1,6 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { Maximize, Minimize, ChevronLeft, ChevronRight } from "lucide-react";
 import { SlideRenderer } from "./SlideRenderer";
+
+function useIsSmallViewport() {
+  const [isSmall, setIsSmall] = useState(() => window.innerWidth <= 1024);
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 1024px)");
+    const onChange = () => setIsSmall(mql.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+  return isSmall;
+}
 import { SlideSidebar } from "./SlideSidebar";
 import { DetailSheet, DetailContent } from "./DetailSheet";
 import { HeroSlide } from "./slides/HeroSlide";
@@ -16,6 +27,7 @@ import { CTASlide } from "./slides/CTASlide";
 const TOTAL_SLIDES = 9;
 
 export function PresentationShell() {
+  const isSmallViewport = useIsSmallViewport();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -112,8 +124,10 @@ export function PresentationShell() {
 
         {/* Canvas */}
         <div className="absolute inset-0">
-          {currentSlide === 0 ? (
-            renderSlide()
+          {currentSlide === 0 || isSmallViewport ? (
+            <div className="w-full h-full overflow-y-auto">
+              {renderSlide()}
+            </div>
           ) : (
             <SlideRenderer>
               {renderSlide()}
@@ -125,17 +139,17 @@ export function PresentationShell() {
         {currentSlide > 0 && (
           <button
             onClick={goPrev}
-            className="absolute left-4 bottom-6 z-20 bg-white/90 backdrop-blur border border-border rounded-full p-3 shadow-lg hover:bg-white transition-colors"
+            className="absolute left-3 md:left-4 bottom-4 md:bottom-6 z-20 bg-white/90 backdrop-blur border border-border rounded-full p-2 md:p-3 shadow-lg hover:bg-white transition-colors"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
           </button>
         )}
         {currentSlide < TOTAL_SLIDES - 1 && (
           <button
             onClick={goNext}
-            className="absolute right-4 bottom-6 z-20 bg-[hsl(var(--lansa-blue))] text-white rounded-full p-3 shadow-lg hover:opacity-90 transition-opacity"
+            className="absolute right-3 md:right-4 bottom-4 md:bottom-6 z-20 bg-[hsl(var(--lansa-blue))] text-white rounded-full p-2 md:p-3 shadow-lg hover:opacity-90 transition-opacity"
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
           </button>
         )}
       </div>
