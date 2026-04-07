@@ -33,7 +33,7 @@ export function PricingSlide({ openDetail }: PricingSlideProps) {
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: "url(https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1400&q=80)" }}
       />
-      <div className="absolute inset-0 bg-[hsl(215,85%,8%)]/92" />
+      <div className="absolute inset-0 bg-[hsl(215,85%,8%)]/95" />
 
       <div className="relative z-10 h-full flex flex-col items-center justify-center px-6 md:px-10 lg:px-[120px] py-8 lg:py-0">
         <p className="text-[12px] lg:text-[13px] font-semibold text-[hsl(var(--lansa-orange))] uppercase tracking-[0.25em] mb-3 lg:mb-4 font-['Urbanist']">
@@ -63,7 +63,7 @@ export function PricingSlide({ openDetail }: PricingSlideProps) {
               ],
               stat: "Free forever"
             })}
-            className="flex-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl lg:rounded-2xl p-6 lg:p-10 text-left hover:bg-white/10 transition-all duration-200 cursor-pointer group"
+            className="flex-1 bg-white/10 backdrop-blur-xl border border-white/15 rounded-xl lg:rounded-2xl p-6 lg:p-10 text-left hover:bg-white/15 transition-all duration-200 cursor-pointer group"
           >
             <p className="text-[12px] lg:text-[13px] font-semibold text-white/40 mb-1 font-['Urbanist']">Basic</p>
             <p className="text-[36px] lg:text-[52px] font-black text-white font-['Urbanist'] leading-none mb-4 lg:mb-8">Free</p>
@@ -101,7 +101,7 @@ export function PricingSlide({ openDetail }: PricingSlideProps) {
               ],
               stat: "XCG 75/mo"
             })}
-            className="flex-1 bg-white/5 backdrop-blur-md border border-[hsl(var(--lansa-blue))]/30 rounded-xl lg:rounded-2xl p-6 lg:p-10 text-left hover:bg-white/10 transition-all duration-200 cursor-pointer relative overflow-hidden group"
+            className="flex-1 bg-white/10 backdrop-blur-xl border border-[hsl(var(--lansa-blue))]/40 rounded-xl lg:rounded-2xl p-6 lg:p-10 text-left hover:bg-white/15 transition-all duration-200 cursor-pointer relative overflow-hidden group"
           >
             <div className="absolute top-4 right-4 lg:top-6 lg:right-6 bg-[hsl(var(--lansa-orange))] text-white text-[10px] lg:text-[11px] font-bold px-2.5 py-0.5 lg:px-3 lg:py-1 rounded-full font-['Urbanist']">
               RECOMMENDED
