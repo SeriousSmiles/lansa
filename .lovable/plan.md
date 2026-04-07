@@ -1,107 +1,81 @@
 
-# Real Stories — Make It Taller, Truly Scattered, and Fix the Glare
 
-## What I’ll Change
+# Hero Slide — Fullscreen Industry Column Strips
 
-- Rework `TestimonialsSection.tsx` so the desktop version behaves like the reference:
-  - much taller section
-  - sticky centered heading that stays faded behind the cards
-  - cards placed with `position: absolute` inside a tall relative stage
-  - user scrolls to reveal all cards progressively
-- Keep the darker Lansa blue background and glossy card styling
-- Correct the glare logic so it feels like a fixed light reflection, not a reversed or cursor-following hotspot
+## What Changes
 
-## Desktop Structure
+Replace the current centered hero layout with a fullscreen column-strip selector. Six vertical strips span the full 1920x1080 canvas, each representing an industry with a B&W background image. On hover (desktop), the active strip expands while others compress, the image transitions to full color, and additional copy is revealed. Clicking/tapping selects the industry and the user continues the presentation.
 
-Use a **tall scroll stage** instead of a normal grid.
+## Visual Design
 
 ```text
-section
-└─ relative tall stage (very large height)
-   ├─ sticky centered heading layer (behind)
-   └─ absolute card field layer (front)
-      ├─ card 1 at custom top/left
-      ├─ card 2 at custom top/right
-      ├─ ...
-      └─ card 8 lower in the stage
+Desktop (1920x1080 canvas):
+┌──────┬──────┬──────┬──────┬──────┬──────┐
+│      │      │      │      │      │      │
+│ B&W  │ B&W  │ B&W  │ B&W  │ B&W  │ B&W  │
+│      │      │      │      │      │      │
+│Retail│Hosp. │ Tech │Health│Finan.│Other │
+│      │      │      │      │      │      │
+└──────┴──────┴──────┴──────┴──────┴──────┘
+
+On hover/expand:
+┌──┬────────────────┬──┬──┬──┬──┐
+│  │   COLOR IMAGE   │  │  │  │  │
+│  │   + Title       │  │  │  │  │
+│  │   + Description │  │  │  │  │
+│  │   + CTA button  │  │  │  │  │
+└──┴────────────────┴──┴──────┴──┘
+
+Mobile (1920x1080 canvas, but conceptually stacked):
+Strips become horizontal rows stacked vertically.
 ```
 
-### Key layout changes
-- Replace the current `grid-cols-4` layout with a `relative` stage using a custom `DESKTOP_CARD_LAYOUT` array
-- Each card wrapper will have explicit desktop coordinates like:
-  - `top`
-  - `left`
-  - optional small `rotate`
-  - optional `translateY`
-- Increase section height substantially, likely around `320vh–420vh`, so the user must scroll to uncover the full scattered composition
-- Keep the heading centered with `sticky top-1/2 -translate-y-1/2`, low opacity, and behind the cards
+## Strip Behavior
 
-## Card Positioning Approach
+- **Default state**: Equal-width columns, B&W (`grayscale(1)`) background image with dark overlay, industry title displayed vertically or centered
+- **Hovered/active state** (CSS transition ~500ms): Strip expands to ~40-50% width via `flex-grow`, others shrink. Image transitions to color (`grayscale(0)`), overlay lightens. Reveals: subtitle text, short industry-specific tagline, and a "Select" button
+- **Selected state**: Orange bottom border or highlight to indicate current selection. Clicking calls `setIndustry(id)` and auto-advances to next slide after a short delay
+- **Lansa branding overlay**: Small logo + "LANSA FOR BUSINESS" text positioned at top-center, floating above the strips
 
-Instead of margin offsets, I’ll use a position map for all 8 cards.
+## Stock Images
 
-Example approach:
-- top row cards near upper stage
-- middle cards offset left/right
-- lower cards deeper in the section
-- uneven placement so it feels editorial/scattered, not like a hidden grid
+Use high-quality Unsplash URLs for each industry:
+- Retail: store/shopping scene
+- Hospitality: hotel/restaurant scene
+- Tech: office/workspace scene
+- Healthcare: medical/hospital scene
+- Finance: business/financial district scene
+- Other: diverse workplace scene
 
-This will match the “floating cards over a long stage” effect better than the current layout.
+## Mobile Adaptation
 
-## Tilt + Glare Fix
+Inside the 1920x1080 canvas, detect if the rendered context is mobile-like (or use a state toggle). For mobile:
+- Switch from `flex-row` to `flex-col` — strips become horizontal rows
+- Each row spans full width, height divided equally
+- Tap toggles expand/collapse (only one expanded at a time)
 
-### Tilt
-- Keep GSAP for card tilt
-- Switch to a smoother GSAP pattern (`quickTo` / setters) so rotation feels premium and less jittery
+Since this renders inside the `SlideRenderer` at 1920x1080 and scales down, the mobile layout will be handled within the same component using the canvas dimensions.
 
-### Glare
-Current issue:
-- glare direction feels reversed
-- glare behavior does not match the expected fixed-light look
+## User Journey
 
-Planned fix:
-- compute glare from the **tilt state**, not raw pointer position
-- keep the glare anchored to a virtual light source
-- adjust the sign/direction so the highlight shifts toward the visually correct edge of the card
-- keep movement subtle and constrained so it reads as glossy reflection, not a spotlight chasing the cursor
+Selection flow unchanged:
+1. User sees the strips
+2. Hovers to explore, clicks to select
+3. `setIndustry(id)` is called
+4. PresentationShell advances to slide 1 (auto or via next button)
 
-## Visual Depth
+## Technical Details
 
-- Preserve the large faded “Real Stories” title behind everything
-- Add a few more soft blur layers in the background/foreground to strengthen depth
-- Slightly vary card elevations/shadows so they feel suspended in space
-
-## Mobile Behavior
-
-Desktop is the priority here.
-
-For mobile:
-- keep a simple stacked/two-column version
-- no absolute scattering
-- no hover-dependent interaction
-- preserve the same card styling and hierarchy
-
-This follows Lansa’s contextual design rules:
-- desktop = immersive, strategic, high-motion
-- mobile = simpler, readable, action-light
-
-## UX Intent
-
-- **Desktop priority:** immersive visual storytelling
-- **Hierarchy:** heading remains constant and atmospheric; cards become the moving content
-- **Heuristic goal:** strong spatial clarity and recognition — users instantly understand they must scroll to discover more stories
-- **Emotional outcome:** refined, premium, floating, cinematic
+- All transitions via CSS (`transition-all duration-500 ease-in-out`)
+- `filter: grayscale(1)` to `grayscale(0)` for color reveal
+- `flex-grow` manipulation for expand/compress
+- Background images via inline `style={{ backgroundImage }}` with `bg-cover bg-center`
+- Keep `AnimatedLogo` at top for brand presence
+- Each strip has a dark gradient overlay (`bg-gradient-to-t from-black/70 via-black/30 to-black/20`)
 
 ## File
 
 | File | Action |
 |---|---|
-| `src/components/landing/TestimonialsSection.tsx` | Rewrite layout structure for tall sticky-heading stage, absolute scattered cards, and corrected GSAP glare behavior |
+| `src/components/for-business/slides/HeroSlide.tsx` | Rewrite — fullscreen column strips with B&W-to-color expand interaction |
 
-## Implementation Notes
-
-- Remove the current desktop grid wrapper
-- Replace `shouldOffset()` with a `DESKTOP_CARD_LAYOUT` config
-- Increase desktop section height significantly
-- Keep current testimonial data source (`TESTIMONIALS.slice(0, 8)`)
-- Preserve avatar-at-top card design and glossy blue card treatment
