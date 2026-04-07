@@ -39,21 +39,21 @@ export function CTASlide() {
             href="https://wa.me/59995279966"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-white/10 backdrop-blur border border-white/15 flex items-center justify-center text-white/70 hover:bg-emerald-500/20 hover:text-emerald-400 hover:border-emerald-400/30 transition-all"
+            className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-400 lg:bg-white/10 lg:border-white/15 lg:text-white/70 lg:hover:bg-emerald-500/20 lg:hover:text-emerald-400 lg:hover:border-emerald-400/30 backdrop-blur flex items-center justify-center transition-all"
             title="WhatsApp"
           >
             <MessageCircle className="h-5 w-5 lg:h-6 lg:w-6" />
           </a>
           <a
             href="mailto:john@lansa.online"
-            className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-white/10 backdrop-blur border border-white/15 flex items-center justify-center text-white/70 hover:bg-[hsl(var(--lansa-orange))]/20 hover:text-[hsl(var(--lansa-orange))] hover:border-[hsl(var(--lansa-orange))]/30 transition-all"
+            className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-[hsl(var(--lansa-orange))]/20 border border-[hsl(var(--lansa-orange))]/30 text-[hsl(var(--lansa-orange))] lg:bg-white/10 lg:border-white/15 lg:text-white/70 lg:hover:bg-[hsl(var(--lansa-orange))]/20 lg:hover:text-[hsl(var(--lansa-orange))] lg:hover:border-[hsl(var(--lansa-orange))]/30 backdrop-blur flex items-center justify-center transition-all"
             title="Email"
           >
             <Mail className="h-5 w-5 lg:h-6 lg:w-6" />
           </a>
           <a
             href="tel:+59995279966"
-            className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-white/10 backdrop-blur border border-white/15 flex items-center justify-center text-white/70 hover:bg-[hsl(var(--lansa-blue))]/20 hover:text-[hsl(var(--lansa-blue))] hover:border-[hsl(var(--lansa-blue))]/30 transition-all"
+            className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-[hsl(var(--lansa-blue))]/20 border border-[hsl(var(--lansa-blue))]/30 text-[hsl(var(--lansa-blue))] lg:bg-white/10 lg:border-white/15 lg:text-white/70 lg:hover:bg-[hsl(var(--lansa-blue))]/20 lg:hover:text-[hsl(var(--lansa-blue))] lg:hover:border-[hsl(var(--lansa-blue))]/30 backdrop-blur flex items-center justify-center transition-all"
             title="Call"
           >
             <Phone className="h-5 w-5 lg:h-6 lg:w-6" />
