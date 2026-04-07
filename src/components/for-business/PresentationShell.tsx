@@ -1,6 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { Maximize, Minimize, ChevronLeft, ChevronRight } from "lucide-react";
 import { SlideRenderer } from "./SlideRenderer";
+
+function useIsSmallViewport() {
+  const [isSmall, setIsSmall] = useState(() => window.innerWidth <= 1024);
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 1024px)");
+    const onChange = () => setIsSmall(mql.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+  return isSmall;
+}
 import { SlideSidebar } from "./SlideSidebar";
 import { DetailSheet, DetailContent } from "./DetailSheet";
 import { HeroSlide } from "./slides/HeroSlide";
