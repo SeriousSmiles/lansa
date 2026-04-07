@@ -96,7 +96,7 @@ export function HowItWorksSlide({ openDetail }: HowItWorksSlideProps) {
             </div>
 
             {/* Content */}
-            <div className="relative z-10 h-full flex flex-col justify-end p-8">
+            <div className="relative z-10 h-full flex flex-col justify-end items-center text-center p-8">
               <p className="text-[hsl(var(--lansa-orange))] text-[13px] font-bold tracking-widest mb-3 font-['Urbanist']">
                 STEP {step.num}
               </p>
