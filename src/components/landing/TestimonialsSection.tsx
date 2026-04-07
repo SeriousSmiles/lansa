@@ -107,6 +107,7 @@ const TestimonialCard = ({ t }: { t: (typeof TESTIMONIALS)[0] }) => {
         className="pointer-events-none absolute inset-0 rounded-2xl transition-opacity duration-300"
         style={{ opacity: 0 }}
       />
+      {/* Temporarily hidden
       <div className="mb-4 overflow-hidden rounded-xl aspect-square">
         <img
           src={t.avatar}
@@ -115,6 +116,7 @@ const TestimonialCard = ({ t }: { t: (typeof TESTIMONIALS)[0] }) => {
           loading="lazy"
         />
       </div>
+      */}
       <Stars count={t.stars} />
       <p className="mt-3 text-white/90 font-public-sans text-sm leading-relaxed">
         &ldquo;{t.quote}&rdquo;
