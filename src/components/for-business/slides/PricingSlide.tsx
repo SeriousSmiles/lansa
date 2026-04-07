@@ -33,7 +33,7 @@ export function PricingSlide({ openDetail }: PricingSlideProps) {
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: "url(https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1400&q=80)" }}
       />
-      <div className="absolute inset-0 bg-[hsl(215,85%,8%)]/92" />
+      <div className="absolute inset-0 bg-[hsl(215,85%,8%)]/95" />
 
       <div className="relative z-10 h-full flex flex-col items-center justify-center px-6 md:px-10 lg:px-[120px] py-8 lg:py-0">
         <p className="text-[12px] lg:text-[13px] font-semibold text-[hsl(var(--lansa-orange))] uppercase tracking-[0.25em] mb-3 lg:mb-4 font-['Urbanist']">
