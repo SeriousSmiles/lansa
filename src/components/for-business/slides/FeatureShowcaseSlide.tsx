@@ -83,45 +83,45 @@ export function FeatureShowcaseSlide({ openDetail }: FeatureShowcaseSlideProps) 
   return (
     <div className="w-full h-full bg-white flex flex-col">
       {/* Header */}
-      <div className="pt-14 px-[120px] mb-6">
-        <p className="text-[13px] font-semibold text-[hsl(var(--lansa-orange))] uppercase tracking-[0.25em] mb-3 font-['Urbanist']">
+      <div className="pt-8 px-6 md:px-10 lg:pt-14 lg:px-[120px] mb-4 lg:mb-6">
+        <p className="text-[12px] lg:text-[13px] font-semibold text-[hsl(var(--lansa-orange))] uppercase tracking-[0.25em] mb-2 lg:mb-3 font-['Urbanist']">
           Platform Features
         </p>
         <h2 className="font-['Urbanist']">
-          <span className="text-[48px] font-extralight text-foreground leading-[1.1]">Everything You Need to </span>
-          <span className="text-[48px] font-black text-foreground leading-[1.1]">Hire</span>
+          <span className="text-[28px] md:text-[36px] lg:text-[48px] font-extralight text-foreground leading-[1.1]">Everything You Need to </span>
+          <span className="text-[28px] md:text-[36px] lg:text-[48px] font-black text-foreground leading-[1.1]">Hire</span>
         </h2>
       </div>
 
-      {/* Alternating rows */}
-      <div className="flex-1 flex flex-col px-[120px] pb-10 gap-3">
+      {/* Features */}
+      <div className="flex-1 flex flex-col px-6 md:px-10 lg:px-[120px] pb-6 lg:pb-10 gap-3">
         {FEATURES.map((feat, i) => {
           const photoLeft = i % 2 === 0;
           return (
             <button
               key={i}
               onClick={() => openDetail(feat.detail)}
-              className="flex-1 flex rounded-xl overflow-hidden cursor-pointer group hover:shadow-xl transition-shadow duration-300"
-              style={{ flexDirection: photoLeft ? "row" : "row-reverse" }}
+              className="flex-1 flex flex-col lg:flex-row rounded-xl overflow-hidden cursor-pointer group hover:shadow-xl transition-shadow duration-300 min-h-[140px] lg:min-h-0"
+              style={{ flexDirection: photoLeft ? undefined : undefined }}
             >
-              {/* Photo side */}
-              <div className="w-[35%] relative overflow-hidden">
+              {/* Photo side — on mobile always on top, on desktop alternates */}
+              <div className={`h-[120px] lg:h-auto lg:w-[35%] relative overflow-hidden shrink-0 ${!photoLeft ? 'lg:order-2' : ''}`}>
                 <div
                   className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                   style={{ backgroundImage: `url(${feat.image})` }}
                 />
               </div>
               {/* Text side */}
-              <div className="w-[65%] bg-[hsl(var(--lansa-muted))] flex items-center justify-center px-10 group-hover:bg-[hsl(215,20%,95%)] transition-colors duration-300">
+              <div className={`flex-1 lg:w-[65%] bg-[hsl(var(--lansa-muted))] flex items-center justify-center px-5 py-4 lg:px-10 group-hover:bg-[hsl(215,20%,95%)] transition-colors duration-300 ${!photoLeft ? 'lg:order-1' : ''}`}>
                 <div className="text-center">
-                  <h3 className="font-['Urbanist'] mb-1.5">
-                    <span className="text-[28px] font-extralight text-foreground">{feat.title} </span>
-                    <span className="text-[28px] font-black text-foreground">{feat.titleBold}</span>
+                  <h3 className="font-['Urbanist'] mb-1 lg:mb-1.5">
+                    <span className="text-[20px] lg:text-[28px] font-extralight text-foreground">{feat.title} </span>
+                    <span className="text-[20px] lg:text-[28px] font-black text-foreground">{feat.titleBold}</span>
                   </h3>
-                  <p className="text-[14px] text-muted-foreground font-['Urbanist'] font-light leading-relaxed max-w-[400px]">
+                  <p className="text-[13px] lg:text-[14px] text-muted-foreground font-['Urbanist'] font-light leading-relaxed max-w-[400px]">
                     {feat.desc}
                   </p>
-                  <p className="text-[12px] text-[hsl(var(--lansa-orange))] font-semibold mt-2 opacity-0 group-hover:opacity-100 transition-opacity font-['Urbanist']">
+                  <p className="text-[12px] text-[hsl(var(--lansa-orange))] font-semibold mt-1.5 lg:mt-2 opacity-0 group-hover:opacity-100 transition-opacity font-['Urbanist']">
                     See full details →
                   </p>
                 </div>

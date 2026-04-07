@@ -139,17 +139,17 @@ export function PresentationShell() {
         {currentSlide > 0 && (
           <button
             onClick={goPrev}
-            className="absolute left-4 bottom-6 z-20 bg-white/90 backdrop-blur border border-border rounded-full p-3 shadow-lg hover:bg-white transition-colors"
+            className="absolute left-3 md:left-4 bottom-4 md:bottom-6 z-20 bg-white/90 backdrop-blur border border-border rounded-full p-2 md:p-3 shadow-lg hover:bg-white transition-colors"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
           </button>
         )}
         {currentSlide < TOTAL_SLIDES - 1 && (
           <button
             onClick={goNext}
-            className="absolute right-4 bottom-6 z-20 bg-[hsl(var(--lansa-blue))] text-white rounded-full p-3 shadow-lg hover:opacity-90 transition-opacity"
+            className="absolute right-3 md:right-4 bottom-4 md:bottom-6 z-20 bg-[hsl(var(--lansa-blue))] text-white rounded-full p-2 md:p-3 shadow-lg hover:opacity-90 transition-opacity"
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
           </button>
         )}
       </div>

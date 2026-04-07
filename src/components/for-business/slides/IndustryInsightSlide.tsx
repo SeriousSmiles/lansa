@@ -141,9 +141,9 @@ export function IndustryInsightSlide({ industry }: IndustryInsightSlideProps) {
   const insight = currentValue !== null ? config.calculateInsight(currentValue) : null;
 
   return (
-    <div className="w-full h-full flex overflow-hidden">
-      {/* Left — atmospheric photo */}
-      <div className="w-[45%] relative">
+    <div className="w-full h-full flex flex-col lg:flex-row overflow-hidden">
+      {/* Atmospheric photo — hidden on mobile */}
+      <div className="hidden lg:block lg:w-[45%] relative">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${config.image})` }}
@@ -157,26 +157,26 @@ export function IndustryInsightSlide({ industry }: IndustryInsightSlideProps) {
         </div>
       </div>
 
-      {/* Right — Interactive area */}
-      <div className="w-[55%] bg-gradient-to-br from-[hsl(215,85%,12%)] to-[hsl(215,70%,8%)] flex flex-col justify-center px-16 py-12 relative overflow-hidden">
+      {/* Interactive area */}
+      <div className="flex-1 bg-gradient-to-br from-[hsl(215,85%,12%)] to-[hsl(215,70%,8%)] flex flex-col justify-center px-6 py-8 md:px-10 md:py-10 lg:px-16 lg:py-12 relative overflow-hidden lg:w-[55%]">
         <div className="absolute w-[300px] h-[300px] rounded-full bg-[hsl(var(--lansa-orange))] opacity-[0.03] -bottom-[100px] -right-[50px]" />
 
-        <p className="text-[13px] font-semibold text-[hsl(var(--lansa-orange))] uppercase tracking-[0.25em] mb-6 font-['Urbanist']">
+        <p className="text-[12px] lg:text-[13px] font-semibold text-[hsl(var(--lansa-orange))] uppercase tracking-[0.25em] mb-4 lg:mb-6 font-['Urbanist']">
           Your Insight
         </p>
-        <h2 className="font-['Urbanist'] mb-10">
-          <span className="text-[40px] font-extralight text-white leading-[1.2] block">Let's find your</span>
-          <span className="text-[48px] font-black text-white leading-[1.0] block">Hidden Cost</span>
+        <h2 className="font-['Urbanist'] mb-6 lg:mb-10">
+          <span className="text-[26px] md:text-[32px] lg:text-[40px] font-extralight text-white leading-[1.2] block">Let's find your</span>
+          <span className="text-[32px] md:text-[40px] lg:text-[48px] font-black text-white leading-[1.0] block">Hidden Cost</span>
         </h2>
 
         {!revealed ? (
-          <div className="space-y-8 max-w-[480px]">
-            <p className="text-[18px] text-white/70 font-['Urbanist'] font-light leading-relaxed">
+          <div className="space-y-6 lg:space-y-8 max-w-[480px]">
+            <p className="text-[15px] lg:text-[18px] text-white/70 font-['Urbanist'] font-light leading-relaxed">
               {config.question}
             </p>
 
             {config.inputType === "slider" ? (
-              <div className="space-y-4">
+              <div className="space-y-3 lg:space-y-4">
                 <input
                   type="range"
                   min={config.sliderMin}
@@ -187,20 +187,20 @@ export function IndustryInsightSlide({ industry }: IndustryInsightSlideProps) {
                   className="w-full h-2 bg-white/10 rounded-full appearance-none cursor-pointer
                     [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[hsl(var(--lansa-orange))] [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer"
                 />
-                <div className="flex justify-between text-white/40 text-[13px] font-['Urbanist']">
+                <div className="flex justify-between text-white/40 text-[12px] lg:text-[13px] font-['Urbanist']">
                   <span>{config.sliderMin} {config.sliderUnit}</span>
-                  <span className="text-[28px] font-black text-white font-['Urbanist']">{sliderValue}</span>
+                  <span className="text-[24px] lg:text-[28px] font-black text-white font-['Urbanist']">{sliderValue}</span>
                   <span>{config.sliderMax} {config.sliderUnit}</span>
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2 lg:gap-3">
                 {config.selectOptions?.map((opt) => (
                   <button
                     key={opt.value}
                     onClick={() => setSelectValue(opt.value)}
                     className={cn(
-                      "px-6 py-4 rounded-xl text-[15px] font-['Urbanist'] font-medium transition-all duration-200 border",
+                      "px-4 py-3 lg:px-6 lg:py-4 rounded-xl text-[14px] lg:text-[15px] font-['Urbanist'] font-medium transition-all duration-200 border",
                       selectValue === opt.value
                         ? "bg-[hsl(var(--lansa-orange))] text-white border-transparent"
                         : "bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white/80"
@@ -215,23 +215,23 @@ export function IndustryInsightSlide({ industry }: IndustryInsightSlideProps) {
             <button
               onClick={handleReveal}
               disabled={config.inputType === "select" && !selectValue}
-              className="px-10 py-4 bg-[hsl(var(--lansa-orange))] text-white rounded-xl text-[16px] font-bold font-['Urbanist'] hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed shadow-lg shadow-[hsl(14,90%,60%)]/20"
+              className="px-8 py-3.5 lg:px-10 lg:py-4 bg-[hsl(var(--lansa-orange))] text-white rounded-xl text-[15px] lg:text-[16px] font-bold font-['Urbanist'] hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed shadow-lg shadow-[hsl(14,90%,60%)]/20"
             >
               Reveal My Insight →
             </button>
           </div>
         ) : (
-          <div className="space-y-6 max-w-[480px] animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <p className="text-[80px] font-black text-[hsl(var(--lansa-blue))] font-['Urbanist'] leading-none">
+          <div className="space-y-4 lg:space-y-6 max-w-[480px] animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <p className="text-[48px] lg:text-[80px] font-black text-[hsl(var(--lansa-blue))] font-['Urbanist'] leading-none">
               {insight?.bigStat}
             </p>
             <div className="w-12 h-[2px] bg-[hsl(var(--lansa-orange))]" />
-            <p className="text-[16px] text-white/70 font-['Urbanist'] font-light leading-relaxed">
+            <p className="text-[14px] lg:text-[16px] text-white/70 font-['Urbanist'] font-light leading-relaxed">
               {insight?.description}
             </p>
             <button
               onClick={() => setRevealed(false)}
-              className="text-[13px] text-white/30 font-['Urbanist'] hover:text-white/50 transition-colors mt-4"
+              className="text-[12px] lg:text-[13px] text-white/30 font-['Urbanist'] hover:text-white/50 transition-colors mt-2 lg:mt-4"
             >
               ← Try different values
             </button>
