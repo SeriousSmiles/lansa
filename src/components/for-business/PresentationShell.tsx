@@ -84,7 +84,7 @@ export function PresentationShell() {
   };
 
   return (
-    <div className="fixed inset-0 z-40 bg-[hsl(215,20%,96%)] flex flex-col">
+    <div className="fixed inset-0 z-40 bg-[hsl(215,20%,96%)] flex flex-col presentation-shell">
       {/* Top bar */}
       <div className="h-12 bg-white border-b border-border flex items-center justify-between px-4 shrink-0 z-30">
         <div className="flex items-center gap-3">
