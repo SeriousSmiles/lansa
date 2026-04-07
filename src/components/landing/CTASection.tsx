@@ -15,10 +15,10 @@ export const CTASection = () => {
 
       <div className="relative z-10 mx-auto max-w-[1440px] px-[5%] text-center">
         <h2 className="text-3xl font-bold font-urbanist text-white md:text-5xl leading-tight max-w-2xl mx-auto">
-          Your Future Won't Wait — Neither Should You
+          Build Your Resume. Learn From Local Mentors. Get Discovered.
         </h2>
         <p className="mt-5 text-white/80 font-public-sans text-base md:text-lg max-w-xl mx-auto leading-relaxed">
-          Join thousands of Caribbean professionals already building their careers on Lansa. Create your profile, earn certifications, and get discovered — all for free.
+          Create a professional resume, print it, and learn from local teachers and mentors — all for free. Ready to stand out? Get Lansa Certified and start appearing in front of businesses looking for your talent.
         </p>
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Button
