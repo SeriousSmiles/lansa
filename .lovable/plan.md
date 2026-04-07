@@ -1,28 +1,32 @@
 
 
-# SlideSidebar → Bottom Drawer on Mobile
+# Revert Sidebar + Convert DetailSheet to Drawer on Mobile
 
-## What Changes
+## Two changes
 
-On mobile/tablet (≤ 1024px), the slide sidebar becomes a **bottom drawer** using the existing `vaul`-based `Drawer` component (`src/components/ui/drawer.tsx`). It supports native drag-to-close. On desktop, the current left sidebar stays unchanged.
+### 1. Revert SlideSidebar to original (no drawer)
+The sidebar was working fine before. Remove the drawer logic and `useIsSmallViewport` hook, restoring the original desktop-only left panel with toggle button. The sidebar was never meant to be a drawer.
 
-## Files to Change
+**File**: `src/components/for-business/SlideSidebar.tsx`
+- Remove `Drawer` imports and `useIsSmallViewport` hook
+- Remove the `if (isSmall)` branch that renders a Drawer
+- Restore original code: just the desktop left-panel sidebar with the collapsed ChevronRight toggle and the slide-out panel
 
-### `src/components/for-business/SlideSidebar.tsx`
-- Import `Drawer`, `DrawerContent`, `DrawerHeader`, `DrawerTitle` from `@/components/ui/drawer`
-- Add a `useIsSmallViewport` check (≤ 1024px) — same pattern as `PresentationShell`
-- **Desktop (> 1024px)**: Render current left-panel sidebar as-is
-- **Mobile (≤ 1024px)**: Render a `<Drawer>` with `open={open}` and `onOpenChange` calling `onToggle`
-  - `DrawerContent` contains the same slide list, styled as horizontal pill chips or a vertical list with larger 44px tap targets
-  - Vaul handles drag-to-close natively via the handle bar
-  - The collapsed toggle button on mobile becomes a small pill/button in the top bar area (already handled by the hamburger in `PresentationShell`)
+### 2. Convert DetailSheet to bottom Drawer on mobile (≤ 1024px)
+The right-side info sheets (triggered by "Learn more" buttons on slides) currently use a `Sheet` from the right. On mobile this is hard to use. Convert to a bottom `Drawer` with drag-to-close.
 
-### `src/components/for-business/PresentationShell.tsx`
-- No structural changes needed — the hamburger button already toggles `sidebarOpen`, and `SlideSidebar` receives `open`/`onToggle` which will now control the drawer on mobile
+**File**: `src/components/for-business/DetailSheet.tsx`
+- Add `useIsSmallViewport` hook (≤ 1024px)
+- **Desktop**: Keep current `Sheet` with `side="right"` unchanged
+- **Mobile**: Render a `Drawer` (vaul) instead, opening from the bottom with native drag-to-close
+  - Same content: title, description, stat block, bullet list
+  - Max height ~85vh so it doesn't cover the full screen
+  - Drag handle bar from the Drawer component
 
-## Technical Details
-- Vaul's `Drawer` component already supports swipe-to-dismiss — no custom gesture code needed
-- Drawer snaps to bottom, has built-in handle bar and overlay
-- Slide items inside drawer use `min-h-[44px]` for touch compliance
-- Active slide highlighted with brand blue, same as desktop
+## Files to change
+
+| File | Change |
+|---|---|
+| `SlideSidebar.tsx` | Revert to original — remove Drawer, remove viewport hook |
+| `DetailSheet.tsx` | Add viewport check; render Drawer on mobile, Sheet on desktop |
 
