@@ -1,64 +1,12 @@
-import { useRef, useState, useCallback } from "react";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { useRef, useEffect, useCallback } from "react";
 import { Star } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { TESTIMONIALS } from "@/data/testimonials";
 
-interface Testimonial {
-  quote: string;
-  name: string;
-  role: string;
-  stars: number;
-}
+gsap.registerPlugin(ScrollTrigger);
 
-const testimonials: Testimonial[] = [
-  {
-    quote: "I went from not having a CV to getting interview calls in two weeks. Lansa made it effortless.",
-    name: "Keisha Williams",
-    role: "Marketing Graduate, Trinidad",
-    stars: 5,
-  },
-  {
-    quote: "The certification gave me something concrete to show employers. It changed how they looked at me.",
-    name: "Andre Joseph",
-    role: "IT Support Specialist, Jamaica",
-    stars: 5,
-  },
-  {
-    quote: "I was skeptical at first, but after getting certified I had three employers reach out to me directly.",
-    name: "Dwayne Mitchell",
-    role: "Electrician, St. Lucia",
-    stars: 5,
-  },
-  {
-    quote: "Lansa's AI wrote a better profile for me in five minutes than I could have written in a week.",
-    name: "Anika Persaud",
-    role: "Recent Graduate, Guyana",
-    stars: 4,
-  },
-  {
-    quote: "We hired two certified candidates through Lansa. The quality of applicants was noticeably higher.",
-    name: "Simone Grant",
-    role: "HR Manager, Trinidad",
-    stars: 5,
-  },
-  {
-    quote: "The whole experience felt like someone actually cared about helping me get started in my career.",
-    name: "Renee Baptiste",
-    role: "Customer Service, Curaçao",
-    stars: 5,
-  },
-  {
-    quote: "As a small business owner, I finally found a platform where I can discover real local talent without the noise.",
-    name: "Marlon Clarke",
-    role: "Restaurant Owner, Barbados",
-    stars: 5,
-  },
-  {
-    quote: "Finally a platform that understands what young Caribbean professionals actually need.",
-    name: "Tariq Abdullah",
-    role: "Graphic Designer, Suriname",
-    stars: 4,
-  },
-];
+const SELECTED = TESTIMONIALS.slice(0, 8);
 
 const Stars = ({ count }: { count: number }) => (
   <div className="flex gap-0.5">
@@ -72,91 +20,150 @@ const Stars = ({ count }: { count: number }) => (
   </div>
 );
 
-const springConfig = { stiffness: 150, damping: 20 };
-
-const TestimonialCard = ({ t }: { t: Testimonial }) => {
+const TestimonialCard = ({
+  t,
+}: {
+  t: (typeof TESTIMONIALS)[0];
+}) => {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
+  const glareRef = useRef<HTMLDivElement>(null);
 
-  const rotateX = useMotionValue(0);
-  const rotateY = useMotionValue(0);
-  const glareX = useMotionValue(50);
-  const glareY = useMotionValue(50);
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    const card = cardRef.current;
+    const glare = glareRef.current;
+    if (!card || !glare) return;
 
-  const springRotateX = useSpring(rotateX, springConfig);
-  const springRotateY = useSpring(rotateY, springConfig);
+    const rect = card.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = (e.clientX - cx) / (rect.width / 2);
+    const dy = (e.clientY - cy) / (rect.height / 2);
 
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      const card = cardRef.current;
-      if (!card) return;
-      const rect = card.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const dx = e.clientX - cx;
-      const dy = e.clientY - cy;
-      rotateX.set((dy / (rect.height / 2)) * -8);
-      rotateY.set((dx / (rect.width / 2)) * 8);
-      glareX.set(((e.clientX - rect.left) / rect.width) * 100);
-      glareY.set(((e.clientY - rect.top) / rect.height) * 100);
-    },
-    [rotateX, rotateY, glareX, glareY]
-  );
+    const rotateX = dy * -8;
+    const rotateY = dx * 8;
+
+    gsap.to(card, {
+      rotateX,
+      rotateY,
+      duration: 0.4,
+      ease: "power2.out",
+      overwrite: "auto",
+    });
+
+    // Glare shifts opposite to tilt for realistic light reflection
+    const glareX = 50 - rotateY * 2.5;
+    const glareY = 50 + rotateX * 2.5;
+
+    glare.style.opacity = "1";
+    glare.style.background = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.08) 35%, transparent 65%)`;
+  }, []);
 
   const handleMouseLeave = useCallback(() => {
-    rotateX.set(0);
-    rotateY.set(0);
-    glareX.set(50);
-    glareY.set(50);
-    setIsHovered(false);
-  }, [rotateX, rotateY, glareX, glareY]);
+    const card = cardRef.current;
+    const glare = glareRef.current;
+    if (!card) return;
+
+    gsap.to(card, {
+      rotateX: 0,
+      rotateY: 0,
+      duration: 0.6,
+      ease: "power2.out",
+      overwrite: "auto",
+    });
+
+    if (glare) {
+      glare.style.opacity = "0";
+    }
+  }, []);
+
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card) return;
+
+    card.addEventListener("mousemove", handleMouseMove);
+    card.addEventListener("mouseleave", handleMouseLeave);
+
+    return () => {
+      card.removeEventListener("mousemove", handleMouseMove);
+      card.removeEventListener("mouseleave", handleMouseLeave);
+    };
+  }, [handleMouseMove, handleMouseLeave]);
 
   return (
-    <motion.div
+    <div
       ref={cardRef}
-      onMouseMove={(e) => {
-        setIsHovered(true);
-        handleMouseMove(e);
-      }}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        rotateX: springRotateX,
-        rotateY: springRotateY,
-        transformPerspective: 800,
-      }}
-      className="relative rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-6 shadow-lg will-change-transform cursor-default"
+      className="testimonial-card relative rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-5 shadow-lg cursor-default will-change-transform"
+      style={{ transformStyle: "preserve-3d", perspective: "800px" }}
     >
       {/* Glare overlay */}
-      {isHovered && (
-        <motion.div
-          className="pointer-events-none absolute inset-0 rounded-2xl"
-          style={{
-            background: `radial-gradient(circle at ${glareX.get()}% ${glareY.get()}%, rgba(255,255,255,0.25) 0%, transparent 60%)`,
-          }}
+      <div
+        ref={glareRef}
+        className="pointer-events-none absolute inset-0 rounded-2xl transition-opacity duration-300"
+        style={{ opacity: 0 }}
+      />
+
+      {/* Avatar */}
+      <div className="mb-4 overflow-hidden rounded-xl aspect-square">
+        <img
+          src={t.avatar}
+          alt={t.name}
+          className="h-full w-full object-cover"
+          loading="lazy"
         />
-      )}
+      </div>
 
       <Stars count={t.stars} />
-      <p className="mt-4 text-white/90 font-public-sans text-sm leading-relaxed">
+      <p className="mt-3 text-white/90 font-public-sans text-sm leading-relaxed">
         "{t.quote}"
       </p>
       <div className="mt-4">
         <p className="font-urbanist font-semibold text-white text-sm">{t.name}</p>
-        <p className="text-xs text-white/60 font-public-sans">{t.role}</p>
+        <p className="text-xs text-white/60 font-public-sans">{t.title}</p>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
 const shouldOffset = (index: number) => index === 1 || index === 3 || index === 7;
 
 export const TestimonialsSection = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const cards = gridRef.current?.querySelectorAll(".testimonial-card");
+    if (!cards?.length) return;
+
+    gsap.set(cards, { opacity: 0, y: 60, scale: 0.92 });
+
+    const tl = gsap.to(cards, {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      duration: 0.7,
+      stagger: 0.1,
+      ease: "power2.out",
+      scrollTrigger: {
+        trigger: sectionRef.current,
+        start: "top 75%",
+        end: "bottom 60%",
+        toggleActions: "play none none reverse",
+      },
+    });
+
+    return () => {
+      tl.scrollTrigger?.kill();
+      tl.kill();
+    };
+  }, []);
+
   return (
     <section
-      className="relative overflow-hidden py-20 md:py-28"
-      style={{ backgroundColor: "hsl(215 85% 55%)" }}
+      ref={sectionRef}
+      className="relative overflow-hidden py-28 md:py-36"
+      style={{ backgroundColor: "hsl(215 85% 40%)" }}
     >
-      {/* Decorative blur circles for depth */}
+      {/* Decorative blur circles */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -top-20 left-1/4 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
         <div className="absolute bottom-10 right-1/4 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
@@ -164,7 +171,7 @@ export const TestimonialsSection = () => {
       </div>
 
       <div className="relative mx-auto max-w-[1440px] px-[5%]">
-        {/* Header text */}
+        {/* Header */}
         <div className="mb-14 text-center max-w-2xl mx-auto relative z-10">
           <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-white/70 font-urbanist">
             Real Stories
@@ -174,36 +181,48 @@ export const TestimonialsSection = () => {
           </p>
         </div>
 
-        {/* Large background heading behind cards */}
+        {/* Large background heading */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <h2 className="text-[6rem] md:text-[10rem] lg:text-[14rem] font-urbanist font-bold text-white/[0.06] leading-none text-center select-none whitespace-nowrap">
             Real Stories
           </h2>
         </div>
 
-        {/* Desktop: staggered 4-col grid */}
-        <div className="hidden md:grid grid-cols-4 gap-6 relative z-10">
-          {testimonials.map((t, index) => (
-            <div key={t.name} className={shouldOffset(index) ? "mt-12" : ""}>
+        {/* Desktop grid */}
+        <div
+          ref={gridRef}
+          className="hidden md:grid grid-cols-4 gap-6 relative z-10"
+          style={{ perspective: "1200px" }}
+        >
+          {SELECTED.map((t, index) => (
+            <div key={t.id} className={shouldOffset(index) ? "mt-12" : ""}>
               <TestimonialCard t={t} />
             </div>
           ))}
         </div>
 
-        {/* Mobile: 2-col simple grid, no tilt */}
+        {/* Mobile grid */}
         <div className="grid grid-cols-2 gap-4 md:hidden relative z-10">
-          {testimonials.slice(0, 6).map((t) => (
+          {SELECTED.slice(0, 6).map((t) => (
             <div
-              key={t.name}
-              className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-5"
+              key={t.id}
+              className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-4"
             >
+              <div className="mb-3 overflow-hidden rounded-xl aspect-square">
+                <img
+                  src={t.avatar}
+                  alt={t.name}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
               <Stars count={t.stars} />
-              <p className="mt-3 text-white/90 font-public-sans text-xs leading-relaxed">
+              <p className="mt-2 text-white/90 font-public-sans text-xs leading-relaxed">
                 "{t.quote}"
               </p>
               <div className="mt-3">
                 <p className="font-urbanist font-semibold text-white text-xs">{t.name}</p>
-                <p className="text-[10px] text-white/60 font-public-sans">{t.role}</p>
+                <p className="text-[10px] text-white/60 font-public-sans">{t.title}</p>
               </div>
             </div>
           ))}
