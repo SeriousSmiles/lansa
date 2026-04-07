@@ -9,10 +9,11 @@ import { HowItWorksSlide } from "./slides/HowItWorksSlide";
 import { CertificationSlide } from "./slides/CertificationSlide";
 import { FeatureShowcaseSlide } from "./slides/FeatureShowcaseSlide";
 import { FunnelSlide } from "./slides/FunnelSlide";
+import { IndustryInsightSlide } from "./slides/IndustryInsightSlide";
 import { PricingSlide } from "./slides/PricingSlide";
 import { CTASlide } from "./slides/CTASlide";
 
-const TOTAL_SLIDES = 8;
+const TOTAL_SLIDES = 9;
 
 export function PresentationShell() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -63,8 +64,9 @@ export function PresentationShell() {
       case 3: return <CertificationSlide {...props} />;
       case 4: return <FeatureShowcaseSlide {...props} />;
       case 5: return <FunnelSlide />;
-      case 6: return <PricingSlide {...props} />;
-      case 7: return <CTASlide />;
+      case 6: return <IndustryInsightSlide industry={industry} />;
+      case 7: return <PricingSlide {...props} />;
+      case 8: return <CTASlide />;
       default: return null;
     }
   };

@@ -7,7 +7,8 @@ const SLIDE_TITLES = [
   "How It Works",
   "Certification",
   "Features",
-  "Funnel",
+  "Comparison",
+  "Your Insight",
   "Pricing",
   "Get Started",
 ];

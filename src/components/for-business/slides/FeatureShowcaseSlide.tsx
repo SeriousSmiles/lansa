@@ -1,15 +1,15 @@
 import { DetailContent } from "../DetailSheet";
-import { Wand2, Compass, BarChart3, Users } from "lucide-react";
 
 const FEATURES = [
   {
-    icon: Wand2, title: "Job Posting Wizard",
+    title: "Job Posting", titleBold: "Wizard",
     desc: "Create compelling job listings in under 5 minutes with guided templates.",
+    image: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800&q=80",
     detail: {
       title: "Job Posting Wizard",
       description: "Our intelligent posting flow makes creating job listings fast and effective.",
       bullets: [
-        "Industry-specific templates pre-fill common requirements so you start ahead",
+        "Industry-specific templates pre-fill common requirements",
         "Smart skills tagging automatically matches your listing with certified candidates",
         "Set salary range, location, work mode, and contract type in a few taps",
         "Preview exactly how candidates will see your listing before publishing",
@@ -20,8 +20,9 @@ const FEATURES = [
     }
   },
   {
-    icon: Compass, title: "Smart Discovery",
+    title: "Smart", titleBold: "Discovery",
     desc: "Swipe through matched, verified candidates ranked by fit score.",
+    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80",
     detail: {
       title: "Smart Candidate Discovery",
       description: "A curated feed of pre-certified candidates, ranked by how well they match your role.",
@@ -37,8 +38,9 @@ const FEATURES = [
     }
   },
   {
-    icon: BarChart3, title: "Hiring Analytics",
+    title: "Hiring", titleBold: "Analytics",
     desc: "Track pipeline health, response rates, and time-to-hire metrics.",
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80",
     detail: {
       title: "Hiring Analytics Dashboard",
       description: "Real-time visibility into your hiring funnel's performance.",
@@ -54,8 +56,9 @@ const FEATURES = [
     }
   },
   {
-    icon: Users, title: "Team Management",
+    title: "Team", titleBold: "Management",
     desc: "Collaborate with your hiring team through shared organization access.",
+    image: "https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=800&q=80",
     detail: {
       title: "Team & Organization Management",
       description: "Built for teams, not just individual recruiters.",
@@ -78,36 +81,54 @@ interface FeatureShowcaseSlideProps {
 
 export function FeatureShowcaseSlide({ openDetail }: FeatureShowcaseSlideProps) {
   return (
-    <div className="w-full h-full bg-white flex flex-col items-center justify-center px-[120px]">
-      <p className="text-sm font-semibold text-[hsl(var(--lansa-orange))] uppercase tracking-[0.2em] mb-4">
-        Platform Features
-      </p>
-      <h2 className="text-[52px] font-bold text-foreground font-['Urbanist'] mb-4 leading-tight">
-        Everything You Need to Hire
-      </h2>
-      <p className="text-lg text-muted-foreground mb-14 text-center max-w-[600px]">
-        From posting to onboarding, Lansa streamlines every step of your hiring process.
-      </p>
+    <div className="w-full h-full bg-white flex flex-col">
+      {/* Header */}
+      <div className="pt-14 px-[120px] mb-6">
+        <p className="text-[13px] font-semibold text-[hsl(var(--lansa-orange))] uppercase tracking-[0.25em] mb-3 font-['Urbanist']">
+          Platform Features
+        </p>
+        <h2 className="font-['Urbanist']">
+          <span className="text-[48px] font-extralight text-foreground leading-[1.1]">Everything You Need to </span>
+          <span className="text-[48px] font-black text-foreground leading-[1.1]">Hire</span>
+        </h2>
+      </div>
 
-      <div className="grid grid-cols-2 gap-6 w-full max-w-[1200px]">
-        {FEATURES.map((feat, i) => (
-          <button
-            key={i}
-            onClick={() => openDetail(feat.detail)}
-            className="flex items-start gap-6 bg-[hsl(var(--lansa-muted))] rounded-2xl p-8 text-left hover:shadow-lg hover:-translate-y-1 transition-all duration-200 group cursor-pointer"
-          >
-            <div className="w-14 h-14 rounded-xl bg-[hsl(var(--lansa-blue))] flex items-center justify-center shrink-0">
-              <feat.icon className="h-7 w-7 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-bold text-foreground font-['Urbanist'] mb-2">{feat.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{feat.desc}</p>
-              <p className="text-xs text-[hsl(var(--lansa-blue))] mt-3 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
-                See full details →
-              </p>
-            </div>
-          </button>
-        ))}
+      {/* Alternating rows */}
+      <div className="flex-1 flex flex-col px-[120px] pb-10 gap-3">
+        {FEATURES.map((feat, i) => {
+          const photoLeft = i % 2 === 0;
+          return (
+            <button
+              key={i}
+              onClick={() => openDetail(feat.detail)}
+              className="flex-1 flex rounded-xl overflow-hidden cursor-pointer group hover:shadow-xl transition-shadow duration-300"
+              style={{ flexDirection: photoLeft ? "row" : "row-reverse" }}
+            >
+              {/* Photo side */}
+              <div className="w-[35%] relative overflow-hidden">
+                <div
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                  style={{ backgroundImage: `url(${feat.image})` }}
+                />
+              </div>
+              {/* Text side */}
+              <div className="w-[65%] bg-[hsl(var(--lansa-muted))] flex items-center px-10 group-hover:bg-[hsl(215,20%,95%)] transition-colors duration-300">
+                <div>
+                  <h3 className="font-['Urbanist'] mb-1.5">
+                    <span className="text-[28px] font-extralight text-foreground">{feat.title} </span>
+                    <span className="text-[28px] font-black text-foreground">{feat.titleBold}</span>
+                  </h3>
+                  <p className="text-[14px] text-muted-foreground font-['Urbanist'] font-light leading-relaxed max-w-[400px]">
+                    {feat.desc}
+                  </p>
+                  <p className="text-[12px] text-[hsl(var(--lansa-orange))] font-semibold mt-2 opacity-0 group-hover:opacity-100 transition-opacity font-['Urbanist']">
+                    See full details →
+                  </p>
+                </div>
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

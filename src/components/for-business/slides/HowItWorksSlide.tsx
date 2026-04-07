@@ -1,10 +1,10 @@
 import { DetailContent } from "../DetailSheet";
-import { FileText, Search, Handshake } from "lucide-react";
 
 const STEPS = [
   {
-    icon: FileText, num: "01", title: "Post",
+    num: "01", title: "Post", titleBold: "Your Role",
     desc: "Create a job listing in under 5 minutes with our guided wizard.",
+    image: "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80",
     detail: {
       title: "Job Posting Wizard",
       description: "Our smart posting flow asks the right questions so you attract the right candidates.",
@@ -19,8 +19,9 @@ const STEPS = [
     }
   },
   {
-    icon: Search, num: "02", title: "Browse",
+    num: "02", title: "Browse", titleBold: "Talent",
     desc: "Swipe through pre-verified, Lansa Certified candidates matched to your role.",
+    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&q=80",
     detail: {
       title: "Smart Candidate Discovery",
       description: "Every candidate you see has already passed a sector-specific certification exam.",
@@ -35,8 +36,9 @@ const STEPS = [
     }
   },
   {
-    icon: Handshake, num: "03", title: "Match",
+    num: "03", title: "Hire", titleBold: "with Confidence",
     desc: "Connect directly with candidates who fit. Start a conversation instantly.",
+    image: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&q=80",
     detail: {
       title: "Direct Connection",
       description: "When you find someone great, you're one tap away from starting a conversation.",
@@ -58,40 +60,56 @@ interface HowItWorksSlideProps {
 
 export function HowItWorksSlide({ openDetail }: HowItWorksSlideProps) {
   return (
-    <div className="w-full h-full bg-white flex flex-col items-center justify-center px-[120px]">
-      <p className="text-sm font-semibold text-[hsl(var(--lansa-orange))] uppercase tracking-[0.2em] mb-4">
-        How It Works
-      </p>
-      <h2 className="text-[56px] font-bold text-foreground font-['Urbanist'] mb-4 leading-tight">
-        Three Steps. That's It.
-      </h2>
-      <p className="text-lg text-muted-foreground mb-20 text-center max-w-[600px]">
-        5 minutes to post. Seconds to match. No agencies, no job boards, no guesswork.
-      </p>
+    <div className="w-full h-full bg-[hsl(215,20%,97%)] flex flex-col">
+      {/* Header */}
+      <div className="pt-16 px-[120px] mb-8">
+        <p className="text-[13px] font-semibold text-[hsl(var(--lansa-orange))] uppercase tracking-[0.25em] mb-4 font-['Urbanist']">
+          How It Works
+        </p>
+        <h2 className="font-['Urbanist']">
+          <span className="text-[52px] font-extralight text-foreground leading-[1.1]">Three Steps. </span>
+          <span className="text-[52px] font-black text-foreground leading-[1.1]">That's It.</span>
+        </h2>
+      </div>
 
-      <div className="flex gap-6 w-full max-w-[1400px] items-start">
+      {/* Steps — photo cards */}
+      <div className="flex-1 flex gap-6 px-[120px] pb-16">
         {STEPS.map((step, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center">
-            {/* Connector line */}
-            {i < STEPS.length - 1 && (
-              <div className="absolute" style={{ left: `${(i + 1) * 33.3}%`, top: "50%", width: "100px" }}>
-              </div>
-            )}
-            <button
-              onClick={() => openDetail(step.detail)}
-              className="w-full bg-gradient-to-b from-[hsl(var(--lansa-muted))] to-white rounded-2xl p-10 text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer"
-            >
-              <div className="w-20 h-20 rounded-2xl bg-[hsl(var(--lansa-blue))] flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                <step.icon className="h-10 w-10 text-white" />
-              </div>
-              <p className="text-xs font-bold text-[hsl(var(--lansa-blue))] mb-2 tracking-widest">{step.num}</p>
-              <h3 className="text-[32px] font-bold text-foreground font-['Urbanist'] mb-3">{step.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
-              <p className="text-xs text-[hsl(var(--lansa-orange))] mt-6 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            key={i}
+            onClick={() => openDetail(step.detail)}
+            className="flex-1 relative rounded-2xl overflow-hidden cursor-pointer group"
+          >
+            {/* Background photo */}
+            <div
+              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+              style={{ backgroundImage: `url(${step.image})` }}
+            />
+            {/* Dark overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20 group-hover:from-black/95 group-hover:via-black/60 transition-all duration-500" />
+
+            {/* Watermark number */}
+            <div className="absolute top-4 right-6 z-10">
+              <span className="text-[140px] font-extralight text-white/[0.06] font-['Urbanist'] leading-none select-none">
+                {step.num}
+              </span>
+            </div>
+
+            {/* Content */}
+            <div className="relative z-10 h-full flex flex-col justify-end p-8">
+              <p className="text-[hsl(var(--lansa-orange))] text-[13px] font-bold tracking-widest mb-3 font-['Urbanist']">
+                STEP {step.num}
+              </p>
+              <h3 className="font-['Urbanist'] mb-3">
+                <span className="text-[32px] font-extralight text-white leading-tight block">{step.title}</span>
+                <span className="text-[32px] font-black text-white leading-tight block">{step.titleBold}</span>
+              </h3>
+              <p className="text-white/60 text-[14px] font-['Urbanist'] leading-relaxed max-w-[300px]">{step.desc}</p>
+              <p className="text-[hsl(var(--lansa-orange))] text-[12px] font-semibold mt-4 opacity-0 group-hover:opacity-100 transition-opacity font-['Urbanist']">
                 Learn more →
               </p>
-            </button>
-          </div>
+            </div>
+          </button>
         ))}
       </div>
     </div>
