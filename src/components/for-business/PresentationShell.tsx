@@ -84,7 +84,7 @@ export function PresentationShell() {
   };
 
   return (
-    <div className="fixed inset-0 z-40 bg-[hsl(215,20%,96%)] flex flex-col">
+    <div className="fixed inset-0 z-40 bg-[hsl(215,20%,96%)] flex flex-col presentation-shell">
       {/* Top bar */}
       <div className="h-12 bg-white border-b border-border flex items-center justify-between px-4 shrink-0 z-30">
         <div className="flex items-center gap-3">
@@ -114,7 +114,7 @@ export function PresentationShell() {
       </div>
 
       {/* Main area */}
-      <div className="flex-1 relative overflow-hidden">
+      <div className="flex-1 min-h-0 relative overflow-hidden">
         <SlideSidebar
           currentSlide={currentSlide}
           onSelectSlide={setCurrentSlide}
@@ -123,9 +123,9 @@ export function PresentationShell() {
         />
 
         {/* Canvas */}
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 slide-canvas-scroll">
           {currentSlide === 0 || isSmallViewport ? (
-            <div className="w-full h-full overflow-y-auto">
+            <div className="w-full h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
               {renderSlide()}
             </div>
           ) : (

@@ -6,7 +6,7 @@ export function CTASlide() {
   const navigate = useNavigate();
 
   return (
-    <div className="w-full h-full relative overflow-hidden">
+    <div className="w-full h-full relative overflow-hidden min-h-0">
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: "url(https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1400&q=80)" }}

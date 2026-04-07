@@ -171,7 +171,7 @@ export function HeroSlide({ industry, setIndustry }: HeroSlideProps) {
       </div>
 
       {/* ========== MOBILE / TABLET: Horizontal stacked strips ========== */}
-      <div className="flex lg:hidden flex-col w-full h-full">
+      <div className="flex lg:hidden flex-col w-full h-full min-h-0">
         {INDUSTRIES.map((ind) => {
           const isActive = activeMobile === ind.id;
           const isSelected = industry === ind.id;
@@ -181,7 +181,7 @@ export function HeroSlide({ industry, setIndustry }: HeroSlideProps) {
               key={ind.id}
               onClick={() => handleMobileTap(ind.id)}
               className={cn(
-                "relative cursor-pointer overflow-hidden transition-all duration-500 ease-in-out",
+                "relative cursor-pointer overflow-hidden transition-all duration-500 ease-in-out min-h-0",
                 isActive ? "flex-[2.5]" : "flex-1"
               )}
             >

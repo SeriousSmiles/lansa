@@ -1,5 +1,21 @@
 /* Additional CSS fixes for mobile modals and dropdowns */
 
+/* ===== Safari-safe viewport and flex fixes ===== */
+
+/* Presentation shell: use dvh with vh fallback for Safari toolbar handling */
+.presentation-shell {
+  height: 100vh;
+  height: 100dvh;
+  height: -webkit-fill-available;
+}
+
+/* Canvas scroll area needs explicit height minus top bar (48px) */
+.slide-canvas-scroll {
+  height: calc(100vh - 48px);
+  height: calc(100dvh - 48px);
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Ensure proper modal positioning on mobile */
 @media (max-width: 768px) {
   [data-radix-dialog-content] {
@@ -24,6 +40,13 @@
   [data-radix-popover-content] {
     max-width: calc(100vw - 2rem) !important;
     margin: 0.5rem !important;
+  }
+
+  /* Reduce backdrop-blur on mobile to prevent Safari compositing glitches */
+  [data-radix-dropdown-menu-content],
+  [data-radix-popover-content] {
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
   }
 }
 
