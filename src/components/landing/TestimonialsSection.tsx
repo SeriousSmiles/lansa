@@ -175,7 +175,7 @@ export const TestimonialsSection = () => {
       {/* ===== DESKTOP: tall scroll stage with absolute cards ===== */}
       <div className="hidden md:block relative" style={{ height: "380vh" }}>
         {/* Sticky heading — stays centered while user scrolls */}
-        <div className="sticky top-0 h-screen flex items-center justify-center pointer-events-none z-0">
+        <div className="sticky top-0 h-screen flex items-center justify-center pointer-events-none" style={{ zIndex: 1 }}>
           <div className="text-center">
             <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-white/50 font-urbanist">
               Real Stories
@@ -189,11 +189,11 @@ export const TestimonialsSection = () => {
           </div>
         </div>
 
-        {/* Absolute card field */}
+        {/* Card field — positioned from top of stage, overlapping the sticky heading */}
         <div
           ref={stageRef}
-          className="absolute inset-0 z-10"
-          style={{ perspective: "1200px" }}
+          className="absolute top-0 left-0 right-0 bottom-0"
+          style={{ perspective: "1200px", zIndex: 2 }}
         >
           {SELECTED.map((t, i) => {
             const pos = DESKTOP_CARD_LAYOUT[i];
