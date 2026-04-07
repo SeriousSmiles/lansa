@@ -1,13 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import AnimatedLogo from "@/components/AnimatedLogo";
-import { ArrowRight, Mail } from "lucide-react";
+import { ArrowRight, MessageCircle, Mail, Phone } from "lucide-react";
 
 export function CTASlide() {
   const navigate = useNavigate();
 
   return (
     <div className="w-full h-full relative overflow-hidden">
-      {/* Background photo */}
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: "url(https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1400&q=80)" }}
@@ -26,21 +25,39 @@ export function CTASlide() {
           Create your organization account today and start browsing Lansa Certified talent in minutes.
         </p>
 
-        <div className="flex flex-col items-center gap-3 lg:gap-4">
-          <button
-            onClick={() => navigate("/signup")}
-            className="flex items-center gap-2 lg:gap-3 px-7 py-4 lg:px-10 lg:py-5 bg-[hsl(var(--lansa-orange))] text-white rounded-xl text-[15px] lg:text-[17px] font-bold font-['Urbanist'] hover:opacity-90 transition-opacity shadow-lg shadow-[hsl(14,90%,60%)]/20"
+        <button
+          onClick={() => navigate("/signup")}
+          className="flex items-center gap-2 lg:gap-3 px-7 py-4 lg:px-10 lg:py-5 bg-[hsl(var(--lansa-orange))] text-white rounded-xl text-[15px] lg:text-[17px] font-bold font-['Urbanist'] hover:opacity-90 transition-opacity shadow-lg shadow-[hsl(14,90%,60%)]/20 mb-6 lg:mb-8"
+        >
+          Create Your Account
+          <ArrowRight className="h-4 w-4 lg:h-5 lg:w-5" />
+        </button>
+
+        <p className="text-[12px] lg:text-[13px] text-white/30 font-['Urbanist'] mb-3">Or reach out directly</p>
+        <div className="flex items-center gap-4">
+          <a
+            href="https://wa.me/59995279966"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-white/10 backdrop-blur border border-white/15 flex items-center justify-center text-white/70 hover:bg-emerald-500/20 hover:text-emerald-400 hover:border-emerald-400/30 transition-all"
+            title="WhatsApp"
           >
-            Create Your Account
-            <ArrowRight className="h-4 w-4 lg:h-5 lg:w-5" />
-          </button>
-          <button
-            onClick={() => window.location.href = "mailto:hello@lansa.app"}
-            className="flex items-center gap-2 px-5 py-2.5 lg:px-6 lg:py-3 bg-white/10 backdrop-blur text-white/70 rounded-lg text-[13px] lg:text-[14px] font-medium font-['Urbanist'] hover:bg-white/20 transition-colors"
+            <MessageCircle className="h-5 w-5 lg:h-6 lg:w-6" />
+          </a>
+          <a
+            href="mailto:john@lansa.online"
+            className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-white/10 backdrop-blur border border-white/15 flex items-center justify-center text-white/70 hover:bg-[hsl(var(--lansa-orange))]/20 hover:text-[hsl(var(--lansa-orange))] hover:border-[hsl(var(--lansa-orange))]/30 transition-all"
+            title="Email"
           >
-            <Mail className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
-            Questions? Contact us
-          </button>
+            <Mail className="h-5 w-5 lg:h-6 lg:w-6" />
+          </a>
+          <a
+            href="tel:+59995279966"
+            className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-white/10 backdrop-blur border border-white/15 flex items-center justify-center text-white/70 hover:bg-[hsl(var(--lansa-blue))]/20 hover:text-[hsl(var(--lansa-blue))] hover:border-[hsl(var(--lansa-blue))]/30 transition-all"
+            title="Call"
+          >
+            <Phone className="h-5 w-5 lg:h-6 lg:w-6" />
+          </a>
         </div>
 
         <div className="absolute bottom-6 lg:bottom-10 flex flex-col items-center gap-2">
