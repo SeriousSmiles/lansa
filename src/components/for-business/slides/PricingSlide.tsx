@@ -27,7 +27,7 @@ const PREMIUM_FEATURES = [
 
 export function PricingSlide({ openDetail }: PricingSlideProps) {
   return (
-    <div className="w-full h-full relative overflow-hidden">
+    <div className="w-full min-h-full lg:h-full relative overflow-hidden">
       {/* Background photo */}
       <div
         className="absolute inset-0 bg-cover bg-center"
@@ -35,7 +35,7 @@ export function PricingSlide({ openDetail }: PricingSlideProps) {
       />
       <div className="absolute inset-0 bg-[hsl(215,85%,8%)]/95" />
 
-      <div className="relative z-10 h-full flex flex-col items-center justify-center px-6 md:px-10 lg:px-[120px] py-8 lg:py-0">
+      <div className="relative z-10 min-h-full lg:h-full flex flex-col items-center justify-center px-6 md:px-10 lg:px-[120px] py-8 pb-20 lg:py-0">
         <p className="text-[12px] lg:text-[13px] font-semibold text-[hsl(var(--lansa-orange))] uppercase tracking-[0.25em] mb-3 lg:mb-4 font-['Urbanist']">
           Simple Pricing
         </p>

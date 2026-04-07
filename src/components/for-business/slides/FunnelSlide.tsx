@@ -21,7 +21,7 @@ const LANSA = [
 
 export function FunnelSlide() {
   return (
-    <div className="w-full h-full flex flex-col lg:flex-row overflow-hidden">
+    <div className="w-full min-h-full lg:h-full flex flex-col lg:flex-row overflow-hidden">
       {/* Traditional */}
       <div className="flex-1 lg:w-1/2 relative">
         <div
@@ -29,7 +29,7 @@ export function FunnelSlide() {
           style={{ backgroundImage: "url(https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&q=80)" }}
         />
         <div className="absolute inset-0 bg-red-950/80" />
-        <div className="relative z-10 h-full flex flex-col justify-center px-6 py-6 md:px-10 md:py-8 lg:px-14 lg:py-12">
+        <div className="relative z-10 flex flex-col justify-center px-6 py-8 md:px-10 md:py-8 lg:px-14 lg:py-12 lg:h-full">
           <p className="text-red-300/60 text-[11px] lg:text-[13px] font-semibold uppercase tracking-[0.25em] mb-2 lg:mb-4 font-['Urbanist']">Traditional Hiring</p>
           <h3 className="font-['Urbanist'] mb-1 lg:mb-2">
             <span className="text-[28px] md:text-[36px] lg:text-[44px] font-extralight text-white/90 leading-tight block">The Old</span>
@@ -60,7 +60,7 @@ export function FunnelSlide() {
           style={{ backgroundImage: "url(https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&q=80)" }}
         />
         <div className="absolute inset-0 bg-[hsl(215,85%,12%)]/85" />
-        <div className="relative z-10 h-full flex flex-col justify-center px-6 py-6 md:px-10 md:py-8 lg:px-14 lg:py-12">
+        <div className="relative z-10 flex flex-col justify-center px-6 py-8 pb-20 md:px-10 md:py-8 lg:px-14 lg:py-12 lg:h-full lg:pb-12">
           <div className="absolute top-4 right-4 lg:top-8 lg:right-8 bg-[hsl(var(--lansa-orange))] text-white text-[10px] lg:text-[11px] font-bold px-2.5 py-0.5 lg:px-3 lg:py-1 rounded-full font-['Urbanist']">
             RECOMMENDED
           </div>
