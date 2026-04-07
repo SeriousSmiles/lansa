@@ -328,15 +328,27 @@ function FieldInput({ field, value, onChange }: { field: Field; value: string | 
         <label className="text-[12px] lg:text-[13px] text-white/50 font-['Urbanist'] font-medium leading-tight block">
           {field.label}
         </label>
-        <input
-          type="range"
-          min={field.sliderMin}
-          max={field.sliderMax}
-          step={field.sliderStep}
-          value={Number(value)}
-          onChange={(e) => onChange(Number(e.target.value))}
-          className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer
-            [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[hsl(var(--lansa-orange))] [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer"
+        <div className="relative w-full h-6 flex items-center">
+          <div className="absolute left-0 right-0 h-2 bg-white/10 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[hsl(var(--lansa-orange))] rounded-full transition-all duration-100"
+              style={{ width: `${((Number(value) - (field.sliderMin || 0)) / ((field.sliderMax || 100) - (field.sliderMin || 0))) * 100}%` }}
+            />
+          </div>
+          <input
+            type="range"
+            min={field.sliderMin}
+            max={field.sliderMax}
+            step={field.sliderStep}
+            value={Number(value)}
+            onChange={(e) => onChange(Number(e.target.value))}
+            className="absolute w-full h-6 opacity-0 cursor-pointer z-10"
+          />
+          <div
+            className="absolute w-6 h-6 rounded-full bg-[hsl(var(--lansa-orange))] shadow-[0_0_10px_rgba(255,140,50,0.5)] border-2 border-white/30 pointer-events-none transition-all duration-100"
+            style={{ left: `calc(${((Number(value) - (field.sliderMin || 0)) / ((field.sliderMax || 100) - (field.sliderMin || 0))) * 100}% - 12px)` }}
+          />
+        </div>
         />
         <div className="flex justify-between text-white/30 text-[11px] font-['Urbanist']">
           <span>{field.sliderMin}</span>
