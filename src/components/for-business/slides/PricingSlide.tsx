@@ -63,7 +63,7 @@ export function PricingSlide({ openDetail }: PricingSlideProps) {
               ],
               stat: "Free forever"
             })}
-            className="flex-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl lg:rounded-2xl p-6 lg:p-10 text-left hover:bg-white/10 transition-all duration-200 cursor-pointer group"
+            className="flex-1 bg-white/10 backdrop-blur-xl border border-white/15 rounded-xl lg:rounded-2xl p-6 lg:p-10 text-left hover:bg-white/15 transition-all duration-200 cursor-pointer group"
           >
             <p className="text-[12px] lg:text-[13px] font-semibold text-white/40 mb-1 font-['Urbanist']">Basic</p>
             <p className="text-[36px] lg:text-[52px] font-black text-white font-['Urbanist'] leading-none mb-4 lg:mb-8">Free</p>
