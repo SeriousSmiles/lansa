@@ -155,3 +155,6 @@ verify_jwt = false
 [functions.send-product-update-email]
 verify_jwt = false
 
+[functions.b2b-industry-insight]
+verify_jwt = false
+
