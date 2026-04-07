@@ -171,7 +171,7 @@ export function HeroSlide({ industry, setIndustry }: HeroSlideProps) {
       </div>
 
       {/* ========== MOBILE / TABLET: Horizontal stacked strips ========== */}
-      <div className="flex lg:hidden flex-col w-full h-full">
+      <div className="flex lg:hidden flex-col w-full h-full min-h-0">
         {INDUSTRIES.map((ind) => {
           const isActive = activeMobile === ind.id;
           const isSelected = industry === ind.id;
