@@ -27,6 +27,7 @@ import { CTASlide } from "./slides/CTASlide";
 const TOTAL_SLIDES = 9;
 
 export function PresentationShell() {
+  const isSmallViewport = useIsSmallViewport();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
