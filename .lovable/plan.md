@@ -1,50 +1,107 @@
 
+# Real Stories — Make It Taller, Truly Scattered, and Fix the Glare
 
-# Testimonials Section — Darker Blue, Avatar Images, Scroll Effect, Fixed Glare
+## What I’ll Change
 
-## What Changes
+- Rework `TestimonialsSection.tsx` so the desktop version behaves like the reference:
+  - much taller section
+  - sticky centered heading that stays faded behind the cards
+  - cards placed with `position: absolute` inside a tall relative stage
+  - user scrolls to reveal all cards progressively
+- Keep the darker Lansa blue background and glossy card styling
+- Correct the glare logic so it feels like a fixed light reflection, not a reversed or cursor-following hotspot
 
-1. **Darker blue background** — switch from `hsl(215 85% 55%)` to a deeper `hsl(215 85% 40%)`
-2. **Add square avatar image** at the top of each card (like the Team22 reference), using avatars from `testimonials.ts`
-3. **Make section taller** with scroll-driven stagger entrance (cards animate in as user scrolls into view)
-4. **Fix glare effect** — glare should be positional (based on tilt angle), NOT follow the cursor. The glare stays fixed relative to a "light source" and only shifts as the card tilts, creating a realistic holographic/glossy feel
-5. **Use GSAP** for the 3D tilt + glare interaction (replacing framer-motion tilt logic) for smoother, more performant animation
+## Desktop Structure
 
-## Glare Behavior (Key Fix)
+Use a **tall scroll stage** instead of a normal grid.
 
-The current implementation moves the glare radial gradient to match cursor position — that's wrong. The correct behavior:
-- The glare represents a fixed light source (top-left or top-center)
-- As the card tilts via mouse position, the glare shifts slightly in the *opposite* direction of the tilt, simulating light reflection off a glossy surface
-- The glare position is derived from the card's `rotateX`/`rotateY` values, not the raw mouse coordinates
-- This creates the "holographic card" effect seen in the reference video
+```text
+section
+└─ relative tall stage (very large height)
+   ├─ sticky centered heading layer (behind)
+   └─ absolute card field layer (front)
+      ├─ card 1 at custom top/left
+      ├─ card 2 at custom top/right
+      ├─ ...
+      └─ card 8 lower in the stage
+```
 
-## Card Design Update
+### Key layout changes
+- Replace the current `grid-cols-4` layout with a `relative` stage using a custom `DESKTOP_CARD_LAYOUT` array
+- Each card wrapper will have explicit desktop coordinates like:
+  - `top`
+  - `left`
+  - optional small `rotate`
+  - optional `translateY`
+- Increase section height substantially, likely around `320vh–420vh`, so the user must scroll to uncover the full scattered composition
+- Keep the heading centered with `sticky top-1/2 -translate-y-1/2`, low opacity, and behind the cards
 
-Each card will now include:
-- **Square avatar image** at top (aspect-square, rounded-xl, object-cover) — pulled from the `avatar` field in `TESTIMONIALS` data
-- Star rating below the image
-- Quote text
-- Name + role
+## Card Positioning Approach
 
-Use 8 testimonials from `TESTIMONIALS` array (which has proper avatar URLs).
+Instead of margin offsets, I’ll use a position map for all 8 cards.
 
-## Scroll Entrance Animation
+Example approach:
+- top row cards near upper stage
+- middle cards offset left/right
+- lower cards deeper in the section
+- uneven placement so it feels editorial/scattered, not like a hidden grid
 
-- Section gets more vertical padding (`py-28 md:py-36`)
-- GSAP `ScrollTrigger` staggers the cards in on scroll (fade up + slight scale, 0.1s stagger per card)
-- This makes the section feel longer and more immersive as user scrolls through
+This will match the “floating cards over a long stage” effect better than the current layout.
 
-## Technical Approach
+## Tilt + Glare Fix
 
-- **GSAP** with `ScrollTrigger` for scroll-triggered entrance animation
-- **GSAP** `quickTo` or direct event handlers for 3D tilt on mouse move
-- Glare overlay uses CSS `background` with radial gradient, position computed from tilt angles
-- Cards use `transform-style: preserve-3d` and `perspective` on parent
-- Keep framer-motion import only if needed elsewhere; tilt logic moves to GSAP
+### Tilt
+- Keep GSAP for card tilt
+- Switch to a smoother GSAP pattern (`quickTo` / setters) so rotation feels premium and less jittery
+
+### Glare
+Current issue:
+- glare direction feels reversed
+- glare behavior does not match the expected fixed-light look
+
+Planned fix:
+- compute glare from the **tilt state**, not raw pointer position
+- keep the glare anchored to a virtual light source
+- adjust the sign/direction so the highlight shifts toward the visually correct edge of the card
+- keep movement subtle and constrained so it reads as glossy reflection, not a spotlight chasing the cursor
+
+## Visual Depth
+
+- Preserve the large faded “Real Stories” title behind everything
+- Add a few more soft blur layers in the background/foreground to strengthen depth
+- Slightly vary card elevations/shadows so they feel suspended in space
+
+## Mobile Behavior
+
+Desktop is the priority here.
+
+For mobile:
+- keep a simple stacked/two-column version
+- no absolute scattering
+- no hover-dependent interaction
+- preserve the same card styling and hierarchy
+
+This follows Lansa’s contextual design rules:
+- desktop = immersive, strategic, high-motion
+- mobile = simpler, readable, action-light
+
+## UX Intent
+
+- **Desktop priority:** immersive visual storytelling
+- **Hierarchy:** heading remains constant and atmospheric; cards become the moving content
+- **Heuristic goal:** strong spatial clarity and recognition — users instantly understand they must scroll to discover more stories
+- **Emotional outcome:** refined, premium, floating, cinematic
 
 ## File
 
 | File | Action |
 |---|---|
-| `src/components/landing/TestimonialsSection.tsx` | Rewrite — GSAP tilt/glare, avatars, darker blue, scroll entrance |
+| `src/components/landing/TestimonialsSection.tsx` | Rewrite layout structure for tall sticky-heading stage, absolute scattered cards, and corrected GSAP glare behavior |
 
+## Implementation Notes
+
+- Remove the current desktop grid wrapper
+- Replace `shouldOffset()` with a `DESKTOP_CARD_LAYOUT` config
+- Increase desktop section height significantly
+- Keep current testimonial data source (`TESTIMONIALS.slice(0, 8)`)
+- Preserve avatar-at-top card design and glossy blue card treatment
