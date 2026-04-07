@@ -90,7 +90,7 @@ export function ProblemSlide({ industry, openDetail }: ProblemSlideProps) {
   const image = INDUSTRY_IMAGES[industry] || INDUSTRY_IMAGES.other;
 
   return (
-    <div className="w-full h-full flex flex-col lg:flex-row overflow-hidden">
+    <div className="w-full h-full flex flex-col lg:flex-row overflow-hidden min-h-0">
       {/* Photo */}
       <div className="h-[35vh] md:h-[35%] lg:h-full lg:w-[55%] relative shrink-0">
         <div
