@@ -61,7 +61,7 @@ export const HowItWorksSection = () => {
     <section id="how-it-works" className="bg-background">
       <div className="mx-auto max-w-[1440px] px-[5%] py-20 md:py-28">
         <motion.div
-          className="mb-16 max-w-2xl"
+          className="mb-8 max-w-2xl"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
@@ -111,7 +111,7 @@ const FeatureCard = ({
     <div className="sticky top-0 flex min-h-screen items-center justify-center px-[5%] py-10 md:py-0">
       <motion.div
         style={{ scale }}
-        className="mx-auto w-full max-w-[1440px] overflow-hidden rounded-2xl border border-primary/10 bg-background shadow-xl"
+        className="mx-auto w-full max-w-[1440px] overflow-hidden rounded-2xl border border-primary/10 bg-background shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12),0_2px_12px_-4px_rgba(0,0,0,0.06)]"
       >
         <div
           className={`grid min-h-[70vh] items-center gap-8 p-8 md:grid-cols-2 md:gap-12 md:p-16 ${
