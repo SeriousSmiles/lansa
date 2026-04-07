@@ -349,7 +349,6 @@ function FieldInput({ field, value, onChange }: { field: Field; value: string | 
             style={{ left: `calc(${((Number(value) - (field.sliderMin || 0)) / ((field.sliderMax || 100) - (field.sliderMin || 0))) * 100}% - 12px)` }}
           />
         </div>
-        />
         <div className="flex justify-between text-white/30 text-[11px] font-['Urbanist']">
           <span>{field.sliderMin}</span>
           <span className="text-[18px] lg:text-[22px] font-black text-white font-['Urbanist']">{value}</span>
