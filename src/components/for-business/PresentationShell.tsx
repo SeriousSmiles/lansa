@@ -124,8 +124,10 @@ export function PresentationShell() {
 
         {/* Canvas */}
         <div className="absolute inset-0">
-          {currentSlide === 0 ? (
-            renderSlide()
+          {currentSlide === 0 || isSmallViewport ? (
+            <div className="w-full h-full overflow-y-auto">
+              {renderSlide()}
+            </div>
           ) : (
             <SlideRenderer>
               {renderSlide()}
