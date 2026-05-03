@@ -12,9 +12,16 @@ interface DashboardLayoutProps {
   userName: string;
   email: string;
   themeColor?: string;
+  /** When true, the global TopNavbar is hidden. Used by the portal-v2 dashboard
+   *  which provides its own left-rail navigation. The announcement banner is
+   *  also hidden in that mode. */
+  hideTopNav?: boolean;
+  /** When true, the inner content gets no max-width / padding wrapper so the
+   *  page can render edge-to-edge (used by portal v2). */
+  fullBleed?: boolean;
 }
 
-export function DashboardLayout({ children, userName, email, themeColor }: DashboardLayoutProps) {
+export function DashboardLayout({ children, userName, email, themeColor, hideTopNav, fullBleed }: DashboardLayoutProps) {
   const { signOut } = useAuth();
   const { userType } = useUserState();
   const mainContentRef = useRef<HTMLDivElement>(null);
@@ -115,20 +122,28 @@ export function DashboardLayout({ children, userName, email, themeColor }: Dashb
 
   return (
     <div className="flex min-h-screen w-full bg-[rgba(253,248,242,1)] flex-col overflow-x-clip">
-      <div className={`sticky top-0 z-40 transition-transform duration-300 ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}>
-        <AnnouncementBanner />
-        <TopNavbar 
-          items={menuItems}
-          userName={userName}
-          email={email}
-          onLogout={handleLogout}
-          themeColor={themeColor}
-        />
-      </div>
-      <main className="flex-1">
-        <div ref={mainContentRef} className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 pt-2 md:pt-3">
-          {children}
+      {!hideTopNav && (
+        <div className={`sticky top-0 z-40 transition-transform duration-300 ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}>
+          <AnnouncementBanner />
+          <TopNavbar 
+            items={menuItems}
+            userName={userName}
+            email={email}
+            onLogout={handleLogout}
+            themeColor={themeColor}
+          />
         </div>
+      )}
+      <main className="flex-1">
+        {fullBleed ? (
+          <div ref={mainContentRef} className="w-full">
+            {children}
+          </div>
+        ) : (
+          <div ref={mainContentRef} className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 pt-2 md:pt-3">
+            {children}
+          </div>
+        )}
       </main>
     </div>
   );
