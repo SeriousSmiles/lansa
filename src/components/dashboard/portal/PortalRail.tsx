@@ -23,6 +23,7 @@ import { useUnreadChatCount } from "@/hooks/useUnreadChatCount";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useDashboardPanel } from "./useDashboardPanel";
+import lansaIcon from "@/assets/lansa-icon-brand.svg";
 
 const RAIL_STATE_KEY = "lansa.portalRail.collapsed";
 
@@ -136,9 +137,9 @@ export function PortalRail({ unreadNotifications = 0 }: PortalRailProps) {
         <div className="flex items-center justify-between px-4 h-16 border-b border-border/40">
           <Link to="/dashboard" className="flex items-center gap-2 min-w-0">
             <img
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/41285a6d1f6906d8349429ceb652f953bf730d06?placeholderIfAbsent=true"
+              src={lansaIcon}
               alt="Lansa"
-              className="h-6 w-auto shrink-0"
+              className="h-7 w-7 shrink-0"
             />
             {!collapsed && (
               <span className="text-sm font-medium tracking-tight text-foreground truncate">
