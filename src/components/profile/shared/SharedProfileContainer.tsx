@@ -7,6 +7,8 @@ import { ProfileFooter } from "@/components/profile/layout/ProfileFooter";
 import { useElementAnimation } from "@/utils/animationHelpers";
 import { SharedProfileData } from "@/hooks/useSharedProfileData";
 import { MadeOnLansaBadge } from "@/components/profile/shared/MadeOnLansaBadge";
+import { usePortalMode } from "@/hooks/usePortalMode";
+import { SharedProfilePortalShell } from "./SharedProfilePortalShell";
 
 interface SharedProfileContainerProps {
   profileData: SharedProfileData;
@@ -15,9 +17,10 @@ interface SharedProfileContainerProps {
 
 export function SharedProfileContainer({ profileData, urlParam }: SharedProfileContainerProps) {
   const mainContentRef = useElementAnimation();
+  const { portalV2 } = usePortalMode();
 
-  return (
-    <div className="min-h-screen flex flex-col">
+  const inner = (
+    <>
       <ProfileLayout 
         userName={profileData.userName} 
         role={profileData.role}
@@ -61,6 +64,16 @@ export function SharedProfileContainer({ profileData, urlParam }: SharedProfileC
       <ProfileFooter coverColor={profileData.coverColor} />
       
       <MadeOnLansaBadge />
+    </>
+  );
+
+  if (portalV2) {
+    return <SharedProfilePortalShell>{inner}</SharedProfilePortalShell>;
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {inner}
     </div>
   );
 }
