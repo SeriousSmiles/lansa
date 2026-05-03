@@ -91,7 +91,7 @@ export function StatusRibbon() {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mt-6">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
       {chips.map((chip) => (
         <button
           key={chip.label}

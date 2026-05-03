@@ -30,7 +30,7 @@ export function TodaysFocus({ role }: TodaysFocusProps) {
   };
 
   return (
-    <section className="mt-8">
+    <section>
       <div className="flex items-center gap-2 mb-3">
         <Sparkles className="h-4 w-4 text-primary" />
         <h2 className="text-xs uppercase tracking-[0.16em] text-muted-foreground font-medium">
@@ -38,14 +38,14 @@ export function TodaysFocus({ role }: TodaysFocusProps) {
         </h2>
       </div>
       <div
-        className="relative overflow-hidden rounded-3xl border border-border/40 bg-gradient-to-br from-card via-card to-primary/[0.06] p-6 md:p-8 shadow-[0_1px_0_hsl(0_0%_0%/0.04),0_12px_32px_-16px_hsl(14_90%_60%/0.22)]"
+        className="relative overflow-hidden rounded-3xl border border-border/40 bg-gradient-to-br from-card via-card to-primary/[0.06] p-6 shadow-[0_1px_0_hsl(0_0%_0%/0.04),0_12px_32px_-16px_hsl(14_90%_60%/0.22)]"
       >
         <div
           aria-hidden
           className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-primary/15 blur-3xl pointer-events-none"
         />
         <div className="relative">
-          <h3 className="text-xl md:text-2xl font-semibold tracking-tight text-foreground">
+          <h3 className="text-xl font-semibold tracking-tight text-foreground">
             {action.title}
           </h3>
           <p className="mt-2 text-sm md:text-base text-muted-foreground max-w-xl">
