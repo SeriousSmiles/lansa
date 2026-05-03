@@ -38,7 +38,7 @@ export function WelcomeStrip({ userName, insight }: WelcomeStripProps) {
   }, []);
 
   return (
-    <div ref={ref} className="pt-6 md:pt-10 pb-2">
+    <div ref={ref} className="pt-8 md:pt-14 pb-8 border-b border-border/30">
       <p
         data-anim
         className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-medium"
@@ -47,7 +47,7 @@ export function WelcomeStrip({ userName, insight }: WelcomeStripProps) {
       </p>
       <h1
         data-anim
-        className="mt-2 text-3xl md:text-5xl leading-[1.05] tracking-tight"
+        className="mt-3 text-6xl md:text-8xl lg:text-[9rem] leading-[0.95] tracking-[-0.04em]"
       >
         <span className="font-extralight text-muted-foreground">{greeting},</span>{" "}
         <span className="font-black text-foreground">{firstName}.</span>
@@ -55,7 +55,7 @@ export function WelcomeStrip({ userName, insight }: WelcomeStripProps) {
       {insight && (
         <p
           data-anim
-          className="mt-3 text-sm md:text-base text-muted-foreground max-w-2xl"
+          className="mt-5 text-sm md:text-base text-muted-foreground max-w-2xl"
         >
           {insight}
         </p>
