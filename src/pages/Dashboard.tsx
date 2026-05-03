@@ -16,7 +16,6 @@ import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { useActionTracking } from "@/hooks/useActionTracking";
 import { ProfileCard } from "@/components/dashboard/overview/ProfileCard";
 import { SEOHead } from "@/components/SEOHead";
-import { LansaLoader } from "@/components/shared/LansaLoader";
 import { PortalShell } from "@/components/dashboard/portal/PortalShell";
 import { LegacyModeToggle } from "@/components/dashboard/portal/LegacyModeToggle";
 import { usePortalMode } from "@/hooks/usePortalMode";
@@ -141,8 +140,6 @@ export default function Dashboard() {
 
   return (
     <>
-      {isLoading && <LansaLoader duration={5000} />}
-
       <SEOHead
         title="Dashboard | Lansa - AI-Powered Career Builder"
         description="Access your personalized career dashboard with AI insights, profile management, and growth tracking tools."
