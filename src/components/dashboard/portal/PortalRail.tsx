@@ -31,7 +31,7 @@ type Item = {
   label: string;
   icon: React.ElementType;
   href?: string;
-  panel?: "profile" | "ai" | "insights" | "activity";
+  panel?: "profile" | "ai" | "insights" | "activity" | "inbox";
   badge?: number;
 };
 
@@ -101,7 +101,7 @@ export function PortalRail({ unreadNotifications = 0 }: PortalRailProps) {
     {
       label: "Comms",
       items: [
-        { label: "Messages", icon: MessageCircle, href: "/chat", badge: unreadChats },
+        { label: "Messages", icon: MessageCircle, panel: "inbox", badge: unreadChats },
         { label: "Activity", icon: Bell, panel: "activity", badge: unreadNotifications },
       ],
     },
