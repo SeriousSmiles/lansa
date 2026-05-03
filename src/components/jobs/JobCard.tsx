@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { JobListing } from "@/services/jobFeedService";
+import { getJobLogo } from "@/utils/getJobLogo";
 
 interface JobCardProps {
   job: JobListing;
@@ -10,20 +11,8 @@ interface JobCardProps {
   onViewDetails: (job: JobListing) => void;
 }
 
-// Helper function to get company logo with proper fallback
-const getCompanyLogo = (job: JobListing): string | null => {
-  // Priority 1: Organization logo (new system)
-  if (job.organizations?.logo_url) {
-    return job.organizations.logo_url;
-  }
-  
-  // Priority 2: Business profile organization logo (if available)
-  if (job.business_profiles?.organizations?.logo_url) {
-    return job.business_profiles.organizations.logo_url;
-  }
-  
-  return null;
-};
+// Use shared logo resolution helper to stay consistent across all job surfaces
+const getCompanyLogo = (job: JobListing): string | null => getJobLogo(job);
 
 export function JobCard({ job, onApply, onViewDetails }: JobCardProps) {
   const hasApplied = job.job_applications && job.job_applications.length > 0;

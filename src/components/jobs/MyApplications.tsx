@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { jobFeedService } from "@/services/jobFeedService";
 import { JobDetailModal } from "./JobDetailModal";
 import { formatDistanceToNow } from "date-fns";
+import { getJobLogo } from "@/utils/getJobLogo";
 
 interface Application {
   id: string;
@@ -24,6 +25,9 @@ interface Application {
     salary_range?: string;
     company_name: string;
     company_logo?: string;
+    logo_url?: string | null;
+    organizations?: { name?: string; logo_url?: string | null } | null;
+    companies?: { name?: string; logo_url?: string | null } | null;
   };
 }
 
@@ -59,7 +63,8 @@ export function MyApplications() {
   };
 
   const handleViewDetails = (app: Application) => {
-    // Convert to JobListing format for modal
+    // Convert to JobListing format for modal — preserve original nested
+    // organizations/companies so getJobLogo() resolves consistently.
     setSelectedJob({
       id: app.job.id,
       title: app.job.title,
@@ -72,10 +77,9 @@ export function MyApplications() {
       business_profiles: {
         company_name: app.job.company_name,
       },
-      organizations: {
-        logo_url: app.job.company_logo,
-        name: app.job.company_name,
-      },
+      organizations: app.job.organizations || undefined,
+      companies: app.job.companies || undefined,
+      logo_url: app.job.logo_url || app.job.company_logo || null,
       job_applications: [{ id: app.id, status: app.status, created_at: app.created_at }],
     });
   };
@@ -117,7 +121,7 @@ export function MyApplications() {
                 <div className="flex items-start gap-4">
                   {/* Company Logo */}
                   <Avatar className="h-12 w-12 rounded-lg flex-shrink-0">
-                    <AvatarImage src={app.job.company_logo} alt={app.job.company_name} />
+                    <AvatarImage src={getJobLogo(app.job) || undefined} alt={app.job.company_name} />
                     <AvatarFallback className="rounded-lg bg-primary/10">
                       <Building2 className="h-6 w-6 text-primary" />
                     </AvatarFallback>
