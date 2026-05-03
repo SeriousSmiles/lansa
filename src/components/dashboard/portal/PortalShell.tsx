@@ -1,14 +1,13 @@
+import { useEffect, useState } from "react";
 import { PortalRail } from "./PortalRail";
 import { PortalContextPanel } from "./PortalContextPanel";
 import { WelcomeStrip } from "./welcome/WelcomeStrip";
-import { StatusRibbon } from "./welcome/StatusRibbon";
 import { TodaysFocus } from "./focus/TodaysFocus";
-import { CareerPlanTile } from "./tiles/CareerPlanTile";
-import { PerformanceTile } from "./tiles/PerformanceTile";
-import { VisibilityTile } from "./tiles/VisibilityTile";
-import { CertificationTile } from "./tiles/CertificationTile";
+import { PortalDistricts } from "./tiles/PortalDistricts";
 import { ActivityStream } from "./activity/ActivityStream";
 import { useDashboardPanel } from "./useDashboardPanel";
+import { useAuth } from "@/contexts/UnifiedAuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PortalShellProps {
   userName: string;
@@ -20,6 +19,36 @@ interface PortalShellProps {
 
 export function PortalShell({ userName, role, goal, insight, openAIPlan }: PortalShellProps) {
   const { openPanel } = useDashboardPanel();
+  const { user } = useAuth();
+  const [completeness, setCompleteness] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let mounted = true;
+    (async () => {
+      const { data: profile } = await supabase
+        .from("user_profiles")
+        .select("name,title,about_text,profile_image,skills,experiences,education")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!mounted || !profile) return;
+      const checks = [
+        !!profile.name,
+        !!profile.title,
+        !!profile.about_text,
+        !!profile.profile_image,
+        Array.isArray(profile.skills) && profile.skills.length > 0,
+        Array.isArray(profile.experiences) && profile.experiences.length > 0,
+        Array.isArray(profile.education) && profile.education.length > 0,
+      ];
+      setCompleteness(
+        Math.round((checks.filter(Boolean).length / checks.length) * 100)
+      );
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id]);
 
   return (
     <div className="flex w-full min-h-screen bg-[rgba(253,248,242,1)]">
@@ -29,27 +58,13 @@ export function PortalShell({ userName, role, goal, insight, openAIPlan }: Porta
         <main className="flex-1">
           <div className="mx-auto w-full max-w-[1440px] px-6 lg:px-10 xl:px-14 pb-24">
             {/* Zone A — Welcome (full bleed) */}
-            <WelcomeStrip userName={userName} insight={insight} />
+            <WelcomeStrip userName={userName} insight={insight} completeness={completeness} />
 
             {/* Zone B — Asymmetric 2-column workspace */}
-            <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8">
+            <div className="mt-7 grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8">
               {/* LEFT — strategic working surface */}
-              <div className="lg:col-span-7 min-w-0 order-2 lg:order-1 space-y-8">
-                <StatusRibbon />
-
-                <section>
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xs uppercase tracking-[0.16em] text-muted-foreground font-medium">
-                      Your portal
-                    </h2>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
-                    <CareerPlanTile autoOpen={openAIPlan} />
-                    <VisibilityTile />
-                    <PerformanceTile />
-                    <CertificationTile />
-                  </div>
-                </section>
+              <div className="lg:col-span-7 min-w-0 order-2 lg:order-1">
+                <PortalDistricts autoOpenCareer={openAIPlan} />
               </div>
 
               {/* RIGHT — momentum: action + signal */}
