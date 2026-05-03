@@ -5,12 +5,23 @@ import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/contexts/UnifiedAuthProvider";
 import { useChatThreads } from "@/hooks/useChatThreads";
 import { useDashboardPanel } from "../useDashboardPanel";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 export function PortalMessagesCard() {
   const { user } = useAuth();
   const { threads, loading, clearUnread } = useChatThreads();
   const { openPanel } = useDashboardPanel();
+  const isMobile = useIsMobile();
+  const navigate = useNavigate();
+
+  const openInbox = () => (isMobile ? navigate("/chat") : openPanel("inbox"));
+  const openThread = (id: string) => {
+    clearUnread(id);
+    if (isMobile) navigate(`/chat/${id}`);
+    else openPanel("inbox", { threadId: id });
+  };
 
   const top = useMemo(() => threads.slice(0, 3), [threads]);
   const totalUnread = useMemo(
@@ -33,7 +44,7 @@ export function PortalMessagesCard() {
         </h2>
         <button
           type="button"
-          onClick={() => openPanel("inbox")}
+          onClick={openInbox}
           className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
         >
           View all
@@ -50,7 +61,7 @@ export function PortalMessagesCard() {
         ) : top.length === 0 ? (
           <button
             type="button"
-            onClick={() => openPanel("inbox")}
+            onClick={openInbox}
             className="w-full flex items-center gap-3 p-5 text-left hover:bg-accent/30 transition-colors"
           >
             <div className="w-10 h-10 rounded-2xl bg-muted/80 flex items-center justify-center flex-shrink-0">
@@ -80,10 +91,7 @@ export function PortalMessagesCard() {
                 <li key={t.id}>
                   <button
                     type="button"
-                    onClick={() => {
-                      clearUnread(t.id);
-                      openPanel("inbox", { threadId: t.id });
-                    }}
+                    onClick={() => openThread(t.id)}
                     className="group w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-accent/30 transition-colors"
                   >
                     <div className="relative flex-shrink-0">
