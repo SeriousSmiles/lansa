@@ -19,15 +19,14 @@ export function TodaysFocus({ role }: TodaysFocusProps) {
   if (!action) return null;
 
   const handleClick = () => {
-    if (typeof action.action === "function") {
-      try {
-        (action.action as any)(navigate);
-        return;
-      } catch {
-        /* noop */
-      }
+    const target = action.action;
+    if (typeof target === "string" && target.startsWith("/")) {
+      navigate(target);
+      return;
     }
-    if (typeof action.action === "string") navigate(action.action);
+    // For non-route actions ("ai-coach", "pdf-download") fall back to /dashboard
+    // — the relevant tile/panel handles its own deep linking.
+    navigate("/dashboard");
   };
 
   return (

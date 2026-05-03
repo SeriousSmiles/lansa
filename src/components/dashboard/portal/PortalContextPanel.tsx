@@ -4,7 +4,7 @@ import { ProfileCard } from "@/components/dashboard/overview/ProfileCard";
 import { AICoachTab } from "@/components/dashboard/AICoachTab";
 import { StudentAnalyticsCard } from "@/components/dashboard/overview/StudentAnalyticsCard";
 import { useDashboardPanel, type PanelView } from "./useDashboardPanel";
-import { ActivityStream } from "./ActivityStream";
+import { ActivityStream } from "./activity/ActivityStream";
 import { X } from "lucide-react";
 
 const TITLES: Record<PanelView, string> = {
