@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { usePortalMode } from "@/hooks/usePortalMode";
+import { PortalPageShell } from "@/components/dashboard/portal/PortalPageShell";
 import { LearningJobPostCard } from "@/components/jobs/LearningJobPostCard";
 import { CertificationTeaserBanner } from "@/components/jobs/CertificationTeaserBanner";
 import { JobDetailPanel } from "@/components/jobs/JobDetailPanel";
@@ -17,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export default function LearningJobFeed() {
   const { user } = useAuth();
+  const { portalV2 } = usePortalMode();
   const [jobs, setJobs] = useState<LearningJobListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState<LearningJobListing | null>(null);
@@ -99,6 +102,85 @@ export default function LearningJobFeed() {
     }
   };
 
+  const filtersAndList = (
+    <>
+      {showFilters && (
+        <div className="mb-6">
+          <LearningJobFilters
+            filters={filters}
+            onFilterChange={handleFilterChange}
+          />
+        </div>
+      )}
+
+      {loading && (
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      )}
+
+      {!loading && jobs.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {jobs.map((job) => (
+            <LearningJobPostCard
+              key={job.id}
+              job={job}
+              onViewDetails={setSelectedJob}
+            />
+          ))}
+        </div>
+      )}
+
+      {isTeaser && !loading && (
+        <div className="mt-8">
+          <CertificationTeaserBanner />
+        </div>
+      )}
+
+      {!loading && jobs.length === 0 && !isTeaser && (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">
+            No jobs found matching your criteria. Try adjusting your filters.
+          </p>
+        </div>
+      )}
+
+      <JobDetailPanel
+        job={selectedJob}
+        isOpen={!!selectedJob}
+        onClose={() => setSelectedJob(null)}
+        onApply={handleApply}
+        disableApply={!isCertified}
+      />
+    </>
+  );
+
+  if (portalV2) {
+    return (
+      <PortalPageShell
+        eyebrow="Discover"
+        title={
+          <span className="inline-flex items-center gap-3">
+            Job feed
+            {hasRecommendations && <Sparkles className="w-7 h-7 text-primary" />}
+          </span>
+        }
+        subtitle={
+          hasRecommendations
+            ? "Personalized recommendations based on your profile and preferences."
+            : "Browse curated opportunities from verified employers in your sector."
+        }
+        actions={
+          <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
+            {showFilters ? "Hide" : "Show"} Filters
+          </Button>
+        }
+      >
+        {filtersAndList}
+      </PortalPageShell>
+    );
+  }
+
   return (
     <DashboardLayout 
       userName={user?.email?.split('@')[0] || 'User'} 
@@ -128,60 +210,7 @@ export default function LearningJobFeed() {
           )}
         </div>
 
-        {/* Filters */}
-        {showFilters && (
-          <div className="mb-6">
-            <LearningJobFilters
-              filters={filters}
-              onFilterChange={handleFilterChange}
-            />
-          </div>
-        )}
-
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        )}
-
-        {/* Jobs List */}
-        {!loading && jobs.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {jobs.map((job) => (
-              <LearningJobPostCard
-                key={job.id}
-                job={job}
-                onViewDetails={setSelectedJob}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Certification Teaser */}
-        {isTeaser && !loading && (
-          <div className="mt-8">
-            <CertificationTeaserBanner />
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!loading && jobs.length === 0 && !isTeaser && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              No jobs found matching your criteria. Try adjusting your filters.
-            </p>
-          </div>
-        )}
-
-        {/* Job Detail Panel */}
-        <JobDetailPanel
-          job={selectedJob}
-          isOpen={!!selectedJob}
-          onClose={() => setSelectedJob(null)}
-          onApply={handleApply}
-          disableApply={!isCertified}
-        />
+        {filtersAndList}
       </div>
     </DashboardLayout>
   );

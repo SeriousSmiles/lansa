@@ -11,10 +11,13 @@ import { matchService } from "@/services/matchService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useUserState } from "@/contexts/UserStateProvider";
+import { usePortalMode } from "@/hooks/usePortalMode";
+import { PortalPageShell } from "@/components/dashboard/portal/PortalPageShell";
 
 export default function OpportunityDiscovery() {
   const { user } = useAuth();
   const { userType } = useUserState();
+  const { portalV2 } = usePortalMode();
   const [activeTab, setActiveTab] = useState<'networking' | 'jobs'>('jobs'); // Default to jobs for students
   const [profiles, setProfiles] = useState<DiscoveryProfile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -133,15 +136,58 @@ export default function OpportunityDiscovery() {
     loadProfiles(); // Load more profiles
   };
 
+  const legacyHeader = (
+    <div className="text-center mb-8">
+      <h1 className="text-3xl font-bold mb-2">Opportunity Discovery</h1>
+      <p className="text-muted-foreground">
+        Discover new connections and opportunities
+      </p>
+    </div>
+  );
+
+  const inner = (
+    <>
+      {!portalV2 && legacyHeader}
+      {/* Stats + Tabs body — preserved as-is */}
+      <DiscoveryBody
+        matchCount={matchCount}
+        swipeCount={swipeCount}
+        profiles={profiles}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        handleSwipe={handleSwipe}
+        handleEndReached={handleEndReached}
+        isLoading={isLoading}
+      />
+    </>
+  );
+
+  if (portalV2) {
+    return (
+      <PortalPageShell
+        eyebrow="Discover"
+        title="Opportunity discovery"
+        subtitle="Discover new connections and opportunities."
+      >
+        <div className="max-w-4xl mx-auto flex flex-col">{inner}</div>
+      </PortalPageShell>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background overflow-hidden">
       <div className="container mx-auto px-4 py-6 max-w-4xl h-full overflow-hidden flex flex-col">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Opportunity Discovery</h1>
-          <p className="text-muted-foreground">
-            Discover new connections and opportunities
-          </p>
-        </div>
+        {inner}
+      </div>
+    </div>
+  );
+}
+
+// Inline body extracted to keep both branches identical.
+function DiscoveryBody(props: any) {
+  const { matchCount, swipeCount, profiles, activeTab, setActiveTab, handleSwipe, handleEndReached, isLoading } = props;
+  return (
+    <>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 flex-shrink-0">
@@ -277,7 +323,6 @@ export default function OpportunityDiscovery() {
             </div>
           </CardContent>
         </Card>
-      </div>
-    </div>
+    </>
   );
 }

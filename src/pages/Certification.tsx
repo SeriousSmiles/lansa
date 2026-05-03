@@ -5,12 +5,15 @@ import CertificationDashboard from "@/components/certification/CertificationDash
 import ExamFlow from "@/components/certification/ExamFlow";
 import ReflectionReport from "@/components/certification/ReflectionReport";
 import { Loader2 } from "lucide-react";
+import { usePortalMode } from "@/hooks/usePortalMode";
+import { PortalPageShell } from "@/components/dashboard/portal/PortalPageShell";
 
 export default function Certification() {
   const { sector, resultId } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const { portalV2 } = usePortalMode();
 
   useEffect(() => {
     checkAuth();
@@ -34,7 +37,7 @@ export default function Certification() {
     );
   }
 
-  // Show result page if resultId is present
+  // Exam + result flows stay full-screen (no rail) regardless of portal mode.
   if (resultId) {
     return (
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8">
@@ -43,12 +46,22 @@ export default function Certification() {
     );
   }
 
-  // Show exam flow if sector is selected
   if (sector) {
     return <ExamFlow sector={sector as any} userId={userId!} />;
   }
 
-  // Show dashboard
+  if (portalV2) {
+    return (
+      <PortalPageShell
+        eyebrow="Visibility"
+        title="Certification"
+        subtitle="Earn the Lansa certification to unlock employer visibility and verified status."
+      >
+        <CertificationDashboard userId={userId!} />
+      </PortalPageShell>
+    );
+  }
+
   return (
     <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8">
       <CertificationDashboard userId={userId!} />

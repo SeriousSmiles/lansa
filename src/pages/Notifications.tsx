@@ -6,6 +6,8 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { usePortalMode } from '@/hooks/usePortalMode';
+import { PortalPageShell } from '@/components/dashboard/portal/PortalPageShell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -21,6 +23,7 @@ import { toast } from 'sonner';
 
 export default function Notifications() {
   const { user } = useAuth();
+  const { portalV2 } = usePortalMode();
   const { unreadCount, unseenUpdatesCount, refreshCounts } = useNotifications();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [updates, setUpdates] = useState<ProductUpdate[]>([]);
@@ -81,20 +84,8 @@ export default function Notifications() {
     }
   };
 
-  return (
-    <DashboardLayout
-      userName={user?.displayName || user?.email || 'User'}
-      email={user?.email || ''}
-    >
-      <div className="container max-w-4xl mx-auto py-8 px-4">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-2xl">Notifications</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="inbox" className="w-full">
+  const tabs = (
+    <Tabs defaultValue="inbox" className="w-full">
               <TabsList className="w-full grid grid-cols-2">
                 <TabsTrigger value="inbox" className="relative">
                   <Inbox className="h-4 w-4 mr-2" />
@@ -190,8 +181,38 @@ export default function Notifications() {
                   )}
                 </div>
               </TabsContent>
-            </Tabs>
-          </CardContent>
+    </Tabs>
+  );
+
+  if (portalV2) {
+    return (
+      <PortalPageShell
+        eyebrow="Comms"
+        title="Notifications"
+        subtitle="Inbox, updates, and what's new on Lansa — all in one place."
+      >
+        <div className="max-w-4xl mx-auto">
+          <Card>
+            <CardContent className="pt-6">{tabs}</CardContent>
+          </Card>
+        </div>
+      </PortalPageShell>
+    );
+  }
+
+  return (
+    <DashboardLayout
+      userName={user?.displayName || user?.email || 'User'}
+      email={user?.email || ''}
+    >
+      <div className="container max-w-4xl mx-auto py-8 px-4">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-2xl">Notifications</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>{tabs}</CardContent>
         </Card>
       </div>
     </DashboardLayout>
