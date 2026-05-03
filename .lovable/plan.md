@@ -1,73 +1,136 @@
-# Why some org job cards show no logo
+# Redesign: Premium Portal Dashboard (Seeker)
 
-## Investigation summary
+A complete visual + structural redesign of `/dashboard` into a true portal experience: persistent left navigation rail, focused central workspace, and a slide-in right context panel. Targets the seeker dashboard only; employer dashboard is untouched.
 
-I traced every place a job card renders a logo and cross-checked it against the data in `job_listings_v2`, `organizations`, and `companies`.
+## Design intent
 
-### Finding 1 — Most "missing" logos are missing in the database (not a bug)
+- **Cognitive state**: Strategic Mode (desktop) — the user is planning, configuring, reviewing.
+- **Feeling**: "I am inside a premium operating system for my career," not "I am on a webpage with cards."
+- **References**: Linear, Notion Calendar, Vercel dashboard, Apple Wallet — quiet luxury, generous whitespace, deliberate motion.
+- **Brand**: Lansa Orange `hsl(14 90% 60%)` as the single accent, deep Lansa Blue `#191f71` for immersive headers, warm off-white `rgba(253,248,242,1)` canvas. No purple, no cold gray (per design system v2).
 
-Of 6 active job listings:
+## Information architecture
 
-| Organization | org logo present? |
-|---|---|
-| FBTT Travel (3 jobs) | No |
-| Konekta (1 job) | No |
-| Lansa (2 jobs) | Yes |
+Three persistent zones inside the existing `DashboardLayout`:
 
-Only 2 of 6 active jobs have an `organizations.logo_url` set. None of the linked `companies` rows have `logo_url` either. So for FBTT Travel and Konekta the cards correctly fall back to the `Building2` icon — there is nothing to display.
-
-This is a **data problem**, not a rendering bug, for those orgs. They need to upload a logo via Organization Settings, OR the upload flow is failing to persist to `organizations.logo_url`.
-
-### Finding 2 — Real code bug: duplicate / inconsistent logo resolvers
-
-There are **three different logo-resolution implementations** living side by side, and one of them is broken:
-
-| File | Resolver | Behavior |
-|---|---|---|
-| `src/utils/getJobLogo.ts` | shared helper — checks `organizations` → `companies` → `logo_url` → `business_profiles.organizations` | correct |
-| `src/components/jobs/JobPostCard.tsx` | uses `getJobLogo` (via local alias) | correct |
-| `src/components/jobs/JobDetailPanel.tsx`, `JobDetailModal.tsx`, `LearningJobPostCard.tsx` | use `getJobLogo` | correct |
-| `src/components/jobs/JobCard.tsx` | **its own local `getCompanyLogo`** that only checks `organizations.logo_url` and `business_profiles.organizations.logo_url` — does NOT check `companies.logo_url` or top-level `logo_url` | **broken fallback** |
-
-Result: any job rendered through `JobCard.tsx` will appear logo-less if the org row has no logo but the linked company does, or if only the flattened `logo_url` field is populated by the edge function (which it is — see `fetch-job-feed` line 211).
-
-### Finding 3 — Real code bug: `MyApplications` reshapes data incorrectly
-
-`src/services/jobFeedService.ts` `getMyApplications()` flattens the logo to `job.company_logo`, but `MyApplications.tsx` then re-wraps it as:
+```text
++------------------------------------------------------------------+
+| TopNavbar (existing — kept)                                      |
++--------+----------------------------------------------+----------+
+|        |                                              |          |
+|  Rail  |               Main Workspace                 |   Right  |
+|  72px  |               (max-w content)                |   Panel  |
+|        |                                              |   (slide |
+|  icons |   - Welcome strip                            |   in)    |
+|  +tip  |   - Status ribbon (3 KPIs)                   |          |
+|        |   - Today's focus                            | Profile  |
+|        |   - Portal grid (4 tiles)                    | / AI /   |
+|        |   - Activity stream                          | Notifs   |
+|        |                                              |          |
++--------+----------------------------------------------+----------+
 ```
-organizations: { logo_url: app.job.company_logo }
-```
-…and also reads `app.job.company_logo` directly into an `<AvatarImage>`. Two parallel shapes for the same value is fragile and inconsistent with how every other card reads logos (via `getJobLogo`).
 
-### Finding 4 — Edge function is fine
+### Left navigation rail (new)
+- Width: `72px` collapsed (icon-only), `240px` expanded. User-toggleable, state in `localStorage`.
+- Sections (vertical, with subtle dividers):
+  1. **Workspace** — Overview, Career Plan, Story Builder
+  2. **Visibility** — Profile, Certification, Listings
+  3. **Discover** — Jobs, Resources, Content Library
+  4. **Comms** — Messages, Notifications
+- Active item: Lansa Orange 4px left bar + soft warm tint `hsl(14 90% 96%)`.
+- Bottom: avatar + tier chip → opens the right Context Panel to the Profile view.
+- Tooltips on hover when collapsed; full labels when expanded.
 
-`supabase/functions/fetch-job-feed/index.ts` and `fetch-learning-job-feed/index.ts` both:
-- Use the service role key (correctly bypassing RLS on `organizations`).
-- Join `companies` and `organizations` and expose both nested objects.
-- Also flatten to a top-level `logo_url`.
+### Center workspace (rebuilt)
+Five vertically stacked sections inside a `max-w-[960px]` column:
 
-So the data leaving the backend is correct whenever a logo exists in the DB.
+1. **Welcome strip** — Editorial typography: `font-extralight` greeting + `font-black` first name + small subline ("Sunday, May 3 · You're in Orange tier"). No card, just typography on canvas. Ties to `useUserState.color_auto`.
+2. **Status ribbon** — 3 horizontal KPI chips (no cards): Profile completeness %, Certification status, Visibility status. Each is clickable and opens the relevant Context Panel view. Replaces the noisy 4-color analytics quadrant.
+3. **Today's focus** — A single, AI-curated next action (sourced from existing `RecommendedActions` logic). One large soft card with Lansa Orange accent, primary CTA, and a "Skip / Snooze" affordance.
+4. **Portal grid** — 2×2 grid of district tiles, each ~320px tall:
+   - **Career Plan** (replaces `AICareerPlanCard`) — power skill preview + progress + "Open plan".
+   - **Visibility & Interest** (merges `WhoIsInterestedSection` + `ListingActivationCard`) — listed/not listed state, count of recent interest, top 3 employer avatars.
+   - **Performance** (compact `StudentAnalyticsCard`) — single hero metric (Match Rate %) with sparkline; tap to expand into Context Panel for the 4-stat detail.
+   - **Certification** (`CertificationCard`) — current level, retake CTA, verification link.
+   Each tile: `rounded-2xl`, `bg-card`, `shadow-[0_1px_0_hsl(0_0%_0%/0.04),0_8px_24px_-12px_hsl(14_90%_60%/0.18)]`, hairline border `border-border/40`, `hover:translate-y-[-2px]` micro-motion.
+5. **Activity stream** — Compact timeline of recent platform events (matches, profile views, certification updates). Powered by `notifications` and `user_actions`. Collapsed to last 5; "View all" opens a sheet.
 
-## Proposed fix plan
+### Right Context Panel (new — replaces left ProfileCard)
+A `400px` slide-in `Sheet` from the right that hosts secondary, deep content. Three views:
 
-### 1. Eliminate the duplicate resolver in `JobCard.tsx`
-Replace the local `getCompanyLogo` with `getJobLogo` from `@/utils/getJobLogo`, matching every other job card. This restores the company-logo and flattened `logo_url` fallbacks.
+- **Profile** — restyled identity card (cover, avatar, completeness ring, primary action, "Edit profile", "Download PDF"). Replaces today's left ProfileCard, freeing the canvas.
+- **AI Coach** — same content as today's `AICoachTab`, but lives here as drawer instead of a tab.
+- **Insights** — full analytics with 4 stat tiles + match-rate ring + listed-since timeline.
 
-### 2. Normalize `MyApplications` data shape
-In `jobFeedService.getMyApplications()`, return jobs in the same shape as the feed (with `organizations` and `companies` nested objects) instead of inventing `company_logo`. Then `MyApplications.tsx` can use `getJobLogo(app.job)` like every other surface. Removes the parallel shape.
+Triggered by:
+- Avatar in left rail (Profile)
+- Status ribbon clicks (Insights)
+- "AI Coach" item in rail (AI)
+- A floating right edge handle when closed
 
-### 3. (Optional but recommended) Verify the org-logo upload path actually writes to `organizations.logo_url`
-Since 4 of 6 orgs have null logos, check `CompanyLogoUploadModal.tsx` and `GeneralSettings.tsx` to confirm the upload writes to `organizations.logo_url` (not just `business_onboarding_data.company_logo`, which the `sync_company_logo` trigger only mirrors into `companies`, not `organizations`). If the upload UI is writing to the wrong place, that would explain why employers think they uploaded a logo but it doesn't appear.
+State held in a small Zustand-style hook (`useDashboardPanel`) with `view` and `open`.
 
-I'll inspect both upload components before changing anything there, and only fix if a real bug is found.
+## Mobile behavior (must satisfy contextual design doctrine)
 
-## Files to change
+This is desktop-strategic. On mobile (`<lg`):
+- Left rail collapses; navigation reuses the existing top nav.
+- Right Context Panel becomes a full-screen `Sheet`.
+- Portal grid becomes single-column stack.
+- Status ribbon wraps to 2-up.
+- Welcome strip shrinks (`text-3xl` not `text-5xl`).
+- "Today's focus" stays prominent — it is the mobile entry point.
 
-| File | Change |
-|---|---|
-| `src/components/jobs/JobCard.tsx` | Replace local `getCompanyLogo` with shared `getJobLogo` |
-| `src/services/jobFeedService.ts` | Return nested `organizations`/`companies` from `getMyApplications` |
-| `src/components/jobs/MyApplications.tsx` | Read logo via `getJobLogo` instead of `company_logo` |
-| `src/components/employer/CompanyLogoUploadModal.tsx` (only if Finding 4 surfaces a real bug) | Ensure upload persists to `organizations.logo_url` |
+No new mobile patterns are invented. Mobile = reactive subset of desktop.
 
-No DB migrations or edge function changes are needed.
+## Visual language
+
+- Typography: `font-extralight` for hero greetings, `font-black` for the name, `font-medium` for tile titles, `font-normal` for body. Mix preserves brand voice.
+- Color tokens (already in `index.css`): `--background`, `--card`, `--primary` (Lansa Orange), `--accent` (warm tint), `--muted`. No raw hex in components.
+- Elevation: replace flat shadows with two-stop shadow `0 1px 0 black/4%, 0 8px 24px -12px primary/18%` for warmth.
+- Radius: bump tiles to `rounded-2xl` (`16px`); chips and pills stay `rounded-full`.
+- Motion: GSAP for the welcome strip stagger on mount; Framer Motion for tile hover and panel slide (spring 400/25 per mobile-experience-standards). One coherent timeline, never simultaneous animations on first paint.
+
+## Technical approach
+
+New files (all under `src/components/dashboard/portal/`):
+- `PortalShell.tsx` — three-zone wrapper, drives the panel state, rail width.
+- `PortalRail.tsx` — collapsible left rail with sections + active highlighting via `useLocation`.
+- `PortalContextPanel.tsx` — right `Sheet` with view switcher (`profile` | `ai` | `insights`).
+- `useDashboardPanel.ts` — small hook (`view`, `open`, `setView`, `close`).
+- `welcome/WelcomeStrip.tsx` — typographic hero.
+- `welcome/StatusRibbon.tsx` — three clickable KPI chips.
+- `focus/TodaysFocus.tsx` — single recommended action surface.
+- `tiles/CareerPlanTile.tsx`, `VisibilityTile.tsx`, `PerformanceTile.tsx`, `CertificationTile.tsx` — thin wrappers that wrap or re-render existing logic in the new visual shell. Where possible they import the existing component bodies and just rewrap presentation; data fetching stays unchanged.
+- `activity/ActivityStream.tsx` — reads `notifications` + `user_actions`, dedupes, last 14 days, max 5 visible.
+
+Files modified:
+- `src/pages/Dashboard.tsx` — replace the current `grid-cols-[320px_1fr]` block with `<PortalShell>`. Keep all existing data-loading logic (`getUserAnswers`, `getProfileStatus`, AI insight, `track('dashboard_visited')`). The page stays the orchestrator; portal is purely presentational.
+- `src/components/dashboard/DashboardTabs.tsx` — Overview tab replaced by the new portal layout. "Job Preferences" tab stays. "Story Builder" already hidden — leave hidden.
+
+Files reused as-is (no changes):
+- `StudentAnalyticsCard`, `CertificationCard`, `AICareerPlanCard`, `WhoIsInterestedSection`, `ListingActivationCard`, `AICareerPlanModal` — wrapped by new tiles, internal logic preserved.
+- `ProfileCard` — moved into `PortalContextPanel` as the Profile view.
+- `DashboardLayout`, `TopNavbar`, `AnnouncementBanner` — untouched.
+
+No DB schema changes. No edge function changes. No new dependencies (Framer Motion, GSAP, lucide, shadcn already present).
+
+## Heuristic checklist (per project doctrine)
+
+- Visibility of system status: Welcome strip names tier; status ribbon shows three live signals; tile borders pulse softly when data updates.
+- Match real world: rail labels are user-language ("Visibility", "Discover"), not internal terms.
+- User control: rail collapses; panel closes; "Today's focus" is dismissible.
+- Consistency: every tile uses the same shell, radius, shadow, padding.
+- Error prevention: locked features (analytics before certification) show inline explanation, not a dead state.
+- Recognition over recall: rail icons + labels; tile titles always visible.
+- Aesthetic minimalist: max-width `960px` on workspace prevents the "endless wide grid" feeling on ultrawide monitors; aligns with the existing `1440px` outer constraint.
+
+## Out of scope
+
+- Employer dashboard (`/employer-dashboard`) — explicitly excluded.
+- New backend data, new tables, new edge functions.
+- Chat redesign, jobs feed redesign — only links from the rail.
+- A/B test wiring; this ships as the new default.
+
+## Rollout
+
+Single PR. Gated behind a `dashboard_portal_v2` boolean in `localStorage` for the first 24h ("Try the new dashboard" toggle in the rail) so you can flip back during review. Default ON for everyone after sign-off.
