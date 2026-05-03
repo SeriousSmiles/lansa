@@ -78,11 +78,11 @@ export const useHTMLPDFGeneration = () => {
       const defaultFilename = `${data.personalInfo.name.replace(/\s+/g, '_')}_Resume.pdf`;
       const finalFilename = filename || defaultFilename;
       
-      // Use multi-page template if content requires it
-      const templateId = (needsMultiPage && useMultiPage) 
-        ? 'pdf-resume-export-container' 
-        : 'pdf-resume-template';
-      
+      // Always read from the offscreen export template (id="pdf-resume-export-container").
+      // The export component switches between single-page and multi-page variants
+      // based on `needsMultiPage`, both of which carry this id.
+      const templateId = 'pdf-resume-export-container';
+
       await HTMLToPDFGenerator.downloadPDF(
         templateId,
         finalFilename,
@@ -119,9 +119,7 @@ export const useHTMLPDFGeneration = () => {
       const pagination = calculatePagination(data);
       const needsMultiPage = pagination.totalPages > 1;
       
-      const templateId = (needsMultiPage && useMultiPage) 
-        ? 'pdf-resume-export-container' 
-        : 'pdf-resume-template';
+      const templateId = 'pdf-resume-export-container';
 
       await HTMLToPDFGenerator.previewPDF(
         templateId, 
