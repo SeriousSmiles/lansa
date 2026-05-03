@@ -96,19 +96,9 @@ export function ProfilePage() {
     // No additional action needed as CVUploadModal handles profile updates
   };
 
-  // Debug logging
-  console.log("Profile debug:", { 
-    isLoading: profile.isLoading, 
-    userId: user?.id,
-    userName: profile.userName,
-    user: profile.user
-  });
-  
-  if (profile.isLoading) {
+  if (profile.isLoading && !profile.userName && !user?.id) {
     return (
-      <div className="min-h-screen bg-[rgba(253,248,242,1)] flex items-center justify-center">
-        <div className="text-2xl text-[#2E2E2E] animate-pulse">Loading your profile...</div>
-      </div>
+      <div className="min-h-screen bg-[rgba(253,248,242,1)]" aria-hidden />
     );
   }
 
