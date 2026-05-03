@@ -84,10 +84,8 @@ export default function Notifications() {
     }
   };
 
-  const tabsCard = (
-    <Card>
-      <CardContent className="pt-6">
-            <Tabs defaultValue="inbox" className="w-full">
+  const tabs = (
+    <Tabs defaultValue="inbox" className="w-full">
               <TabsList className="w-full grid grid-cols-2">
                 <TabsTrigger value="inbox" className="relative">
                   <Inbox className="h-4 w-4 mr-2" />
@@ -183,9 +181,7 @@ export default function Notifications() {
                   )}
                 </div>
               </TabsContent>
-            </Tabs>
-      </CardContent>
-    </Card>
+    </Tabs>
   );
 
   if (portalV2) {
@@ -195,7 +191,11 @@ export default function Notifications() {
         title="Notifications"
         subtitle="Inbox, updates, and what's new on Lansa — all in one place."
       >
-        <div className="max-w-4xl mx-auto">{tabsCard}</div>
+        <div className="max-w-4xl mx-auto">
+          <Card>
+            <CardContent className="pt-6">{tabs}</CardContent>
+          </Card>
+        </div>
       </PortalPageShell>
     );
   }
@@ -212,7 +212,7 @@ export default function Notifications() {
               <CardTitle className="text-2xl">Notifications</CardTitle>
             </div>
           </CardHeader>
-          {tabsCard}
+          <CardContent>{tabs}</CardContent>
         </Card>
       </div>
     </DashboardLayout>
