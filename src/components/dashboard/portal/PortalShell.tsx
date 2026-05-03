@@ -5,6 +5,7 @@ import { WelcomeStrip } from "./welcome/WelcomeStrip";
 import { TodaysFocus } from "./focus/TodaysFocus";
 import { PortalDistricts } from "./tiles/PortalDistricts";
 import { ActivityStream } from "./activity/ActivityStream";
+import { PortalMessagesCard } from "./messages/PortalMessagesCard";
 import { useDashboardPanel } from "./useDashboardPanel";
 import { useAuth } from "@/contexts/UnifiedAuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,6 +71,8 @@ export function PortalShell({ userName, role, goal, insight, openAIPlan }: Porta
               {/* RIGHT — momentum: action + signal */}
               <div className="lg:col-span-5 min-w-0 order-1 lg:order-2 space-y-8">
                 <TodaysFocus role={role} />
+
+                <PortalMessagesCard />
 
                 <section>
                   <div className="flex items-center justify-between mb-4">
