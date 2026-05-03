@@ -1,93 +1,81 @@
-## Goal
 
-Make the dashboard canvas feel inhabited. Today the content sits in a narrow ~1040px centered column with large empty margins. We will:
+## Goals
 
-1. Widen the canvas and let it breathe to the rail edges.
-2. Keep the **Welcome Strip full-bleed** (no 2-col cage) and scale the greeting ~3x.
-3. Introduce an **asymmetric 2-column layout** for everything below, segmented by visual priority (eye-tracking F-pattern: top-left = highest priority).
+1. **Greeting** feels confident, not billboard-loud — reduce one scale step.
+2. **"Your Portal"** earns its space: above-the-fold, no redundant info, no forced scroll to see the four districts.
 
-No new features. Pure spatial + hierarchy reorganization.
+## Problem analysis
 
-## Layout Model
+Looking at the current `/dashboard` (screenshot + code review):
 
-### Canvas width
-- Replace current `max-w-[1040px]` centered column with a wider `max-w-[1440px]` container that uses fluid horizontal padding (`px-6 lg:px-10 xl:px-14`).
-- This pulls content closer to the rail and the right-panel trigger area, eliminating the "floating island" feeling.
+- `WelcomeStrip` greeting renders at `lg:text-[9rem]` (~144px) — visually overwhelms the canvas.
+- `StatusRibbon` (Profile / Certification / Visibility chips) **duplicates** signals already shown by `VisibilityTile` ("Your Profile is Live") and the certification/visibility states baked into other tiles.
+- `VisibilityTile` embeds the entire `WhoIsInterestedSection` list (7+ employer rows) inside a single tile — it grows tall, stretches the left column, and forces the other 3 tiles to expand awkwardly or pushes content far below the fold.
+- `CertificationTile` and `PerformanceTile` are dense secondary surfaces that don't need to be visible the moment the user lands — they're "deeper inspection" surfaces.
+- Result: tiles feel "out of place" because they're competing for primacy at equal weight in a flat 2x2 grid.
 
-### Zone A — Welcome Strip (full-bleed, single column)
-- Keeps full canvas width. NOT inside the 2-col grid.
-- Greeting scales ~3x: from `text-3xl md:text-5xl` → `text-6xl md:text-8xl lg:text-[9rem]`, tightened tracking (`tracking-[-0.04em]`), tightened leading (`leading-[0.95]`).
-- Date eyebrow stays small. Insight subline stays one-line muted.
-- Adds top breathing room (`pt-8 md:pt-14`) and a subtle bottom divider rule to mark the transition into the structured grid.
+## Changes
 
-### Zone B — Asymmetric 2-column grid (everything below the welcome)
-Grid: `lg:grid-cols-12 gap-6 xl:gap-8`.
+### 1. Greeting scale (WelcomeStrip)
+
+Drop one tier across breakpoints:
+
+- `text-6xl md:text-8xl lg:text-[9rem]` → `text-5xl md:text-7xl lg:text-[7rem]`
+- Tighten top padding `pt-8 md:pt-14` → `pt-6 md:pt-10`
+- Date eyebrow and insight paragraph stay as is.
+
+### 2. "Your Portal" — restructure to a *Primary + Quick-Switch* model
+
+Replace the flat 2x2 tile grid with a **single primary working surface** plus a compact **district switcher**, so the four districts coexist without stacking vertically.
 
 ```text
-+-------------------------- Welcome Strip (full bleed) --------------------------+
-|  SUNDAY, MAY 3                                                                 |
-|  Good evening, John.   <-- scaled ~3x                                         |
-|  Insight subline                                                              |
-+--------------------------------------------------------------------------------+
-+----------- LEFT (col-span-7) -----------+  +-------- RIGHT (col-span-5) -------+
-|  Status Ribbon (3 chips, horizontal)    |  |  Today's Focus (hero card)        |
-|  Your Portal                            |  |   - primary AI action             |
-|  +------------+  +------------+         |  |                                   |
-|  | Career     |  | Performance|         |  |  Recent Activity (compact list)   |
-|  +------------+  +------------+         |  |   - last 5 items                  |
-|  +------------+  +------------+         |  |   - "View all" -> right panel     |
-|  | Visibility |  | Cert       |         |  |                                   |
-|  +------------+  +------------+         |  |                                   |
-+-----------------------------------------+  +-----------------------------------+
+┌─ Your portal ──────────────────────────────────────────────┐
+│  [ Career ] [ Visibility • 7 ] [ Performance ] [ Cert ]    │  ← segmented switcher
+│ ──────────────────────────────────────────────────────────  │
+│                                                             │
+│   Active district panel (one of the four tiles, expanded)   │
+│   — full tile content lives here, no inner cropping         │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Why this segmentation (eye-path reasoning)
-- **F-pattern entry (top-left of grid)** = Status Ribbon. Quick "where do I stand?" snapshot. Highest scan priority.
-- **Below it, dominant 2x2 Portal Grid** = the strategic working surface (Career / Performance / Visibility / Certification). Largest visual mass on the left, matching desktop "Strategic Mode".
-- **Right rail (col-span-5)** = momentum column. Top: **Today's Focus** (the single decision/action). Below: **Recent Activity** (signal stream). This pairs the "what should I do next" with "what just happened" — the two reactive surfaces — and balances the heavier left mass.
-- The right column is intentionally narrower (5/12) so the left feels like the "workshop" and the right like a "ticker tape" — preserves clear hierarchy instead of two equal walls.
+- Default active district: **Career plan** (primary growth surface).
+- Switcher is a horizontal segmented control (pill buttons) showing each district's name + a tiny status dot/count (e.g. Visibility shows the live interested-count badge).
+- Switching is instant client-side (local state inside `PortalShell`); no route change.
+- The active panel renders the same component currently used by the corresponding tile, but **without** the `TileShell` chrome — so it gets full breathing room inside the unified card.
+- Eliminates the "Visibility tile is huge, others are stubby" imbalance.
 
-### Density per Lansa doctrine
-- Desktop = strategic; structured density allowed. Tiles keep their current internal density.
-- Tile grid switches from `md:grid-cols-2` (full width) to `grid-cols-1 sm:grid-cols-2` *inside* the col-span-7 — so tiles stay 2-up but at a more comfortable card width (~320–360px each instead of ~500px).
-- Today's Focus card becomes vertical-friendly (narrower, taller) — heading drops from `text-2xl` to `text-xl`, padding reduced from `p-8` to `p-6`. Still visually dominant via the orange glow.
-- Activity list uses the existing compact row styling, capped at 5.
+### 3. Remove `StatusRibbon` from the canvas
 
-### Below large breakpoint (< lg, 1024px)
-- Grid collapses to single column in this order: Welcome → Status Ribbon → Today's Focus → Portal tiles → Recent Activity. (Today's Focus jumps above tiles on mobile/tablet because it's the single next-action — matches mobile "Reactive Mode".)
+The three chips are redundant with the district switcher (which already labels Career / Visibility / Performance / Certification with live status) and with `VisibilityTile`'s "Your Profile is Live" header.
 
-## Technical Changes
+- Move "Profile completeness %" to a small inline meter under the greeting insight line (one row, no chrome) — it's the only chip not represented elsewhere.
+- Delete the rest of the ribbon usage from `PortalShell`. Keep the file in case it's reused later.
 
-Files to modify (no new files):
+### 4. Right column unchanged in structure
 
-1. **`src/components/dashboard/portal/PortalShell.tsx`**
-   - Change container: `max-w-[1040px]` → `max-w-[1440px]`, padding `px-5 sm:px-8 lg:px-12` → `px-6 lg:px-10 xl:px-14`.
-   - Render `<WelcomeStrip />` outside the grid (full bleed).
-   - Wrap the rest in `<div class="grid lg:grid-cols-12 gap-6 xl:gap-8 mt-8">`:
-     - Left column `lg:col-span-7`: `StatusRibbon` + "Your portal" heading + tiles grid.
-     - Right column `lg:col-span-5`: `TodaysFocus` + "Recent activity" heading + `ActivityStream` card.
-   - Reorder for mobile via CSS `order` utilities so Today's Focus appears after Status Ribbon on small screens.
+`TodaysFocus` + `Recent activity` stay in the right `lg:col-span-5`. They already feel right.
 
-2. **`src/components/dashboard/portal/welcome/WelcomeStrip.tsx`**
-   - `h1` size: `text-3xl md:text-5xl` → `text-6xl md:text-8xl lg:text-[9rem]`.
-   - Tracking: `tracking-tight` → `tracking-[-0.04em]`.
-   - Leading: add `leading-[0.95]`.
-   - Add bottom spacing + a thin `border-b border-border/30 pb-8` to delineate from the grid below.
+### 5. Layout grid tuning
 
-3. **`src/components/dashboard/portal/welcome/StatusRibbon.tsx`**
-   - Keep `grid-cols-1 sm:grid-cols-3` (still horizontal in the 7-col left column — fits comfortably at ~700px+).
-   - Remove `mt-6` (spacing now owned by `PortalShell`).
+- Left column stays `lg:col-span-7`. With only one active district panel instead of a 2x2 grid, vertical height roughly matches `TodaysFocus + Recent activity` on the right — eliminates the awkward bottom whitespace and the forced scroll.
+- Maintain `min-w-0` rules.
 
-4. **`src/components/dashboard/portal/focus/TodaysFocus.tsx`**
-   - Reduce hero padding from `p-6 md:p-8` → `p-6`, heading `text-xl md:text-2xl` → `text-xl`. Card now sits comfortably in the 5-col right column.
-   - Remove its outer `mt-8` (spacing owned by parent grid).
+## Technical details
 
-5. **No changes** to tiles, ActivityStream, PortalRail, PortalContextPanel, or DashboardLayout.
+**Files edited**
 
-## Acceptance
+- `src/components/dashboard/portal/welcome/WelcomeStrip.tsx` — scale down headline + add optional `completeness` prop rendered as a slim inline progress line.
+- `src/components/dashboard/portal/PortalShell.tsx` — replace 2x2 grid with `PortalDistricts` switcher; remove `StatusRibbon`; pass profile completeness to `WelcomeStrip`.
+- `src/components/dashboard/portal/tiles/PortalDistricts.tsx` *(new)* — segmented switcher + active-panel renderer. Reuses existing `AICareerPlanCard`, `ListingActivationCard` + `WhoIsInterestedSection`, `PerformanceTile` body, `CertificationCard` directly (without `TileShell`). Fetches the same lightweight signals (cert state, visible flag, interested count) once to label the switcher.
+- `src/components/dashboard/portal/welcome/StatusRibbon.tsx` — left in place but no longer mounted in `PortalShell`.
 
-- Welcome greeting visually dominates the top of the canvas (~3x larger), full canvas width.
-- Below the welcome, content fills the canvas with a clear 7/5 split — no large empty side margins on a 2048px viewport.
-- Left column reads as the working surface (status + 4 tiles); right column reads as the action+signal feed (focus + activity).
-- Below 1024px, layout collapses to a single column with Today's Focus prioritized after the status ribbon.
-- All existing data, links, and panel triggers behave identically.
+**No changes to**
+
+- Route, layout shell (`DashboardLayout`), portal rail, context panel, classic-view toggle.
+- `TodaysFocus`, `ActivityStream`.
+
+## Out of scope
+
+- Mobile portal redesign (this is desktop strategic mode per doctrine; mobile already collapses to single column).
+- Any data model changes.
