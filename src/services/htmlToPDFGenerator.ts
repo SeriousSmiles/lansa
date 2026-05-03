@@ -25,11 +25,13 @@ export class HTMLToPDFGenerator {
       throw new Error(`Element with id "${elementId}" not found`);
     }
 
-    // Find all page elements
-    const pages = container.querySelectorAll('.pdf-page');
-    if (pages.length === 0) {
-      throw new Error('No pages found with class "pdf-page"');
-    }
+    // Find all page elements. Some single-page export templates carry the
+    // container id but don't split into `.pdf-page` children; in that case fall
+    // back to single-page rendering instead of throwing.
+    const pageNodes = container.querySelectorAll('.pdf-page');
+    const pages: HTMLElement[] = pageNodes.length > 0
+      ? Array.from(pageNodes) as HTMLElement[]
+      : [container];
 
     try {
       // Create PDF
@@ -44,7 +46,7 @@ export class HTMLToPDFGenerator {
 
       // Process each page
       for (let i = 0; i < pages.length; i++) {
-        const pageElement = pages[i] as HTMLElement;
+        const pageElement = pages[i];
 
         // Capture page as canvas
         const canvas = await html2canvas(pageElement, {
