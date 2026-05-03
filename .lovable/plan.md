@@ -1,149 +1,95 @@
+# Make Chat Ambient — Quick Messaging Across the Portal
 
-## Goal
+Currently `/chat` is a destination page. Users have to leave whatever they were doing, load the full inbox, pick a thread, reply, then navigate back. This violates the doctrine for **Desktop = Strategic Mode**: messaging should be a *companion surface*, not a context switch.
 
-Extend the Portal v2 experience (left rail + content + right context drawer) to all **opportunity-seeker** pages, the **profile editor**, and the **public shared profile**. Add a global, persistent **Legacy mode** toggle that flips users back to the existing UI.
+This plan keeps `/chat` intact for deep conversation work, but layers three lighter-weight surfaces on top so seekers (and employers) can keep momentum.
 
-## Scope
+---
 
-**Seeker pages getting the Portal shell:**
+## Three new surfaces
 
-- `/dashboard` — already on v2 (no change)
-- `/jobs` (`LearningJobFeed.tsx`)
-- `/profile` (`ProfilePage` via `ProfileLayout`)
-- `/profile/resume-editor` (`ResumeEditor` → `ResumeEditorLayout`)
-- `/discovery` (`OpportunityDiscovery`)
-- `/resources`
-- `/content` (`ContentLibrary`)
-- `/certification` (dashboard view only — exam/result flows stay full-screen)
-- `/chat` (desktop only — keeps its own internal layout, just wrapped in the rail)
-- `/notifications`
+### 1. Inbox view inside the Portal Context Panel (right drawer)
 
-**Public:**
+Extend `useDashboardPanel` with a new `"inbox"` view alongside `profile | ai | insights | activity`. Opens the existing right Sheet, shows the thread list, and lets the user pick a thread to read/reply **without leaving the page**.
 
-- `/profile/share/:userId` (`SharedProfile`) — gets the new visual treatment but no left rail (it's public; show a simple top bar with brand + "Sign in" CTA).
+- New component `PortalInboxPanel.tsx` rendered inside `PortalContextPanel` when `view === "inbox"`.
+- Two internal states: list view (recent threads) and thread view (messages + composer).
+- Reuses `useChatThreads`, `chatService`, and the existing `ChatInput` + `MessageBubble` so behavior, RLS, and realtime stay identical.
+- "Open full inbox" footer link → navigates to `/chat`.
 
-**Out of scope** (intentionally untouched):
+### 2. Messages tile/widget on the Portal dashboard
 
-- `/employer-dashboard`, `/browse-candidates`, `/organization/settings`
-- `/mentor-dashboard`
-- All admin pages
-- Mobile experience: rail is hidden < `lg` (already the case); pages keep their existing mobile layouts.
-- Onboarding, login, signup, certification exam flow itself.
+Add a compact **Messages** card inside the right column of `PortalShell` (under Today's Focus, above Recent activity, or as a small tile in `PortalDistricts`). Shows:
 
-## Approach
+- Top 3 most recent threads with avatar, name, last-message preview, unread dot, relative time.
+- Unread total badge in the header.
+- Click a row → opens the inbox panel directly on that thread.
+- "View all" → opens inbox panel in list mode.
 
-### 1. Promote the portal flag to a global preference
+Empty state: "No conversations yet — connect with employers to start."
 
-Move the localStorage flag from a Dashboard-only state to a small shared hook so every wrapped page reads/writes the same value.
+### 3. Global quick-reply trigger in `PortalRail`
 
-- New file: `src/hooks/usePortalMode.ts` — reads/writes `lansa.dashboardPortalV2`, returns `{ portalV2, setPortalV2, toggle }`. Exposes a `window` event so multiple mounted pages stay in sync.
-- Default: ON. Setting `0` opts into Legacy.
+The rail already has a Messages icon with an unread badge. Change its behavior:
 
-### 2. Reusable Portal page wrapper
+- **Click** = open the inbox panel (drawer) in list mode — no navigation.
+- **Cmd/Ctrl+K → "Messages"** stays as a route to `/chat` for the full screen.
+- A small "Open full page" affordance inside the panel for users who prefer the dedicated layout.
 
-New file: `src/components/dashboard/portal/PortalPageShell.tsx`
+Result: messaging is one click away from any portal page (dashboard, profile, jobs, resources) without losing scroll position or filters.
 
-```text
-┌──────────┬────────────────────────────────────┬──────────────┐
-│ PortalRail│   <header? title + actions>      │  Context     │
-│           │   {page children}                │  panel       │
-│           │                                  │  (Sheet)     │
-└──────────┴────────────────────────────────────┴──────────────┘
-```
+---
 
-- Mounts `PortalRail` on the left, `PortalContextPanel` on the right (drawer, hidden by default).
-- Provides an inner content container with a **standard page header**: optional eyebrow, big title, subtitle, right-aligned actions slot.
-- Uses the same warm `bg-[rgba(253,248,242,1)]` and `max-w-[1440px]` content rhythm as `PortalShell`.
-- Accepts `fullBleed` prop for pages like Chat that want zero padding inside.
-- Rail and right drawer are reused exactly as on `/dashboard`, so navigation, profile, AI coach, insights, activity views all work consistently.
+## Mobile
 
-### 3. Wrap each seeker page
+Per the doctrine, mobile is **Reactive / Momentum Mode** — `/chat` already works well there as a full-bleed inbox. We will **not** add a drawer on mobile. Instead:
 
-For each page in scope:
+- Keep the existing `MobileChatInbox` route.
+- Add a small "Recent messages" strip on the mobile dashboard (top 2 threads + unread count) that taps straight into a thread. This shortens the path from "open app → reply" to two taps.
 
-- Replace `DashboardLayout` with the new `PortalPageShell` *when* `portalV2` is on; otherwise render the existing `DashboardLayout` path. Each page keeps **internal card placement and content unchanged** — only the chrome changes.
-- The "Profile" page is special: `ProfileLayout` already manages the full chrome (cover color, header). We will:
-  - Keep `ProfileLayout` intact in legacy mode.
-  - In v2 mode: render the same `ProfileContent` and `ProfileFooter` children **inside** `PortalPageShell`, with a slimmed-down header strip (cover color block + name + actions) so card placement stays identical, but the global rail and right-drawer experience matches the rest of the portal.
-- Resume editor: wrap `ResumeEditorLayout` inside `PortalPageShell` with `fullBleed`. Editor's own toolbar stays.
-- Chat (desktop): wrap `DesktopChatLayout` inside `PortalPageShell` with `fullBleed`; mobile path untouched.
-- Certification: wrap only the dashboard branch (when no `sector`/`resultId`); exam + reflection report stay full-screen as today.
+---
 
-### 4. Public Shared Profile (no auth)
+## Legacy mode
 
-`SharedProfile` is public, so it must not show the authenticated rail or context panel.
+The Legacy toggle continues to bypass all of the above. When `portalV2 === false`, `/chat` renders the original `DesktopChatLayout` exactly as today, and no widgets are injected. Nothing about RLS, services, or realtime changes.
 
-- New file: `src/components/profile/shared/SharedProfilePortalShell.tsx`
-- Provides:
-  - Slim top bar (brand mark left, "Sign in" / "Get Lansa" CTA right)
-  - Centered content column matching the Portal v2 typography scale, padding and warm background
-  - Footer "Made on Lansa" badge stays
-- `SharedProfileContainer` renders inside this shell when v2 is on (default for everyone). Card placement and section order are preserved — only the wrapping chrome and visual rhythm change.
-- Legacy view falls back to the current `SharedProfileContainer` chrome.
-- Toggle button still appears (anonymous visitors get a session-storage scoped toggle) so they can preview legacy too.
+---
 
-### 5. Global Legacy-mode toggle
+## Files & technical notes
 
-Replace the dashboard-local toggle button with a small global control, available on every portal-wrapped page.
+- `src/components/dashboard/portal/useDashboardPanel.ts` — add `"inbox"` to `PanelView`; optional `threadId` field for deep-linking into a specific conversation.
+- `src/components/dashboard/portal/inbox/PortalInboxPanel.tsx` — new. List + thread view, uses `useChatThreads`, `chatService.markThreadRead`, `ChatInput`, `MessageBubble`. ~250 lines.
+- `src/components/dashboard/portal/PortalContextPanel.tsx` — register the inbox view, widen sheet to `sm:max-w-[520px]` only when `view === "inbox"` for breathing room on the message list.
+- `src/components/dashboard/portal/messages/PortalMessagesCard.tsx` — new. Compact 3-thread preview card; reused on dashboard. ~120 lines.
+- `src/components/dashboard/portal/PortalShell.tsx` — insert `PortalMessagesCard` into the right column (between `TodaysFocus` and the Recent activity section).
+- `src/components/dashboard/portal/PortalRail.tsx` — change Messages click handler to call `openPanel("inbox")` instead of `navigate('/chat')`. Keep right-click / middle-click / focused keyboard nav routing to `/chat` for power users.
+- `src/components/mobile/dashboard/MobileMessagesStrip.tsx` — new. Top 2 threads + unread count; taps into `/chat/:threadId`.
+- `src/pages/Chat.tsx` — unchanged.
+- No DB / RLS / edge-function changes. No new hooks for chat — reusing `useChatThreads`, `useUnreadChatCount`, and `chatService`.
 
-- New file: `src/components/dashboard/portal/LegacyModeToggle.tsx`
-- Two presentations:
-  - **Floating pill** (default, bottom-right) for portal v2 — "New experience · Use classic"
-  - **Header chip** for legacy mode — "Try the new experience"
-- Uses `usePortalMode()`. After toggling, performs a soft refresh (`window.location.reload()`) so deeply nested layouts pick up the change cleanly.
-- Mounted by `PortalPageShell` (and the shared-profile shell) once, so every wrapped page exposes it.
-- Removed from `Dashboard.tsx` since the wrapper now owns it.
+### UX guarantees
 
-### 6. Preserving card placement
+- Visibility of system status: unread dot + "delivered" tick stay identical across surfaces.
+- User control: every panel surface has "Open full page" → `/chat`, plus close.
+- Recognition over recall: avatars and names match the existing chat layout.
+- No competing CTAs: the inbox panel surfaces only Reply + Open full thread.
+- Realtime: panel and dashboard widget subscribe via the same hooks, so a new message updates everywhere simultaneously.
 
-The user's explicit constraint: keep placement of cards similar on the profile editor (and by extension, every wrapped page). The implementation only swaps the **outer chrome**:
+### Out of scope (intentionally)
 
-- No card components are reordered.
-- No grid breakpoints inside pages are changed.
-- Internal sticky behavior of profile sidebar/tools is preserved (the rail is sticky outside the page content area, so internal `sticky top-X` rules still work).
+- Notifications/push behavior — already handled.
+- Group threads — none today.
+- Reactions / typing indicators — separate effort.
+- Employer dashboard messages widget — same pattern can be applied later; this plan focuses on seeker portal first per your instruction.
 
-## Technical details
+---
 
-**New files**
+## Rollout order
 
-- `src/hooks/usePortalMode.ts`
-- `src/components/dashboard/portal/PortalPageShell.tsx`
-- `src/components/dashboard/portal/LegacyModeToggle.tsx`
-- `src/components/profile/shared/SharedProfilePortalShell.tsx`
+1. Extend `useDashboardPanel` and add `PortalInboxPanel`.
+2. Wire the rail Messages icon to open the panel.
+3. Add `PortalMessagesCard` to `PortalShell`.
+4. Add `MobileMessagesStrip` to mobile dashboard.
+5. Manual QA: legacy mode off and on, unread sync, sending a message from the panel, deep-link from card to thread.
 
-**Edited files**
-
-- `src/pages/Dashboard.tsx` — use `usePortalMode`, drop local toggle button (now global).
-- `src/pages/LearningJobFeed.tsx`
-- `src/pages/Resources.tsx`
-- `src/pages/ContentLibrary.tsx`
-- `src/pages/Certification.tsx` (dashboard branch only)
-- `src/pages/Notifications.tsx`
-- `src/pages/Chat.tsx` (desktop branch only)
-- `src/pages/OpportunityDiscovery.tsx`
-- `src/pages/ResumeEditor.tsx`
-- `src/components/profile/ProfilePage.tsx` — branch on `portalV2`, mount `PortalPageShell` wrapping `ProfileContent` + `ProfileFooter` with a compact header bar; legacy path keeps current `ProfileLayout`.
-- `src/pages/SharedProfile.tsx` and/or `SharedProfileContainer.tsx` — branch on `portalV2`, wrap with `SharedProfilePortalShell`.
-
-**Pattern per page (illustrative)**
-
-```tsx
-const { portalV2 } = usePortalMode();
-return portalV2 ? (
-  <PortalPageShell title="Jobs" subtitle="...">
-    {/* same body content as before, no re-ordering */}
-  </PortalPageShell>
-) : (
-  <DashboardLayout ...>{/* legacy body */}</DashboardLayout>
-);
-```
-
-**Memory update**
-
-After implementation, save a note to `mem://architecture/portal-v2-shell-coverage` describing which seeker pages are wrapped and that `usePortalMode` + `lansa.dashboardPortalV2` is the single source of truth.
-
-## Out of scope
-
-- Re-skinning internal cards. Visual treatment of cards stays as-is; only outer chrome changes.
-- Mobile portal redesign — rail is `hidden lg:flex` and mobile uses each page's existing mobile layout.
-- Employer / mentor / admin surfaces.
+After approval I'll implement in this order and report back with file diffs.

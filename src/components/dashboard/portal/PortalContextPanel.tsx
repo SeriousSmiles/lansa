@@ -5,6 +5,7 @@ import { AICoachTab } from "@/components/dashboard/AICoachTab";
 import { StudentAnalyticsCard } from "@/components/dashboard/overview/StudentAnalyticsCard";
 import { useDashboardPanel, type PanelView } from "./useDashboardPanel";
 import { ActivityStream } from "./activity/ActivityStream";
+import { PortalInboxPanel } from "./inbox/PortalInboxPanel";
 import { X } from "lucide-react";
 
 const TITLES: Record<PanelView, string> = {
@@ -12,6 +13,7 @@ const TITLES: Record<PanelView, string> = {
   ai: "AI Coach",
   insights: "Performance insights",
   activity: "Recent activity",
+  inbox: "Messages",
 };
 
 const SUBTITLES: Record<PanelView, string> = {
@@ -19,6 +21,7 @@ const SUBTITLES: Record<PanelView, string> = {
   ai: "Personalized guidance, refreshed weekly",
   insights: "Visibility and engagement signals",
   activity: "What's happened in the last 14 days",
+  inbox: "Reply without leaving your work",
 };
 
 interface PortalContextPanelProps {
@@ -29,11 +32,17 @@ interface PortalContextPanelProps {
 export function PortalContextPanel({ role, goal }: PortalContextPanelProps) {
   const { open, view, close } = useDashboardPanel();
 
+  const isInbox = view === "inbox";
+
   return (
     <Sheet open={open} onOpenChange={(v) => !v && close()}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-[440px] p-0 border-l border-border/40 bg-background flex flex-col gap-0"
+        className={
+          isInbox
+            ? "w-full sm:max-w-[520px] p-0 border-l border-border/40 bg-background flex flex-col gap-0"
+            : "w-full sm:max-w-[440px] p-0 border-l border-border/40 bg-background flex flex-col gap-0"
+        }
       >
         <div className="flex items-start justify-between px-6 pt-6 pb-4 border-b border-border/40">
           <div className="min-w-0">
@@ -51,12 +60,18 @@ export function PortalContextPanel({ role, goal }: PortalContextPanelProps) {
           </Button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-4">
-          {view === "profile" && <ProfileCard role={role} goal={goal} />}
-          {view === "ai" && <AICoachTab />}
-          {view === "insights" && <StudentAnalyticsCard />}
-          {view === "activity" && <ActivityStream limit={20} />}
-        </div>
+        {isInbox ? (
+          <div className="flex-1 min-h-0 flex flex-col">
+            <PortalInboxPanel />
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto px-4 py-4">
+            {view === "profile" && <ProfileCard role={role} goal={goal} />}
+            {view === "ai" && <AICoachTab />}
+            {view === "insights" && <StudentAnalyticsCard />}
+            {view === "activity" && <ActivityStream limit={20} />}
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );
