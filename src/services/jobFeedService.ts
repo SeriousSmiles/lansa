@@ -142,25 +142,36 @@ export const jobFeedService = {
 
       if (error) throw error;
 
-      // Transform data to expected format
-      return (data || []).map((app: any) => ({
-        id: app.id,
-        status: app.status,
-        created_at: app.created_at,
-        cover_note: app.cover_note,
-        job: {
-          id: app.job_listings_v2.id,
-          title: app.job_listings_v2.title,
-          description: app.job_listings_v2.description,
-          location: app.job_listings_v2.location,
-          category: app.job_listings_v2.category,
-          job_type: app.job_listings_v2.job_type,
-          is_remote: app.job_listings_v2.is_remote,
-          salary_range: app.job_listings_v2.salary_range,
-          company_name: app.job_listings_v2.organizations?.name || app.job_listings_v2.companies?.name || 'Unknown Company',
-          company_logo: app.job_listings_v2.organizations?.logo_url || app.job_listings_v2.companies?.logo_url,
-        }
-      }));
+      // Transform data to expected format — keep nested organizations/companies
+      // so consumers can use the shared getJobLogo() helper, matching the feed shape.
+      return (data || []).map((app: any) => {
+        const j = app.job_listings_v2;
+        const orgLogo = j.organizations?.logo_url ?? null;
+        const companyLogo = j.companies?.logo_url ?? null;
+        return {
+          id: app.id,
+          status: app.status,
+          created_at: app.created_at,
+          cover_note: app.cover_note,
+          job: {
+            id: j.id,
+            title: j.title,
+            description: j.description,
+            location: j.location,
+            category: j.category,
+            job_type: j.job_type,
+            is_remote: j.is_remote,
+            salary_range: j.salary_range,
+            company_name: j.organizations?.name || j.companies?.name || 'Unknown Company',
+            // Nested objects (preferred) — used by getJobLogo()
+            organizations: j.organizations || undefined,
+            companies: j.companies || undefined,
+            // Flattened fallbacks (kept for backwards compatibility)
+            logo_url: orgLogo || companyLogo || null,
+            company_logo: orgLogo || companyLogo || undefined,
+          },
+        };
+      });
     } catch (error) {
       console.error('Error fetching applications:', error);
       return [];
