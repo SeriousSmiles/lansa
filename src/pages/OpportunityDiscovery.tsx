@@ -3,20 +3,17 @@ import { SwipeDeck } from "@/components/discovery/SwipeDeck";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Briefcase, Heart, TrendingUp, X, Zap } from "lucide-react";
 import { discoveryService, DiscoveryProfile, DiscoveryFilters } from "@/services/discoveryService";
 import { swipeService, SwipeDirection, SwipeContext } from "@/services/swipeService";
 import { matchService } from "@/services/matchService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { useUserState } from "@/contexts/UserStateProvider";
 import { usePortalMode } from "@/hooks/usePortalMode";
 import { PortalPageShell } from "@/components/dashboard/portal/PortalPageShell";
 
 export default function OpportunityDiscovery() {
   const { user } = useAuth();
-  const { userType } = useUserState();
   const { portalV2 } = usePortalMode();
   // This route is guarded to job_seeker only. Networking discovery is for
   // employers reviewing candidates — seekers must never see other seekers.
