@@ -135,8 +135,6 @@ export default function OpportunityDiscovery() {
         matchCount={matchCount}
         swipeCount={swipeCount}
         profiles={profiles}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
         handleSwipe={handleSwipe}
         handleEndReached={handleEndReached}
         isLoading={isLoading}
@@ -167,7 +165,7 @@ export default function OpportunityDiscovery() {
 
 // Inline body extracted to keep both branches identical.
 function DiscoveryBody(props: any) {
-  const { matchCount, swipeCount, profiles, activeTab, setActiveTab, handleSwipe, handleEndReached, isLoading } = props;
+  const { matchCount, swipeCount, profiles, handleSwipe, handleEndReached, isLoading } = props;
   return (
     <>
 
