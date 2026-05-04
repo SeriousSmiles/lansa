@@ -12,8 +12,7 @@ import { useProfileProgress } from "@/hooks/useProfileProgress";
 import { PostOnboardingChoice } from "../onboarding/PostOnboardingChoice";
 import { usePortalMode } from "@/hooks/usePortalMode";
 import { LegacyModeToggle } from "@/components/dashboard/portal/LegacyModeToggle";
-import { PortalRail } from "@/components/dashboard/portal/PortalRail";
-import { PortalContextPanel } from "@/components/dashboard/portal/PortalContextPanel";
+import { ProfilePortalLayout } from "./layout/ProfilePortalLayout";
 
 export function ProfilePage() {
   const { user } = useAuth();
@@ -102,8 +101,46 @@ export function ProfilePage() {
     );
   }
 
-  const profileLayoutNode = (
-    <>
+  if (portalV2) {
+    return (
+      <>
+        <ProfilePortalLayout
+          userName={profile.userName}
+          role={profile.role}
+          user={profile.user}
+          userId={user?.id}
+          coverColor={profile.coverColor}
+          highlightColor={profile.highlightColor}
+          onCoverColorChange={profile.updateCoverColor}
+          onHighlightColorChange={profile.updateHighlightColor}
+          mainContentRef={mainContentRef}
+          onOpenGuidedSetup={() => {}}
+          userProfile={profile}
+          currentPalette={profile.currentPalette}
+          activePalette={profile.activePalette}
+          onPaletteChange={profile.updatePalette}
+          onModeToggle={profile.toggleMode}
+        >
+          <ProfileContent
+            profile={profile}
+            textColor={profile.coverColor}
+            navigate={navigate}
+            variant="portal"
+          />
+        </ProfilePortalLayout>
+
+        <PostOnboardingChoice
+          open={choiceModalOpen}
+          onOpenChange={setChoiceModalOpen}
+          onChooseManual={handleChooseManual}
+          onChooseCVUpload={handleChooseCVUpload}
+        />
+      </>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col">
       <ProfileLayout
         userName={profile.userName}
         role={profile.role}
@@ -127,35 +164,15 @@ export function ProfilePage() {
           navigate={navigate}
         />
       </ProfileLayout>
-      
-        <PostOnboardingChoice
-          open={choiceModalOpen}
-          onOpenChange={setChoiceModalOpen}
-          onChooseManual={handleChooseManual}
-          onChooseCVUpload={handleChooseCVUpload}
-        />
 
-      
+      <PostOnboardingChoice
+        open={choiceModalOpen}
+        onOpenChange={setChoiceModalOpen}
+        onChooseManual={handleChooseManual}
+        onChooseCVUpload={handleChooseCVUpload}
+      />
+
       <ProfileFooter coverColor={profile.coverColor} />
-    </>
-  );
-
-  if (portalV2) {
-    return (
-      <div className="flex w-full min-h-screen bg-[rgba(253,248,242,1)]">
-        <PortalRail />
-        <div className="flex-1 min-w-0 flex flex-col">
-          {profileLayoutNode}
-        </div>
-        <PortalContextPanel role={profile.role} goal="Career growth" />
-        <LegacyModeToggle />
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      {profileLayoutNode}
       <LegacyModeToggle variant="inline" className="fixed bottom-4 right-4 z-50 shadow-lg" />
     </div>
   );
