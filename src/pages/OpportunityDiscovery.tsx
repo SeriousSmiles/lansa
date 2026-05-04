@@ -3,36 +3,26 @@ import { SwipeDeck } from "@/components/discovery/SwipeDeck";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Briefcase, Heart, TrendingUp, X, Zap } from "lucide-react";
 import { discoveryService, DiscoveryProfile, DiscoveryFilters } from "@/services/discoveryService";
 import { swipeService, SwipeDirection, SwipeContext } from "@/services/swipeService";
 import { matchService } from "@/services/matchService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { useUserState } from "@/contexts/UserStateProvider";
 import { usePortalMode } from "@/hooks/usePortalMode";
 import { PortalPageShell } from "@/components/dashboard/portal/PortalPageShell";
 
 export default function OpportunityDiscovery() {
   const { user } = useAuth();
-  const { userType } = useUserState();
   const { portalV2 } = usePortalMode();
-  const [activeTab, setActiveTab] = useState<'networking' | 'jobs'>('jobs'); // Default to jobs for students
+  // This route is guarded to job_seeker only. Networking discovery is for
+  // employers reviewing candidates — seekers must never see other seekers.
+  const [activeTab, setActiveTab] = useState<'jobs'>('jobs');
   const [profiles, setProfiles] = useState<DiscoveryProfile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [matchCount, setMatchCount] = useState(0);
   const [swipeCount, setSwipeCount] = useState(0);
   const [filters, setFilters] = useState<DiscoveryFilters>({});
-
-  // Set default tab based on user type
-  useEffect(() => {
-    if (userType === 'employer') {
-      setActiveTab('networking'); // Employers should see candidates by default
-    } else {
-      setActiveTab('jobs'); // Job seekers should see jobs by default  
-    }
-  }, [userType]);
 
   useEffect(() => {
     if (user) {
@@ -43,31 +33,23 @@ export default function OpportunityDiscovery() {
 
   const loadProfiles = async () => {
     if (!user) return;
-    
+
     setIsLoading(true);
     try {
-      const context: SwipeContext = activeTab === 'networking' ? 'employee' : 'internship';
-      
-      if (activeTab === 'networking') {
-        const data = await discoveryService.getDiscoveryProfiles(user.id, context, filters, 20);
-        setProfiles(data);
-      } else {
-        // For jobs, we'd load job listings here
-        const jobData = await discoveryService.getJobListings(user.id, filters, 20);
-        // Convert job listings to profile format for the swipe deck
-        const jobProfiles: DiscoveryProfile[] = jobData.map(job => ({
-          user_id: job.id,
-          name: job.business_profiles?.company_name || 'Company',
-          title: job.title,
-          about_text: job.description,
-          profile_image: '',
-          skills: job.top_skills || [],
-          cover_color: '#1e40af',
-          highlight_color: '#3b82f6',
-          professional_goal: `Location: ${job.location || 'Remote'}`
-        }));
-        setProfiles(jobProfiles);
-      }
+      // Seeker-only route: never load other seekers. Only job listings.
+      const jobData = await discoveryService.getJobListings(user.id, filters, 20);
+      const jobProfiles: DiscoveryProfile[] = jobData.map(job => ({
+        user_id: job.id,
+        name: job.business_profiles?.company_name || 'Company',
+        title: job.title,
+        about_text: job.description,
+        profile_image: '',
+        skills: job.top_skills || [],
+        cover_color: '#1e40af',
+        highlight_color: '#3b82f6',
+        professional_goal: `Location: ${job.location || 'Remote'}`
+      }));
+      setProfiles(jobProfiles);
     } catch (error) {
       console.error('Error loading profiles:', error);
       toast.error('Failed to load profiles');
@@ -83,8 +65,8 @@ export default function OpportunityDiscovery() {
       const matches = await matchService.getMatchesCount(user.id);
       setMatchCount(matches);
       
-      // Get today's swipe count
-      const context: SwipeContext = activeTab === 'networking' ? 'employee' : 'internship';
+      // Get today's swipe count (seeker-only: internship/jobs context)
+      const context: SwipeContext = 'internship';
       const swipeHistory = await swipeService.getSwipeHistory(user.id, context);
       const today = new Date().toDateString();
       const todaySwipes = swipeHistory.filter(s => 
@@ -100,13 +82,13 @@ export default function OpportunityDiscovery() {
     if (!user) return;
 
     try {
-      const context: SwipeContext = activeTab === 'networking' ? 'employee' : 'internship';
+      const context: SwipeContext = 'internship';
       const swipeData = {
         swiper_user_id: user.id,
         target_user_id: profile.user_id,
         direction,
         context,
-        job_listing_id: activeTab === 'jobs' ? profile.user_id : undefined
+        job_listing_id: profile.user_id
       };
 
       await swipeService.recordSwipe(swipeData);
@@ -153,8 +135,6 @@ export default function OpportunityDiscovery() {
         matchCount={matchCount}
         swipeCount={swipeCount}
         profiles={profiles}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
         handleSwipe={handleSwipe}
         handleEndReached={handleEndReached}
         isLoading={isLoading}
@@ -185,7 +165,7 @@ export default function OpportunityDiscovery() {
 
 // Inline body extracted to keep both branches identical.
 function DiscoveryBody(props: any) {
-  const { matchCount, swipeCount, profiles, activeTab, setActiveTab, handleSwipe, handleEndReached, isLoading } = props;
+  const { matchCount, swipeCount, profiles, handleSwipe, handleEndReached, isLoading } = props;
   return (
     <>
 
@@ -234,55 +214,28 @@ function DiscoveryBody(props: any) {
           </Card>
         </div>
 
-        {/* Discovery Mode Tabs */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'networking' | 'jobs')} className="w-full flex-1 flex flex-col min-h-0">
-          <TabsList className="grid w-full grid-cols-2 mb-4 flex-shrink-0">
-            <TabsTrigger value="networking" className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Networking
-            </TabsTrigger>
-            <TabsTrigger value="jobs" className="flex items-center gap-2">
-              <Briefcase className="w-4 h-4" />
+        {/* Jobs-only surface — networking discovery removed; seekers must
+            never see other seekers per project data-integrity rules. */}
+        <div className="w-full flex-1 flex flex-col min-h-0">
+          <div className="text-center mb-4 flex-shrink-0">
+            <h2 className="text-xl font-semibold mb-2 flex items-center justify-center gap-2">
+              <Briefcase className="w-5 h-5" />
               Job Opportunities
-            </TabsTrigger>
-          </TabsList>
+            </h2>
+            <p className="text-muted-foreground">
+              Discover exciting job opportunities that match your skills
+            </p>
+          </div>
 
-          <TabsContent value="networking" className="flex-1 flex flex-col min-h-0">
-            <div className="text-center mb-4 flex-shrink-0">
-              <h2 className="text-xl font-semibold mb-2">Professional Networking</h2>
-              <p className="text-muted-foreground">
-                Connect with like-minded professionals and expand your network
-              </p>
-            </div>
-            
-            <div className="flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden">
-              <SwipeDeck
-                profiles={profiles}
-                onSwipe={handleSwipe}
-                onEndReached={handleEndReached}
-                isLoading={isLoading}
-              />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="jobs" className="flex-1 flex flex-col min-h-0">
-            <div className="text-center mb-4 flex-shrink-0">
-              <h2 className="text-xl font-semibold mb-2">Job Opportunities</h2>
-              <p className="text-muted-foreground">
-                Discover exciting job opportunities that match your skills
-              </p>
-            </div>
-            
-            <div className="flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden">
-              <SwipeDeck
-                profiles={profiles}
-                onSwipe={handleSwipe}
-                onEndReached={handleEndReached}
-                isLoading={isLoading}
-              />
-            </div>
-          </TabsContent>
-        </Tabs>
+          <div className="flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden">
+            <SwipeDeck
+              profiles={profiles}
+              onSwipe={handleSwipe}
+              onEndReached={handleEndReached}
+              isLoading={isLoading}
+            />
+          </div>
+        </div>
 
         {/* Instructions */}
         <Card className="mt-4 flex-shrink-0">

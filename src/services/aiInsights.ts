@@ -94,7 +94,7 @@ async function checkRecommendedActions(userId: string, userAnswers: any): Promis
         message: "As a student, start connecting with professionals in your field. Consider joining industry groups and attending virtual events.",
         insight_type: "networking",
         priority: 3,
-        navigation_target: "/opportunity-discovery",
+        navigation_target: "/jobs",
         is_read: false,
         created_at: new Date().toISOString()
       };
