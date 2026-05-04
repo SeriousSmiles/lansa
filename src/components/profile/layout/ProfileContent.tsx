@@ -11,14 +11,16 @@ import { OpenMarketButton } from "../buttons/OpenMarketButton";
 import { gsap } from "gsap";
 import { getContrastTextColor } from "@/utils/colorUtils";
 import { ProfileDataReturn } from "@/hooks/useProfileData";
+import { cn } from "@/lib/utils";
 
 interface ProfileContentProps {
   profile: ProfileDataReturn;
   textColor: string;
   navigate: NavigateFunction;
+  variant?: "legacy" | "portal";
 }
 
-export function ProfileContent({ profile, textColor, navigate }: ProfileContentProps) {
+export function ProfileContent({ profile, textColor, navigate, variant = "legacy" }: ProfileContentProps) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   
@@ -27,6 +29,11 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
   
   // Determine if the theme is dark
   const isDarkTheme = contrastTextColor === "#FFFFFF";
+
+  const isPortal = variant === "portal";
+  const sectionShell = isPortal
+    ? "rounded-3xl border border-border/40 bg-card/80 backdrop-blur-sm p-5 md:p-7 shadow-[0_1px_0_hsl(0_0%_0%/0.04),0_8px_24px_-16px_hsl(14_90%_60%/0.18)] transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_1px_0_hsl(0_0%_0%/0.04),0_16px_36px_-16px_hsl(14_90%_60%/0.28)]"
+    : "hover-lift";
   
   // Animate elements when the page loads
   useEffect(() => {
@@ -69,7 +76,7 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
   return (
     <>
       {/* Left Column - Sidebar */}
-      <div ref={sidebarRef} className="lg:col-span-4">
+      <div ref={sidebarRef} className="lg:col-span-4 min-w-0">
         <ProfileSidebar 
           userName={profile.userName}
           role={profile.role}
@@ -110,10 +117,10 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
       </div>
       
       {/* Right Column - Experience & Education */}
-      <div ref={contentRef} className="lg:col-span-8">
+      <div ref={contentRef} className="lg:col-span-8 min-w-0">
         <div className="space-y-8">
           {/* About Me */}
-          <div className="content-section hover-lift">
+          <div className={cn("content-section", sectionShell)}>
             <AboutSection 
               role={profile.role}
               goal={profile.goal}
@@ -129,7 +136,7 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
           </div>
           
           {/* Experience */}
-          <div className="content-section hover-lift">
+          <div className={cn("content-section", sectionShell)}>
             <ExperienceSection 
               experiences={profile.experiences}
               onAddExperience={profile.addExperience}
@@ -141,7 +148,7 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
           </div>
           
           {/* Achievements & Awards */}
-          <div className="content-section hover-lift">
+          <div className={cn("content-section", sectionShell)}>
             <AchievementsSection 
               achievements={profile.userAchievements}
               onAddAchievement={profile.addAchievement}
@@ -153,7 +160,7 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
           </div>
           
           {/* Education */}
-          <div className="content-section hover-lift">
+          <div className={cn("content-section", sectionShell)}>
             <EducationSection 
               education={profile.educationItems}
               onAddEducation={profile.addEducation}
@@ -167,17 +174,28 @@ export function ProfileContent({ profile, textColor, navigate }: ProfileContentP
         
         {/* Actions Section with better spacing */}
         <div className="flex justify-center animate-fade-in mt-12 mb-8">
-          <Button 
-            onClick={() => navigate("/dashboard")} 
-            className="py-2 h-auto btn-animate"
-            variant={isDarkTheme ? "contrast" : "outline"}
-            style={{
-              borderColor: `${profile.coverColor}30`,
-              color: contrastTextColor
-            }}
-          >
-            Return to Dashboard
-          </Button>
+          {isPortal ? (
+            <Button
+              onClick={() => navigate("/dashboard")}
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Return to Dashboard
+            </Button>
+          ) : (
+            <Button
+              onClick={() => navigate("/dashboard")}
+              className="py-2 h-auto btn-animate"
+              variant={isDarkTheme ? "contrast" : "outline"}
+              style={{
+                borderColor: `${profile.coverColor}30`,
+                color: contrastTextColor
+              }}
+            >
+              Return to Dashboard
+            </Button>
+          )}
         </div>
       </div>
     </>
