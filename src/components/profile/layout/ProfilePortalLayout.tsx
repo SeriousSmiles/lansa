@@ -78,10 +78,9 @@ export function ProfilePortalLayout({
       }
     >
       <AnnouncementBanner />
-      <main
-        ref={mainContentRef}
-        className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 mt-2"
-      >
+      {/* No ref={mainContentRef} here — Portal v2 skips the gsap fade-in
+          to keep the page render instant and prevent flicker. */}
+      <main className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 mt-2">
         {children}
       </main>
     </PortalPageShell>

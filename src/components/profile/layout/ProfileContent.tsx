@@ -35,9 +35,12 @@ export function ProfileContent({ profile, textColor, navigate, variant = "legacy
     ? "rounded-3xl border border-border/40 bg-card/80 backdrop-blur-sm p-5 md:p-7 shadow-[0_1px_0_hsl(0_0%_0%/0.04),0_8px_24px_-16px_hsl(14_90%_60%/0.18)] transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_1px_0_hsl(0_0%_0%/0.04),0_16px_36px_-16px_hsl(14_90%_60%/0.28)]"
     : "hover-lift";
   
-  // Animate elements when the page loads
+  // Animate elements when the page loads.
+  // Portal v2 skips these gsap.from(opacity:0) entrance animations to avoid
+  // the post-load flicker — Portal pages elsewhere render instantly.
   useEffect(() => {
     if (profile.isLoading) return;
+    if (isPortal) return;
     
     // Animate main content
     if (contentRef.current) {
@@ -71,7 +74,7 @@ export function ProfileContent({ profile, textColor, navigate, variant = "legacy
       ease: "power2.out",
       delay: 0.4
     });
-  }, [profile.isLoading]);
+  }, [profile.isLoading, isPortal]);
 
   return (
     <>
