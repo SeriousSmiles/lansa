@@ -1,95 +1,78 @@
-# Make Chat Ambient — Quick Messaging Across the Portal
+## Goal
 
-Currently `/chat` is a destination page. Users have to leave whatever they were doing, load the full inbox, pick a thread, reply, then navigate back. This violates the doctrine for **Desktop = Strategic Mode**: messaging should be a *companion surface*, not a context switch.
+Bring the `/profile` page in line with the Portal v2 design language used by Dashboard, Resume Editor, Certification, etc. — same rail, same context drawer, same typographic header, same warm `#FDF8F2` canvas — without changing **any** profile editing behaviour. Legacy mode must continue to render the current profile experience untouched.
 
-This plan keeps `/chat` intact for deep conversation work, but layers three lighter-weight surfaces on top so seekers (and employers) can keep momentum.
+## Current state (verified)
 
----
+- `ProfilePage.tsx` already branches on `portalV2`. In Portal v2 it wraps the existing `ProfileLayout` (which renders its own `ProfileHeader` + cover-tinted background) inside `<PortalRail />` + `<PortalContextPanel />`.
+- The result is *visually inconsistent* with other Portal v2 pages: it still shows the full-width tinted profile header bar, no Portal-style page title, and no shared `PortalPageShell` chrome.
+- `ProfileLayout` renders `<AnnouncementBanner />`, `<ProfileHeader />`, then a 12-col grid that hosts `ProfileContent` (sidebar + main sections).
+- `ProfileContent` is the **functional core**: `ProfileSidebar`, `AboutSection`, `ExperienceSection`, `AchievementsSection`, `EducationSection`, plus animations and a "Return to Dashboard" button.
+- `ProfileHeader` carries critical actions via `ProfileHeaderActions` (share, settings, palette, guided setup, etc.).
 
-## Three new surfaces
+## What changes (Portal v2 only)
 
-### 1. Inbox view inside the Portal Context Panel (right drawer)
+Legacy branch (`!portalV2`) is **not touched**. All edits below are gated behind the existing `portalV2` flag.
 
-Extend `useDashboardPanel` with a new `"inbox"` view alongside `profile | ai | insights | activity`. Opens the existing right Sheet, shows the thread list, and lets the user pick a thread to read/reply **without leaving the page**.
+### 1. New thin layout used only inside Portal v2
 
-- New component `PortalInboxPanel.tsx` rendered inside `PortalContextPanel` when `view === "inbox"`.
-- Two internal states: list view (recent threads) and thread view (messages + composer).
-- Reuses `useChatThreads`, `chatService`, and the existing `ChatInput` + `MessageBubble` so behavior, RLS, and realtime stay identical.
-- "Open full inbox" footer link → navigates to `/chat`.
+Create `src/components/profile/layout/ProfilePortalLayout.tsx` — a Portal-friendly replacement for `ProfileLayout` that:
 
-### 2. Messages tile/widget on the Portal dashboard
+- Drops the full-width tinted `ProfileHeader` bar (the Portal rail already provides nav + branding).
+- Reuses `PortalPageShell` for the rail + canvas + context drawer chrome, with:
+  - `eyebrow="Workspace"`, `title="Your profile"`, `subtitle` describing reflective + visibility purpose.
+  - `actions={<ProfileHeaderActions … />}` so share / palette / settings / guided-setup all remain available, just relocated into the Portal header row.
+- Renders `children` (the existing `ProfileContent`) inside the same 12-col grid the page uses today, so the sidebar + sections layout is preserved.
+- Applies the cover/highlight color as a soft accent (border tints, section dividers) instead of repainting the whole canvas — Portal canvas stays warm `#FDF8F2`, matching every other Portal page.
 
-Add a compact **Messages** card inside the right column of `PortalShell` (under Today's Focus, above Recent activity, or as a small tile in `PortalDistricts`). Shows:
+### 2. `ProfilePage.tsx`
 
-- Top 3 most recent threads with avatar, name, last-message preview, unread dot, relative time.
-- Unread total badge in the header.
-- Click a row → opens the inbox panel directly on that thread.
-- "View all" → opens inbox panel in list mode.
+- In the `portalV2` branch, render `ProfilePortalLayout` (which internally uses `PortalPageShell`) instead of the current ad-hoc `<PortalRail /> + ProfileLayout + PortalContextPanel />` composition.
+- Pass through every prop currently passed to `ProfileLayout` (cover color, highlight, palette callbacks, `userProfile`, etc.) — no behaviour loss.
+- Keep `PostOnboardingChoice` modal and `ProfileFooter` exactly as today.
+- Legacy branch unchanged.
 
-Empty state: "No conversations yet — connect with employers to start."
+### 3. `ProfileContent.tsx`
 
-### 3. Global quick-reply trigger in `PortalRail`
+- Wrap each `content-section` (`AboutSection`, `ExperienceSection`, `AchievementsSection`, `EducationSection`) in the same rounded-3xl card surface used by `TileShell` — `rounded-3xl border border-border/40 bg-card/80 backdrop-blur-sm` with the warm shadow — but only when rendered inside Portal v2 (via a new optional `variant?: "legacy" | "portal"` prop, default `"legacy"`).
+- Sidebar column keeps its current placement (lg:col-span-4 left). Card surfaces inside `ProfileSidebar` get the same Portal v2 treatment in `portal` variant.
+- "Return to Dashboard" CTA at the bottom is replaced (in portal variant) with a subtle ghost link, since the rail already provides nav.
+- All existing edit handlers (add/edit/remove for skills, languages, certs, experience, education, achievements; about text; cover/highlight color; palette; profile image upload) remain wired through unchanged.
 
-The rail already has a Messages icon with an unread badge. Change its behavior:
+### 4. `ProfileHeaderActions` reuse
 
-- **Click** = open the inbox panel (drawer) in list mode — no navigation.
-- **Cmd/Ctrl+K → "Messages"** stays as a route to `/chat` for the full screen.
-- A small "Open full page" affordance inside the panel for users who prefer the dedicated layout.
+- Render the existing `ProfileHeaderActions` component unchanged in the Portal header `actions` slot. Pass a "light" theme context (textColor = foreground, isDarkTheme = false) since the Portal canvas is warm cream, not the cover color.
 
-Result: messaging is one click away from any portal page (dashboard, profile, jobs, resources) without losing scroll position or filters.
+### 5. Accent tinting
 
----
+- Cover color and palette still drive small accents inside cards (icon chips, avatar ring, section heading underline) so users feel their personalisation. The page background stays the standard Portal cream — consistent with project memory rules ("No gray/purple backgrounds", DashboardLayout owns max-w / padding).
 
-## Mobile
+## Functional preservation checklist
 
-Per the doctrine, mobile is **Reactive / Momentum Mode** — `/chat` already works well there as a full-bleed inbox. We will **not** add a drawer on mobile. Instead:
+- Edit name, title, location, phone, professional goal — via sidebar (unchanged).
+- Add/edit/remove skills, languages, certifications — via sidebar (unchanged).
+- Upload profile image — via sidebar (unchanged).
+- Edit about text + biggest challenge — via `AboutSection` (unchanged).
+- Add/edit/remove experiences, education, achievements — unchanged.
+- Change cover color / highlight color / palette / mode — via `ProfileHeaderActions`, now in Portal header row.
+- Share profile / open settings / guided setup — same `ProfileHeaderActions` menu.
+- `PostOnboardingChoice` modal still triggers from existing effect.
+- Legacy mode toggle floating pill still rendered by `PortalPageShell` (`showLegacyToggle` defaults to true).
 
-- Keep the existing `MobileChatInbox` route.
-- Add a small "Recent messages" strip on the mobile dashboard (top 2 threads + unread count) that taps straight into a thread. This shortens the path from "open app → reply" to two taps.
+## Files
 
----
+**New**
+- `src/components/profile/layout/ProfilePortalLayout.tsx`
 
-## Legacy mode
+**Edited**
+- `src/components/profile/ProfilePage.tsx` — switch portalV2 branch to use `ProfilePortalLayout`.
+- `src/components/profile/layout/ProfileContent.tsx` — add optional `variant` prop; portal variant wraps sections in Portal v2 card surfaces and tones down "Return to Dashboard".
+- `src/components/profile/ProfileSidebar.tsx` — add same optional `variant` prop and apply Portal v2 card surface when variant is `"portal"` (no logic change).
 
-The Legacy toggle continues to bypass all of the above. When `portalV2 === false`, `/chat` renders the original `DesktopChatLayout` exactly as today, and no widgets are injected. Nothing about RLS, services, or realtime changes.
+No backend, no schema, no auth, no RLS changes.
 
----
+## Out of scope
 
-## Files & technical notes
-
-- `src/components/dashboard/portal/useDashboardPanel.ts` — add `"inbox"` to `PanelView`; optional `threadId` field for deep-linking into a specific conversation.
-- `src/components/dashboard/portal/inbox/PortalInboxPanel.tsx` — new. List + thread view, uses `useChatThreads`, `chatService.markThreadRead`, `ChatInput`, `MessageBubble`. ~250 lines.
-- `src/components/dashboard/portal/PortalContextPanel.tsx` — register the inbox view, widen sheet to `sm:max-w-[520px]` only when `view === "inbox"` for breathing room on the message list.
-- `src/components/dashboard/portal/messages/PortalMessagesCard.tsx` — new. Compact 3-thread preview card; reused on dashboard. ~120 lines.
-- `src/components/dashboard/portal/PortalShell.tsx` — insert `PortalMessagesCard` into the right column (between `TodaysFocus` and the Recent activity section).
-- `src/components/dashboard/portal/PortalRail.tsx` — change Messages click handler to call `openPanel("inbox")` instead of `navigate('/chat')`. Keep right-click / middle-click / focused keyboard nav routing to `/chat` for power users.
-- `src/components/mobile/dashboard/MobileMessagesStrip.tsx` — new. Top 2 threads + unread count; taps into `/chat/:threadId`.
-- `src/pages/Chat.tsx` — unchanged.
-- No DB / RLS / edge-function changes. No new hooks for chat — reusing `useChatThreads`, `useUnreadChatCount`, and `chatService`.
-
-### UX guarantees
-
-- Visibility of system status: unread dot + "delivered" tick stay identical across surfaces.
-- User control: every panel surface has "Open full page" → `/chat`, plus close.
-- Recognition over recall: avatars and names match the existing chat layout.
-- No competing CTAs: the inbox panel surfaces only Reply + Open full thread.
-- Realtime: panel and dashboard widget subscribe via the same hooks, so a new message updates everywhere simultaneously.
-
-### Out of scope (intentionally)
-
-- Notifications/push behavior — already handled.
-- Group threads — none today.
-- Reactions / typing indicators — separate effort.
-- Employer dashboard messages widget — same pattern can be applied later; this plan focuses on seeker portal first per your instruction.
-
----
-
-## Rollout order
-
-1. Extend `useDashboardPanel` and add `PortalInboxPanel`.
-2. Wire the rail Messages icon to open the panel.
-3. Add `PortalMessagesCard` to `PortalShell`.
-4. Add `MobileMessagesStrip` to mobile dashboard.
-5. Manual QA: legacy mode off and on, unread sync, sending a message from the panel, deep-link from card to thread.
-
-After approval I'll implement in this order and report back with file diffs.
+- Public/shared profile page (already updated previously via `SharedProfilePortalShell`).
+- Legacy mode visuals.
+- Mobile-specific reactive redesign of profile editing — current responsive behaviour is kept; a deeper mobile rework would be a separate task per the Lansa contextual-design doctrine.
