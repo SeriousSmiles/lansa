@@ -500,20 +500,18 @@ export function PDFDownloadDialog({ profileData, children }: PDFDownloadDialogPr
         </div>
       </DialogContent>
 
-      {/* Hidden preview template for HTML engine (PDF) */}
-      {selectedTemplateData?.engine === 'html' && exportFormat === 'pdf' && !showPreview && (
-        <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
-          <HTMLPDFPreview 
-            data={pdfData} 
-            template={selectedTemplate}
-            forExport={false}
-          />
-        </div>
-      )}
-
-      {/* Always mount export template for JPEG generation (pixel-perfect) */}
-      {exportFormat === 'jpeg' && selectedTemplateData?.engine === 'html' && (
-        <div style={{ position: 'absolute', left: '-9999px', top: '0' }}>
+      {/*
+        Always mount the EXPORT (pixel-perfect) template offscreen whenever an
+        HTML-engine template is selected. The export template carries the
+        `pdf-resume-export-container` id and `.pdf-page` children that
+        useHTMLPDFGeneration / HTMLToPDFGenerator look up by id. Without this,
+        multi-page PDF exports for templates like "professional" silently fail
+        with "Element with id 'pdf-resume-export-container' not found".
+        We mount it for both PDF and JPEG paths and render it independently of
+        the optional Live Preview so the export node is always available.
+      */}
+      {isOpen && selectedTemplateData?.engine === 'html' && (
+        <div style={{ position: 'fixed', left: '-99999px', top: 0, pointerEvents: 'none' }} aria-hidden>
           <HTMLPDFPreview 
             data={pdfData} 
             template={selectedTemplate}
