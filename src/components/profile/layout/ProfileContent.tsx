@@ -12,6 +12,7 @@ import { gsap } from "gsap";
 import { getContrastTextColor } from "@/utils/colorUtils";
 import { ProfileDataReturn } from "@/hooks/useProfileData";
 import { cn } from "@/lib/utils";
+import { ProfileCompletionCard } from "@/components/profile/ProfileCompletionCard";
 
 interface ProfileContentProps {
   profile: ProfileDataReturn;
@@ -122,6 +123,9 @@ export function ProfileContent({ profile, textColor, navigate, variant = "legacy
       {/* Right Column - Experience & Education */}
       <div ref={contentRef} className="lg:col-span-8 min-w-0">
         <div className="space-y-8">
+          {/* Profile completion engine — only renders when score < 85 */}
+          <ProfileCompletionCard />
+
           {/* About Me */}
           <div className={cn("content-section", sectionShell)}>
             <AboutSection 

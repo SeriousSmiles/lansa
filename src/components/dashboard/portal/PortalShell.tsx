@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { PortalRail } from "./PortalRail";
 import { PortalContextPanel } from "./PortalContextPanel";
 import { WelcomeStrip } from "./welcome/WelcomeStrip";
@@ -8,7 +7,8 @@ import { ActivityStream } from "./activity/ActivityStream";
 import { PortalMessagesCard } from "./messages/PortalMessagesCard";
 import { useDashboardPanel } from "./useDashboardPanel";
 import { useAuth } from "@/contexts/UnifiedAuthProvider";
-import { supabase } from "@/integrations/supabase/client";
+import { useProfileCompletion } from "@/hooks/useProfileCompletion";
+import { ProfileCompletionCard } from "@/components/profile/ProfileCompletionCard";
 
 interface PortalShellProps {
   userName: string;
@@ -21,35 +21,8 @@ interface PortalShellProps {
 export function PortalShell({ userName, role, goal, insight, openAIPlan }: PortalShellProps) {
   const { openPanel } = useDashboardPanel();
   const { user } = useAuth();
-  const [completeness, setCompleteness] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (!user?.id) return;
-    let mounted = true;
-    (async () => {
-      const { data: profile } = await supabase
-        .from("user_profiles")
-        .select("name,title,about_text,profile_image,skills,experiences,education")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (!mounted || !profile) return;
-      const checks = [
-        !!profile.name,
-        !!profile.title,
-        !!profile.about_text,
-        !!profile.profile_image,
-        Array.isArray(profile.skills) && profile.skills.length > 0,
-        Array.isArray(profile.experiences) && profile.experiences.length > 0,
-        Array.isArray(profile.education) && profile.education.length > 0,
-      ];
-      setCompleteness(
-        Math.round((checks.filter(Boolean).length / checks.length) * 100)
-      );
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [user?.id]);
+  const completion = useProfileCompletion(user?.id);
+  const completeness = completion.loading ? null : completion.score;
 
   return (
     <div className="flex w-full min-h-screen bg-[rgba(253,248,242,1)]">
@@ -60,6 +33,11 @@ export function PortalShell({ userName, role, goal, insight, openAIPlan }: Porta
           <div className="mx-auto w-full max-w-[1440px] px-6 lg:px-10 xl:px-14 pb-24">
             {/* Zone A — Welcome (full bleed) */}
             <WelcomeStrip userName={userName} insight={insight} completeness={completeness} />
+
+            {/* Profile completion engine — only renders when incomplete */}
+            <div className="mt-6">
+              <ProfileCompletionCard />
+            </div>
 
             {/* Zone B — Asymmetric 2-column workspace */}
             <div className="mt-7 grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8">

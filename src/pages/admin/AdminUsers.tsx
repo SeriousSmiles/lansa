@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ColorChip } from '@/components/admin/ColorChip';
 import { getEffectiveColor, INTENT_CONFIG, UserColor, IntentStage } from '@/utils/adminColors';
 import { RefreshCw, Download, Info, AlertCircle } from 'lucide-react';
-import { IncompleteSignupsPanel } from '@/components/admin/IncompleteSignupsPanel';
+import { ProfileCompletionFunnelPanel } from '@/components/admin/ProfileCompletionFunnelPanel';
 import { UserDrawer } from '@/components/admin/UserDrawer';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { EnhancedFiltersPanel, FilterOptions } from '@/components/admin/EnhancedFiltersPanel';
@@ -385,7 +385,7 @@ export default function AdminUsers() {
         )}
 
         {/* Incomplete signups panel */}
-        <IncompleteSignupsPanel />
+        <ProfileCompletionFunnelPanel />
         
         {/* Stats Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 md:gap-3 mb-4 md:mb-6">
