@@ -63,13 +63,13 @@ const TONE_RULE: Record<Tone, string> = {
 function renderEditorialHeadline(text: string) {
   const words = text.trim().split(/\s+/);
   if (words.length < 3) return <>{text}</>;
-  const italicCount = words.length >= 6 ? 2 : 1;
-  const head = words.slice(0, words.length - italicCount).join(" ");
-  const tail = words.slice(words.length - italicCount).join(" ");
+  const accentCount = words.length >= 6 ? 2 : 1;
+  const head = words.slice(0, words.length - accentCount).join(" ");
+  const tail = words.slice(words.length - accentCount).join(" ");
   return (
     <>
       {head}{" "}
-      <span className="italic font-light text-primary">{tail}</span>
+      <span className="font-urbanist font-normal text-primary">{tail}</span>
     </>
   );
 }
@@ -166,10 +166,9 @@ export function BrandImageSlot({
       )}
       <h3
         className={cn(
-          "font-fraunces font-normal text-[1.9rem] md:text-[2.5rem] lg:text-[2.85rem] leading-[1.05] tracking-[-0.015em]",
+          "font-urbanist font-thin text-[1.9rem] md:text-[2.5rem] lg:text-[2.85rem] leading-[1.05] tracking-[-0.02em]",
           tone === "ink" ? "text-background" : "text-foreground"
         )}
-        style={{ fontOpticalSizing: "auto" }}
       >
         {renderEditorialHeadline(headline)}
       </h3>
