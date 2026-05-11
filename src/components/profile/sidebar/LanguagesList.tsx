@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Plus, X, Edit2 } from "lucide-react";
 import { LanguageItem } from "@/hooks/profile/profileTypes";
+import { useProfileActionListener } from "@/hooks/useProfileActionListener";
 
 interface LanguagesListProps {
   languages: LanguageItem[];
@@ -30,6 +31,11 @@ export function LanguagesList({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editLevel, setEditLevel] = useState(3);
+
+  // Deep-link from ProfileCompletionCard: open the Add Language form.
+  useProfileActionListener("languages", () => {
+    if (onAddLanguage) setIsAdding(true);
+  });
 
   const handleAddLanguage = async () => {
     if (newLanguage.trim() && onAddLanguage) {
