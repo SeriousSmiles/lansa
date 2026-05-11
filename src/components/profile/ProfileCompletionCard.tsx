@@ -63,7 +63,13 @@ export function ProfileCompletionCard({ className = "" }: { className?: string }
           <li key={step.key}>
             <button
               type="button"
-              onClick={() => navigate(step.cta_route || "/profile")}
+              onClick={() => {
+                const base = step.cta_route || "/profile";
+                // Append ?action= so ProfileActionRouter can trigger the
+                // actual editor / toggle for this missing step.
+                const sep = base.includes("?") ? "&" : "?";
+                navigate(`${base}${sep}action=${encodeURIComponent(step.key)}`);
+              }}
               className="w-full flex items-center justify-between gap-3 rounded-2xl bg-white border border-border/40 px-4 py-3 hover:border-[hsl(14_90%_60%/0.5)] hover:bg-[hsl(14_90%_60%/0.04)] transition-colors text-left group"
             >
               <span className="text-sm font-medium text-foreground">
