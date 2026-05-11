@@ -39,16 +39,40 @@ const TONE_CARD: Record<Tone, string> = {
 };
 
 const TONE_EYEBROW: Record<Tone, string> = {
-  cream: "text-muted-foreground",
+  cream: "text-foreground/55",
   ink: "text-background/70",
   accent: "text-primary",
 };
 
 const TONE_BODY: Record<Tone, string> = {
-  cream: "text-muted-foreground",
-  ink: "text-background/80",
-  accent: "text-muted-foreground",
+  cream: "text-foreground/65",
+  ink: "text-background/75",
+  accent: "text-foreground/65",
 };
+
+const TONE_RULE: Record<Tone, string> = {
+  cream: "bg-foreground/20",
+  ink: "bg-background/35",
+  accent: "bg-primary/40",
+};
+
+/**
+ * Render the headline with the trailing 1–2 words set in italic serif
+ * to create an editorial pull-quote feel.
+ */
+function renderEditorialHeadline(text: string) {
+  const words = text.trim().split(/\s+/);
+  if (words.length < 3) return <>{text}</>;
+  const italicCount = words.length >= 6 ? 2 : 1;
+  const head = words.slice(0, words.length - italicCount).join(" ");
+  const tail = words.slice(words.length - italicCount).join(" ");
+  return (
+    <>
+      {head}{" "}
+      <span className="italic font-light text-primary">{tail}</span>
+    </>
+  );
+}
 
 export function BrandImageSlot({
   src,
@@ -118,53 +142,56 @@ export function BrandImageSlot({
     </div>
   );
 
+  const ctaClasses = cn(
+    "group inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.22em] font-public-sans font-semibold border-b pb-1 transition-colors",
+    tone === "ink"
+      ? "text-background border-background/40 hover:border-background"
+      : "text-primary border-primary/40 hover:border-primary"
+  );
+
   const TextBlock = (
     <div className={cn("flex-1 min-w-0", isTop ? "" : "md:w-1/2")}>
       {eyebrow && (
-        <p
-          className={cn(
-            "text-[10px] uppercase tracking-[0.18em] font-medium mb-3",
-            TONE_EYEBROW[tone]
-          )}
-        >
-          {eyebrow}
-        </p>
+        <div className="flex items-center gap-3 mb-5">
+          <span className={cn("h-px w-8 shrink-0", TONE_RULE[tone])} aria-hidden />
+          <p
+            className={cn(
+              "text-[10px] uppercase tracking-[0.32em] font-medium font-public-sans",
+              TONE_EYEBROW[tone]
+            )}
+          >
+            {eyebrow}
+          </p>
+        </div>
       )}
       <h3
         className={cn(
-          "text-2xl md:text-3xl leading-[1.1] tracking-[-0.02em] font-black",
+          "font-fraunces font-normal text-[1.9rem] md:text-[2.5rem] lg:text-[2.85rem] leading-[1.05] tracking-[-0.015em]",
           tone === "ink" ? "text-background" : "text-foreground"
         )}
+        style={{ fontOpticalSizing: "auto" }}
       >
-        {headline}
+        {renderEditorialHeadline(headline)}
       </h3>
       {body && (
-        <p className={cn("mt-3 text-sm md:text-base leading-relaxed max-w-prose", TONE_BODY[tone])}>
+        <p
+          className={cn(
+            "mt-5 text-[15px] md:text-[16px] leading-[1.7] font-public-sans font-light max-w-[46ch]",
+            TONE_BODY[tone]
+          )}
+        >
           {body}
         </p>
       )}
       {cta && (
-        <div className="mt-5">
+        <div className="mt-7">
           {cta.href ? (
-            <a
-              href={cta.href}
-              className={cn(
-                "inline-flex items-center text-sm font-semibold underline underline-offset-4",
-                tone === "ink" ? "text-background" : "text-primary"
-              )}
-            >
-              {cta.label}
+            <a href={cta.href} className={ctaClasses}>
+              {cta.label} <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
             </a>
           ) : (
-            <button
-              type="button"
-              onClick={cta.onClick}
-              className={cn(
-                "inline-flex items-center text-sm font-semibold underline underline-offset-4",
-                tone === "ink" ? "text-background" : "text-primary"
-              )}
-            >
-              {cta.label}
+            <button type="button" onClick={cta.onClick} className={ctaClasses}>
+              {cta.label} <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
             </button>
           )}
         </div>
@@ -183,7 +210,7 @@ export function BrandImageSlot({
     >
       <div
         className={cn(
-          "p-5 md:p-7 gap-6 md:gap-8",
+          "p-6 md:p-10 lg:p-12 gap-8 md:gap-12",
           isTop
             ? "flex flex-col"
             : cn(

@@ -25,6 +25,7 @@ export default {
 			inter: ['Inter', 'sans-serif'],
 			'public-sans': ['Public Sans', 'sans-serif'],
 			'urbanist': ['Urbanist', 'sans-serif'],
+			'fraunces': ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
 		},
 			colors: {
 				border: 'hsl(var(--border))',
