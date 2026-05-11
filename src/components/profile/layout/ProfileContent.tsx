@@ -80,7 +80,11 @@ export function ProfileContent({ profile, textColor, navigate, variant = "legacy
   return (
     <>
       {/* Left Column - Sidebar */}
-      <div ref={sidebarRef} className="lg:col-span-4 min-w-0">
+      <div
+        ref={sidebarRef}
+        className="lg:col-span-4 min-w-0"
+        data-completion-step="profile_photo basic_info title skills languages"
+      >
         <ProfileSidebar 
           userName={profile.userName}
           role={profile.role}
@@ -127,7 +131,7 @@ export function ProfileContent({ profile, textColor, navigate, variant = "legacy
           <ProfileCompletionCard />
 
           {/* About Me */}
-          <div className={cn("content-section", sectionShell)}>
+          <div className={cn("content-section", sectionShell)} data-completion-step="about_text">
             <AboutSection 
               role={profile.role}
               goal={profile.goal}
@@ -143,7 +147,7 @@ export function ProfileContent({ profile, textColor, navigate, variant = "legacy
           </div>
           
           {/* Experience */}
-          <div className={cn("content-section", sectionShell)}>
+          <div className={cn("content-section", sectionShell)} data-completion-step="experiences">
             <ExperienceSection 
               experiences={profile.experiences}
               onAddExperience={profile.addExperience}
@@ -167,7 +171,7 @@ export function ProfileContent({ profile, textColor, navigate, variant = "legacy
           </div>
           
           {/* Education */}
-          <div className={cn("content-section", sectionShell)}>
+          <div className={cn("content-section", sectionShell)} data-completion-step="education">
             <EducationSection 
               education={profile.educationItems}
               onAddEducation={profile.addEducation}
