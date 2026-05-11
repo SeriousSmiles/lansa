@@ -9,6 +9,7 @@ import { useDashboardPanel } from "./useDashboardPanel";
 import { useAuth } from "@/contexts/UnifiedAuthProvider";
 import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 import { ProfileCompletionCard } from "@/components/profile/ProfileCompletionCard";
+import { BrandImageSlot } from "./decor/BrandImageSlot";
 
 interface PortalShellProps {
   userName: string;
@@ -34,6 +35,18 @@ export function PortalShell({ userName, role, goal, insight, openAIPlan }: Porta
             {/* Zone A — Welcome (full bleed) */}
             <WelcomeStrip userName={userName} insight={insight} completeness={completeness} />
 
+            {/* SLOT 1 — Hero ribbon: humanize the greeting */}
+            <div className="mt-7">
+              <BrandImageSlot
+                aspect="wide"
+                placement="image-right"
+                tone="cream"
+                eyebrow="People of Lansa"
+                headline="Your story belongs on the shortlist."
+                body="Real people. Verified profiles. Real opportunities — built in Curaçao."
+              />
+            </div>
+
             {/* Profile completion engine — only renders when incomplete */}
             <div className="mt-6">
               <ProfileCompletionCard />
@@ -44,11 +57,33 @@ export function PortalShell({ userName, role, goal, insight, openAIPlan }: Porta
               {/* LEFT — strategic working surface */}
               <div className="lg:col-span-7 min-w-0 order-2 lg:order-1">
                 <PortalDistricts autoOpenCareer={openAIPlan} />
+
+                {/* SLOT 2 — Mid-rail editorial moment (desktop only) */}
+                <div className="mt-8">
+                  <BrandImageSlot
+                    aspect="wide"
+                    placement="image-top"
+                    tone="ink"
+                    priority="desktop-only"
+                    eyebrow="From the island"
+                    headline="Talent rooted here, recognized everywhere."
+                    body="A short editorial line goes here — a story, a testimonial, a moment that reminds the user this platform is about people."
+                  />
+                </div>
               </div>
 
               {/* RIGHT — momentum: action + signal */}
               <div className="lg:col-span-5 min-w-0 order-1 lg:order-2 space-y-8">
                 <TodaysFocus role={role} />
+
+                {/* SLOT 3 — Momentum nudge */}
+                <BrandImageSlot
+                  aspect="square"
+                  placement="image-top"
+                  tone="accent"
+                  eyebrow="Keep going"
+                  headline="One step today. One door tomorrow."
+                />
 
                 <PortalMessagesCard />
 
@@ -70,6 +105,18 @@ export function PortalShell({ userName, role, goal, insight, openAIPlan }: Porta
                   </div>
                 </section>
               </div>
+            </div>
+
+            {/* SLOT 4 — Closing brand band */}
+            <div className="mt-10">
+              <BrandImageSlot
+                aspect="wide"
+                placement="image-left"
+                tone="cream"
+                eyebrow="Built in Curaçao"
+                headline="A community-first way to be seen for who you are."
+                body="Lansa is built around real verified people — so opportunity finds substance, not noise."
+              />
             </div>
           </div>
         </main>
