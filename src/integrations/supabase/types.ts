@@ -1411,6 +1411,39 @@ export type Database = {
         }
         Relationships: []
       }
+      nudge_history: {
+        Row: {
+          email: string
+          error: string | null
+          id: string
+          resend_message_id: string | null
+          sent_at: string
+          step: number
+          template_key: string
+          user_id: string
+        }
+        Insert: {
+          email: string
+          error?: string | null
+          id?: string
+          resend_message_id?: string | null
+          sent_at?: string
+          step: number
+          template_key: string
+          user_id: string
+        }
+        Update: {
+          email?: string
+          error?: string | null
+          id?: string
+          resend_message_id?: string | null
+          sent_at?: string
+          step?: number
+          template_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       organization_audit_log: {
         Row: {
           action: string
@@ -1757,6 +1790,54 @@ export type Database = {
           title?: string
           updated_at?: string | null
           version?: string | null
+        }
+        Relationships: []
+      }
+      profile_completion_state: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          is_complete: boolean | null
+          last_nudge_sent_at: string | null
+          last_score_at: string
+          missing_steps: Json
+          nudge_paused: boolean
+          nudge_paused_until: string | null
+          nudge_sequence_step: number
+          score: number
+          updated_at: string
+          user_id: string
+          user_type: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          is_complete?: boolean | null
+          last_nudge_sent_at?: string | null
+          last_score_at?: string
+          missing_steps?: Json
+          nudge_paused?: boolean
+          nudge_paused_until?: string | null
+          nudge_sequence_step?: number
+          score?: number
+          updated_at?: string
+          user_id: string
+          user_type?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          is_complete?: boolean | null
+          last_nudge_sent_at?: string | null
+          last_score_at?: string
+          missing_steps?: Json
+          nudge_paused?: boolean
+          nudge_paused_until?: string | null
+          nudge_sequence_step?: number
+          score?: number
+          updated_at?: string
+          user_id?: string
+          user_type?: string | null
         }
         Relationships: []
       }
@@ -3124,6 +3205,7 @@ export type Database = {
         Returns: Json
       }
       generate_cert_verification_code: { Args: never; Returns: string }
+      get_profile_completion: { Args: { _user_id: string }; Returns: Json }
       get_users_with_auth_data: {
         Args: never
         Returns: {
@@ -3164,6 +3246,10 @@ export type Database = {
           _user_id: string
         }
         Returns: string
+      }
+      recompute_profile_completion: {
+        Args: { _user_id: string }
+        Returns: undefined
       }
       sync_last_sign_in_to_profile: {
         Args: { p_signed_in_at?: string; p_user_id: string }
