@@ -114,7 +114,7 @@ export function ProfileCompletionFunnelPanel() {
             </label>
             <Button
               size="sm"
-              variant="default"
+              variant="primary"
               className="h-7 text-xs bg-[hsl(14_90%_60%)] hover:bg-[hsl(14_90%_55%)] text-white"
               disabled={selected.size === 0 || sendNudges.isPending}
               onClick={() => sendNudges.mutate(Array.from(selected))}
