@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Pencil } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useProfileActionListener } from "@/hooks/useProfileActionListener";
 
 interface EditableUserNameProps {
   userName: string;
@@ -15,6 +16,14 @@ export function EditableUserName({
 }: EditableUserNameProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(userName);
+
+  // Deep-link from ProfileCompletionCard: enter edit mode for name.
+  useProfileActionListener("basic_info", () => {
+    if (onUpdateUserName) {
+      setEditedName(userName);
+      setIsEditing(true);
+    }
+  });
 
   const handleSave = async () => {
     if (onUpdateUserName) {
