@@ -10,6 +10,7 @@ import { toast as sonnerToast } from "sonner";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { AIActivationPrompt } from "./AIActivationPrompt";
+import { useProfileActionListener } from "@/hooks/useProfileActionListener";
 
 interface AboutMeSectionProps {
   role: string;
@@ -65,6 +66,14 @@ export function AboutMeSection({
 
   const isAIDisabled = aiUsed && displayAboutText === lastAIContent;
   
+  // Deep-link from ProfileCompletionCard: open the About editor.
+  useProfileActionListener("about_text", () => {
+    if (onUpdateAbout) {
+      setEditedAboutText(aboutText || "");
+      setIsEditingAbout(true);
+    }
+  });
+
   const handleSaveAbout = async () => {
     if (onUpdateAbout) {
       try {

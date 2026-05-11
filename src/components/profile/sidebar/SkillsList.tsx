@@ -9,6 +9,7 @@ import { AIModal } from "@/components/ai/AIModal";
 import { fetchAISuggestion } from "@/lib/aiHelpers";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useProfileActionListener } from "@/hooks/useProfileActionListener";
 
 interface SkillsListProps {
   skills: string[];
@@ -43,6 +44,11 @@ export function SkillsList({
   }, [currentSkillsString, aiUsed, lastAIContent]);
 
   const isAIDisabled = aiUsed && currentSkillsString === lastAIContent;
+
+  // Deep-link from ProfileCompletionCard: open the Add Skill input.
+  useProfileActionListener("skills", () => {
+    if (onAddSkill) setIsAdding(true);
+  });
 
   const handleAddSkill = async () => {
     if (newSkill.trim() && onAddSkill) {

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ExperienceCard } from "./experience/ExperienceCard";
 import { ExperienceForm } from "./experience/ExperienceForm";
 import { StaticExperienceCard } from "./experience/StaticExperienceCard";
+import { useProfileActionListener } from "@/hooks/useProfileActionListener";
 
 interface ExperienceItem {
   id?: string;
@@ -46,6 +47,11 @@ export function ExperienceSection({
     description: "",
     startYear: undefined,
     endYear: undefined
+  });
+
+  // Deep-link from ProfileCompletionCard: open the Add Experience form.
+  useProfileActionListener("experiences", () => {
+    if (onAddExperience) setIsAddingExperience(true);
   });
 
   const handleAddExperience = async () => {

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pencil, Check, X } from "lucide-react";
+import { useProfileActionListener } from "@/hooks/useProfileActionListener";
 
 interface EditableTitleProps {
   title: string;
@@ -13,6 +14,14 @@ interface EditableTitleProps {
 export function EditableTitle({ title, onUpdateTitle, highlightColor = "#FF6B4A" }: EditableTitleProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editingTitle, setEditingTitle] = useState(title);
+
+  // Deep-link from ProfileCompletionCard: enter edit mode for title.
+  useProfileActionListener("title", () => {
+    if (onUpdateTitle) {
+      setEditingTitle(title);
+      setIsEditing(true);
+    }
+  });
 
   const handleSave = async () => {
     if (onUpdateTitle && editingTitle.trim() !== title) {

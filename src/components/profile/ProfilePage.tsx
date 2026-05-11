@@ -13,6 +13,7 @@ import { PostOnboardingChoice } from "../onboarding/PostOnboardingChoice";
 import { usePortalMode } from "@/hooks/usePortalMode";
 import { LegacyModeToggle } from "@/components/dashboard/portal/LegacyModeToggle";
 import { ProfilePortalLayout } from "./layout/ProfilePortalLayout";
+import { ProfileActionRouter } from "./ProfileActionRouter";
 
 export function ProfilePage() {
   const { user } = useAuth();
@@ -104,6 +105,7 @@ export function ProfilePage() {
   if (portalV2) {
     return (
       <>
+        <ProfileActionRouter />
         <ProfilePortalLayout
           userName={profile.userName}
           role={profile.role}
@@ -141,6 +143,7 @@ export function ProfilePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <ProfileActionRouter />
       <ProfileLayout
         userName={profile.userName}
         role={profile.role}

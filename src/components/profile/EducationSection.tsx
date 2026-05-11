@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EducationForm } from "./education/EducationForm";
 import { EducationHeader } from "./education/EducationHeader";
 import { EducationList } from "./education/EducationList";
+import { useProfileActionListener } from "@/hooks/useProfileActionListener";
 
 interface EducationItem {
   id?: string;
@@ -36,6 +37,11 @@ export function EducationSection({
     description: "",
     startYear: undefined,
     endYear: undefined
+  });
+
+  // Deep-link from ProfileCompletionCard: open the Add Education form.
+  useProfileActionListener("education", () => {
+    if (onAddEducation) setIsAddingEducation(true);
   });
 
   const handleAddEducation = async () => {

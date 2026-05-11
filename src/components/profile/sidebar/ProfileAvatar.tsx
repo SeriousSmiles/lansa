@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { useProfileActionListener } from "@/hooks/useProfileActionListener";
 
 interface ProfileAvatarProps {
   userName: string;
@@ -28,6 +29,11 @@ export function ProfileAvatar({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Deep-link from ProfileCompletionCard: open the upload dialog.
+  useProfileActionListener("profile_photo", () => {
+    if (onUploadProfileImage) setIsUploadingImage(true);
+  });
 
   const handleFileSelect = (file: File) => {
     if (!file.type.startsWith('image/')) {
