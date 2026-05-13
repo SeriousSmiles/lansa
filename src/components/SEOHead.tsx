@@ -12,7 +12,7 @@ interface SEOHeadProps {
 
 export function SEOHead({
   title = "Lansa - AI-Powered Professional Profile Builder",
-  description = "Transform your career with Lansa's AI-powered professional profile builder. Create compelling profiles, get personalized career insights, and connect with opportunities.",
+  description = "Build a standout professional profile with Lansa's AI tools and unlock new career opportunities.",
   keywords = "professional profile, career development, AI career coach, resume builder, job search, professional networking, career insights, profile optimization",
   canonical,
   ogImage = "https://lansa.online/lovable-uploads/2bc2aac1-3d99-47c5-a884-0800b05c0f76.png",

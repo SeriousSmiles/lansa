@@ -4,6 +4,7 @@ import { ProfileLoadingState } from "@/components/profile/shared/ProfileLoadingS
 import { ProfileNotFound } from "@/components/profile/shared/ProfileNotFound";
 import { SharedProfileContainer } from "@/components/profile/shared/SharedProfileContainer";
 import { useSharedProfileData } from "@/hooks/useSharedProfileData";
+import { SEOHead } from "@/components/SEOHead";
 
 export default function SharedProfile() {
   // Get the URL parameter which could be either just userId or name-userId format
@@ -31,6 +32,16 @@ export default function SharedProfile() {
     );
   }
 
-  return <SharedProfileContainer profileData={profileData} urlParam={urlParam} />;
+  const displayName = profileData.userName?.trim() || "Professional";
+  const title = `${displayName} — Professional Profile on Lansa`;
+  const description = `View ${displayName}'s certified professional profile, skills, and experience on Lansa.`;
+  const canonical = `https://www.lansa.online/profile/share/${urlParam ?? ""}`;
+
+  return (
+    <>
+      <SEOHead title={title} description={description} canonical={canonical} />
+      <SharedProfileContainer profileData={profileData} urlParam={urlParam} />
+    </>
+  );
 }
 

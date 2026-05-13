@@ -117,6 +117,11 @@ export const Header83 = (props: Header83Props) => {
                   src={image.src}
                   alt={image.alt}
                   className="absolute inset-0 size-full object-cover"
+                  width={800}
+                  height={800}
+                  loading={index === 1 ? "eager" : "lazy"}
+                  fetchPriority={index === 1 ? "high" : "auto"}
+                  decoding="async"
                 />
               </div>
             ))}
