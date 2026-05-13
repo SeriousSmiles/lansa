@@ -36,10 +36,24 @@ export default function SharedProfile() {
   const title = `${displayName} — Professional Profile on Lansa`;
   const description = `View ${displayName}'s certified professional profile, skills, and experience on Lansa.`;
   const canonical = `https://www.lansa.online/profile/share/${urlParam ?? ""}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    url: canonical,
+    mainEntity: {
+      "@type": "Person",
+      name: displayName,
+      jobTitle: profileData.userTitle || undefined,
+      description: profileData.aboutText || undefined,
+      image: profileData.profileImage || undefined,
+      address: profileData.location || undefined,
+      knowsAbout: profileData.userSkills?.length ? profileData.userSkills : undefined,
+    },
+  };
 
   return (
     <>
-      <SEOHead title={title} description={description} canonical={canonical} />
+      <SEOHead title={title} description={description} canonical={canonical} jsonLd={jsonLd} />
       <SharedProfileContainer profileData={profileData} urlParam={urlParam} />
     </>
   );

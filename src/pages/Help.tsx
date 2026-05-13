@@ -1,5 +1,54 @@
 import { SEOHead } from "@/components/SEOHead";
 
+const helpFaqs = [
+  {
+    q: "How do I create my professional profile?",
+    a: "Sign up for a free Lansa account and complete our guided onboarding. Our AI builds a compelling profile from your experience, skills, and career goals.",
+  },
+  {
+    q: "What makes Lansa different from other career platforms?",
+    a: "Lansa uses AI to deliver personalized career insights and craft your full career story, helping you articulate your value and connect with the right opportunities.",
+  },
+  {
+    q: "How does the AI profile optimization work?",
+    a: "Our AI analyzes your background, skills, and aspirations to suggest improvements that highlight your strengths and improve visibility with employers.",
+  },
+  {
+    q: "Can I customize my profile after it's created?",
+    a: "Yes. Your profile is fully editable at any time, and the AI continues to suggest improvements as you update it.",
+  },
+  {
+    q: "How do I share my profile with employers?",
+    a: "Share a personalized link to your Lansa profile with employers, recruiters, or contacts. It showcases your professional story beyond a traditional resume.",
+  },
+  {
+    q: "What are AI career insights?",
+    a: "Personalized recommendations based on your profile, goals, and market trends to help you grow and make informed career decisions.",
+  },
+  {
+    q: "How often are insights updated?",
+    a: "Insights refresh as you engage with the platform and update your profile.",
+  },
+  {
+    q: "Is my information secure?",
+    a: "Yes. Personal information is encrypted and stored securely. We never share your data without your explicit permission.",
+  },
+  {
+    q: "Can I delete my account?",
+    a: "Yes. You can delete your account from settings at any time, permanently removing your information from our systems.",
+  },
+];
+
+const helpJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: helpFaqs.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+
 export default function Help() {
   return (
     <>
@@ -8,6 +57,7 @@ export default function Help() {
         description="Get help with Lansa's profile builder. Find answers about creating profiles, using AI insights, and growing your career."
         keywords="lansa help, career development support, profile builder guide, AI career tools help, professional profile tips"
         canonical="https://lansa.online/help"
+        jsonLd={helpJsonLd}
       />
       
       <div className="min-h-screen bg-background">
