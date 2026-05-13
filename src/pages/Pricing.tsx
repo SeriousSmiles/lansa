@@ -386,6 +386,15 @@ const Pricing = () => {
         title="Lansa Pricing — Plans for Professionals & Employers"
         description="Compare Lansa pricing for job seekers, mentors, and Caribbean employers. Transparent XCG plans built for Curaçao."
         canonical="https://www.lansa.online/pricing"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqs.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+          })),
+        }}
       />
       <LandingNavbar />
 
