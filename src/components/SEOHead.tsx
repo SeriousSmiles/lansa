@@ -8,6 +8,7 @@ interface SEOHeadProps {
   ogImage?: string;
   ogType?: string;
   noindex?: boolean;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
 export function SEOHead({
@@ -17,7 +18,8 @@ export function SEOHead({
   canonical,
   ogImage = "https://lansa.online/lovable-uploads/2bc2aac1-3d99-47c5-a884-0800b05c0f76.png",
   ogType = "website",
-  noindex = false
+  noindex = false,
+  jsonLd,
 }: SEOHeadProps) {
   
   useEffect(() => {
@@ -66,8 +68,24 @@ export function SEOHead({
       document.head.appendChild(canonicalLink);
     }
     canonicalLink.setAttribute('href', canonical || window.location.href);
-    
-  }, [title, description, keywords, canonical, ogImage, ogType, noindex]);
+
+    // Inject/replace per-page JSON-LD structured data
+    const SCRIPT_ID = 'seohead-jsonld';
+    const existing = document.getElementById(SCRIPT_ID);
+    if (existing) existing.remove();
+    if (jsonLd) {
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.id = SCRIPT_ID;
+      script.text = JSON.stringify(jsonLd);
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      const node = document.getElementById(SCRIPT_ID);
+      if (node) node.remove();
+    };
+  }, [title, description, keywords, canonical, ogImage, ogType, noindex, jsonLd]);
 
   return null;
 }
