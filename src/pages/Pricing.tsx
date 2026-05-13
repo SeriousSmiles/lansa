@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { LandingNavbar } from "@/components/landing/LandingNavbar";
 import { LandingFooter } from "@/components/landing/LandingFooter";
+import { SEOHead } from "@/components/SEOHead";
 import {
   Table,
   TableBody,
@@ -381,6 +382,11 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Lansa Pricing — Plans for Professionals & Employers"
+        description="Compare Lansa pricing for job seekers, mentors, and Caribbean employers. Transparent XCG plans built for Curaçao."
+        canonical="https://www.lansa.online/pricing"
+      />
       <LandingNavbar />
 
       {/* Hero */}

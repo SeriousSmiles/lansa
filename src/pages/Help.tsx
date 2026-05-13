@@ -5,7 +5,7 @@ export default function Help() {
     <>
       <SEOHead
         title="Help & Support - Lansa Career Development Platform"
-        description="Get help with Lansa's professional profile builder. Find answers to common questions about creating profiles, using AI insights, and maximizing your career development."
+        description="Get help with Lansa's profile builder. Find answers about creating profiles, using AI insights, and growing your career."
         keywords="lansa help, career development support, profile builder guide, AI career tools help, professional profile tips"
         canonical="https://lansa.online/help"
       />
