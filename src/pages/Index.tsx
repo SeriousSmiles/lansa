@@ -2,10 +2,14 @@ import { useNavigate } from "react-router-dom";
 import { Header83 } from "@/components/hero/Header83";
 import { SEOHead } from "@/components/SEOHead";
 import { LandingNavbar } from "@/components/landing/LandingNavbar";
-import { CaribbeanSection } from "@/components/landing/CaribbeanSection";
-import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
-import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
-import { CTASection } from "@/components/landing/CTASection";
+import { TrustStrip } from "@/components/landing/TrustStrip";
+import { ProblemPromiseSection } from "@/components/landing/ProblemPromiseSection";
+import { TransformationSection } from "@/components/landing/TransformationSection";
+import { CapabilitiesSection } from "@/components/landing/CapabilitiesSection";
+import { QuoteTestimonials } from "@/components/landing/QuoteTestimonials";
+import { CompaniesSoonSection } from "@/components/landing/CompaniesSoonSection";
+import { LeadMagnetTeaser } from "@/components/landing/LeadMagnetTeaser";
+import { FinalCTASection } from "@/components/landing/FinalCTASection";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 
 import homepage1 from "@/assets/homepage-1.png";
@@ -61,10 +65,14 @@ export default function IndexPage() {
           { src: homepage9, alt: "Professional opportunities" },
         ]}
       />
-      <CaribbeanSection />
-      <HowItWorksSection />
-      <TestimonialsSection />
-      <CTASection />
+      <TrustStrip />
+      <ProblemPromiseSection />
+      <TransformationSection />
+      <CapabilitiesSection />
+      <QuoteTestimonials />
+      <CompaniesSoonSection />
+      <LeadMagnetTeaser />
+      <FinalCTASection />
       <LandingFooter />
     </>
   );
