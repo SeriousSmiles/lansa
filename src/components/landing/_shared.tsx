@@ -70,8 +70,8 @@ export const Display = ({
 }) => (
   <h2
     className={cn(
-      "font-urbanist font-black tracking-[-0.02em] leading-[0.82]",
-      "text-[44px] sm:text-[56px] md:text-[72px] lg:text-[88px]",
+      "font-urbanist font-black tracking-[-0.02em] leading-[0.92]",
+      "text-[44px] sm:text-[56px] md:text-[80px]",
       className
     )}
   >
