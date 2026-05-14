@@ -3,13 +3,13 @@ import { Header83 } from "@/components/hero/Header83";
 import { SEOHead } from "@/components/SEOHead";
 import { LandingNavbar } from "@/components/landing/LandingNavbar";
 import { TrustStrip } from "@/components/landing/TrustStrip";
-import { ProblemPromiseSection } from "@/components/landing/ProblemPromiseSection";
-import { TransformationSection } from "@/components/landing/TransformationSection";
-import { CapabilitiesSection } from "@/components/landing/CapabilitiesSection";
-import { QuoteTestimonials } from "@/components/landing/QuoteTestimonials";
-import { CompaniesSoonSection } from "@/components/landing/CompaniesSoonSection";
+import { ValuePropBand } from "@/components/landing/ValuePropBand";
+import { HowItWorksChapters } from "@/components/landing/HowItWorksChapters";
+import { CapabilitiesBand } from "@/components/landing/CapabilitiesBand";
+import { TestimonialBand } from "@/components/landing/TestimonialBand";
+import { CompaniesSoonBand } from "@/components/landing/CompaniesSoonBand";
 import { LeadMagnetTeaser } from "@/components/landing/LeadMagnetTeaser";
-import { FinalCTASection } from "@/components/landing/FinalCTASection";
+import { FinalCTABand } from "@/components/landing/FinalCTABand";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 
 import homepage1 from "@/assets/homepage-1.png";
@@ -66,13 +66,13 @@ export default function IndexPage() {
         ]}
       />
       <TrustStrip />
-      <ProblemPromiseSection />
-      <TransformationSection />
-      <CapabilitiesSection />
-      <QuoteTestimonials />
-      <CompaniesSoonSection />
+      <ValuePropBand />
+      <HowItWorksChapters />
+      <CapabilitiesBand />
+      <TestimonialBand />
+      <CompaniesSoonBand />
       <LeadMagnetTeaser />
-      <FinalCTASection />
+      <FinalCTABand />
       <LandingFooter />
     </>
   );

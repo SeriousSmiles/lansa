@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Band, Display, Eyebrow, Lede, ImageFrame } from "./_shared";
 import p2 from "@/assets/landing/people/p2-cafe-laptop.jpg";
 import p3 from "@/assets/landing/people/p3-desk-certificate.jpg";
-import p4 from "@/assets/landing/people/p4-videocall.jpg">
+import p4 from "@/assets/landing/people/p4-videocall.jpg";
 
 const STEPS = [
   {
