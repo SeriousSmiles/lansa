@@ -29,7 +29,7 @@ export const FinalCTABand = () => {
             Your next move
           </p>
           <h2 className="font-urbanist font-black tracking-[-0.02em] leading-[0.92] text-[44px] sm:text-[56px] md:text-[80px]">
-            Bo ta lista?
+            Bo ta riba e lista?
             <br />
             <span className="text-primary">Let's go.</span>
           </h2>
