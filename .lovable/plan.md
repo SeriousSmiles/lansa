@@ -1,84 +1,93 @@
-## Home Page Redesign Plan
+## Goal
 
-The hero (`Header83`) stays exactly as-is. Everything below it gets rebuilt as a modern SaaS narrative aimed at **opportunity seekers**, with the warm, human, cut-out visual language from the attached Lansa social posts (orange tee guy, beige bg, blue/orange typographic accents).
+Replace the current "campaign cut-out" landing approach with a Cashea + Klarna inspired layout system that uses a consistent story of realistic, happy people on phones/laptops. Hero stays untouched. Lansa branding (orange, deep blue, Urbanist + Public Sans) is preserved; layout/execution is reimagined freely.
 
-### Design language (applies to all new sections)
+## Design direction (inspired by cashea.app + klarna.com)
 
-- **Background:** warm off-white `hsl(40 33% 96%)` (matches campaign cream) with subtle paper texture, alternating with deep blue `#191f71` blocks for rhythm.
-- **Type:** Urbanist Black/ExtraBold display, Public Sans body. Mix oversized blue display words with small caption-style labels (campaign style).
-- **Imagery:** PNG cut-outs of people (no frames, no rounded image cards). Figures break the container — content stays in a `max-w-[1200px]` container, but hero PNGs extend full-bleed and overlap text edges.
-- **Accents:** sketchy blue/orange "speech-bubble" SVG shapes echoing the campaign meme posts, used sparingly as section ornaments.
-- **Motion stack:** GSAP + ScrollTrigger (already in project) for scroll-bound choreography (pinning, parallax, SplitText reveals, marquee). Framer Motion for component-level hover/tap. No new animation library — avoids conflict with existing GSAP. All scroll triggers cleaned up in `useLayoutEffect` returns; `gsap.context()` scoped per section to prevent leaks.
+- **Big saturated color blocks** (Cashea): each section is a full-bleed band — warm off-white, deep blue `#191f71`, orange `hsl(14 90% 60%)`, soft cream — stacked like chapters.
+- **Oversized black/white display headlines** with short, punchy copy (Cashea Spanish-style hierarchy → Papiamentu + English).
+- **Hero-of-the-section product/people imagery** (Klarna): a single confident hero image per band — person holding a phone showing a Lansa screen, or sitting at a laptop — bleeding to the edge, never inside a rounded card.
+- **Pill CTAs** (Klarna): solid black or solid orange, fully rounded, generous padding.
+- **Tiny eyebrow label** above each headline (e.g. "FOR PROFESSIONALS", "GET CERTIFIED").
+- **No more sketchy speech bubbles, no GSAP pinning, no parallax cut-outs.** Calm, editorial, scroll-stacked.
 
-### New page structure (replaces everything after `Header83`)
+## Image system (the core ask)
+
+Generate 8 realistic photos via the premium image model with consistent treatment:
+- **Subjects:** different happy young Caribbean professionals (mix of genders, skin tones, 22–32) — never the same person twice, but same emotional register.
+- **Props:** smartphone in hand OR sitting at a laptop. Half studio (clean cream/blue seamless backdrop), half lifestyle (soft daylight, café/desk/outdoor).
+- **Lighting:** natural, soft, even — no harsh shadows, no moody color grading, no "AI gradient glow."
+- **Wardrobe:** modern casual (knit, denim, blazer) — colors that sit next to orange/deep-blue without clashing.
+- **Framing:** mostly 3:4 or 4:5 portrait for section heroes, one 16:9 for the final CTA band.
+
+Saved to `src/assets/landing/people/` and replacing the current campaign-* assets, which get deleted.
+
+Shot list:
+1. Woman on couch smiling at phone — studio cream backdrop (Problem→Promise band)
+2. Man at laptop in bright café, looking up confidently (Transformation step 1)
+3. Woman at desk with phone, certificate visible on screen (Transformation step 2 — certified)
+4. Man shaking hands / on video call on laptop (Transformation step 3 — discovered)
+5. Close-up hands holding phone with Lansa app mock (Capabilities hero, Klarna-style)
+6. Group of two friends laughing at a phone, outdoor daylight (Testimonials)
+7. Woman in blazer at laptop, focused (Companies / Get Listed Early band)
+8. Hero portrait, person mid-laugh, deep-blue seamless backdrop (Final CTA, 16:9)
+
+## New page structure (Index, below Header83)
 
 ```text
-[Header83 — untouched]
-1. Social Proof Strip      (logos / "soon" placeholder marquee)
-2. Problem → Promise        (cut-out: confused guy / thumbs-up guy)
-3. The Lansa Transformation (3-step scroll-pinned story)
-4. Capabilities Showcase    (interactive feature cards w/ hover video-style reveal)
-5. Outcome Proof            (testimonials reimagined, quote-poster style)
-6. Companies Section        ("Soon revealed" + Get Listed Early CTA)
-7. Lead Magnet Teaser slot  (placeholder section, copy TBD later)
-8. Final CTA + Footer
+[ Header83 hero — UNCHANGED ]
+
+1. Trust strip                      cream band, small caps marquee (kept, restyled)
+2. Value prop band                  WHITE — oversized headline left, photo #1 right (Klarna split)
+3. How Lansa works                  CREAM — 3 stacked full-bleed rows, alternating image side
+                                    (photos #2, #3, #4) — Cashea "chapters" feel
+4. Capabilities                     DEEP BLUE band — big white headline, 2x2 feature tiles,
+                                    photo #5 anchoring left column
+5. Outcome / testimonials           WHITE — single large quote, photo #6 right, small logo row
+6. Companies "soon" + Get Listed    ORANGE band — black headline, photo #7, pill CTA → /for-business
+7. Lead magnet teaser               CREAM — "Know your worth" placeholder card, no image
+8. Final CTA                        DEEP BLUE full-bleed — photo #8 as background with dark
+                                    overlay, centered Papiamentu headline + pill CTAs
+[ LandingFooter ]
 ```
 
-### Section details
+All bands are full-bleed `w-screen`, content capped at `max-w-[1200px]` inside. Mobile: single column, image stacks above headline, same band colors.
 
-**1. Trust strip** — thin band under hero, GSAP horizontal marquee. Today shows "Trusted by Caribbean talent across 12+ industries" + 5–6 muted industry icons. Built so it can swap to real partner logos later without layout change.
+## Other pages to align (light pass, same system)
 
-**2. Problem → Promise** — split layout, container-width text, but the orange-tee "confused" PNG bleeds off the left edge full-bleed; on scroll a sketchy orange speech bubble draws in (GSAP `drawSVG`-style with `strokeDashoffset`). Right column: short "Realidat vs Ekspektashon" headline pair, then a single sentence promise. On scroll-out, "thumbs-up" PNG slides in from the right replacing the confused one (cross-fade + y-translate).
+- **Pricing.tsx** — hero band (cream, big headline, photo of person at laptop reusing #2), pricing cards on white, FAQ on cream.
+- **ForBusiness.tsx** — deep-blue hero band, photo #7 right, Cashea-style alternating chapters for "Post a role / Browse certified / Hire."
+- **Help.tsx** — cream hero with one friendly portrait, FAQ accordion below on white.
 
-**3. The Transformation** — pinned section (`ScrollTrigger.pin`), 3 steps revealed sequentially: *Build your profile → Get certified → Get discovered*. Each step pairs a large numeral (display Urbanist Black, 12rem) with a cut-out figure breaking the container and a one-line capability description tied to a real in-app feature (Profile Builder, Certification Exam, Employer Discovery feed).
+Hero on Index and any other page-specific hero components are untouched.
 
-**4. Capabilities Showcase** — 4 large feature cards, container-width grid (2x2 desktop, stacked mobile). Each card has a static screenshot of the actual app surface (Profile / Resume editor / Certification / Discovery). On hover (desktop only): card lifts, screenshot subtly parallaxes, an accent sweep crosses the card (Framer Motion `whileHover`). Inspired by the NexGen reference — clean white cards on cream, oversized labels, single accent color per card (orange / blue / deep blue / sand).
+## Files
 
-**5. Outcome Proof** — reimagined testimonials as quote-posters matching the campaign style: huge blue display quote with orange offset shadow ("Bo no ta pèrdí."), small attribution underneath, cut-out portrait floating bottom-right. Horizontal scroll-snap on mobile, 3-up grid on desktop.
+**New components** (replace existing landing/* below hero):
+- `src/components/landing/ValuePropBand.tsx`
+- `src/components/landing/HowItWorksChapters.tsx`
+- `src/components/landing/CapabilitiesBand.tsx` (replaces CapabilitiesSection)
+- `src/components/landing/TestimonialBand.tsx` (replaces QuoteTestimonials)
+- `src/components/landing/CompaniesSoonBand.tsx` (replaces CompaniesSoonSection)
+- `src/components/landing/FinalCTABand.tsx` (replaces FinalCTASection)
+- Keep & restyle: `TrustStrip.tsx`, `LeadMagnetTeaser.tsx`
 
-**6. Companies "Soon" + Get Listed Early** — full-bleed deep-blue band (`#191f71`). Left: oversized "Companies are coming." headline with an animated blurred/redacted strip across logo placeholders (GSAP shimmer). Right: short pitch + primary CTA **"Get listed early"** → `/for-business`. Secondary line: "Be among the first 25 employers on Lansa."
+**Delete:** `ProblemPromiseSection.tsx`, `TransformationSection.tsx`, old `CapabilitiesSection.tsx`, `QuoteTestimonials.tsx`, `CompaniesSoonSection.tsx`, `FinalCTASection.tsx`, and the three `campaign-*.{png,jpg}` assets.
 
-**7. Lead Magnet Teaser** — reserved section with placeholder copy ("Coming soon: a free tool to know your worth in the Curaçao market"). Built as a self-contained component so we can swap in the real lead magnet later without touching the page shell.
+**Modified:** `src/pages/Index.tsx`, `src/pages/Pricing.tsx`, `src/pages/ForBusiness.tsx`, `src/pages/Help.tsx`.
 
-**8. Final CTA** — single oversized statement ("Bo ta buskando bo kaminda. Lansa ta yuda.") with Get Started + Sign In, on cream with cut-out figure breaking bottom edge into the footer.
+**Generated assets:** 8 images in `src/assets/landing/people/` via `imagegen--generate_image` model `premium` (best realism for people).
 
-### Technical details
+## Technical notes
 
-- New components under `src/components/landing/`:
-  - `TrustStrip.tsx`
-  - `ProblemPromiseSection.tsx`
-  - `TransformationSection.tsx` (GSAP pinned)
-  - `CapabilitiesSection.tsx`
-  - `QuoteTestimonials.tsx` (replaces current `TestimonialsSection` usage on home; old file kept untouched in case used elsewhere — will verify with rg before removing imports)
-  - `CompaniesSoonSection.tsx`
-  - `LeadMagnetTeaser.tsx`
-  - `FinalCTASection.tsx`
-- `Index.tsx` updated to compose the new sections; `Header83` block left byte-identical.
-- Cut-out PNGs (orange-tee guy variants) copied from the uploaded campaign assets into `src/assets/landing/` and imported as ES modules. I'll background-remove if needed via existing image tooling.
-- All colors via existing semantic tokens in `index.css` / `tailwind.config.ts`. No raw hex in components except the established `#191f71` token.
-- Container rule respected: page content wrapped in `max-w-[1200px] mx-auto px-6`, but figure PNGs use absolute positioning + negative margins to break out, while their parent stays `overflow-hidden` to avoid horizontal scroll (per Dashboard Overflow Fix memory — `min-w-0` on grid children).
-- GSAP usage pattern, per section:
-  ```ts
-  useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from('[data-reveal]', { y: 40, opacity: 0, stagger: 0.08,
-        scrollTrigger: { trigger: ref.current, start: 'top 75%' } });
-    }, ref);
-    return () => ctx.revert();
-  }, []);
-  ```
-  Ensures no orphan ScrollTriggers, plays nice with Header83's existing Framer scroll listener.
-- Mobile (per Lansa doctrine): pinning disabled below `md`, parallax reduced, cut-outs become inline (no container break) to avoid horizontal overflow. One primary action per screen, 44px+ tap targets.
-- SEO: `SEOHead` on Index already in place — unchanged. Each new section uses semantic `<section>` + single `<h2>`; existing single `<h1>` in hero preserved.
+- No GSAP pins, no scroll-trigger parallax. Use Framer Motion only for simple `whileInView` fade/slide-up on headlines and images.
+- Section component pattern: `<section class="w-screen bg-[token]"><div class="mx-auto max-w-[1200px] px-6 md:px-10 py-24 md:py-32 grid md:grid-cols-2 gap-12 items-center">…</div></section>`.
+- Pill CTA utility: `rounded-full px-7 py-4 text-base font-semibold` in `bg-foreground text-background` or `bg-primary text-white`.
+- Eyebrow label: `text-xs uppercase tracking-[0.2em] font-semibold text-primary`.
+- All colors via existing semantic tokens — no raw hex in components.
 
-### Out of scope (this round)
+## Open questions
 
-- Lead magnet logic/tool itself — only the teaser slot is built now.
-- For Business / Pricing pages.
-- Replacing real company logos (section ships in "soon" state by design).
-
-### Open questions before I build
-
-1. The "Companies coming soon" CTA — should clicking **Get listed early** go to `/for-business` (existing page) or open a lightweight email-capture modal? Pricing page exists too.
-2. For the Capabilities section, are you OK with me capturing screenshots of the existing in-app surfaces (Profile, Resume editor, Certification, Discovery) and using them as static images, or would you prefer stylized illustrations?
-3. The campaign quotes use Papiamentu ("Bo no ta pèrdí", "Mi ta bai hanja trabou awe"). Want the testimonials/final CTA bilingual (Papiamentu headline + English subline), or English only?
+1. Image scope now: generate all 8 in this build, or start with the 5 used on Index and add Pricing/ForBusiness/Help photos in a follow-up?
+2. Photo casting — explicitly Caribbean / Curaçao representation (mixed Afro-Caribbean + Latino), or broader "global young professional" look?
+3. Pricing/ForBusiness/Help — do the layout pass in this same build, or Index-only first and align the others next round?
