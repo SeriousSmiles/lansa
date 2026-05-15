@@ -85,7 +85,7 @@ export function PortalRail({ unreadNotifications = 0 }: PortalRailProps) {
     {
       label: "Visibility",
       items: [
-        { label: "Profile", icon: UserIcon, panel: "profile" },
+        { label: "Profile", icon: UserIcon, href: "/profile" },
         { label: "Certification", icon: ShieldCheck, href: "/certification" },
         { label: "Insights", icon: Eye, panel: "insights" },
       ],
