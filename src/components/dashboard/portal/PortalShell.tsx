@@ -13,6 +13,7 @@ import { BrandImageSlot } from "./decor/BrandImageSlot";
 import dashboardHero from "@/assets/dashboard/lansa-dashboard-hero.png";
 import dashboardMomentum from "@/assets/dashboard/lansa-dashboard-momentum.jpg";
 import dashboardEditorial from "@/assets/dashboard/lansa-dashboard-editorial.png";
+import dashboardCommunity from "@/assets/dashboard/lansa-dashboard-community.png";
 
 interface PortalShellProps {
   userName: string;
@@ -125,6 +126,8 @@ export function PortalShell({ userName, role, goal, insight, openAIPlan }: Porta
                 eyebrow="Built in Curaçao"
                 headline="A community-first way to be seen for who you are."
                 body="Lansa is built around real verified people — so opportunity finds substance, not noise."
+                src={dashboardCommunity}
+                alt="Lansa community gathered in a Curaçao café"
               />
             </div>
           </div>
