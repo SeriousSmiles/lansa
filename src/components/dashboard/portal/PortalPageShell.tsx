@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { PortalRail } from "./PortalRail";
 import { PortalContextPanel } from "./PortalContextPanel";
-import { LegacyModeToggle } from "./LegacyModeToggle";
 import { cn } from "@/lib/utils";
 
 interface PortalPageShellProps {
@@ -22,8 +21,6 @@ interface PortalPageShellProps {
   /** Optional right-side context (Profile/AI/Activity) for legacy passing — defaults provided by PortalContextPanel. */
   contextRole?: string;
   contextGoal?: string;
-  /** When true, the floating LegacyModeToggle pill is rendered. Default true. */
-  showLegacyToggle?: boolean;
   className?: string;
   children: ReactNode;
 }
@@ -45,7 +42,6 @@ export function PortalPageShell({
   tightTop = false,
   contextRole = "Professional",
   contextGoal = "Career growth",
-  showLegacyToggle = true,
   className,
   children,
 }: PortalPageShellProps) {
@@ -90,7 +86,6 @@ export function PortalPageShell({
       </div>
 
       <PortalContextPanel role={contextRole} goal={contextGoal} />
-      {showLegacyToggle && <LegacyModeToggle />}
     </div>
   );
 }
