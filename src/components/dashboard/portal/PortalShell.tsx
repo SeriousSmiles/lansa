@@ -12,6 +12,7 @@ import { ProfileCompletionCard } from "@/components/profile/ProfileCompletionCar
 import { BrandImageSlot } from "./decor/BrandImageSlot";
 import dashboardHero from "@/assets/dashboard/lansa-dashboard-hero.png";
 import dashboardMomentum from "@/assets/dashboard/lansa-dashboard-momentum.jpg";
+import dashboardEditorial from "@/assets/dashboard/lansa-dashboard-editorial.png";
 
 interface PortalShellProps {
   userName: string;
@@ -72,6 +73,8 @@ export function PortalShell({ userName, role, goal, insight, openAIPlan }: Porta
                     eyebrow="From the island"
                     headline="Talent rooted here, recognized everywhere."
                     body="A short editorial line goes here — a story, a testimonial, a moment that reminds the user this platform is about people."
+                    src={dashboardEditorial}
+                    alt="Young professional working from her room in Curaçao"
                   />
                 </div>
               </div>
