@@ -14,7 +14,7 @@ export const TestimonialBand = () => {
           className="md:col-span-7"
         >
           <Eyebrow>Real stories</Eyebrow>
-          <blockquote className="font-urbanist font-black text-[36px] md:text-[56px] leading-[1.02] tracking-[-0.02em] text-[#191f71]">
+          <blockquote className="font-urbanist md:text-[56px] leading-[1.02] tracking-[-0.02em] text-[#191f71] font-medium text-6xl">
             <span className="text-primary">"</span>I made my Lansa profile on a
             Sunday. By Wednesday a hotel group reached out. I didn't even know
             they were hiring.<span className="text-primary">"</span>

@@ -28,7 +28,7 @@ export const FinalCTABand = () => {
           <p className="text-[11px] md:text-xs uppercase tracking-[0.22em] font-urbanist font-bold text-primary mb-5">
             Your next move
           </p>
-          <h2 className="font-urbanist font-black tracking-[-0.02em] text-[44px]/[0.85] sm:text-[56px]/[0.85] md:text-[80px]/[0.85]">
+          <h2 className="font-urbanist font-black tracking-[-0.02em] sm:text-[56px]/[0.85] md:text-[80px]/[0.85] text-7xl">
             Bo ta ribe lista?
             <br />
             <span className="text-primary">Let's go.</span>
