@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/UnifiedAuthProvider";
 import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 import { ProfileCompletionCard } from "@/components/profile/ProfileCompletionCard";
 import { BrandImageSlot } from "./decor/BrandImageSlot";
+import dashboardHero from "@/assets/dashboard/lansa-dashboard-hero.png";
 
 interface PortalShellProps {
   userName: string;
@@ -44,6 +45,8 @@ export function PortalShell({ userName, role, goal, insight, openAIPlan }: Porta
                 eyebrow="People of Lansa"
                 headline="Your story belongs on the shortlist."
                 body="Real people. Verified profiles. Real opportunities — built in Curaçao."
+                src={dashboardHero}
+                alt="The more you, the more you are — Lansa"
               />
             </div>
 
