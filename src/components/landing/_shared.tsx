@@ -70,7 +70,7 @@ export const Display = ({
 }) => (
   <h2
     className={cn(
-      "font-urbanist font-black tracking-[-0.02em]",
+      "font-urbanist font-black tracking-[-0.02em] text-[#191f71]",
       // line-height bundled with each size so tailwind-merge can't strip it
       "text-[44px]/[0.85] sm:text-[56px]/[0.85] md:text-[80px]/[0.85]",
       className

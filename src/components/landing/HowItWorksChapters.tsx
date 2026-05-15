@@ -85,7 +85,7 @@ export const HowItWorksChapters = () => {
                 </span>
                 <Eyebrow>{step.eyebrow}</Eyebrow>
               </div>
-              <h3 className="font-urbanist font-black text-[36px] md:text-[56px] leading-[0.95] tracking-[-0.02em]">
+              <h3 className="font-urbanist font-black text-[36px] md:text-[56px] leading-[0.95] tracking-[-0.02em] text-[#191f71]">
                 {step.title}
               </h3>
               <Lede className="mt-5 max-w-xl text-[#0d0d0d]/70">
