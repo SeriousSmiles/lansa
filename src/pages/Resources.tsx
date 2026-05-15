@@ -1,10 +1,7 @@
-import { useAuth } from "@/contexts/AuthContext";
 import { BookOpen } from "lucide-react";
 import { PortalPageShell } from "@/components/dashboard/portal/PortalPageShell";
 
 export default function Resources() {
-  const { user } = useAuth();
-
   return (
     <PortalPageShell
       eyebrow="Library"
