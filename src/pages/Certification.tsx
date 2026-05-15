@@ -49,11 +49,7 @@ export default function Certification() {
   }
 
   return (
-    <PortalPageShell
-      eyebrow="Visibility"
-      title="Certification"
-      subtitle="Earn the Lansa certification to unlock employer visibility and verified status."
-    >
+    <PortalPageShell tightTop>
       <CertificationDashboard userId={userId!} />
     </PortalPageShell>
   );
