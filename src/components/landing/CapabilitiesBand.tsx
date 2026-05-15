@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { FileText, ScrollText, BadgeCheck, Search, type LucideIcon } from "lucide-react";
 import { Band, Eyebrow } from "./_shared";
-import photo from "@/assets/landing/people/p5-hands-phone.jpg";
+ import photo from "@/assets/landing/people/ddbd09a7-ec4b-4dc1-a3b6-72d61f5c0485.png";
 
 type Tile = {
   icon: LucideIcon;
