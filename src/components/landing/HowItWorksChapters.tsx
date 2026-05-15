@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Band, Display, Eyebrow, Lede, ImageFrame } from "./_shared";
  import p2 from "@/assets/landing/people/682412e5-77e7-4c44-bb29-63e958232ed9.png";
-import p3 from "@/assets/landing/people/p3-desk-certificate.jpg";
+import p3 from "@/assets/landing/people/46372876-6df1-407a-8bf2-2d2a6daeeade.png";
 import p4 from "@/assets/landing/people/p4-videocall.jpg";
 
 const STEPS = [
