@@ -1,7 +1,6 @@
 
-// import { RecommendedActions } from "./RecommendedActions";
 import { GrowthCardSection } from "./GrowthCardSection";
-import { StudentAnalyticsCard } from "./StudentAnalyticsCard";
+import { SeekerSnapshotCard } from "./SeekerSnapshotCard";
 // import { HireRateProgress } from "../HireRateProgress";
 import { CertificationCard } from "./CertificationCard";
 import { WhoIsInterestedSection } from "@/components/dashboard/WhoIsInterestedSection";
@@ -33,7 +32,7 @@ export function OverviewTab({ userName, role, goal, insight, highlightActions, i
       {/* Analytics and Certification + Who's Interested — masonry grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 min-w-0">
         <div className="lg:col-span-2 h-full min-w-0">
-          <StudentAnalyticsCard />
+          <SeekerSnapshotCard />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-4">
           <CertificationCard />
