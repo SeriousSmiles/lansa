@@ -72,32 +72,48 @@ const businessComparison: CompRow[] = [
   { feature: "Dedicated Support", included: true },
 ];
 
-const faqs = [
+type Audience = "pro" | "biz" | "both";
+
+interface Faq { q: string; a: string; audience: Audience; }
+
+const faqs: Faq[] = [
   {
+    audience: "pro",
     q: "Is Lansa really free for professionals?",
     a: "Yes. Creating your profile, generating your CV, discovering jobs, and messaging are all completely free. The only cost is XCG 25 per certification exam, which includes 2 attempts. Certification is what gets you in front of employers — it's the gateway to opportunity.",
   },
   {
+    audience: "both",
     q: "What is XCG?",
     a: "XCG stands for Caribbean Guilder (also known as ANG — Antilliaanse Gulden), the official currency of Curaçao and Sint Maarten. All Lansa pricing is displayed in XCG.",
   },
   {
+    audience: "biz",
     q: "How does the business commitment model work?",
     a: "Employers choose a commitment period: 3, 6, or 12 months. The longer the commitment, the lower the monthly rate. All plans include the full feature set — unlimited swipes, AI summaries, analytics, and more.",
   },
   {
+    audience: "biz",
     q: "Is there a free plan for employers?",
     a: "There is no free tier for employers. However, we're currently in open beta and offering select pilot companies free access for a limited time. Contact us to learn if you qualify.",
   },
   {
+    audience: "both",
     q: "What does 'Lansa Certified' mean?",
     a: "Lansa Certified means a candidate has passed one or more industry-specific exams on our platform. It gives employers confidence that the person has verified, practical skills.",
   },
   {
+    audience: "biz",
     q: "Can I cancel my business subscription?",
     a: "Your subscription runs for the duration of your chosen commitment period (3, 6, or 12 months). You can choose not to renew at the end of your term. No auto-renewal surprises.",
   },
 ];
+
+const AUDIENCE_META: Record<Audience, { label: string; className: string }> = {
+  pro: { label: "For professionals", className: "bg-[#191f71] text-white" },
+  biz: { label: "For employers", className: "bg-primary text-white" },
+  both: { label: "For everyone", className: "bg-[#0d0d0d] text-white" },
+};
 
 /* ───── Helpers ───── */
 
