@@ -72,32 +72,48 @@ const businessComparison: CompRow[] = [
   { feature: "Dedicated Support", included: true },
 ];
 
-const faqs = [
+type Audience = "pro" | "biz" | "both";
+
+interface Faq { q: string; a: string; audience: Audience; }
+
+const faqs: Faq[] = [
   {
+    audience: "pro",
     q: "Is Lansa really free for professionals?",
     a: "Yes. Creating your profile, generating your CV, discovering jobs, and messaging are all completely free. The only cost is XCG 25 per certification exam, which includes 2 attempts. Certification is what gets you in front of employers — it's the gateway to opportunity.",
   },
   {
+    audience: "both",
     q: "What is XCG?",
     a: "XCG stands for Caribbean Guilder (also known as ANG — Antilliaanse Gulden), the official currency of Curaçao and Sint Maarten. All Lansa pricing is displayed in XCG.",
   },
   {
+    audience: "biz",
     q: "How does the business commitment model work?",
     a: "Employers choose a commitment period: 3, 6, or 12 months. The longer the commitment, the lower the monthly rate. All plans include the full feature set — unlimited swipes, AI summaries, analytics, and more.",
   },
   {
+    audience: "biz",
     q: "Is there a free plan for employers?",
     a: "There is no free tier for employers. However, we're currently in open beta and offering select pilot companies free access for a limited time. Contact us to learn if you qualify.",
   },
   {
+    audience: "both",
     q: "What does 'Lansa Certified' mean?",
     a: "Lansa Certified means a candidate has passed one or more industry-specific exams on our platform. It gives employers confidence that the person has verified, practical skills.",
   },
   {
+    audience: "biz",
     q: "Can I cancel my business subscription?",
     a: "Your subscription runs for the duration of your chosen commitment period (3, 6, or 12 months). You can choose not to renew at the end of your term. No auto-renewal surprises.",
   },
 ];
+
+const AUDIENCE_META: Record<Audience, { label: string; className: string }> = {
+  pro: { label: "For professionals", className: "bg-[#191f71] text-white" },
+  biz: { label: "For employers", className: "bg-primary text-white" },
+  both: { label: "For everyone", className: "bg-[#0d0d0d] text-white" },
+};
 
 /* ───── Helpers ───── */
 
@@ -270,7 +286,12 @@ const BusinessCard = ({ onAction }: { onAction: () => void }) => {
 const Pricing = () => {
   const navigate = useNavigate();
   const [view, setView] = useState<"pro" | "biz">("pro");
+  const [faqFilter, setFaqFilter] = useState<"all" | "pro" | "biz">("all");
   const rows = view === "pro" ? professionalComparison : businessComparison;
+  const filteredFaqs =
+    faqFilter === "all"
+      ? faqs
+      : faqs.filter((f) => f.audience === faqFilter || f.audience === "both");
 
   return (
     <div className="min-h-screen bg-[hsl(40_33%_96%)]">
@@ -415,16 +436,51 @@ const Pricing = () => {
           <Display className="text-[36px]/[0.95] sm:text-[48px]/[0.95] md:text-[64px]/[0.95]">
             Frequently asked.
           </Display>
+          <Lede className="mt-5 max-w-xl text-[#0d0d0d]/70">
+            Filter by audience — each question is tagged so you can find what's
+            relevant to you.
+          </Lede>
 
-          <Accordion type="single" collapsible className="mt-12 space-y-3">
-            {faqs.map((faq, i) => (
+          {/* Audience filter */}
+          <div className="mt-8 inline-flex flex-wrap gap-2 rounded-full border border-[#191f71]/15 bg-white p-1.5">
+            {([
+              { key: "all", label: "All questions" },
+              { key: "pro", label: "For professionals" },
+              { key: "biz", label: "For employers" },
+            ] as const).map((opt) => {
+              const active = faqFilter === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => setFaqFilter(opt.key)}
+                  className={`rounded-full px-5 py-2.5 font-urbanist font-semibold text-sm transition-colors ${
+                    active
+                      ? opt.key === "biz"
+                        ? "bg-primary text-white"
+                        : "bg-[#191f71] text-white"
+                      : "text-[#0d0d0d]/60 hover:text-[#191f71]"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <Accordion type="single" collapsible className="mt-8 space-y-3">
+            {filteredFaqs.map((faq, i) => (
               <AccordionItem
                 key={i}
                 value={`faq-${i}`}
                 className="overflow-hidden rounded-2xl border border-[#191f71]/10 bg-white px-6"
               >
                 <AccordionTrigger className="py-5 text-left font-urbanist font-bold text-[#191f71] text-base hover:no-underline">
-                  {faq.q}
+                  <div className="flex flex-col items-start gap-2 pr-4">
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${AUDIENCE_META[faq.audience].className}`}>
+                      {AUDIENCE_META[faq.audience].label}
+                    </span>
+                    <span>{faq.q}</span>
+                  </div>
                 </AccordionTrigger>
                 <AccordionContent className="pb-5 font-public-sans text-[15px] leading-relaxed text-[#0d0d0d]/70">
                   {faq.a}
