@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { usePortalMode } from "@/hooks/usePortalMode";
 import { PortalPageShell } from "@/components/dashboard/portal/PortalPageShell";
 import { LearningJobPostCard } from "@/components/jobs/LearningJobPostCard";
 import { CertificationTeaserBanner } from "@/components/jobs/CertificationTeaserBanner";
@@ -19,7 +17,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 export default function LearningJobFeed() {
   const { user } = useAuth();
-  const { portalV2 } = usePortalMode();
   const [jobs, setJobs] = useState<LearningJobListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState<LearningJobListing | null>(null);
@@ -155,63 +152,27 @@ export default function LearningJobFeed() {
     </>
   );
 
-  if (portalV2) {
-    return (
-      <PortalPageShell
-        eyebrow="Discover"
-        title={
-          <span className="inline-flex items-center gap-3">
-            Job feed
-            {hasRecommendations && <Sparkles className="w-7 h-7 text-primary" />}
-          </span>
-        }
-        subtitle={
-          hasRecommendations
-            ? "Personalized recommendations based on your profile and preferences."
-            : "Browse curated opportunities from verified employers in your sector."
-        }
-        actions={
-          <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
-            {showFilters ? "Hide" : "Show"} Filters
-          </Button>
-        }
-      >
-        {filtersAndList}
-      </PortalPageShell>
-    );
-  }
-
   return (
-    <DashboardLayout 
-      userName={user?.email?.split('@')[0] || 'User'} 
-      email={user?.email || ''}
+    <PortalPageShell
+      eyebrow="Discover"
+      title={
+        <span className="inline-flex items-center gap-3">
+          Job feed
+          {hasRecommendations && <Sparkles className="w-7 h-7 text-primary" />}
+        </span>
+      }
+      subtitle={
+        hasRecommendations
+          ? "Personalized recommendations based on your profile and preferences."
+          : "Browse curated opportunities from verified employers in your sector."
+      }
+      actions={
+        <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
+          {showFilters ? "Hide" : "Show"} Filters
+        </Button>
+      }
     >
-      <div className="container max-w-[1600px] mx-auto py-8 px-4">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              Job Feed
-              {hasRecommendations && (
-                <Sparkles className="w-6 h-6 text-primary" />
-              )}
-            </h1>
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              {showFilters ? "Hide" : "Show"} Filters
-            </Button>
-          </div>
-          {hasRecommendations && (
-            <p className="text-sm text-muted-foreground">
-              Personalized recommendations based on your profile and preferences
-            </p>
-          )}
-        </div>
-
-        {filtersAndList}
-      </div>
-    </DashboardLayout>
+      {filtersAndList}
+    </PortalPageShell>
   );
 }
