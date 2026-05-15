@@ -91,9 +91,9 @@ export function ExperienceSection({
 
   return (
     <Card>
-      <CardContent className="pt-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold flex items-center">
+      <CardContent className="p-4 md:p-6 md:pt-6">
+        <div className="flex justify-between items-center mb-4 md:mb-6">
+          <h2 className="text-base md:text-2xl font-bold flex items-center">
             <Briefcase className="h-5 w-5 mr-2" style={{ color: highlightColor }} />
             Experience
           </h2>
@@ -102,8 +102,9 @@ export function ExperienceSection({
               variant="ghost" 
               size="icon"
               onClick={() => setIsAddingExperience(true)}
+              aria-label="Add experience"
               style={{ color: highlightColor }}
-              className="h-8 w-8 p-0" 
+              className="h-11 w-11 md:h-8 md:w-8 p-0"
             >
               <Plus className="h-5 w-5" />
             </Button>
