@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { CircleCheck, X, ShieldCheck, Award, Sparkles, ArrowUpRight } from "lucide-react";
 import { LandingNavbar } from "@/components/landing/LandingNavbar";
@@ -113,6 +113,68 @@ const AUDIENCE_META: Record<Audience, { label: string; className: string }> = {
   pro: { label: "For professionals", className: "bg-[#191f71] text-white" },
   biz: { label: "For employers", className: "bg-primary text-white" },
   both: { label: "For everyone", className: "bg-[#0d0d0d] text-white" },
+};
+
+/* ───── Audience-driven copy ───── */
+
+type View = "pro" | "biz";
+
+const COPY: Record<View, {
+  hero: { eyebrow: string; lineA: string; lineB: string; lede: string };
+  comparison: { eyebrow: string; lineA: string; lineB: string };
+  trust: { headlineA: string; headlineB: string; lede: string; cta: string; href: string };
+  faq: { eyebrow: string; line: string; lede: string };
+}> = {
+  pro: {
+    hero: {
+      eyebrow: "Pricing for professionals",
+      lineA: "Free for talent.",
+      lineB: "Always.",
+      lede: "Build your profile, prove your skills, and get found by Caribbean employers — at zero cost.",
+    },
+    comparison: {
+      eyebrow: "What you get free",
+      lineA: "Everything you need",
+      lineB: "to get hired.",
+    },
+    trust: {
+      headlineA: "Get certified.",
+      headlineB: "Get seen.",
+      lede: "One exam unlocks lifetime visibility to employers actively hiring on Lansa.",
+      cta: "Create your free profile",
+      href: "/signup",
+    },
+    faq: {
+      eyebrow: "Questions from professionals",
+      line: "Your questions, answered.",
+      lede: "Filter to see questions from employers too — every item is tagged.",
+    },
+  },
+  biz: {
+    hero: {
+      eyebrow: "Pricing for employers",
+      lineA: "Built for the companies",
+      lineB: "hiring next.",
+      lede: "Reach certified, verified Caribbean talent on a commitment that fits your hiring cycle.",
+    },
+    comparison: {
+      eyebrow: "What's in every plan",
+      lineA: "Every hiring tool,",
+      lineB: "one price.",
+    },
+    trust: {
+      headlineA: "Hire only",
+      headlineB: "verified talent.",
+      lede: "Every candidate on Lansa has passed an industry exam, so your shortlist starts qualified.",
+      cta: "Talk to our team",
+      href: "/for-business",
+    },
+    faq: {
+      eyebrow: "Questions from employers",
+      line: "Hiring on Lansa, explained.",
+      lede: "Filter to see questions from professionals too — every item is tagged.",
+    },
+  },
 };
 
 /* ───── Helpers ───── */
@@ -285,8 +347,23 @@ const BusinessCard = ({ onAction }: { onAction: () => void }) => {
 
 const Pricing = () => {
   const navigate = useNavigate();
-  const [view, setView] = useState<"pro" | "biz">("pro");
-  const [faqFilter, setFaqFilter] = useState<"all" | "pro" | "biz">("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialView: View = searchParams.get("audience") === "biz" ? "biz" : "pro";
+  const [view, setViewState] = useState<View>(initialView);
+  const [faqFilter, setFaqFilter] = useState<"all" | "pro" | "biz">(initialView);
+
+  const setView = (next: View) => {
+    setViewState(next);
+    const params = new URLSearchParams(searchParams);
+    params.set("audience", next);
+    setSearchParams(params, { replace: true });
+  };
+
+  useEffect(() => {
+    setFaqFilter(view);
+  }, [view]);
+
+  const copy = COPY[view];
   const rows = view === "pro" ? professionalComparison : businessComparison;
   const filteredFaqs =
     faqFilter === "all"
@@ -314,15 +391,25 @@ const Pricing = () => {
       {/* Hero — blue band */}
       <Band tone="blue" className="pt-32 md:pt-36">
         <div className="mx-auto max-w-3xl text-center">
-          <Eyebrow tone="white">Simple pricing</Eyebrow>
-          <h1 className="font-urbanist font-black text-white tracking-[-0.02em] text-[44px]/[0.9] sm:text-[64px]/[0.9] md:text-[88px]/[0.88]">
-            Free for talent.
-            <br />
-            <span className="text-primary">Built for business.</span>
-          </h1>
-          <Lede className="mx-auto mt-6 max-w-xl text-white/70">
-            Professionals use Lansa free. Employers invest in access to certified, verified Caribbean talent.
-          </Lede>
+          <Eyebrow tone="white">{copy.hero.eyebrow}</Eyebrow>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={view}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h1 className="font-urbanist font-black text-white tracking-[-0.02em] text-[44px]/[0.9] sm:text-[64px]/[0.9] md:text-[88px]/[0.88]">
+                {copy.hero.lineA}
+                <br />
+                <span className="text-primary">{copy.hero.lineB}</span>
+              </h1>
+              <Lede className="mx-auto mt-6 max-w-xl text-white/70">
+                {copy.hero.lede}
+              </Lede>
+            </motion.div>
+          </AnimatePresence>
 
           {/* Tab switcher */}
           <div className="mt-10 inline-flex rounded-full border border-white/15 bg-white/5 p-1 backdrop-blur-sm">
@@ -364,11 +451,11 @@ const Pricing = () => {
       {/* Feature comparison */}
       <Band tone={view === "pro" ? "white" : "cream"}>
         <div className="mx-auto max-w-3xl">
-          <Eyebrow>What's included</Eyebrow>
+          <Eyebrow>{copy.comparison.eyebrow}</Eyebrow>
           <Display className="text-[36px]/[0.95] sm:text-[48px]/[0.95] md:text-[64px]/[0.95]">
-            Every feature,
+            {copy.comparison.lineA}
             <br />
-            no fine print.
+            {copy.comparison.lineB}
           </Display>
 
           <div className="mt-12 overflow-hidden rounded-[2rem] bg-white border border-[#191f71]/10">
@@ -411,34 +498,42 @@ const Pricing = () => {
       <Band tone="orange">
         <div className="mx-auto max-w-3xl text-center">
           <ShieldCheck className="mx-auto h-12 w-12 text-[#191f71]" strokeWidth={2} />
-          <h2 className="mt-6 font-urbanist font-black text-[#0d0d0d] tracking-[-0.02em] text-[36px]/[0.95] sm:text-[48px]/[0.95] md:text-[64px]/[0.95]">
-            Every candidate
-            <br />
-            is Lansa Certified.
-          </h2>
-          <Lede className="mx-auto mt-6 max-w-xl text-[#0d0d0d]/75">
-            Our certification system means employers only connect with verified, qualified talent —
-            so both sides start with confidence.
-          </Lede>
-          <div className="mt-8 flex justify-center">
-            <PillButton variant="dark" onClick={() => navigate("/signup")}>
-              Create your free account
-              <ArrowUpRight className="ml-2 h-5 w-5" />
-            </PillButton>
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={view}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h2 className="mt-6 font-urbanist font-black text-[#0d0d0d] tracking-[-0.02em] text-[36px]/[0.95] sm:text-[48px]/[0.95] md:text-[64px]/[0.95]">
+                {copy.trust.headlineA}
+                <br />
+                {copy.trust.headlineB}
+              </h2>
+              <Lede className="mx-auto mt-6 max-w-xl text-[#0d0d0d]/75">
+                {copy.trust.lede}
+              </Lede>
+              <div className="mt-8 flex justify-center">
+                <PillButton variant="dark" onClick={() => navigate(copy.trust.href)}>
+                  {copy.trust.cta}
+                  <ArrowUpRight className="ml-2 h-5 w-5" />
+                </PillButton>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
       </Band>
 
       {/* FAQ — cream band */}
       <Band tone="cream">
         <div className="mx-auto max-w-3xl">
-          <Eyebrow>Questions</Eyebrow>
+          <Eyebrow>{copy.faq.eyebrow}</Eyebrow>
           <Display className="text-[36px]/[0.95] sm:text-[48px]/[0.95] md:text-[64px]/[0.95]">
-            Frequently asked.
+            {copy.faq.line}
           </Display>
           <Lede className="mt-5 max-w-xl text-[#0d0d0d]/70">
-            Filter by audience — each question is tagged so you can find what's
-            relevant to you.
+            {copy.faq.lede}
           </Lede>
 
           {/* Audience filter */}

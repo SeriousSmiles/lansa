@@ -1,47 +1,53 @@
-## Apply mobile editor card polish to public profile
+## Goal
 
-Bring the public/shared profile (`/p/:slug`) on mobile in line with the editor card refinements: tighter padding, calmer spacing, no truncated titles, brand-token Featured pill, and visual parity on item rows. View-only — no edit/menu actions are added.
+Make the `view` toggle (For professionals / For employers) drive the entire pricing page narrative — not just the plan card. Each section should speak directly to the active audience with its own headline, subcopy, CTA, and FAQ default.
 
-### Files
-- `src/components/profile/shared/SharedProfileContent.tsx` (the only renderer for About / Experience / Education / Certifications / Achievements on the public page)
+## Sections that adapt
 
-### Changes
+For every block below, define a small `COPY` map keyed by `view`. No new sections, no new data — only copy, CTA labels, and CTA destinations swap.
 
-1. **Section spacing**  
-   `space-y-8` → `space-y-4 md:space-y-8` on the outer column.
+1. **Hero (`Band tone="blue"`)**
+   - Eyebrow: `Pricing for professionals` / `Pricing for employers`.
+   - Headline:
+     - pro → "Free for talent. Always." (orange accent on "Always.")
+     - biz → "Built for the companies hiring next." (orange accent on "hiring next.")
+   - Lede:
+     - pro → "Build your profile, prove your skills, and get found by Caribbean employers — at zero cost."
+     - biz → "Reach certified, verified Caribbean talent on a commitment that fits your hiring cycle."
+   - Tab switcher unchanged.
 
-2. **Card padding (per Card)**  
-   `CardContent pt-6` → `p-4 md:p-6` so mobile cards aren't desktop-padded.
+2. **Comparison band**
+   - Eyebrow + Display swap:
+     - pro → eyebrow "What you get free", display "Everything you need to get hired."
+     - biz → eyebrow "What's in every plan", display "Every hiring tool, one price."
 
-3. **Section headers**  
-   - `text-2xl` → `text-xl md:text-2xl`
-   - Icon: bump to `h-5 w-5 md:h-6 md:w-6` and keep `mr-2`
-   - Color stays driven by `highlightColor` (per-user palette) — unchanged contract
+3. **Trust strip (`Band tone="orange"`)**
+   - pro → headline "Get certified. Get seen.", lede "One exam unlocks lifetime visibility to employers actively hiring on Lansa.", CTA `Create your free profile` → `/signup`.
+   - biz → headline "Hire only verified talent.", lede "Every candidate on Lansa has passed an industry exam, so your shortlist starts qualified.", CTA `Talk to our team` → `/for-business`.
 
-4. **Item rows (Experience / Education / Certifications / Achievements)**  
-   - Replace `flex justify-between items-start` (which forces date onto same line as title and causes wrap/truncation on narrow screens) with a stacked block on mobile:  
-     - title row: `flex flex-wrap items-baseline gap-x-2 gap-y-1`  
-     - date moves under the title on mobile (`text-xs text-muted-foreground`) and inline on `md+`
-   - `text-lg font-semibold` → `text-base md:text-lg font-semibold leading-snug` and remove any implicit truncation
-   - Item separator padding: `pb-5` → `pb-4 md:pb-5`
+4. **FAQ band**
+   - Default `faqFilter` follows `view` (pro → "pro", biz → "biz"). The user can still override via the existing pill row, which stays visible.
+   - Use a `useEffect` on `view` to reset `faqFilter` to the matching audience when the user switches tabs.
+   - Eyebrow + Display swap:
+     - pro → "Questions from professionals" / "Your questions, answered."
+     - biz → "Questions from employers" / "Hiring on Lansa, explained."
 
-5. **Achievement Featured pill**  
-   - Render inline next to the title (already inline) but switch the Badge from `variant="secondary"` to brand styling: `className="bg-primary/10 text-primary border-primary/20"` with the `Star` icon — matches the editor's brand token treatment and removes gray.
-   - Type badge stays `variant="outline"` but gets `mt-1` so it doesn't crowd the title row on mobile.
+5. **Tab persistence (small UX upgrade)**
+   - Read `?audience=biz|pro` from the URL on mount so deep links land in the right context. Update the param when the tab changes (no full reload). Falls back to `pro`.
 
-6. **Empty states**  
-   `"No experience data available"` and `"No education data available"` get `py-2 md:py-0 text-sm md:text-base` so the empty state doesn't visually equal the rest of the card.
+## Out of scope
 
-### Out of scope
-- Sidebar (`SharedProfileSidebar`), portal shell, header, or sharing toolbar.
-- Any data-shape, RLS, or hook changes — `useSharedProfileData` contract is untouched.
-- Adding edit/kebab actions — public profile is view-only by design.
-- Desktop layout — `md+` keeps current look.
+- No data/feature list edits — those already live per-audience.
+- No new Bands, no layout changes, no new images.
+- SEO `title`/`description`/JSON-LD remain unchanged (FAQ schema still emits all questions).
 
-### Verification
-Open a shared profile (`/p/:slug`) at mobile viewport (375 wide):
-- Cards feel app-native, not desktop-shrunk
-- Long titles like "Top Ten Outstanding…" wrap to two lines, no truncation
-- Date sits under the title on mobile, inline on desktop
-- Featured pill uses Lansa orange (primary) tint, not gray
-- No horizontal scroll, no double borders
+## Files
+
+- `src/pages/Pricing.tsx` — add `COPY` map, wire each band to `view`, sync `faqFilter` to `view` via `useEffect`, read/write `?audience=` via `useSearchParams`.
+
+## Verification
+
+- Switching tabs updates: hero eyebrow/headline/lede, comparison heading, trust strip headline/lede/CTA, FAQ heading + default filter — all in one click, no page reload.
+- Deep link `/pricing?audience=biz` lands on the employer view directly.
+- FAQ filter pills still work as a manual override after a tab change.
+- No console errors; mobile layout unaffected.
