@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import lansaIcon from "@/assets/lansa-icon-brand.svg";
-import { LegacyModeToggle } from "@/components/dashboard/portal/LegacyModeToggle";
 
 interface SharedProfilePortalShellProps {
   children: ReactNode;
@@ -21,7 +20,6 @@ export function SharedProfilePortalShell({ children }: SharedProfilePortalShellP
             <span className="text-sm font-medium tracking-tight text-foreground">Lansa</span>
           </Link>
           <div className="flex items-center gap-2">
-            <LegacyModeToggle variant="inline" />
             <Link
               to="/signup"
               className="hidden sm:inline-flex items-center rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
