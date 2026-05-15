@@ -1,91 +1,57 @@
-## Why the AI keeps getting "student vs professional" wrong
+## Goal
+Remove the legacy ("classic") job seeker UI everywhere it still exists, so every job seeker page renders only the new Portal v2 look. The recent changes (analytics card → SeekerSnapshotCard, Profile rail link, etc.) all targeted the new look — the old branches were still rendering for anyone who clicked "Use classic", which is why it looked unchanged.
 
-I traced the path end-to-end. The selector on the profile page works, but the rest of the system **does not honor it**. Three real root causes:
+## Scope
+- Job seeker pages only. **Employer dashboard is NOT touched.**
+- Mobile-specific layouts (e.g. `ContentLibrary` mobile branch) are kept — those are mobile design, not the old look.
 
-### 1. Most users have no value at all
-`user_profiles.professional_stage` is set for **15 of 171 users** (6 student, 9 working_professional). The other **156 users are NULL**. The AI is literally guessing for the majority.
+## What's wired up today
 
-### 2. The AI prompts never receive the field, even when it's set
-Audit of every AI edge function that writes "you sound like a…" copy:
+`usePortalMode()` returns a `portalV2` boolean from `localStorage`. Every job seeker page has a `if (portalV2) { newLook } else { legacyLook }` branch. A floating `LegacyModeToggle` lets users swap. The branches exist in:
 
-| Function | Sees `professional_stage`? |
-|---|---|
-| `analyze-profile-section` (the 1-edit "AI suggest" button on every section) | **No** — context only includes identity, desired_outcome, title, professional_goal, skills |
-| `generate-title-suggestions` | Function expects `currentTitle, userAnswers, profile`. **Client only sends `{ userId }`** → all three arrive as `undefined`. Pure hallucination. |
-| `generate-about-template` / `generate-goal-template` / `generate-challenge-template` / `generate-skills-recommendations` | Client sends a `profile` object that **omits `professional_stage`** |
-| `ai-profile-stylist` | Dumps the full profile but the system prompt never tells the model the stage matters |
-| `generate-power-mirror` | Hard-codes `'Generate the power mirror for this student.'` — assumes everyone is a student |
-| `parse-cv` | Already reads it correctly (this one works) |
-| `generate-match-summary` | Reads `still_studying` only |
+- `src/pages/Dashboard.tsx`
+- `src/pages/Certification.tsx`
+- `src/pages/Chat.tsx`
+- `src/pages/ContentLibrary.tsx` (combined with `isMobile`)
+- `src/pages/LearningJobFeed.tsx`
+- `src/pages/Notifications.tsx`
+- `src/pages/OpportunityDiscovery.tsx`
+- `src/pages/Resources.tsx`
+- `src/pages/ResumeEditor.tsx`
+- `src/components/profile/ProfilePage.tsx`
+- `src/components/profile/shared/SharedProfileContainer.tsx`
+- `src/components/dashboard/portal/PortalPageShell.tsx` (renders the floating toggle)
 
-### 3. The selector on the profile page is buried
-It sits between the personal-info card and the skills list in the right sidebar with no visual weight, no required-state, no warning when missing. Users skip past it, the field stays NULL, see #1.
+## Changes
 
----
+### 1. Drop the toggle infrastructure
+- Delete `src/hooks/usePortalMode.ts`.
+- Delete `src/components/dashboard/portal/LegacyModeToggle.tsx`.
+- Remove the `showLegacyToggle` prop and the `<LegacyModeToggle />` render inside `PortalPageShell.tsx`.
 
-## The fix (no new layers, just tightening what exists)
+### 2. Collapse every page to the new-look branch only
+For each file in the list above:
+- Remove `usePortalMode`/`LegacyModeToggle` imports.
+- Delete the `else` branch (the legacy markup).
+- For `ContentLibrary`, the condition becomes `if (isMobile)` instead of `if (isMobile || !portalV2)` — mobile path stays, desktop falls through to v2.
+- For `Dashboard.tsx`, only the `<PortalShell …/>` branch remains; the `<DashboardTabs>` + `<ProfileCard>` legacy block is removed.
 
-### A. Make the field always have a value
+### 3. Delete the now-orphaned legacy components
+After step 2, these files are unreferenced and get deleted:
+- `src/components/dashboard/DashboardTabs.tsx`
+- `src/components/dashboard/OverviewTab.tsx` (the root one — the new `overview/OverviewTab.tsx` is kept)
+- `src/components/dashboard/AICoachTab.tsx`
+- `src/components/dashboard/JobPreferencesTab.tsx`
+- `src/components/dashboard/StoryBuilderTab.tsx`
+- `src/components/dashboard/overview/ProfileCard.tsx` (only used by legacy Dashboard.tsx)
 
-1. **Backfill migration** for the 156 NULL rows using deterministic signals from data they already gave us:
-   - `still_studying = true` → `student`
-   - `work_experience_years` ≥ 1 OR any `experiences` entry → `working_professional`
-   - `user_answers.career_path = 'student'` → `student`
-   - otherwise leave NULL and treat as "unknown" (AI will be told "stage unknown — write neutrally")
-2. **Add a NOT NULL-style guard at the application layer** (not a DB CHECK, since stage can change): when the profile loads and `professional_stage` is missing, the existing `ProfessionalStageSelector` is promoted to a banner at the top of the profile until set.
+I'll grep each before deletion to confirm zero remaining imports — if anything still references them we keep the file and just trim the import.
 
-### B. Make the selector unmissable on the profile page
-- Move `ProfessionalStageSelector` out of the middle of the sidebar to the **top of the profile main column**, rendered as a single-row pill chooser (Student / Working Professional) with a clear "This drives every AI suggestion" caption.
-- When NULL: show as a soft warning card ("Pick one so the AI describes you correctly").
-- When set: collapse to a compact chip the user can click to change.
+### 4. Verification
+- Type/build check passes.
+- Manual: the floating "Use classic" pill is gone, `/dashboard`, `/profile`, `/chat`, `/notifications`, `/certification`, `/learning-jobs`, `/opportunities`, `/resources`, `/resume` all render the Portal v2 layout, including the `SeekerSnapshotCard` and Profile rail link from the previous edits.
 
-### C. Make every AI prompt honor the field as a hard rule
-
-Single shared helper in `supabase/functions/_shared/` so we don't drift again:
-
-```ts
-// _shared/professionalStage.ts
-export function stageDirective(stage: string | null) {
-  if (stage === 'student') return `
-USER STAGE: STUDENT.
-Hard rules:
-- Frame them as a current/recent student building toward their first roles.
-- Do NOT invent years of professional experience, prior job titles, or seniority.
-- Achievements come from coursework, projects, internships, volunteering.
-- Tone: ambitious, learning-oriented, curious.`;
-  if (stage === 'working_professional') return `
-USER STAGE: WORKING PROFESSIONAL.
-Hard rules:
-- Frame them as someone with real work experience seeking the next step.
-- Do NOT call them a student, recent grad, or "aspiring" anything.
-- Lead with measurable workplace outcomes, not coursework.
-- Tone: confident, results-driven, peer-to-peer with hiring managers.`;
-  return `
-USER STAGE: UNKNOWN.
-Hard rules:
-- Use neutral language. Do not assert student status or years of experience.
-- Avoid words like "student", "recent graduate", "seasoned", "veteran".`;
-}
-```
-
-Then thread it into each function's system prompt as a top-of-prompt block (above the existing instructions, so it can't be overridden by the rest):
-
-- `analyze-profile-section` — fetch `professional_stage` alongside `userProfile`, prepend `stageDirective()` to `systemPrompt`, and add a line to the user `context` block.
-- `generate-title-suggestions` — **fix the client first** to actually send `{ userId, currentTitle, userAnswers, profile }` (today only `userId` is sent). Then prepend the directive.
-- `generate-about-template`, `generate-goal-template`, `generate-challenge-template`, `generate-skills-recommendations` — extend the client `profile` payload to include `professional_stage`; have each function prepend the directive.
-- `ai-profile-stylist` — read `profile.professional_stage` and prepend the directive.
-- `generate-power-mirror` — replace the hard-coded `"…for this student."` user message with a stage-aware string built from the directive.
-
-### D. Verification (so we know it actually changed behavior)
-
-- After backfill: re-query distribution; expect <10% NULL.
-- For each touched AI function: run one student fixture and one working_professional fixture through the dev tools and visually confirm the wording changes.
-
----
-
-## Technical notes
-
-- Migration is data-only (`UPDATE user_profiles SET professional_stage = …`) — uses the **insert tool**, not a schema migration.
-- No new tables, no new columns, no new flags. We use `professional_stage` (already on `user_profiles`) as the single source of truth and stop reading the legacy `still_studying` boolean from anywhere except `parse-cv` / `generate-match-summary` (those keep working but also receive `professional_stage` so they can prefer it).
-- No client-side AI gate-keeping — the directive lives in the prompt so it survives every retry and follow-up.
-- The shared helper is a single file; if we ever add a new AI function the rule is "import `stageDirective`, prepend it" — that's the whole governance.
+## Notes
+- No DB or edge function changes.
+- `localStorage` key `lansa.dashboardPortalV2` is harmless leftover; not worth a cleanup migration.
+- Employer pages, mobile-specific shells, and shared/public profile rendering stay as they are.
