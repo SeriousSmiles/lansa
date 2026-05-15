@@ -47,9 +47,9 @@ export const CapabilitiesBand = () => {
           <div className="space-y-6">
             <Eyebrow tone="white">Built for momentum</Eyebrow>
             <h2 className="font-urbanist font-black text-white tracking-[-0.02em] text-[44px]/[0.9] sm:text-[56px]/[0.9] lg:text-[72px]/[0.9]">
-              Everything <span className="text-white/30">you need.</span>
+              Everything you need.
               <br />
-              Nothing <span className="text-white/30">you don't.</span>
+              Nothing you don't.
             </h2>
           </div>
 
