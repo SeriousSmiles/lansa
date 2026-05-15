@@ -35,7 +35,7 @@ const TILES: readonly Tile[] = [
 export const CapabilitiesBand = () => {
   return (
     <Band tone="blue">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-stretch">
         {/* Left: editorial column */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -71,10 +71,9 @@ export const CapabilitiesBand = () => {
           </div>
         </motion.div>
 
-        {/* Right: staggered tile grid */}
-        <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6 lg:pt-12">
+        {/* Right: tile grid — matches left column height */}
+        <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6 lg:h-full lg:auto-rows-fr">
           {TILES.map((t, i) => {
-            const staggered = i % 2 === 1;
             return (
               <motion.div
                 key={t.title}
@@ -82,9 +81,7 @@ export const CapabilitiesBand = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.55, delay: i * 0.06 }}
-                className={`group bg-white/5 border border-white/10 p-8 md:p-10 rounded-[2rem] hover:bg-white/[0.08] hover:border-white/20 transition-all duration-300 ${
-                  staggered ? "md:translate-y-12" : ""
-                }`}
+                className="group h-full bg-white/5 border border-white/10 p-8 md:p-10 rounded-[2rem] hover:bg-white/[0.08] hover:border-white/20 transition-all duration-300 flex flex-col"
               >
                 <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-primary/20">
                   <t.icon strokeWidth={2.5} className="w-7 h-7 text-[#191f71]" />
