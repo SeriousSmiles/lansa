@@ -1,5 +1,4 @@
 
-import { useRef } from "react";
 import { ProfileLayout } from "@/components/profile/layout/ProfileLayout";
 import { SharedProfileContent } from "@/components/profile/shared/SharedProfileContent";
 import { SharedProfileSidebar } from "@/components/profile/shared/SharedProfileSidebar";
@@ -7,7 +6,6 @@ import { ProfileFooter } from "@/components/profile/layout/ProfileFooter";
 import { useElementAnimation } from "@/utils/animationHelpers";
 import { SharedProfileData } from "@/hooks/useSharedProfileData";
 import { MadeOnLansaBadge } from "@/components/profile/shared/MadeOnLansaBadge";
-import { usePortalMode } from "@/hooks/usePortalMode";
 import { SharedProfilePortalShell } from "./SharedProfilePortalShell";
 
 interface SharedProfileContainerProps {
@@ -17,7 +15,6 @@ interface SharedProfileContainerProps {
 
 export function SharedProfileContainer({ profileData, urlParam }: SharedProfileContainerProps) {
   const mainContentRef = useElementAnimation();
-  const { portalV2 } = usePortalMode();
 
   const inner = (
     <>
@@ -67,13 +64,5 @@ export function SharedProfileContainer({ profileData, urlParam }: SharedProfileC
     </>
   );
 
-  if (portalV2) {
-    return <SharedProfilePortalShell>{inner}</SharedProfilePortalShell>;
-  }
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      {inner}
-    </div>
-  );
+  return <SharedProfilePortalShell>{inner}</SharedProfilePortalShell>;
 }

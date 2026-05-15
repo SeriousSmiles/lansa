@@ -9,12 +9,10 @@ import { swipeService, SwipeDirection, SwipeContext } from "@/services/swipeServ
 import { matchService } from "@/services/matchService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { usePortalMode } from "@/hooks/usePortalMode";
 import { PortalPageShell } from "@/components/dashboard/portal/PortalPageShell";
 
 export default function OpportunityDiscovery() {
   const { user } = useAuth();
-  const { portalV2 } = usePortalMode();
   // This route is guarded to job_seeker only. Networking discovery is for
   // employers reviewing candidates — seekers must never see other seekers.
   const [activeTab, setActiveTab] = useState<'jobs'>('jobs');
@@ -118,48 +116,23 @@ export default function OpportunityDiscovery() {
     loadProfiles(); // Load more profiles
   };
 
-  const legacyHeader = (
-    <div className="text-center mb-8">
-      <h1 className="text-3xl font-bold mb-2">Opportunity Discovery</h1>
-      <p className="text-muted-foreground">
-        Discover new connections and opportunities
-      </p>
-    </div>
-  );
-
-  const inner = (
-    <>
-      {!portalV2 && legacyHeader}
-      {/* Stats + Tabs body — preserved as-is */}
-      <DiscoveryBody
-        matchCount={matchCount}
-        swipeCount={swipeCount}
-        profiles={profiles}
-        handleSwipe={handleSwipe}
-        handleEndReached={handleEndReached}
-        isLoading={isLoading}
-      />
-    </>
-  );
-
-  if (portalV2) {
-    return (
-      <PortalPageShell
-        eyebrow="Discover"
-        title="Opportunity discovery"
-        subtitle="Discover new connections and opportunities."
-      >
-        <div className="max-w-4xl mx-auto flex flex-col">{inner}</div>
-      </PortalPageShell>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background overflow-hidden">
-      <div className="container mx-auto px-4 py-6 max-w-4xl h-full overflow-hidden flex flex-col">
-        {inner}
+    <PortalPageShell
+      eyebrow="Discover"
+      title="Opportunity discovery"
+      subtitle="Discover new connections and opportunities."
+    >
+      <div className="max-w-4xl mx-auto flex flex-col">
+        <DiscoveryBody
+          matchCount={matchCount}
+          swipeCount={swipeCount}
+          profiles={profiles}
+          handleSwipe={handleSwipe}
+          handleEndReached={handleEndReached}
+          isLoading={isLoading}
+        />
       </div>
-    </div>
+    </PortalPageShell>
   );
 }
 

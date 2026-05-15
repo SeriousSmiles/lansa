@@ -12,13 +12,9 @@ import { getProfileStatus } from "@/services/profileStatus";
 import { useAuth } from "@/contexts/UnifiedAuthProvider";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { toast } from "sonner";
-import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { useActionTracking } from "@/hooks/useActionTracking";
-import { ProfileCard } from "@/components/dashboard/overview/ProfileCard";
 import { SEOHead } from "@/components/SEOHead";
 import { PortalShell } from "@/components/dashboard/portal/PortalShell";
-import { LegacyModeToggle } from "@/components/dashboard/portal/LegacyModeToggle";
-import { usePortalMode } from "@/hooks/usePortalMode";
 
 export default function Dashboard() {
   const [userAnswers, setUserAnswers] = useState<any>(null);
@@ -28,7 +24,6 @@ export default function Dashboard() {
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
   const [openAIPlan, setOpenAIPlan] = useState(false);
-  const { portalV2: usePortalV2 } = usePortalMode();
   const { user } = useAuth();
   const { track } = useActionTracking();
   const mountedRef = useRef(true);
@@ -146,49 +141,20 @@ export default function Dashboard() {
         canonical="https://lansa.online/dashboard"
       />
 
-      {usePortalV2 ? (
-        <DashboardLayout
+      <DashboardLayout
+        userName={userName}
+        email={user?.email || ""}
+        hideTopNav
+        fullBleed
+      >
+        <PortalShell
           userName={userName}
-          email={user?.email || ""}
-          hideTopNav
-          fullBleed
-        >
-          <PortalShell
-            userName={userName}
-            role={role}
-            goal={goal}
-            insight={insight}
-            openAIPlan={openAIPlan}
-          />
-          <LegacyModeToggle />
-        </DashboardLayout>
-      ) : (
-        <DashboardLayout userName={userName} email={user?.email || ""}>
-          <div className="w-full pt-4 md:pt-6 overflow-x-clip">
-            <div className="flex items-center justify-between mb-4 animate-fade-in">
-              <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
-              <LegacyModeToggle variant="inline" />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 min-w-0">
-              <aside className="order-last lg:order-first lg:sticky lg:top-4">
-                <ProfileCard role={role} goal={goal} />
-              </aside>
-              <section className="min-w-0">
-                <DashboardTabs
-                  userName={userName}
-                  role={role}
-                  goal={goal}
-                  insight={insight}
-                  highlightActions={highlightActions}
-                  isLoading={isLoadingInsight}
-                  openAIPlan={openAIPlan}
-                />
-              </section>
-            </div>
-          </div>
-        </DashboardLayout>
-      )}
+          role={role}
+          goal={goal}
+          insight={insight}
+          openAIPlan={openAIPlan}
+        />
+      </DashboardLayout>
     </>
   );
 }

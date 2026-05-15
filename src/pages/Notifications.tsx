@@ -5,10 +5,8 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
-import { usePortalMode } from '@/hooks/usePortalMode';
 import { PortalPageShell } from '@/components/dashboard/portal/PortalPageShell';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -23,7 +21,6 @@ import { toast } from 'sonner';
 
 export default function Notifications() {
   const { user } = useAuth();
-  const { portalV2 } = usePortalMode();
   const { unreadCount, unseenUpdatesCount, refreshCounts } = useNotifications();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [updates, setUpdates] = useState<ProductUpdate[]>([]);
@@ -184,37 +181,17 @@ export default function Notifications() {
     </Tabs>
   );
 
-  if (portalV2) {
-    return (
-      <PortalPageShell
-        eyebrow="Comms"
-        title="Notifications"
-        subtitle="Inbox, updates, and what's new on Lansa — all in one place."
-      >
-        <div className="max-w-4xl mx-auto">
-          <Card>
-            <CardContent className="pt-6">{tabs}</CardContent>
-          </Card>
-        </div>
-      </PortalPageShell>
-    );
-  }
-
   return (
-    <DashboardLayout
-      userName={user?.displayName || user?.email || 'User'}
-      email={user?.email || ''}
+    <PortalPageShell
+      eyebrow="Comms"
+      title="Notifications"
+      subtitle="Inbox, updates, and what's new on Lansa — all in one place."
     >
-      <div className="container max-w-4xl mx-auto py-8 px-4">
+      <div className="max-w-4xl mx-auto">
         <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-2xl">Notifications</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>{tabs}</CardContent>
+          <CardContent className="pt-6">{tabs}</CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </PortalPageShell>
   );
 }

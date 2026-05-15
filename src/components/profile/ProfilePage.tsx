@@ -2,16 +2,12 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useProfileData } from "@/hooks/useProfileData";
-import { ProfileLayout } from "./layout/ProfileLayout";
 import { ProfileContent } from "./layout/ProfileContent";
-import { ProfileFooter } from "./layout/ProfileFooter";
 import { useElementAnimation } from "@/utils/animationHelpers";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useProfileProgress } from "@/hooks/useProfileProgress";
 import { PostOnboardingChoice } from "../onboarding/PostOnboardingChoice";
-import { usePortalMode } from "@/hooks/usePortalMode";
-import { LegacyModeToggle } from "@/components/dashboard/portal/LegacyModeToggle";
 import { ProfilePortalLayout } from "./layout/ProfilePortalLayout";
 import { ProfileActionRouter } from "./ProfileActionRouter";
 
@@ -22,8 +18,6 @@ export function ProfilePage() {
   const profile = useProfileData(user?.id);
   const mainContentRef = useElementAnimation();
   const [choiceModalOpen, setChoiceModalOpen] = useState(false);
-  const { portalV2 } = usePortalMode();
-
   // Handle starter data from ProfileStarter page
   useEffect(() => {
     if (location.state?.fromStarter && location.state?.starterData) {
@@ -102,49 +96,10 @@ export function ProfilePage() {
     );
   }
 
-  if (portalV2) {
-    return (
-      <>
-        <ProfileActionRouter />
-        <ProfilePortalLayout
-          userName={profile.userName}
-          role={profile.role}
-          user={profile.user}
-          userId={user?.id}
-          coverColor={profile.coverColor}
-          highlightColor={profile.highlightColor}
-          onCoverColorChange={profile.updateCoverColor}
-          onHighlightColorChange={profile.updateHighlightColor}
-          mainContentRef={mainContentRef}
-          onOpenGuidedSetup={() => {}}
-          userProfile={profile}
-          currentPalette={profile.currentPalette}
-          activePalette={profile.activePalette}
-          onPaletteChange={profile.updatePalette}
-          onModeToggle={profile.toggleMode}
-        >
-          <ProfileContent
-            profile={profile}
-            textColor={profile.coverColor}
-            navigate={navigate}
-            variant="portal"
-          />
-        </ProfilePortalLayout>
-
-        <PostOnboardingChoice
-          open={choiceModalOpen}
-          onOpenChange={setChoiceModalOpen}
-          onChooseManual={handleChooseManual}
-          onChooseCVUpload={handleChooseCVUpload}
-        />
-      </>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       <ProfileActionRouter />
-      <ProfileLayout
+      <ProfilePortalLayout
         userName={profile.userName}
         role={profile.role}
         user={profile.user}
@@ -161,12 +116,13 @@ export function ProfilePage() {
         onPaletteChange={profile.updatePalette}
         onModeToggle={profile.toggleMode}
       >
-        <ProfileContent 
+        <ProfileContent
           profile={profile}
           textColor={profile.coverColor}
           navigate={navigate}
+          variant="portal"
         />
-      </ProfileLayout>
+      </ProfilePortalLayout>
 
       <PostOnboardingChoice
         open={choiceModalOpen}
@@ -174,9 +130,6 @@ export function ProfilePage() {
         onChooseManual={handleChooseManual}
         onChooseCVUpload={handleChooseCVUpload}
       />
-
-      <ProfileFooter coverColor={profile.coverColor} />
-      <LegacyModeToggle variant="inline" className="fixed bottom-4 right-4 z-50 shadow-lg" />
-    </div>
+    </>
   );
 }
