@@ -2,13 +2,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfileData } from '@/hooks/useProfileData';
 import { ResumeEditorLayout } from '@/components/resume-editor/ResumeEditorLayout';
 import { Loader2 } from 'lucide-react';
-import { usePortalMode } from '@/hooks/usePortalMode';
 import { PortalPageShell } from '@/components/dashboard/portal/PortalPageShell';
 
 export default function ResumeEditor() {
   const { user } = useAuth();
   const profileData = useProfileData(user?.id);
-  const { portalV2 } = usePortalMode();
 
   if (profileData.isLoading) {
     return (
@@ -21,21 +19,12 @@ export default function ResumeEditor() {
     );
   }
 
-  if (portalV2) {
-    return (
-      <PortalPageShell fullBleed>
-        <ResumeEditorLayout
-          profileData={profileData}
-          resumeDesignId={undefined}
-        />
-      </PortalPageShell>
-    );
-  }
-
   return (
-    <ResumeEditorLayout
-      profileData={profileData}
-      resumeDesignId={undefined}
-    />
+    <PortalPageShell fullBleed>
+      <ResumeEditorLayout
+        profileData={profileData}
+        resumeDesignId={undefined}
+      />
+    </PortalPageShell>
   );
 }
