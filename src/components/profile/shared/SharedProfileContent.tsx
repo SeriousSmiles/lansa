@@ -38,13 +38,13 @@ export function SharedProfileContent({
   };
 
   return (
-    <div className="lg:col-span-8 space-y-8">
+    <div className="lg:col-span-8 space-y-4 md:space-y-8">
       {/* About Me */}
       {aboutText && (
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-4 md:p-6">
             <h2 
-              className="text-2xl font-semibold mb-4"
+              className="text-xl md:text-2xl font-semibold mb-3 md:mb-4"
               style={{ color: highlightColor }}
             >
               About Me
@@ -56,23 +56,23 @@ export function SharedProfileContent({
       
       {/* Experience */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4 md:p-6">
           <h2 
-            className="text-2xl font-semibold mb-4 flex items-center"
+            className="text-xl md:text-2xl font-semibold mb-3 md:mb-4 flex items-center"
             style={{ color: highlightColor }}
           >
-            <Briefcase className="h-5 w-5 mr-2" />
+            <Briefcase className="h-5 w-5 md:h-6 md:w-6 mr-2" />
             Experience
           </h2>
           {experiences.length > 0 ? (
-            <div className="space-y-6">
+            <div className="space-y-5 md:space-y-6">
               {experiences.map((exp, index) => (
-                <div key={exp.id || index} className="border-b border-border last:border-0 pb-5 last:pb-0">
+                <div key={exp.id || index} className="border-b border-border last:border-0 pb-4 md:pb-5 last:pb-0">
                   <div className="space-y-2">
-                    <div className="flex justify-between items-start">
-                      <h3 className="text-lg font-semibold">{exp.title}</h3>
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-1 md:gap-2">
+                      <h3 className="text-base md:text-lg font-semibold leading-snug">{exp.title}</h3>
                       {(exp.startYear || exp.endYear !== undefined) && (
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
                           {formatYearRange(exp.startYear, exp.endYear)}
                         </span>
                       )}
@@ -83,30 +83,30 @@ export function SharedProfileContent({
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground">No experience data available</p>
+            <p className="text-muted-foreground text-sm md:text-base">No experience data available</p>
           )}
         </CardContent>
       </Card>
       
       {/* Education */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4 md:p-6">
           <h2 
-            className="text-2xl font-semibold mb-4 flex items-center"
+            className="text-xl md:text-2xl font-semibold mb-3 md:mb-4 flex items-center"
             style={{ color: highlightColor }}
           >
-            <GraduationCap className="h-5 w-5 mr-2" />
+            <GraduationCap className="h-5 w-5 md:h-6 md:w-6 mr-2" />
             Education
           </h2>
           {educationItems.length > 0 ? (
-            <div className="space-y-6">
+            <div className="space-y-5 md:space-y-6">
               {educationItems.map((edu, index) => (
-                <div key={edu.id || index} className="border-b border-border last:border-0 pb-5 last:pb-0">
+                <div key={edu.id || index} className="border-b border-border last:border-0 pb-4 md:pb-5 last:pb-0">
                   <div className="space-y-2">
-                    <div className="flex justify-between items-start">
-                      <h3 className="text-lg font-semibold">{edu.title}</h3>
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-1 md:gap-2">
+                      <h3 className="text-base md:text-lg font-semibold leading-snug">{edu.title}</h3>
                       {(edu.startYear || edu.endYear !== undefined) && (
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
                           {formatYearRange(edu.startYear, edu.endYear)}
                         </span>
                       )}
@@ -117,7 +117,7 @@ export function SharedProfileContent({
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground">No education data available</p>
+            <p className="text-muted-foreground text-sm md:text-base">No education data available</p>
           )}
         </CardContent>
       </Card>
@@ -125,22 +125,22 @@ export function SharedProfileContent({
       {/* Certifications */}
       {certifications.length > 0 && (
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-4 md:p-6">
             <h2 
-              className="text-2xl font-semibold mb-4 flex items-center"
+              className="text-xl md:text-2xl font-semibold mb-3 md:mb-4 flex items-center"
               style={{ color: highlightColor }}
             >
-              <BadgeCheck className="h-5 w-5 mr-2" />
+              <BadgeCheck className="h-5 w-5 md:h-6 md:w-6 mr-2" />
               Certifications
             </h2>
-            <div className="space-y-6">
+            <div className="space-y-5 md:space-y-6">
               {certifications.map((cert, index) => (
-                <div key={cert.id || index} className="border-b border-border last:border-0 pb-5 last:pb-0">
+                <div key={cert.id || index} className="border-b border-border last:border-0 pb-4 md:pb-5 last:pb-0">
                   <div className="space-y-2">
-                    <div className="flex justify-between items-start">
-                      <h3 className="text-lg font-semibold">{cert.title}</h3>
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-1 md:gap-2">
+                      <h3 className="text-base md:text-lg font-semibold leading-snug">{cert.title}</h3>
                       {cert.issue_date && (
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
                           {formatDate(cert.issue_date)}
                         </span>
                       )}
@@ -167,30 +167,30 @@ export function SharedProfileContent({
       {/* Achievements */}
       {achievements.length > 0 && (
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-4 md:p-6">
             <h2 
-              className="text-2xl font-semibold mb-4 flex items-center"
+              className="text-xl md:text-2xl font-semibold mb-3 md:mb-4 flex items-center"
               style={{ color: highlightColor }}
             >
-              <Award className="h-5 w-5 mr-2" />
+              <Award className="h-5 w-5 md:h-6 md:w-6 mr-2" />
               Achievements
             </h2>
-            <div className="space-y-6">
+            <div className="space-y-5 md:space-y-6">
               {achievements.map((ach, index) => (
-                <div key={ach.id || index} className="border-b border-border last:border-0 pb-5 last:pb-0">
+                <div key={ach.id || index} className="border-b border-border last:border-0 pb-4 md:pb-5 last:pb-0">
                   <div className="space-y-2">
-                    <div className="flex justify-between items-start gap-2">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-semibold">{ach.title}</h3>
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-1 md:gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-base md:text-lg font-semibold leading-snug">{ach.title}</h3>
                         {ach.is_featured && (
-                          <Badge variant="secondary" className="flex items-center gap-1">
+                          <Badge className="flex items-center gap-1 bg-primary/10 text-primary border-primary/20 hover:bg-primary/15">
                             <Star className="h-3 w-3" />
                             Featured
                           </Badge>
                         )}
                       </div>
                       {ach.date_achieved && (
-                        <span className="text-sm text-muted-foreground whitespace-nowrap">
+                        <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
                           {formatDate(ach.date_achieved)}
                         </span>
                       )}
@@ -200,7 +200,7 @@ export function SharedProfileContent({
                         {ach.organization}
                       </p>
                     )}
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs mt-1">
                       {ach.type}
                     </Badge>
                     <p className="text-muted-foreground">{ach.description}</p>
