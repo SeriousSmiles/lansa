@@ -431,16 +431,51 @@ const Pricing = () => {
           <Display className="text-[36px]/[0.95] sm:text-[48px]/[0.95] md:text-[64px]/[0.95]">
             Frequently asked.
           </Display>
+          <Lede className="mt-5 max-w-xl text-[#0d0d0d]/70">
+            Filter by audience — each question is tagged so you can find what's
+            relevant to you.
+          </Lede>
 
-          <Accordion type="single" collapsible className="mt-12 space-y-3">
-            {faqs.map((faq, i) => (
+          {/* Audience filter */}
+          <div className="mt-8 inline-flex flex-wrap gap-2 rounded-full border border-[#191f71]/15 bg-white p-1.5">
+            {([
+              { key: "all", label: "All questions" },
+              { key: "pro", label: "For professionals" },
+              { key: "biz", label: "For employers" },
+            ] as const).map((opt) => {
+              const active = faqFilter === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => setFaqFilter(opt.key)}
+                  className={`rounded-full px-5 py-2.5 font-urbanist font-semibold text-sm transition-colors ${
+                    active
+                      ? opt.key === "biz"
+                        ? "bg-primary text-white"
+                        : "bg-[#191f71] text-white"
+                      : "text-[#0d0d0d]/60 hover:text-[#191f71]"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <Accordion type="single" collapsible className="mt-8 space-y-3">
+            {filteredFaqs.map((faq, i) => (
               <AccordionItem
                 key={i}
                 value={`faq-${i}`}
                 className="overflow-hidden rounded-2xl border border-[#191f71]/10 bg-white px-6"
               >
                 <AccordionTrigger className="py-5 text-left font-urbanist font-bold text-[#191f71] text-base hover:no-underline">
-                  {faq.q}
+                  <div className="flex flex-col items-start gap-2 pr-4">
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${AUDIENCE_META[faq.audience].className}`}>
+                      {AUDIENCE_META[faq.audience].label}
+                    </span>
+                    <span>{faq.q}</span>
+                  </div>
                 </AccordionTrigger>
                 <AccordionContent className="pb-5 font-public-sans text-[15px] leading-relaxed text-[#0d0d0d]/70">
                   {faq.a}
