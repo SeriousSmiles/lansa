@@ -17,7 +17,7 @@ export const CompaniesSoonBand = () => {
           className="md:col-span-7"
         >
           <Eyebrow tone="dark">For employers</Eyebrow>
-          <Display>
+          <Display className="!text-[#0d0d0d]">
             Looking for
             <br />
             real talent?
