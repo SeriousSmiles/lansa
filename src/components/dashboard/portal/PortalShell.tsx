@@ -11,6 +11,7 @@ import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 import { ProfileCompletionCard } from "@/components/profile/ProfileCompletionCard";
 import { BrandImageSlot } from "./decor/BrandImageSlot";
 import dashboardHero from "@/assets/dashboard/lansa-dashboard-hero.png";
+import dashboardMomentum from "@/assets/dashboard/lansa-dashboard-momentum.jpg";
 
 interface PortalShellProps {
   userName: string;
@@ -86,6 +87,8 @@ export function PortalShell({ userName, role, goal, insight, openAIPlan }: Porta
                   tone="accent"
                   eyebrow="Keep going"
                   headline="One step today. One door tomorrow."
+                  src={dashboardMomentum}
+                  alt="Smiling young professional — keep going"
                 />
 
                 <PortalMessagesCard />
