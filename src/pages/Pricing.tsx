@@ -286,7 +286,12 @@ const BusinessCard = ({ onAction }: { onAction: () => void }) => {
 const Pricing = () => {
   const navigate = useNavigate();
   const [view, setView] = useState<"pro" | "biz">("pro");
+  const [faqFilter, setFaqFilter] = useState<"all" | "pro" | "biz">("all");
   const rows = view === "pro" ? professionalComparison : businessComparison;
+  const filteredFaqs =
+    faqFilter === "all"
+      ? faqs
+      : faqs.filter((f) => f.audience === faqFilter || f.audience === "both");
 
   return (
     <div className="min-h-screen bg-[hsl(40_33%_96%)]">
