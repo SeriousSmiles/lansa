@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Band, Display, Eyebrow, Lede, PillButton, ImageFrame } from "./_shared";
-import photo from "@/assets/landing/people/p1-couch-phone.jpg";
+ import photo from "@/assets/landing/people/e6bd84e6-4af2-4d51-af7a-79826e5fd1fb.png";
 
 export const ValuePropBand = () => {
   const navigate = useNavigate();
