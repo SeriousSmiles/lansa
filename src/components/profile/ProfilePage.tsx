@@ -2,9 +2,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useProfileData } from "@/hooks/useProfileData";
-import { ProfileLayout } from "./layout/ProfileLayout";
 import { ProfileContent } from "./layout/ProfileContent";
-import { ProfileFooter } from "./layout/ProfileFooter";
 import { useElementAnimation } from "@/utils/animationHelpers";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
