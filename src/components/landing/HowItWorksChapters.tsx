@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Band, Display, Eyebrow, Lede, ImageFrame } from "./_shared";
-import p2 from "@/assets/landing/people/p2-cafe-laptop.jpg";
+ import p2 from "@/assets/landing/people/b5e5303f-adff-42a5-894d-ec4b616f7f95.png";
 import p3 from "@/assets/landing/people/p3-desk-certificate.jpg";
 import p4 from "@/assets/landing/people/p4-videocall.jpg";
 
