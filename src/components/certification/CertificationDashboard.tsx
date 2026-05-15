@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import gsap from "gsap";
 import { PaymentModal } from "./PaymentModal";
-import { CertResult } from "@/types/certification";
+import { CertResult, Certification } from "@/types/certification";
 import { HubHero } from "./hub/HubHero";
 import { HubStoryBand } from "./hub/HubStoryBand";
 import { SectorShowcase, SECTORS, SectorProgress } from "./hub/SectorShowcase";
