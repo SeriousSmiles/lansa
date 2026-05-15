@@ -73,7 +73,7 @@ export function EducationSection({
 
   return (
     <Card>
-      <CardContent className="pt-6">
+      <CardContent className="p-4 md:p-6 md:pt-6">
         <EducationHeader 
           onAdd={onAddEducation ? () => setIsAddingEducation(true) : undefined}
           highlightColor={highlightColor}

@@ -33,7 +33,7 @@ export function ProfileContent({ profile, textColor, navigate, variant = "legacy
 
   const isPortal = variant === "portal";
   const sectionShell = isPortal
-    ? "rounded-3xl border border-border/40 bg-card/80 backdrop-blur-sm p-5 md:p-7 shadow-[0_1px_0_hsl(0_0%_0%/0.04),0_8px_24px_-16px_hsl(14_90%_60%/0.18)] transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_1px_0_hsl(0_0%_0%/0.04),0_16px_36px_-16px_hsl(14_90%_60%/0.28)]"
+    ? "md:rounded-3xl md:border md:border-border/40 md:bg-card/80 md:backdrop-blur-sm md:p-7 md:shadow-[0_1px_0_hsl(0_0%_0%/0.04),0_8px_24px_-16px_hsl(14_90%_60%/0.18)] md:transition-all md:hover:-translate-y-0.5 md:hover:border-primary/30 md:hover:shadow-[0_1px_0_hsl(0_0%_0%/0.04),0_16px_36px_-16px_hsl(14_90%_60%/0.28)]"
     : "hover-lift";
   
   // Animate elements when the page loads.
@@ -126,7 +126,7 @@ export function ProfileContent({ profile, textColor, navigate, variant = "legacy
       
       {/* Right Column - Experience & Education */}
       <div ref={contentRef} className="lg:col-span-8 min-w-0">
-        <div className="space-y-8">
+        <div className="space-y-4 md:space-y-8">
           {/* Profile completion engine — only renders when score < 85 */}
           <ProfileCompletionCard />
 
