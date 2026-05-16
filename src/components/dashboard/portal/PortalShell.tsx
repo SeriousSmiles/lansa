@@ -11,6 +11,7 @@ import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 import { ProfileCompletionCard } from "@/components/profile/ProfileCompletionCard";
 import { BrandImageSlot } from "./decor/BrandImageSlot";
 import { CertificationCtaSlot } from "./decor/CertificationCtaSlot";
+import dashboardCertCta from "@/assets/dashboard/cert-cta.jpg";
 import dashboardHero from "@/assets/dashboard/lansa-dashboard-hero.png";
 import dashboardMomentum from "@/assets/dashboard/lansa-dashboard-momentum.jpg";
 import dashboardEditorial from "@/assets/dashboard/lansa-dashboard-editorial.png";
@@ -61,7 +62,7 @@ export function PortalShell({ userName, role, goal, insight, openAIPlan }: Porta
 
             {/* Certification CTA — only renders when user has not yet passed an exam */}
             <div className="mt-6">
-              <CertificationCtaSlot />
+              <CertificationCtaSlot src={dashboardCertCta} />
             </div>
 
             {/* Zone B — Asymmetric 2-column workspace */}

@@ -1,4 +1,7 @@
 import { BrandImageSlot } from "@/components/dashboard/portal/decor/BrandImageSlot";
+import storyVerified from "@/assets/certification/cert-story-verified.jpg";
+import storyVisibility from "@/assets/certification/cert-story-visibility.jpg";
+import storyApply from "@/assets/certification/cert-story-apply.jpg";
 
 const CHAPTERS = [
   {
@@ -8,6 +11,7 @@ const CHAPTERS = [
       "Sector-specific exams test the things employers actually hire for — accountability, applied thinking, workplace intelligence — and put a verified mark on your profile.",
     placement: "image-left" as const,
     tone: "cream" as const,
+    src: storyVerified,
   },
   {
     eyebrow: "Chapter 02 · Show up where employers look",
@@ -16,6 +20,7 @@ const CHAPTERS = [
       "Certified profiles are the only ones surfaced in employer Browse and recommended candidate feeds. No certification, no shortlist.",
     placement: "image-right" as const,
     tone: "cream" as const,
+    src: storyVisibility,
   },
   {
     eyebrow: "Chapter 03 · Apply with weight behind your name",
@@ -24,6 +29,7 @@ const CHAPTERS = [
       "Once you're certified you can apply to real jobs from real Curaçao businesses — and your application lands with a verified badge attached.",
     placement: "image-left" as const,
     tone: "cream" as const,
+    src: storyApply,
   },
 ];
 
@@ -50,6 +56,7 @@ export function HubStoryBand() {
             eyebrow={c.eyebrow}
             headline={c.headline}
             body={c.body}
+            src={c.src}
           />
         ))}
       </div>
