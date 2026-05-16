@@ -1,0 +1,21 @@
+# Lansa
+
+> Lansa is Curaçao's career platform connecting certified job seekers, employers, and mentors. Build an AI-powered professional profile, earn a Lansa certification, and unlock real opportunities in the Caribbean job market.
+
+Lansa helps job seekers stand out with a verified profile and sector certification, gives employers access to vetted local talent, and supports mentors who guide the next generation of Curaçao professionals.
+
+## Pages
+
+- [Home](/): Overview of Lansa for job seekers, employers, and mentors.
+- [About](/about): Mission, team, and the Curaçao job market context.
+- [For Business](/for-business): Employer offering — browse certified candidates and post jobs.
+- [Pricing](/pricing): Plans for seekers, employers, and mentors in XCG.
+- [Help](/help): Support articles and FAQ.
+- [Resources](/resources): Career guides and learning content.
+- [Login](/login): Sign in to your Lansa account.
+- [Sign up](/signup): Create a new Lansa account.
+
+## Optional
+
+- [Privacy](/privacy): Privacy policy.
+- [Terms](/terms): Terms of service.
