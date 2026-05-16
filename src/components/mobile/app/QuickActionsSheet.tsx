@@ -40,6 +40,14 @@ export function QuickActionsSheet({ isOpen, onClose, userName, onAddAchievement 
 
   const getQuickActions = (): QuickAction[] => [
     {
+      id: 'get-certified',
+      label: 'Get Certified',
+      icon: ShieldCheck,
+      bgColor: 'bg-primary/10 hover:bg-primary/20',
+      iconColor: 'text-primary',
+      action: () => { navigate('/certification'); onClose(); }
+    },
+    {
       id: 'update-profile',
       label: 'Update Profile',
       icon: FileText,
