@@ -48,16 +48,9 @@ export const Header83 = (props: Header83Props) => {
   const opacityOverlay = useTransform(sectionProgress, [0, 0.4], [1, 0]);
   const scale = useTransform(sectionProgress, [0, 1], [3.2, 1]);
 
-  if (import.meta.env.DEV) {
-    useMotionValueEvent(sectionProgress, "change", (v) => {
-      // Debug: observe section progress especially on mobile
-      console.debug("Header83 sectionProgress:", Number(v).toFixed(3));
-    });
-  }
-
   return (
-    <section ref={containerRef} id="relume" className="relative h-screen overflow-hidden md:overflow-visible md:h-[300vh]">
-      <div className="md:sticky top-0 h-[100svh] overflow-hidden" style={{ height: '100dvh' }}>
+    <section ref={containerRef} id="relume" className="relative h-[250vh] overflow-visible md:h-[300vh]">
+      <div className="sticky top-0 h-[100svh] overflow-hidden" style={{ height: '100dvh' }}>
         <div className="flex h-full items-center justify-center">
           <div className="px-[5%] py-16 md:py-24 lg:py-28">
             <div className="relative z-10 mx-auto max-w-lg text-center">
