@@ -31,9 +31,9 @@
     margin: 0.5rem !important;
   }
   
-  /* Prevent horizontal scrolling */
+  /* Prevent horizontal overflow without breaking sticky scroll effects */
   body {
-    overflow-x: hidden;
+    overflow-x: clip;
   }
   
   /* Ensure popover content is properly sized */

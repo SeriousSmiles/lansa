@@ -49,7 +49,7 @@ export const Header83 = (props: Header83Props) => {
   const scale = useTransform(sectionProgress, [0, 1], [3.2, 1]);
 
   return (
-    <section ref={containerRef} id="relume" className="relative h-[250vh] overflow-visible md:h-[300vh]">
+    <section ref={containerRef} id="relume" className="relative h-[360vh] overflow-visible md:h-[300vh]">
       <div className="sticky top-0 h-[100svh] overflow-hidden" style={{ height: '100dvh' }}>
         <div className="flex h-full items-center justify-center">
           <div className="px-[5%] py-16 md:py-24 lg:py-28">

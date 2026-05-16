@@ -49,7 +49,7 @@ export function AppShell({ children }: AppShellProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background relative overflow-x-hidden">
+    <div className="min-h-screen bg-background relative overflow-x-clip">
       {/* Safe area top padding */}
       <div className="mobile-safe-top" />
 
