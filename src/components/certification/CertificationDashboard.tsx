@@ -102,7 +102,7 @@ export default function CertificationDashboard({ userId }: CertificationDashboar
   };
 
   return (
-    <div className="space-y-12 md:space-y-16 pb-4">
+    <div className="space-y-12 md:space-y-16 pb-4 pt-8 md:pt-12">
       <HubHero
         certifiedCount={certifiedCount}
         totalSectors={SECTORS.length}
