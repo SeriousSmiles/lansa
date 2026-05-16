@@ -5,6 +5,7 @@ import {
   Award, 
   FileText, 
   QrCode,
+  ShieldCheck,
   X,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -38,6 +39,14 @@ export function QuickActionsSheet({ isOpen, onClose, userName, onAddAchievement 
   const [showAchievementModal, setShowAchievementModal] = useState(false);
 
   const getQuickActions = (): QuickAction[] => [
+    {
+      id: 'get-certified',
+      label: 'Get Certified',
+      icon: ShieldCheck,
+      bgColor: 'bg-primary/10 hover:bg-primary/20',
+      iconColor: 'text-primary',
+      action: () => { navigate('/certification'); onClose(); }
+    },
     {
       id: 'update-profile',
       label: 'Update Profile',
