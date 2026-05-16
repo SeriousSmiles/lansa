@@ -2,9 +2,10 @@ import { BrandImageSlot } from "@/components/dashboard/portal/decor/BrandImageSl
 
 interface HubClosingCtaProps {
   onStart: () => void;
+  src?: string;
 }
 
-export function HubClosingCta({ onStart }: HubClosingCtaProps) {
+export function HubClosingCta({ onStart, src }: HubClosingCtaProps) {
   return (
     <BrandImageSlot
       aspect="wide"
@@ -14,6 +15,7 @@ export function HubClosingCta({ onStart }: HubClosingCtaProps) {
       headline="Your shortlist starts with one exam."
       body="Forty questions stand between your profile and the businesses hiring in Curaçao right now. Pick a sector and start."
       cta={{ label: "Start your certification", onClick: onStart }}
+      src={src}
     />
   );
 }

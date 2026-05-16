@@ -1,6 +1,10 @@
 import { Briefcase, Users, Wrench, Monitor } from "lucide-react";
 import { SectorFeatureCard } from "./SectorFeatureCard";
 import type { CertResult, Certification } from "@/types/certification";
+import sectorOffice from "@/assets/certification/sector-office.jpg";
+import sectorService from "@/assets/certification/sector-service.jpg";
+import sectorTechnical from "@/assets/certification/sector-technical.jpg";
+import sectorDigital from "@/assets/certification/sector-digital.jpg";
 
 export interface SectorProgress {
   sector: string;
@@ -20,6 +24,7 @@ export const SECTORS = [
     description: "Administrative, coordination, and operational work that keeps a business moving.",
     accent: "hsl(215 85% 55%)", // brand blue
     large: true,
+    image: sectorOffice,
   },
   {
     id: "service",
@@ -28,6 +33,7 @@ export const SECTORS = [
     description: "Customer-facing roles in hospitality, retail, and service where presence is everything.",
     accent: "hsl(14 90% 60%)", // brand orange
     large: true,
+    image: sectorService,
   },
   {
     id: "technical",
@@ -36,6 +42,7 @@ export const SECTORS = [
     description: "Hands-on, on-site and trade work that businesses rely on day to day.",
     accent: "#191f71", // deep blue
     large: false,
+    image: sectorTechnical,
   },
   {
     id: "digital",
@@ -44,6 +51,7 @@ export const SECTORS = [
     description: "Tech, marketing, and digital roles building the next generation of Curaçao.",
     accent: "hsl(14 90% 60%)", // orange (warm)
     large: false,
+    image: sectorDigital,
   },
 ] as const;
 
@@ -94,6 +102,7 @@ export function SectorShowcase({ progress, userId, onStart }: SectorShowcaseProp
               userId={userId}
               large
               onStart={() => onStart(s.id, s.name)}
+              src={s.image}
             />
           );
         })}
@@ -116,6 +125,7 @@ export function SectorShowcase({ progress, userId, onStart }: SectorShowcaseProp
               certification={p?.certification ?? null}
               userId={userId}
               onStart={() => onStart(s.id, s.name)}
+              src={s.image}
             />
           );
         })}

@@ -9,6 +9,8 @@ import { HubStoryBand } from "./hub/HubStoryBand";
 import { SectorShowcase, SECTORS, SectorProgress } from "./hub/SectorShowcase";
 import { HubOutcomesBand } from "./hub/HubOutcomesBand";
 import { HubClosingCta } from "./hub/HubClosingCta";
+import certHero from "@/assets/certification/cert-hero.jpg";
+import certClosing from "@/assets/certification/cert-closing.jpg";
 
 interface CertificationDashboardProps {
   userId: string;
@@ -109,6 +111,7 @@ export default function CertificationDashboard({ userId }: CertificationDashboar
         highestScore={highestScore}
         onPrimary={() => scrollTo("sectors")}
         onSecondary={() => scrollTo("how-it-works")}
+        src={certHero}
       />
 
       <HubStoryBand />
@@ -117,7 +120,7 @@ export default function CertificationDashboard({ userId }: CertificationDashboar
 
       <HubOutcomesBand />
 
-      <HubClosingCta onStart={startFirstAvailable} />
+      <HubClosingCta onStart={startFirstAvailable} src={certClosing} />
 
       <PaymentModal
         open={paymentModal.open}
