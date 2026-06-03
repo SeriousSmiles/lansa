@@ -7,17 +7,29 @@ const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')!;
 
 const fallbackBullets = (j: any): string[] => {
   const out: string[] = [];
-  if (j.title) out.push(`Role: ${j.title}`);
-  if (j.location) out.push(`Location: ${j.location}${j.is_remote ? ' (remote-friendly)' : ''}`);
-  if (Array.isArray(j.skills_required) && j.skills_required.length) {
-    out.push(`Key skills: ${j.skills_required.slice(0, 5).join(', ')}`);
+  if (j.is_remote) out.push('Remote-friendly');
+  if (j.location && !j.is_remote) out.push('On-site');
+  if (Array.isArray(j.skills_required)) {
+    for (const s of j.skills_required.slice(0, 3)) {
+      if (typeof s === 'string' && s.trim()) out.push(s.trim().slice(0, 28));
+    }
   }
-  if (j.description) {
-    const firstSentence = String(j.description).split(/(?<=[.!?])\s+/).slice(0, 1).join(' ');
-    if (firstSentence) out.push(firstSentence.trim());
-  }
-  if (j.salary_range) out.push(`Compensation: ${j.salary_range}`);
-  return out.slice(0, 5);
+  if (out.length < 3) out.push('Hiring now');
+  return Array.from(new Set(out)).slice(0, 5);
+};
+
+const cleanBullets = (raw: any): string[] => {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((b) => String(b ?? '').trim().replace(/[.!?,;:]+$/g, '').trim())
+    .filter((b) => b.length > 0)
+    .map((b) => (b.length > 30 ? b.slice(0, 28).trim() + '…' : b))
+    .slice(0, 6);
+};
+
+const isLegacyLong = (bullets: any): boolean => {
+  if (!Array.isArray(bullets)) return true;
+  return bullets.some((b) => typeof b === 'string' && b.length > 40);
 };
 
 Deno.serve(async (req) => {
@@ -45,13 +57,17 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (Array.isArray(job.ai_summary_bullets) && job.ai_summary_bullets.length >= 3) {
+    if (
+      Array.isArray(job.ai_summary_bullets) &&
+      job.ai_summary_bullets.length >= 3 &&
+      !isLegacyLong(job.ai_summary_bullets)
+    ) {
       return new Response(JSON.stringify({ bullets: job.ai_summary_bullets, cached: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const prompt = `Summarize this job posting into 3 to 5 concise, scannable bullet points for a candidate browsing on mobile. Each bullet under 14 words. Focus on what the role is, who it's for, key skills, working style (remote/onsite/team), and one standout perk if any. Do not repeat the job title verbatim. Do not mention compensation.\n\nJob title: ${job.title}\nLocation: ${job.location ?? 'N/A'}${job.is_remote ? ' (remote)' : ''}\nSkills: ${Array.isArray(job.skills_required) ? job.skills_required.join(', ') : ''}\nDescription:\n${job.description ?? ''}`;
+    const prompt = `Return 4 to 6 SHORT callout tags for this job posting — like chips on a card. Each tag MUST be 2 to 5 words, no sentences, no trailing punctuation, no emojis. Think: working style, seniority, sector, standout perk, one key skill. Examples: "Remote-friendly", "Entry-level", "Tourism sector", "Team role", "Fast-paced", "English required". Do NOT repeat the job title. Do NOT mention compensation.\n\nJob title: ${job.title}\nLocation: ${job.location ?? 'N/A'}${job.is_remote ? ' (remote)' : ''}\nSkills: ${Array.isArray(job.skills_required) ? job.skills_required.join(', ') : ''}\nDescription:\n${job.description ?? ''}`;
 
     let bullets: string[] = [];
     try {
@@ -92,11 +108,8 @@ Deno.serve(async (req) => {
         const json = await aiResp.json();
         const call = json.choices?.[0]?.message?.tool_calls?.[0];
         const args = call?.function?.arguments ? JSON.parse(call.function.arguments) : null;
-        if (args && Array.isArray(args.bullets) && args.bullets.length >= 3) {
-          bullets = args.bullets.slice(0, 5).map((b: any) => String(b).trim()).filter(Boolean);
-        } else {
-          bullets = fallbackBullets(job);
-        }
+        const cleaned = cleanBullets(args?.bullets);
+        bullets = cleaned.length >= 3 ? cleaned : fallbackBullets(job);
       }
     } catch (e) {
       console.error('AI call failed', e);

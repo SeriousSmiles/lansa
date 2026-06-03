@@ -29,8 +29,9 @@ export function BottomNav() {
   const [hidden, setHidden] = useState(false);
   const lastScrollY = useRef(0);
 
-  // Hide on active chat thread (full-screen chat)
+  // Hide on active chat thread (full-screen chat) and on mobile jobs swipe page
   const isActiveThread = /^\/chat\/.+/.test(location.pathname);
+  const isJobsPage = location.pathname === '/jobs';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,7 +46,7 @@ export function BottomNav() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  if (isActiveThread) return null;
+  if (isActiveThread || isJobsPage) return null;
 
   const tabs: NavTab[] = baseTabs.map(t =>
     t.id === 'messages' ? { ...t, badge: unreadCount || undefined } : t
