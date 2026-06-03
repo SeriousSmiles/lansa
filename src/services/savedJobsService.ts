@@ -49,28 +49,65 @@ export const savedJobsService = {
       .eq('direction', 'right')
       .order('created_at', { ascending: false });
 
-    if (error || !swipes?.length) return [];
-    const ids = swipes.map((s: any) => s.job_listing_id).filter(Boolean);
+    if (error) {
+      console.error('[savedJobs] swipes query failed', error);
+      return [];
+    }
+    if (!swipes?.length) return [];
+    const ids = Array.from(
+      new Set(swipes.map((s: any) => s.job_listing_id).filter(Boolean))
+    );
     if (!ids.length) return [];
 
     const { data: jobs, error: jErr } = await supabase
       .from('job_listings_v2')
-      .select(`
-        id, title, description, location, category, job_type, is_remote,
-        salary_range, image_url, skills_required, company_id, organization_id,
-        created_at, is_active,
-        companies(name, logo_url),
-        organizations(name, logo_url)
-      `)
+      .select(
+        'id, title, description, location, category, job_type, is_remote, salary_range, image_url, skills_required, company_id, organization_id, created_at, is_active'
+      )
       .in('id', ids);
 
-    if (jErr || !jobs) return [];
+    if (jErr) {
+      console.error('[savedJobs] jobs query failed', jErr);
+      return [];
+    }
+    if (!jobs?.length) {
+      console.warn('[savedJobs] no matching jobs for swiped ids', { ids });
+      return [];
+    }
+
+    // Fetch related orgs/companies separately so an ambiguous PostgREST embed
+    // (or RLS surprise on the join) can't silently swallow the whole list.
+    const orgIds = Array.from(
+      new Set(jobs.map((j: any) => j.organization_id).filter(Boolean))
+    );
+    const companyIds = Array.from(
+      new Set(jobs.map((j: any) => j.company_id).filter(Boolean))
+    );
+
+    const [orgsRes, companiesRes] = await Promise.all([
+      orgIds.length
+        ? supabase.from('organizations').select('id, name, logo_url').in('id', orgIds)
+        : Promise.resolve({ data: [], error: null } as any),
+      companyIds.length
+        ? supabase.from('companies').select('id, name, logo_url').in('id', companyIds)
+        : Promise.resolve({ data: [], error: null } as any),
+    ]);
+
+    const orgMap = new Map<string, any>(
+      ((orgsRes as any).data || []).map((o: any) => [o.id, o])
+    );
+    const companyMap = new Map<string, any>(
+      ((companiesRes as any).data || []).map((c: any) => [c.id, c])
+    );
 
     const byId = new Map<string, any>(jobs.map((j: any) => [j.id, j]));
     return ids
       .map((id) => byId.get(id))
       .filter(Boolean)
-      .map((j: any): JobListing => ({
+      .map((j: any): JobListing => {
+        const org = j.organization_id ? orgMap.get(j.organization_id) : null;
+        const company = j.company_id ? companyMap.get(j.company_id) : null;
+        return {
         id: j.id,
         business_id: j.company_id,
         title: j.title,
@@ -88,14 +125,15 @@ export const savedJobsService = {
         job_type: j.job_type,
         is_remote: j.is_remote,
         organization_id: j.organization_id,
-        organizations: j.organizations || undefined,
-        company_name: j.organizations?.name || j.companies?.name,
-        logo_url: j.organizations?.logo_url || j.companies?.logo_url,
+        organizations: org || undefined,
+        company_name: org?.name || company?.name,
+        logo_url: org?.logo_url || company?.logo_url,
         business_profiles: {
-          company_name: j.organizations?.name || j.companies?.name || 'Company',
-          organizations: j.organizations || undefined,
+          company_name: org?.name || company?.name || 'Company',
+          organizations: org || undefined,
         },
-      }));
+        };
+      });
   },
 
   async removeSavedJob(swiperId: string, jobId: string) {
