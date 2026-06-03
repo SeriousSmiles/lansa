@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { PortalPageShell } from "@/components/dashboard/portal/PortalPageShell";
 import { LearningJobPostCard } from "@/components/jobs/LearningJobPostCard";
@@ -6,7 +6,7 @@ import { CertificationTeaserBanner } from "@/components/jobs/CertificationTeaser
 import { JobDetailPanel } from "@/components/jobs/JobDetailPanel";
 import { LearningJobFilters } from "@/components/jobs/LearningJobFilters";
 import { Button } from "@/components/ui/button";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Search, Bookmark } from "lucide-react";
 import { 
   LearningJobListing, 
   learningJobFeedService,
@@ -14,9 +14,18 @@ import {
 } from "@/services/learningJobFeedService";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { JobSwipeDeck } from "@/components/mobile/jobs/JobSwipeDeck";
+import { SavedJobsList } from "@/components/mobile/jobs/SavedJobsList";
+import { savedJobsService } from "@/services/savedJobsService";
+import type { JobListing } from "@/services/jobFeedService";
+import { cn } from "@/lib/utils";
+
+type MobileTab = "discover" | "saved";
 
 export default function LearningJobFeed() {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [jobs, setJobs] = useState<LearningJobListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState<LearningJobListing | null>(null);
@@ -24,6 +33,9 @@ export default function LearningJobFeed() {
   const [isCertified, setIsCertified] = useState(false);
   const [isTeaser, setIsTeaser] = useState(false);
   const [hasRecommendations, setHasRecommendations] = useState(false);
+  const [mobileTab, setMobileTab] = useState<MobileTab>("discover");
+  const [swipedIds, setSwipedIds] = useState<Set<string>>(new Set());
+  const [sessionSwiped, setSessionSwiped] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState<LearningFeedFilters>({
     categories: [],
     job_types: [],
@@ -37,6 +49,15 @@ export default function LearningJobFeed() {
       loadJobs();
     }
   }, [user, filters]);
+
+  useEffect(() => {
+    if (!user || !isMobile) return;
+    let alive = true;
+    savedJobsService.getSwipedJobIds(user.id).then((ids) => {
+      if (alive) setSwipedIds(new Set(ids));
+    });
+    return () => { alive = false; };
+  }, [user, isMobile]);
 
   const checkCertification = async () => {
     if (!user) return;
@@ -67,6 +88,21 @@ export default function LearningJobFeed() {
 
   const handleFilterChange = (newFilters: Partial<LearningFeedFilters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
+  };
+
+  const deckJobs = useMemo(
+    () => (jobs as unknown as JobListing[]).filter(
+      (j) => !swipedIds.has(j.id) && !sessionSwiped.has(j.id)
+    ),
+    [jobs, swipedIds, sessionSwiped]
+  );
+
+  const handleJobSwiped = (jobId: string) => {
+    setSessionSwiped((prev) => {
+      const next = new Set(prev);
+      next.add(jobId);
+      return next;
+    });
   };
 
   const handleApply = async (jobId: string) => {
@@ -101,6 +137,55 @@ export default function LearningJobFeed() {
 
   const filtersAndList = (
     <>
+      {isMobile && user && (
+        <div className="mb-4 flex items-center gap-1 p-1 bg-muted rounded-lg w-full">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "flex-1 gap-2 rounded-md transition-all",
+              mobileTab === "discover" && "bg-background shadow-sm"
+            )}
+            onClick={() => setMobileTab("discover")}
+          >
+            <Search className="h-4 w-4" /> Discover
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "flex-1 gap-2 rounded-md transition-all",
+              mobileTab === "saved" && "bg-background shadow-sm"
+            )}
+            onClick={() => setMobileTab("saved")}
+          >
+            <Bookmark className="h-4 w-4" /> Saved
+          </Button>
+        </div>
+      )}
+
+      {isMobile && user && mobileTab === "saved" ? (
+        <SavedJobsList
+          swiperId={user.id}
+          onApply={handleApply}
+          onViewDetails={(j) => setSelectedJob(j as unknown as LearningJobListing)}
+        />
+      ) : isMobile && user ? (
+        loading ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <JobSwipeDeck
+            jobs={deckJobs}
+            swiperId={user.id}
+            onOpenDetails={(j) => setSelectedJob(j as unknown as LearningJobListing)}
+            onRefresh={loadJobs}
+            onJobSwiped={handleJobSwiped}
+          />
+        )
+      ) : (
+        <>
       {showFilters && (
         <div className="mb-6">
           <LearningJobFilters
@@ -140,6 +225,8 @@ export default function LearningJobFeed() {
             No jobs found matching your criteria. Try adjusting your filters.
           </p>
         </div>
+      )}
+        </>
       )}
 
       <JobDetailPanel
