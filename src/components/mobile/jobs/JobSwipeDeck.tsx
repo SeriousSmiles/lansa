@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValue, useTransform } from "framer-motion";
+import type { PanInfo } from "framer-motion";
 import { toast } from "sonner";
 import { Sparkles } from "lucide-react";
 import { JobListing } from "@/services/jobFeedService";
@@ -89,7 +90,7 @@ export function JobSwipeDeck({
       });
   };
 
-  const handleDragEnd = (_: any, info: { offset: { x: number }; velocity: { x: number } }) => {
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (animating.current) return;
     const dx = info.offset.x;
     const vx = info.velocity.x;
