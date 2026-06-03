@@ -209,7 +209,12 @@ function JobDetailContent({ job, onApply, disableApply, onClose }: Omit<JobDetai
               </div>
               <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                 <Clock className="w-3 h-3" />
-                <span>Posted {formatDistanceToNow(new Date(job.posted_at), { addSuffix: true })}</span>
+                <span>Posted {(() => {
+                  const d = job.posted_at ? new Date(job.posted_at) : null;
+                  return d && !isNaN(d.getTime())
+                    ? formatDistanceToNow(d, { addSuffix: true })
+                    : "recently";
+                })()}</span>
               </div>
             </div>
           </div>
