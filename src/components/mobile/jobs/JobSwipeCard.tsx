@@ -1,5 +1,5 @@
 import { motion, MotionValue, useTransform } from "framer-motion";
-import { Building2, MapPin, Briefcase, Sparkles, Wallet, Wifi, Eye, Users } from "lucide-react";
+import { Building2, MapPin, Briefcase, Sparkles, Wallet, Wifi } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { JobListing } from "@/services/jobFeedService";
 import { getJobLogo } from "@/utils/getJobLogo";
@@ -54,6 +54,15 @@ export function JobSwipeCard({ job, x, isTop = false, onTap, depth = 0 }: JobSwi
   const heroImage = (job as any).image_url as string | undefined;
   const topBullets = bullets.slice(0, 3);
 
+  // Resolve compensation with fallbacks
+  const parsedComp = (() => {
+    const desc = (job as any).description as string | undefined;
+    if (!desc) return null;
+    const m = desc.match(/\*\*Compensation:?\*\*\s*(.*?)(?=\n\*\*|\n\n|$)/i);
+    return m ? m[1].trim() : null;
+  })();
+  const compensation = job.salary_range || parsedComp || "Compensation on request";
+
   const quickStats: { icon: React.ReactNode; label: string; value: string }[] = [];
   if (job.location) {
     quickStats.push({
@@ -105,14 +114,6 @@ export function JobSwipeCard({ job, x, isTop = false, onTap, depth = 0 }: JobSwi
 
         {/* Gradient scrim for legibility */}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
-
-        {/* Compensation pill */}
-        {job.salary_range && (
-          <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-background/85 backdrop-blur-md border border-border/60 text-[11px] text-foreground/80">
-            <Wallet className="w-3 h-3 text-primary" />
-            <span className="font-normal">{job.salary_range}</span>
-          </div>
-        )}
 
         {/* Company chip on hero */}
         <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2">
@@ -189,12 +190,22 @@ export function JobSwipeCard({ job, x, isTop = false, onTap, depth = 0 }: JobSwi
         )}
 
         {/* Footer hint */}
-        <div className="mt-auto pt-3 flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground">
-          <span className="inline-flex items-center gap-1">
-            <Eye className="w-3 h-3" /> Tap for details
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <Users className="w-3 h-3" /> Swipe to decide
+        <div className="mt-auto pt-3 border-t border-border/50 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Wallet className="w-4 h-4 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[9px] uppercase tracking-wider text-muted-foreground leading-none">
+                Compensation
+              </p>
+              <p className="text-[12px] font-medium text-foreground truncate mt-0.5">
+                {compensation}
+              </p>
+            </div>
+          </div>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground flex-shrink-0">
+            Tap for details →
           </span>
         </div>
       </div>
