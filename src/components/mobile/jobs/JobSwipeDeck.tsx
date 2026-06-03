@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValue, useTransform } from "framer-motion";
+import type { PanInfo } from "framer-motion";
 import { toast } from "sonner";
 import { Sparkles } from "lucide-react";
 import { JobListing } from "@/services/jobFeedService";
@@ -26,14 +27,23 @@ export function JobSwipeDeck({
   onRefresh,
   onJobSwiped,
 }: JobSwipeDeckProps) {
-  const [index, setIndex] = useState(0);
+  const [deck, setDeck] = useState<JobListing[]>(jobs);
   const [exitDir, setExitDir] = useState<0 | 1 | -1>(0);
+  const [isSettling, setIsSettling] = useState(false);
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-220, 0, 220], [-14, 0, 14]);
   const animating = useRef(false);
+  const latestJobs = useRef(jobs);
+  const dismissedIds = useRef(new Set<string>());
 
-  const current = jobs[index];
-  const upcoming = useMemo(() => jobs.slice(index + 1, index + 3), [jobs, index]);
+  const current = deck[0];
+  const upcoming = useMemo(() => deck.slice(1, 3), [deck]);
+
+  useEffect(() => {
+    latestJobs.current = jobs;
+    if (animating.current) return;
+    setDeck(jobs.filter((job) => !dismissedIds.current.has(job.id)));
+  }, [jobs]);
 
   // Prefetch summaries for next cards
   useEffect(() => {
@@ -42,33 +52,46 @@ export function JobSwipeDeck({
   }, [current, upcoming]);
 
   useEffect(() => {
-    if (index >= jobs.length && jobs.length > 0) onExhausted?.();
-  }, [index, jobs.length, onExhausted]);
+    if (deck.length === 0 && jobs.length > 0) onExhausted?.();
+  }, [deck.length, jobs.length, onExhausted]);
 
-  const commit = async (direction: 'left' | 'right') => {
-    if (!current || animating.current) return;
-    animating.current = true;
-    setExitDir(direction === 'right' ? 1 : -1);
-    try {
-      await savedJobsService.recordJobSwipe({ swiperId, job: current, direction });
-      onJobSwiped?.(current.id, direction);
-      if (direction === 'right') {
-        toast.success("Saved to your Interested list");
-      }
-    } catch (e) {
-      toast.error("Couldn't record swipe");
-    } finally {
-      // Let exit animation finish then advance
-      setTimeout(() => {
-        setIndex((i) => i + 1);
-        x.set(0);
-        setExitDir(0);
-        animating.current = false;
-      }, 220);
-    }
+  const reconcileDeck = () => {
+    setDeck(latestJobs.current.filter((job) => !dismissedIds.current.has(job.id)));
   };
 
-  const handleDragEnd = (_: any, info: { offset: { x: number }; velocity: { x: number } }) => {
+  const commit = (direction: 'left' | 'right') => {
+    const swipedJob = current;
+    if (!swipedJob || animating.current) return;
+    animating.current = true;
+    setIsSettling(true);
+    setExitDir(direction === 'right' ? 1 : -1);
+
+    dismissedIds.current.add(swipedJob.id);
+    setDeck((prev) => prev.filter((job) => job.id !== swipedJob.id));
+    window.setTimeout(() => {
+      x.set(0);
+      reconcileDeck();
+      setExitDir(0);
+      animating.current = false;
+      setIsSettling(false);
+    }, 220);
+
+    savedJobsService.recordJobSwipe({ swiperId, job: swipedJob, direction })
+      .then(() => {
+        onJobSwiped?.(swipedJob.id, direction);
+        if (direction === 'right') {
+          toast.success("Saved to your Interested list");
+        }
+      })
+      .catch(() => {
+        dismissedIds.current.delete(swipedJob.id);
+        if (!animating.current) reconcileDeck();
+        toast.error("Couldn't record swipe");
+      });
+  };
+
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (animating.current) return;
     const dx = info.offset.x;
     const vx = info.velocity.x;
     const threshold = 110;
@@ -80,8 +103,8 @@ export function JobSwipeDeck({
     if (animating.current) return;
     const removed = await savedJobsService.undoLastSwipe(swiperId);
     if (removed) {
-      // Step back one if possible
-      setIndex((i) => Math.max(0, i - 1));
+      dismissedIds.current.delete(removed);
+      reconcileDeck();
       toast("Undone");
     } else {
       toast("Nothing to undo");
@@ -161,7 +184,7 @@ export function JobSwipeDeck({
             key={current.id}
             className="absolute inset-0"
             style={{ x, rotate, zIndex: 20, touchAction: 'pan-y' }}
-            drag="x"
+            drag={isSettling ? false : "x"}
             dragElastic={0.6}
             dragConstraints={{ left: 0, right: 0 }}
             onDragEnd={handleDragEnd}
@@ -190,6 +213,7 @@ export function JobSwipeDeck({
         onInterested={() => commit('right')}
         onUndo={handleUndo}
         onDetails={() => onOpenDetails(current)}
+        disabled={isSettling}
       />
     </div>
   );
