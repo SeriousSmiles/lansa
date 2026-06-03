@@ -56,7 +56,7 @@ export function PortalPageShell({
           {fullBleed ? (
             <div className="w-full">{children}</div>
           ) : (
-            <div className="mx-auto w-full max-w-[1440px] px-6 lg:px-10 xl:px-14 pb-24">
+            <div className="mx-auto w-full max-w-[1440px] px-6 lg:px-10 xl:px-14 pb-6 md:pb-24">
               {showHeader && (
                 <div className={cn("flex items-end justify-between gap-6 flex-wrap", tightTop ? "pt-6" : "pt-8 md:pt-12 pb-6 border-b border-border/30")}>
                   <div className="min-w-0">
