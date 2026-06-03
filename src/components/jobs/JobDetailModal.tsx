@@ -4,10 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { JobListing } from "@/services/jobFeedService";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { JobImageModal } from "./JobImageModal";
 import { getJobLogo } from "@/utils/getJobLogo";
 import { formatDistanceToNow } from "date-fns";
+import { savedJobsService } from "@/services/savedJobsService";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface JobDetailModalProps {
   job: JobListing | null;
@@ -19,8 +22,48 @@ interface JobDetailModalProps {
 export function JobDetailModal({ job, isOpen, onClose, onApply }: JobDetailModalProps) {
   const [showImageModal, setShowImageModal] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!job) return;
+    setIsSaved(false);
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || cancelled) return;
+      const saved = await savedJobsService.isJobSaved(user.id, job.id);
+      if (!cancelled) setIsSaved(saved);
+    })();
+    return () => { cancelled = true; };
+  }, [job?.id]);
+
   if (!job) return null;
+
+  const handleToggleSave = async () => {
+    if (saving) return;
+    setSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please sign in to save jobs");
+        return;
+      }
+      if (isSaved) {
+        await savedJobsService.removeSavedJob(user.id, job.id);
+        setIsSaved(false);
+        toast("Removed from your Interested list");
+      } else {
+        await savedJobsService.saveJob({ swiperId: user.id, job: job as any });
+        setIsSaved(true);
+        toast.success("Saved to your Interested list");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Couldn't update saved jobs");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const hasApplied = job.job_applications && job.job_applications.length > 0;
 
@@ -83,7 +126,8 @@ export function JobDetailModal({ job, isOpen, onClose, onApply }: JobDetailModal
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setIsSaved(!isSaved)}
+                  onClick={handleToggleSave}
+                  disabled={saving}
                   className="rounded-full hover:bg-accent flex-shrink-0"
                 >
                   <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-current text-primary' : ''}`} />
