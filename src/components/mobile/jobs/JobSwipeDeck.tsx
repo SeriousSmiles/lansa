@@ -129,11 +129,11 @@ export function JobSwipeDeck({
   }
 
   return (
-    <div className="w-full flex flex-col items-center">
-      {/* Deck */}
+    <div className="w-full flex-1 min-h-0 flex flex-col items-center">
+      {/* Deck — fills available height so action bar stays pinned without scrolling */}
       <div
-        className="relative w-full max-w-[420px] mx-auto"
-        style={{ height: 'min(72vh, 620px)' }}
+        className="relative w-full max-w-[420px] mx-auto flex-1 min-h-0"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         {/* Background cards (peek) */}
         {upcoming.map((j, i) => {
