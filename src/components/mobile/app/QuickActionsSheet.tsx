@@ -7,6 +7,12 @@ import {
   QrCode,
   ShieldCheck,
   X,
+  Brain,
+  Sparkles,
+  BookOpen,
+  Video,
+  Bell,
+  LogOut,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -33,7 +39,7 @@ interface QuickActionsSheetProps {
 
 export function QuickActionsSheet({ isOpen, onClose, userName, onAddAchievement }: QuickActionsSheetProps) {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth() as any;
   const [showCVModal, setShowCVModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [showAchievementModal, setShowAchievementModal] = useState(false);
@@ -82,6 +88,49 @@ export function QuickActionsSheet({ isOpen, onClose, userName, onAddAchievement 
   ];
 
   const actions = getQuickActions();
+
+  const navItems: QuickAction[] = [
+    {
+      id: 'ai-coach',
+      label: 'AI Coach',
+      icon: Brain,
+      bgColor: 'bg-primary/10 hover:bg-primary/20',
+      iconColor: 'text-primary',
+      action: () => { navigate('/dashboard?panel=ai'); onClose(); },
+    },
+    {
+      id: 'career-plan',
+      label: 'Career Plan',
+      icon: Sparkles,
+      bgColor: 'bg-primary/10 hover:bg-primary/20',
+      iconColor: 'text-primary',
+      action: () => { navigate('/dashboard?focus=plan'); onClose(); },
+    },
+    {
+      id: 'resources',
+      label: 'Resources',
+      icon: BookOpen,
+      bgColor: 'bg-blue-500/10 hover:bg-blue-500/20',
+      iconColor: 'text-blue-500',
+      action: () => { navigate('/resources'); onClose(); },
+    },
+    {
+      id: 'content',
+      label: 'Content',
+      icon: Video,
+      bgColor: 'bg-blue-500/10 hover:bg-blue-500/20',
+      iconColor: 'text-blue-500',
+      action: () => { navigate('/content'); onClose(); },
+    },
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      icon: Bell,
+      bgColor: 'bg-yellow-500/10 hover:bg-yellow-500/20',
+      iconColor: 'text-yellow-500',
+      action: () => { navigate('/notifications'); onClose(); },
+    },
+  ];
 
   const handleCVUploadComplete = () => setShowCVModal(false);
 
@@ -149,6 +198,45 @@ export function QuickActionsSheet({ isOpen, onClose, userName, onAddAchievement 
                     </motion.button>
                   );
                 })}
+              </div>
+
+              {/* Navigate section */}
+              <div className="mt-6">
+                <div className="px-1 pb-3 text-[11px] uppercase tracking-[0.14em] text-muted-foreground font-medium">
+                  Navigate
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {navItems.map((item, index) => {
+                    const Icon = item.icon;
+                    return (
+                      <motion.button
+                        key={item.id}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.05 * index }}
+                        onClick={item.action}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-all duration-200 touch-target active:scale-[0.98]"
+                      >
+                        <div className={`h-9 w-9 rounded-lg ${item.bgColor} flex items-center justify-center shrink-0`}>
+                          <Icon className={`h-4 w-4 ${item.iconColor}`} />
+                        </div>
+                        <span className="text-sm font-medium text-foreground text-left">
+                          {item.label}
+                        </span>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+
+                {signOut && (
+                  <button
+                    onClick={() => { signOut(); onClose(); }}
+                    className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors touch-target"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign out
+                  </button>
+                )}
               </div>
 
               {/* Safe area */}
