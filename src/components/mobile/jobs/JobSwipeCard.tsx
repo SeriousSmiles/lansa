@@ -45,7 +45,12 @@ function SwipeOverlays({ x }: { x: MotionValue<number> }) {
 export function JobSwipeCard({ job, x, isTop = false, onTap, depth = 0 }: JobSwipeCardProps) {
   const { bullets, loading } = useJobAISummary(job.id, depth <= 1);
   const logo = getJobLogo(job);
-  const company = job.business_profiles?.company_name || job.company_name || "Company";
+  const company =
+    job.business_profiles?.company_name ||
+    (job as any).company_name ||
+    (job as any).organizations?.name ||
+    (job as any).companies?.name ||
+    "Company";
   const heroImage = (job as any).image_url as string | undefined;
   const topBullets = bullets.slice(0, 3);
 
