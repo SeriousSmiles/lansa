@@ -66,9 +66,10 @@ export function JobSwipeDeck({
     setExitDir(direction === 'right' ? 1 : -1);
 
     dismissedIds.current.add(swipedJob.id);
+    setDeck((prev) => prev.filter((job) => job.id !== swipedJob.id));
     window.setTimeout(() => {
-      reconcileDeck();
       x.set(0);
+      reconcileDeck();
       setExitDir(0);
       animating.current = false;
       setIsSettling(false);
@@ -77,9 +78,9 @@ export function JobSwipeDeck({
     savedJobsService.recordJobSwipe({ swiperId, job: swipedJob, direction })
       .then(() => {
         onJobSwiped?.(swipedJob.id, direction);
-      if (direction === 'right') {
-        toast.success("Saved to your Interested list");
-      }
+        if (direction === 'right') {
+          toast.success("Saved to your Interested list");
+        }
       })
       .catch(() => {
         dismissedIds.current.delete(swipedJob.id);
