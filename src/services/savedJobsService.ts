@@ -62,7 +62,7 @@ export const savedJobsService = {
     const { data: jobs, error: jErr } = await supabase
       .from('job_listings_v2')
       .select(
-        'id, title, description, location, category, job_type, is_remote, salary_range, image_url, skills_required, company_id, organization_id, created_at, is_active'
+        'id, title, description, location, category, job_type, is_remote, salary_range, image_url, skills_required, company_id, organization_id, created_by, posted_at, is_active'
       )
       .in('id', ids);
 
@@ -109,15 +109,15 @@ export const savedJobsService = {
         const company = j.company_id ? companyMap.get(j.company_id) : null;
         return {
         id: j.id,
-        business_id: j.company_id,
+        business_id: j.company_id || j.created_by,
         title: j.title,
         description: j.description,
         location: j.location,
         top_skills: Array.isArray(j.skills_required) ? j.skills_required : [],
         mode: 'employee',
         is_active: j.is_active,
-        created_at: j.created_at,
-        updated_at: j.created_at,
+        created_at: j.posted_at,
+        updated_at: j.posted_at,
         image_url: j.image_url,
         target_user_types: [],
         category: j.category,
