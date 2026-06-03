@@ -37,7 +37,7 @@ export function PortalShell({ userName, role, goal, insight, openAIPlan }: Porta
 
       <div className="flex-1 min-w-0 flex flex-col">
         <main className="flex-1">
-          <div className="mx-auto w-full max-w-[1440px] px-6 lg:px-10 xl:px-14 pb-24">
+          <div className="mx-auto w-full max-w-[1440px] px-6 lg:px-10 xl:px-14 pb-6 md:pb-24">
             {/* Zone A — Welcome (full bleed) */}
             <WelcomeStrip userName={userName} insight={insight} completeness={completeness} />
 
