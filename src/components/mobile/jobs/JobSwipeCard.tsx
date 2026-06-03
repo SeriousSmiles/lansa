@@ -132,7 +132,7 @@ export function JobSwipeCard({ job, x, isTop = false, onTap, depth = 0 }: JobSwi
             {bullets.map((b, i) => (
               <span
                 key={i}
-                className="inline-flex items-center px-3 py-1.5 rounded-full bg-primary/8 border border-primary/15 text-[12px] leading-none text-foreground/85"
+                className="inline-flex items-center px-3 py-1.5 rounded-xl bg-primary/8 border border-primary/15 text-[12px] leading-none text-foreground/85"
               >
                 {b}
               </span>
