@@ -11,7 +11,10 @@ interface SwipeActionBarProps {
 
 export function SwipeActionBar({ onPass, onInterested, onUndo, onDetails, disabled }: SwipeActionBarProps) {
   return (
-    <div className="flex items-center justify-center gap-4 pt-4 pb-2">
+    <div
+      className="flex-shrink-0 flex items-center justify-center gap-4 pt-3 pb-2"
+      style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
+    >
       <Button
         size="icon"
         variant="outline"
