@@ -1102,6 +1102,7 @@ export type Database = {
       }
       job_listings_v2: {
         Row: {
+          ai_summary_bullets: Json | null
           category: string
           company_id: string
           created_by: string | null
@@ -1122,6 +1123,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          ai_summary_bullets?: Json | null
           category: string
           company_id: string
           created_by?: string | null
@@ -1142,6 +1144,7 @@ export type Database = {
           title: string
         }
         Update: {
+          ai_summary_bullets?: Json | null
           category?: string
           company_id?: string
           created_by?: string | null
@@ -2193,15 +2196,7 @@ export type Database = {
           swiper_user_id?: string
           target_user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "swipes_job_listing_id_fkey"
-            columns: ["job_listing_id"]
-            isOneToOne: false
-            referencedRelation: "job_listings"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_90day_goal: {
         Row: {
@@ -3294,7 +3289,7 @@ export type Database = {
       intent_stage: "upgrade_ready" | "downgrade_risk" | "cancel_risk" | "none"
       interaction_type: "view" | "save" | "apply" | "ignore" | "share"
       job_type: "full_time" | "part_time" | "contract" | "internship"
-      match_context: "employee" | "internship"
+      match_context: "employee" | "internship" | "job"
       mentor_type: "teacher" | "coach" | "organization"
       notification_type:
         | "org_request_received"
@@ -3476,7 +3471,7 @@ export const Constants = {
       intent_stage: ["upgrade_ready", "downgrade_risk", "cancel_risk", "none"],
       interaction_type: ["view", "save", "apply", "ignore", "share"],
       job_type: ["full_time", "part_time", "contract", "internship"],
-      match_context: ["employee", "internship"],
+      match_context: ["employee", "internship", "job"],
       mentor_type: ["teacher", "coach", "organization"],
       notification_type: [
         "org_request_received",
