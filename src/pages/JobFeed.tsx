@@ -1,12 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Loader2, Filter, Search, ClipboardList } from "lucide-react";
+import { ArrowLeft, Loader2, Filter, Search, ClipboardList, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { JobPostCard } from "@/components/jobs/JobPostCard";
 import { JobFilters } from "@/components/jobs/JobFilters";
 import { JobDetailModal } from "@/components/jobs/JobDetailModal";
 import { MyApplications } from "@/components/jobs/MyApplications";
 import { jobFeedService, JobListing } from "@/services/jobFeedService";
+import { savedJobsService } from "@/services/savedJobsService";
+import { JobSwipeDeck } from "@/components/mobile/jobs/JobSwipeDeck";
+import { SavedJobsList } from "@/components/mobile/jobs/SavedJobsList";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SEOHead } from "@/components/SEOHead";
 import { PreferenceSetupModal } from "@/components/preferences/PreferenceSetupModal";
@@ -20,7 +23,7 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 
-type TabValue = "discover" | "applications";
+type TabValue = "discover" | "saved" | "applications";
 
 export default function JobFeed() {
   const { user } = useAuth();
@@ -31,6 +34,8 @@ export default function JobFeed() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabValue>("discover");
   const [applicationCount, setApplicationCount] = useState(0);
+  const [swipedIds, setSwipedIds] = useState<Set<string>>(new Set());
+  const [sessionSwiped, setSessionSwiped] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState({
     category: 'all',
     jobType: 'all',
@@ -54,6 +59,16 @@ export default function JobFeed() {
     // Load application count on mount
     loadApplicationCount();
   }, []);
+
+  // Load already-swiped job ids once per user so the deck excludes them
+  useEffect(() => {
+    if (!user || !isMobile) return;
+    let alive = true;
+    savedJobsService.getSwipedJobIds(user.id).then((ids) => {
+      if (alive) setSwipedIds(new Set(ids));
+    });
+    return () => { alive = false; };
+  }, [user, isMobile]);
 
   const loadApplicationCount = async () => {
     const apps = await jobFeedService.getMyApplications();
@@ -90,6 +105,19 @@ export default function JobFeed() {
       loadApplicationCount();
       setSelectedJob(null);
     }
+  };
+
+  const deckJobs = useMemo(
+    () => jobs.filter((j) => !swipedIds.has(j.id) && !sessionSwiped.has(j.id)),
+    [jobs, swipedIds, sessionSwiped]
+  );
+
+  const handleJobSwiped = (jobId: string, _direction: 'left' | 'right') => {
+    setSessionSwiped((prev) => {
+      const next = new Set(prev);
+      next.add(jobId);
+      return next;
+    });
   };
 
   return (
@@ -140,6 +168,20 @@ export default function JobFeed() {
                   <Search className="h-4 w-4" />
                   <span className="hidden sm:inline">Discover</span>
                 </Button>
+                {isMobile && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "gap-2 rounded-md transition-all",
+                      activeTab === "saved" && "bg-background shadow-sm"
+                    )}
+                    onClick={() => setActiveTab("saved")}
+                  >
+                    <Bookmark className="h-4 w-4" />
+                    <span className="hidden sm:inline">Saved</span>
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -167,7 +209,15 @@ export default function JobFeed() {
 
         {/* Main Content */}
         <div className="container mx-auto max-w-[1600px] px-4 py-6 lg:py-8">
-          {activeTab === "discover" ? (
+          {activeTab === "saved" && isMobile && user ? (
+            <div className="max-w-xl mx-auto">
+              <SavedJobsList
+                swiperId={user.id}
+                onApply={handleApply}
+                onViewDetails={setSelectedJob}
+              />
+            </div>
+          ) : activeTab === "discover" ? (
             <div className="flex flex-col lg:flex-row gap-6">
               {/* Mobile Filters */}
               {isMobile ? (
@@ -205,6 +255,14 @@ export default function JobFeed() {
                   <div className="flex items-center justify-center py-20">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
                   </div>
+                ) : isMobile && user ? (
+                  <JobSwipeDeck
+                    jobs={deckJobs}
+                    swiperId={user.id}
+                    onOpenDetails={setSelectedJob}
+                    onRefresh={loadJobs}
+                    onJobSwiped={handleJobSwiped}
+                  />
                 ) : jobs.length === 0 ? (
                   <div className="text-center py-20">
                     <p className="text-lg text-muted-foreground">
