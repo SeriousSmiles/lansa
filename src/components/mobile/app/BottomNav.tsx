@@ -81,12 +81,14 @@ export function BottomNav() {
           {tabs.map((tab) => {
             if (tab.id === 'center') {
               return (
-                <div key={tab.id} className="flex justify-center -mt-6">
+                <div key={tab.id} className="flex justify-center -mt-10">
                   <motion.button
                     onClick={handleFABClick}
                     className="
-                      h-14 w-14 rounded-2xl bg-gradient-to-r from-primary to-secondary 
-                      text-white shadow-lg hover:shadow-xl transition-all duration-200
+                      h-14 w-14 rounded-2xl bg-gradient-to-r from-primary to-secondary
+                      text-white shadow-[0_10px_30px_-6px_hsl(var(--primary)/0.55)]
+                      ring-4 ring-card hover:shadow-[0_14px_36px_-6px_hsl(var(--primary)/0.65)]
+                      transition-all duration-200
                       flex items-center justify-center touch-target
                       active:scale-95 transform
                     "
