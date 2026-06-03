@@ -14,14 +14,39 @@ interface JobSwipeCardProps {
   depth?: number; // 0 = top
 }
 
+function SwipeOverlays({ x }: { x: MotionValue<number> }) {
+  const rightOpacity = useTransform(x, [40, 140], [0, 1]);
+  const leftOpacity = useTransform(x, [-140, -40], [1, 0]);
+  return (
+    <>
+      <motion.div
+        style={{ opacity: rightOpacity }}
+        className="pointer-events-none absolute inset-0 bg-emerald-500/10"
+      />
+      <motion.div
+        style={{ opacity: rightOpacity }}
+        className="pointer-events-none absolute top-6 left-6 rotate-[-12deg] px-4 py-1.5 rounded-lg border-4 border-emerald-500 text-emerald-600 font-black text-xl tracking-wider"
+      >
+        INTERESTED
+      </motion.div>
+      <motion.div
+        style={{ opacity: leftOpacity }}
+        className="pointer-events-none absolute inset-0 bg-rose-500/10"
+      />
+      <motion.div
+        style={{ opacity: leftOpacity }}
+        className="pointer-events-none absolute top-6 right-6 rotate-[12deg] px-4 py-1.5 rounded-lg border-4 border-rose-500 text-rose-600 font-black text-xl tracking-wider"
+      >
+        PASS
+      </motion.div>
+    </>
+  );
+}
+
 export function JobSwipeCard({ job, x, isTop = false, onTap, depth = 0 }: JobSwipeCardProps) {
   const { bullets, loading } = useJobAISummary(job.id, depth <= 1);
   const logo = getJobLogo(job);
   const company = job.business_profiles?.company_name || job.company_name || "Company";
-
-  // Overlay tints
-  const rightOpacity = useTransform(x ?? new (class { } as any), [40, 140], [0, 1]);
-  const leftOpacity = useTransform(x ?? new (class { } as any), [-140, -40], [1, 0]);
 
   return (
     <div
@@ -107,30 +132,7 @@ export function JobSwipeCard({ job, x, isTop = false, onTap, depth = 0 }: JobSwi
       </div>
 
       {/* Swipe overlays — only on top card */}
-      {isTop && x && (
-        <>
-          <motion.div
-            style={{ opacity: rightOpacity }}
-            className="pointer-events-none absolute inset-0 bg-emerald-500/10"
-          />
-          <motion.div
-            style={{ opacity: rightOpacity }}
-            className="pointer-events-none absolute top-6 left-6 rotate-[-12deg] px-4 py-1.5 rounded-lg border-4 border-emerald-500 text-emerald-600 font-black text-xl tracking-wider"
-          >
-            INTERESTED
-          </motion.div>
-          <motion.div
-            style={{ opacity: leftOpacity }}
-            className="pointer-events-none absolute inset-0 bg-rose-500/10"
-          />
-          <motion.div
-            style={{ opacity: leftOpacity }}
-            className="pointer-events-none absolute top-6 right-6 rotate-[12deg] px-4 py-1.5 rounded-lg border-4 border-rose-500 text-rose-600 font-black text-xl tracking-wider"
-          >
-            PASS
-          </motion.div>
-        </>
-      )}
+      {isTop && x && <SwipeOverlays x={x} />}
     </div>
   );
 }
