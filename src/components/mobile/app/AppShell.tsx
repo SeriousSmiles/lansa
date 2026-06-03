@@ -34,6 +34,7 @@ export function AppShell({ children }: AppShellProps) {
   const userName = user?.displayName;
   
   const isActiveThread = /^\/chat\/.+/.test(location.pathname);
+  const isFullBleedRoute = isActiveThread || location.pathname === '/jobs';
 
   // CRITICAL: Only show mobile navigation for job seekers
   // Employers have their own navigation in MobileEmployerTabs
@@ -57,10 +58,10 @@ export function AppShell({ children }: AppShellProps) {
       <main 
         className={`
           flex-1 relative
-          ${showMobileNavigation && !isActiveThread ? 'pb-20' : ''}
+          ${showMobileNavigation && !isFullBleedRoute ? 'pb-20' : ''}
         `}
         style={{
-          minHeight: showMobileNavigation 
+          minHeight: showMobileNavigation && !isFullBleedRoute
             ? 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 80px)' 
             : 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))'
         }}
@@ -112,8 +113,6 @@ export function AppShell({ children }: AppShellProps) {
         onClose={() => useUIStore.getState().setSearchOpen(false)}
       />
 
-      {/* Safe area bottom padding */}
-      <div className="mobile-safe-bottom" />
     </div>
   );
 }
