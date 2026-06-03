@@ -108,6 +108,50 @@ export const savedJobsService = {
     if (error) throw error;
   },
 
+  async isJobSaved(swiperId: string, jobId: string): Promise<boolean> {
+    const { data, error } = await supabase
+      .from('swipes')
+      .select('id')
+      .eq('swiper_user_id', swiperId)
+      .eq('context', CTX)
+      .eq('job_listing_id', jobId)
+      .eq('direction', 'right')
+      .maybeSingle();
+    if (error) {
+      console.error('isJobSaved failed', error);
+      return false;
+    }
+    return !!data;
+  },
+
+  /**
+   * Save a job to the "Interested" list — equivalent to a right swipe in the
+   * mobile swipe deck. Idempotent: safe to call when already saved.
+   */
+  async saveJob(opts: {
+    swiperId: string;
+    job: Pick<JobListing, 'id'> & Partial<JobListing> & Record<string, any>;
+  }) {
+    const target =
+      (opts.job as any).created_by ||
+      (opts.job as any).business_id ||
+      (opts.job as any).organization_id ||
+      opts.swiperId;
+
+    const { error } = await supabase.from('swipes').insert({
+      swiper_user_id: opts.swiperId,
+      target_user_id: target,
+      direction: 'right',
+      context: CTX,
+      job_listing_id: opts.job.id,
+    } as any);
+    // 23505 = unique_violation → already saved, treat as success
+    if (error && (error as any).code !== '23505') {
+      console.error('saveJob failed', error);
+      throw error;
+    }
+  },
+
   async undoLastSwipe(swiperId: string): Promise<string | null> {
     const { data, error } = await supabase
       .from('swipes')

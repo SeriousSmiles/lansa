@@ -11,6 +11,8 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { JobImageModal } from "./JobImageModal";
 import { getJobLogo } from "@/utils/getJobLogo";
+import { savedJobsService } from "@/services/savedJobsService";
+import { supabase } from "@/integrations/supabase/client";
 
 /** Parses structured fields from job description text */
 function parseJobDescription(description: string) {
@@ -124,6 +126,14 @@ function JobDetailContent({ job, onApply, disableApply, onClose }: Omit<JobDetai
     setHasApplied(!!job.user_application_status);
     setApplicationStatus(job.user_application_status);
     setIsSaved(false);
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || cancelled) return;
+      const saved = await savedJobsService.isJobSaved(user.id, job.id);
+      if (!cancelled) setIsSaved(saved);
+    })();
+    return () => { cancelled = true; };
   }, [job.id, job.user_application_status]);
 
   const handleApply = () => {
@@ -142,9 +152,16 @@ function JobDetailContent({ job, onApply, disableApply, onClose }: Omit<JobDetai
       return;
     }
     try {
-      await learningJobFeedService.recordInteraction(job.id, 'save');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please sign in to save jobs");
+        return;
+      }
+      await savedJobsService.saveJob({ swiperId: user.id, job: job as any });
+      // Best-effort interaction log; ignore failures so the save still succeeds
+      learningJobFeedService.recordInteraction(job.id, 'save').catch(() => {});
       setIsSaved(true);
-      toast.success("Job saved!");
+      toast.success("Saved to your Interested list");
     } catch (error) {
       console.error('Error saving job:', error);
       toast.error("Failed to save job");
