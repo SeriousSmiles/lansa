@@ -1,5 +1,5 @@
 import { motion, MotionValue, useTransform } from "framer-motion";
-import { Building2, MapPin, Briefcase, Sparkles } from "lucide-react";
+import { Building2, MapPin, Briefcase, Sparkles, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { JobListing } from "@/services/jobFeedService";
@@ -47,6 +47,7 @@ export function JobSwipeCard({ job, x, isTop = false, onTap, depth = 0 }: JobSwi
   const { bullets, loading } = useJobAISummary(job.id, depth <= 1);
   const logo = getJobLogo(job);
   const company = job.business_profiles?.company_name || job.company_name || "Company";
+  const heroImage = (job as any).image_url as string | undefined;
 
   return (
     <div
@@ -54,66 +55,52 @@ export function JobSwipeCard({ job, x, isTop = false, onTap, depth = 0 }: JobSwi
       className="relative w-full h-full overflow-hidden rounded-3xl bg-card border border-border shadow-[0_18px_50px_-20px_hsl(var(--foreground)/0.25)] flex flex-col"
       style={{ touchAction: "pan-y" }}
     >
-      {/* Header strip with logo + company */}
-      <div className="flex items-center gap-3 px-5 pt-5">
-        <div className="w-12 h-12 rounded-xl overflow-hidden border bg-background flex items-center justify-center flex-shrink-0">
-          {logo ? (
-            <img src={logo} alt={company} className="w-full h-full object-contain" />
-          ) : (
-            <Building2 className="w-6 h-6 text-muted-foreground" />
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">{company}</p>
-          {job.salary_range && (
-            <p className="text-xs text-muted-foreground/80 mt-0.5 font-normal">
-              {job.salary_range}
-            </p>
-          )}
+      {/* Hero media */}
+      <div className="relative w-full aspect-[16/10] flex-shrink-0 overflow-hidden bg-gradient-to-br from-primary/15 via-background to-secondary/15">
+        {heroImage ? (
+          <img src={heroImage} alt={job.title} className="w-full h-full object-cover" draggable={false} />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            {logo ? (
+              <img src={logo} alt={company} className="w-20 h-20 object-contain opacity-90" />
+            ) : (
+              <Building2 className="w-16 h-16 text-muted-foreground/40" />
+            )}
+          </div>
+        )}
+
+        {/* Gradient scrim for legibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/10 to-transparent" />
+
+        {/* Compensation pill */}
+        {job.salary_range && (
+          <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-background/85 backdrop-blur-md border border-border/60 text-[11px] text-foreground/80">
+            <Wallet className="w-3 h-3 text-primary" />
+            <span className="font-normal">{job.salary_range}</span>
+          </div>
+        )}
+
+        {/* Company chip */}
+        <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg overflow-hidden border border-border/60 bg-background flex items-center justify-center flex-shrink-0">
+            {logo ? (
+              <img src={logo} alt={company} className="w-full h-full object-contain" />
+            ) : (
+              <Building2 className="w-4 h-4 text-muted-foreground" />
+            )}
+          </div>
+          <span className="text-[11px] uppercase tracking-wider text-foreground/80 font-medium truncate">
+            {company}
+          </span>
         </div>
       </div>
 
-      {/* Title */}
-      <div className="px-5 pt-3">
-        <h2 className="text-3xl font-extralight leading-tight tracking-tight text-foreground">
+      {/* Title + meta */}
+      <div className="px-5 pt-4">
+        <h2 className="text-2xl font-extralight leading-tight tracking-tight text-foreground">
           {job.title}
         </h2>
-      </div>
-
-      {/* AI bullets */}
-      <div className="px-5 mt-4 flex-1 min-h-0 overflow-y-auto">
-        <div className="flex items-center gap-1.5 mb-2">
-          <Sparkles className="w-3.5 h-3.5 text-primary" />
-          <span className="text-[11px] uppercase tracking-wider text-primary font-medium">AI summary</span>
-        </div>
-        {loading ? (
-          <ul className="space-y-2.5">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <li key={i} className="flex gap-2">
-                <Skeleton className="h-3 w-3 rounded-full mt-1.5" />
-                <Skeleton className="h-4 flex-1" />
-              </li>
-            ))}
-          </ul>
-        ) : bullets.length > 0 ? (
-          <ul className="space-y-2.5">
-            {bullets.map((b, i) => (
-              <li key={i} className="flex gap-2.5 text-sm leading-snug text-foreground/85">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
-                <span>{b}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-muted-foreground line-clamp-6">
-            {job.description || "Tap the card to see full details."}
-          </p>
-        )}
-      </div>
-
-      {/* Meta footer */}
-      <div className="px-5 pb-5 pt-3 border-t border-border/60 mt-3">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-2">
           {job.location && (
             <span className="inline-flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5" /> {job.location}
@@ -126,9 +113,36 @@ export function JobSwipeCard({ job, x, isTop = false, onTap, depth = 0 }: JobSwi
           )}
           {job.is_remote && <Badge variant="outline" className="h-5 text-[10px]">Remote</Badge>}
         </div>
-        <p className="text-[11px] text-muted-foreground/70 mt-2 text-center">
-          Swipe right to save · left to pass · tap for details
-        </p>
+      </div>
+
+      {/* AI highlights as chips */}
+      <div className="px-5 mt-4 mb-5 flex-1 min-h-0 overflow-y-auto">
+        <div className="flex items-center gap-1.5 mb-2.5">
+          <Sparkles className="w-3.5 h-3.5 text-primary" />
+          <span className="text-[11px] uppercase tracking-wider text-primary font-medium">AI highlights</span>
+        </div>
+        {loading ? (
+          <div className="flex flex-wrap gap-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-7 w-20 rounded-full" />
+            ))}
+          </div>
+        ) : bullets.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {bullets.map((b, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center px-3 py-1.5 rounded-full bg-primary/8 border border-primary/15 text-[12px] leading-none text-foreground/85"
+              >
+                {b}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground line-clamp-4">
+            {job.description || "Tap the card to see full details."}
+          </p>
+        )}
       </div>
 
       {/* Swipe overlays — only on top card */}
