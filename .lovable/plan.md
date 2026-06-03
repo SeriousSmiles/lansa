@@ -1,28 +1,31 @@
-## Goal
-Compensation must always be visible to the user — either on the swipe card or in the detail drawer. Today the card's compensation pill only renders when `job.salary_range` exists, and many listings (like the one in the screenshot) don't populate that field, so it disappears entirely from the card. Use the empty footer space at the bottom of the card to surface compensation reliably.
+## Findings
 
-## Changes
+- The user’s interested swipes are in the database. I found 6 right-swiped job cards for the current user:
+  - Marketing Specialist
+  - Graphic Designer
+  - Coordinator
+  - Sailor
+  - Tourist Guide
+  - Cruise Dispatcher
+- The Saved tab is still empty because the frontend query is failing on `job_listings_v2.created_at`, but the live table uses `posted_at` instead.
+- I also found the Data API grant check returning no explicit grants for the involved tables. The app is currently reaching enough to show the column error, but I will verify and avoid changing RLS unless a permission error is still blocking after the schema fix.
 
-### `src/components/mobile/jobs/JobSwipeCard.tsx`
-1. **Resolve compensation with fallbacks**, in this order:
-   - `job.salary_range`
-   - Value parsed from `**Compensation:** …` in `job.description` (same regex already used in `JobDetailPanel`)
-   - `"Compensation on request"` as last-resort label
-2. **Remove the floating top-right compensation pill** on the hero (it competes with the company chip and disappears too easily on light images).
-3. **Add a compensation row in the card footer**, replacing the current "Tap for details / Swipe to decide" hint line:
-   - Left: `Wallet` icon + compensation value in `text-[12px] font-medium text-foreground`, with a small `text-[9px] uppercase tracking-wider text-muted-foreground` "Compensation" label above it.
-   - Right: keep a single compact hint, e.g. `Tap for details →`, so the swipe affordance stays but the row reads primarily as compensation.
-   - Container: `mt-auto pt-3 border-t border-border/50 flex items-center justify-between`.
-4. Keep the rest of the card (hero, title, quick stats, Why it fits) unchanged.
+## Plan
 
-### Drawer (`src/components/jobs/JobDetailPanel.tsx`)
-No change required — it already parses and shows Compensation via `parseJobDescription`, and it also renders `job.salary_range` elsewhere. The drawer remains the full-detail surface.
+1. Update `savedJobsService.getSavedJobs`
+   - Replace `created_at` with `posted_at` in the `job_listings_v2` select.
+   - Map `created_at` / `updated_at` in the returned `JobListing` object from `posted_at` so the card component receives the timestamp shape it expects.
+   - Include `created_by` in the select and use it as a fallback `business_id` / employer reference when available.
 
-## Out of scope
-- Desktop job feed card.
-- Schema changes; no new fields on `job_listings_v2`.
-- Editing the AI summary function.
+2. Make the Saved tab more resilient
+   - Preserve the right-swipe ordering from the `swipes.created_at` timestamp.
+   - Keep showing saved cards even if company/organization lookup partially fails.
+   - Keep logs for actual failures so the next blocker is visible instead of silently rendering “Nothing saved yet.”
 
-## Technical notes
-- Parse helper lives inline in the card (small regex, no new file): `/\*\*Compensation:?\*\*\s*(.*?)(?=\n\*\*|\n\n|$)/i` against `job.description`.
-- Always render the footer row so vertical rhythm of the card is consistent regardless of data completeness.
+3. Validate the fix
+   - Re-check the saved query against the known current user and confirm those 6 cards can be resolved.
+   - If the next runtime error is a Data API permission/grant issue, add the smallest safe migration for the affected table grants without widening public access.
+
+## Expected result
+
+The Saved tab should show every job the user swiped Interested on, including the 6 cards already stored in the database.
