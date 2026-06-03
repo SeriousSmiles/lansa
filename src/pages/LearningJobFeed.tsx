@@ -253,28 +253,32 @@ export default function LearningJobFeed() {
           </Button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-3 pt-3 pb-4">
-          {mobileTab === "discover" && mobileFilterSheet}
-          {mobileTab === "saved" ? (
+        {mobileTab === "saved" ? (
+          <div className="flex-1 min-h-0 overflow-y-auto px-3 pt-3 pb-4">
             <SavedJobsList
               swiperId={user.id}
               onApply={handleApply}
               onViewDetails={(j) => setSelectedJob(j as unknown as LearningJobListing)}
             />
-          ) : loading ? (
-            <div className="flex justify-center items-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-          ) : (
-            <JobSwipeDeck
-              jobs={deckJobs}
-              swiperId={user.id}
-              onOpenDetails={(j) => setSelectedJob(j as unknown as LearningJobListing)}
-              onRefresh={loadJobs}
-              onJobSwiped={handleJobSwiped}
-            />
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="flex-1 min-h-0 flex flex-col px-3 pt-2">
+            {mobileFilterSheet}
+            {loading ? (
+              <div className="flex-1 flex justify-center items-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <JobSwipeDeck
+                jobs={deckJobs}
+                swiperId={user.id}
+                onOpenDetails={(j) => setSelectedJob(j as unknown as LearningJobListing)}
+                onRefresh={loadJobs}
+                onJobSwiped={handleJobSwiped}
+              />
+            )}
+          </div>
+        )}
 
         <JobDetailPanel
           job={selectedJob}
