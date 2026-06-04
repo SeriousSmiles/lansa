@@ -17,7 +17,16 @@ interface JobPostCardProps {
 const getCompanyLogo = (job: JobListing): string | null => getJobLogo(job);
 
 export function JobPostCard({ job, onApply, onViewDetails }: JobPostCardProps) {
-  const applied = job.job_applications && job.job_applications.length > 0;
+  const appStatus = (job as any).user_application_status as
+    | 'pending'
+    | 'accepted'
+    | 'declined'
+    | 'withdrawn'
+    | null
+    | undefined;
+  const applied =
+    (job.job_applications && job.job_applications.length > 0) ||
+    (!!appStatus && appStatus !== 'withdrawn');
   const [showImageModal, setShowImageModal] = useState(false);
   
   return (
