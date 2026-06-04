@@ -96,11 +96,26 @@ export const learningJobFeedService = {
 
     if (!error) return data;
 
-    // Parse error response
-    const ctx: any = (error as any).context || {};
+    // Parse error response — supabase-js v2 surfaces the original Response on
+    // FunctionsHttpError.context, so we must read it asynchronously.
+    const ctx: any = (error as any).context;
     let payload: any = {};
     try {
-      payload = ctx.body ? JSON.parse(ctx.body) : JSON.parse(error.message || '{}');
+      if (ctx && typeof ctx.clone === 'function') {
+        // ctx is a Response
+        try {
+          payload = await ctx.clone().json();
+        } catch {
+          const txt = await ctx.clone().text();
+          payload = txt ? JSON.parse(txt) : {};
+        }
+      } else if (ctx && typeof ctx.json === 'function') {
+        payload = await ctx.json();
+      } else if (ctx && typeof ctx.body === 'string') {
+        payload = JSON.parse(ctx.body);
+      } else if (typeof error.message === 'string') {
+        try { payload = JSON.parse(error.message); } catch { payload = {}; }
+      }
     } catch {
       payload = {};
     }
