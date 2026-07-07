@@ -9,17 +9,25 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
 import { SectionInstance } from '@/types/resumeSection';
-import { HTMLToPDFGenerator } from '@/services/htmlToPDFGenerator';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProfileData } from '@/hooks/useProfileData';
+import { convertProfileToPDFData } from '@/utils/profileToPDFConverter';
+import { DEFAULT_TOKENS } from '@/types/designTokens';
 
 interface EditorToolbarProps {
   onSave: () => void;
   sections: SectionInstance[];
 }
 
+type ExportFormat = 'pdf' | 'pdf-a' | 'docx' | 'png' | 'jpeg';
+
 export function EditorToolbar({ onSave, sections }: EditorToolbarProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const profileData = useProfileData(user?.id);
   const [isExporting, setIsExporting] = useState(false);
 
   const handleSave = async () => {
@@ -30,69 +38,84 @@ export function EditorToolbar({ onSave, sections }: EditorToolbarProps) {
     }
   };
 
-  const handleExport = async (format: 'pdf' | 'png' | 'jpeg') => {
+  const legacyClientExport = async (format: 'png' | 'jpeg' | 'pdf') => {
+    const canvasElement = document.querySelector('[data-resume-canvas]') as HTMLElement;
+    if (!canvasElement) throw new Error('Canvas not found');
+    const { default: html2canvas } = await import('html2canvas');
+    const canvas = await html2canvas(canvasElement, {
+      scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff',
+      width: canvasElement.scrollWidth, height: canvasElement.scrollHeight,
+    });
+    if (format === 'pdf') {
+      const { default: jsPDF } = await import('jspdf');
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      const imgWidth = 210;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, Math.min(imgHeight, 297));
+      pdf.save('resume.pdf');
+    } else {
+      const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
+      const dataUrl = canvas.toDataURL(mimeType, 0.95);
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `resume.${format}`;
+      link.click();
+    }
+  };
+
+  const handleExport = async (format: ExportFormat) => {
     setIsExporting(true);
     try {
-      // Find the resume canvas element
-      const canvasElement = document.querySelector('[data-resume-canvas]') as HTMLElement;
-      if (!canvasElement) {
-        toast({
-          title: 'Export Failed',
-          description: 'Could not find the resume canvas. Please try again.',
-          variant: 'destructive',
-        });
-        return;
-      }
-
       toast({
-        title: 'Generating PDF...',
-        description: 'Please wait while we create your resume.',
+        title: 'Preparing your resume…',
+        description: 'Rendering pixel-perfect vector output.',
       });
 
-      const { default: html2canvas } = await import('html2canvas');
-      const canvas = await html2canvas(canvasElement, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        width: canvasElement.scrollWidth,
-        height: canvasElement.scrollHeight,
+      const pdfData = convertProfileToPDFData(profileData);
+      const tokens = { ...DEFAULT_TOKENS };
+      const options = { format, paper: 'A4' as const };
+
+      const { data, error } = await supabase.functions.invoke('export-resume', {
+        body: {
+          data: pdfData,
+          tokens,
+          options,
+          app_origin: window.location.origin,
+        },
       });
 
-      if (format === 'pdf') {
-        const { default: jsPDF } = await import('jspdf');
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4',
-        });
-
-        const imgData = canvas.toDataURL('image/png', 1.0);
-        const imgWidth = 210; // A4 width in mm
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, Math.min(imgHeight, 297));
-
-        pdf.save('resume.pdf');
-      } else {
-        // PNG or JPEG
-        const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
-        const dataUrl = canvas.toDataURL(mimeType, 0.95);
+      // Worker not deployed yet → 202 with fallback flag
+      const needsFallback = !data?.file_url && (data?.fallback === 'client_render' || error);
+      if (needsFallback) {
+        if (format === 'docx' || format === 'pdf-a') {
+          throw new Error('DOCX and PDF/A require the render worker. Deploy render-worker/ to Fly.io and set RENDER_WORKER_URL.');
+        }
+        console.warn('Vector engine unavailable, falling back to client render', data, error);
+        await legacyClientExport(format as 'pdf' | 'png' | 'jpeg');
+      } else if (data?.file_url) {
         const link = document.createElement('a');
-        link.href = dataUrl;
-        link.download = `resume.${format}`;
+        link.href = data.file_url;
+        const ext = format === 'jpeg' ? 'jpg' : format === 'pdf-a' ? 'pdf' : format;
+        link.download = `resume.${ext}`;
+        link.rel = 'noopener';
+        link.target = '_blank';
+        document.body.appendChild(link);
         link.click();
+        link.remove();
+      } else if (error) {
+        throw error;
       }
 
       toast({
-        title: 'Export Complete!',
-        description: `Your resume has been exported as ${format.toUpperCase()}.`,
+        title: 'Export complete',
+        description: `Downloaded as ${format.toUpperCase()}.`,
       });
     } catch (error) {
       console.error('Export error:', error);
       toast({
-        title: 'Export Failed',
-        description: 'There was an error exporting your resume. Please try again.',
+        title: 'Export failed',
+        description: (error as Error)?.message ?? 'There was an error exporting your resume.',
         variant: 'destructive',
       });
     } finally {
@@ -140,13 +163,19 @@ export function EditorToolbar({ onSave, sections }: EditorToolbarProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => handleExport('pdf')}>
-              Export as PDF
+              PDF (vector)
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExport('pdf-a')}>
+              PDF/A (archival)
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExport('docx')}>
+              Word (.docx)
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleExport('png')}>
-              Export as PNG
+              PNG
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleExport('jpeg')}>
-              Export as JPEG
+              JPEG
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
