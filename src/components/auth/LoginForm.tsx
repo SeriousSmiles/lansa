@@ -32,14 +32,18 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
   const fromSignup = urlParams.get('from') === 'signup';
 
   const getOAuthCallbackUrl = () => {
-    const callbackUrl = new URL('/auth/callback', window.location.origin);
     const from = (location.state as any)?.from;
     const nextPath = getSafeInternalPath(
       from?.pathname ? `${from.pathname}${from.search || ''}${from.hash || ''}` : undefined
     );
 
-    if (nextPath) callbackUrl.searchParams.set('next', nextPath);
-    return callbackUrl.toString();
+    if (nextPath) {
+      sessionStorage.setItem('lansa.oauth.next', nextPath);
+    } else {
+      sessionStorage.removeItem('lansa.oauth.next');
+    }
+
+    return `${window.location.origin}/auth/callback`;
   };
 
   const onSubmit = async (data: LoginFormData) => {

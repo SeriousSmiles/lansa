@@ -14,7 +14,6 @@ export default function AuthCallback() {
     userType,
     hasCompletedOnboarding,
     isAdmin,
-    refreshUserState,
   } = useUnifiedAuth();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(true);
@@ -47,8 +46,10 @@ export default function AuthCallback() {
         if (session?.user && isAuthenticated) {
           hasProcessedRef.current = true;
           setIsProcessing(true);
-          await refreshUserState();
-          const nextPath = new URLSearchParams(window.location.search).get('next');
+          const nextPath =
+            new URLSearchParams(window.location.search).get('next') ||
+            sessionStorage.getItem('lansa.oauth.next');
+          sessionStorage.removeItem('lansa.oauth.next');
           const destination = getPostAuthDestination({
             requestedPath: nextPath,
             userType,
@@ -109,7 +110,7 @@ export default function AuthCallback() {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [loading, session, navigate, user, isAuthenticated, userType, hasCompletedOnboarding, isAdmin, refreshUserState]);
+  }, [loading, session, navigate, user, isAuthenticated, userType, hasCompletedOnboarding, isAdmin]);
 
   return (
     <>

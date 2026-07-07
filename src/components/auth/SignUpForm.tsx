@@ -10,7 +10,6 @@ import { PasswordStrengthIndicator } from "./PasswordStrengthIndicator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { getSafeInternalPath } from "@/utils/roleRoutes";
 interface SignUpFormData {
   firstName: string;
   lastName: string;
@@ -30,10 +29,8 @@ export function SignUpForm() {
   const navigate = useNavigate();
 
   const getOAuthCallbackUrl = () => {
-    const callbackUrl = new URL('/auth/callback', window.location.origin);
-    const nextPath = getSafeInternalPath('/onboarding');
-    if (nextPath) callbackUrl.searchParams.set('next', nextPath);
-    return callbackUrl.toString();
+    sessionStorage.setItem('lansa.oauth.next', '/onboarding');
+    return `${window.location.origin}/auth/callback`;
   };
   
   const password = watch("password", "");
