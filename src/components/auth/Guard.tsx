@@ -3,6 +3,7 @@ import { useUnifiedAuth } from "@/contexts/UnifiedAuthProvider";
 import { LoadingSpinner } from "@/components/loading/LoadingSpinner";
 import { toast } from "sonner";
 import { useEffect, useRef } from "react";
+import { getRoleHomePath, isRoleHomePath } from "@/utils/roleRoutes";
 
 interface GuardProps {
   children: JSX.Element;
@@ -79,8 +80,11 @@ export function Guard({
     return children; // Admin bypass — skip onboarding/type checks
   }
 
-  // Admins bypass onboarding and type restrictions
-  if (isAdmin) return children;
+  // Admins should land in admin, not stale role dashboards from old OAuth redirects
+  if (isAdmin) {
+    if (types) return <Navigate to="/admin" replace />;
+    return children;
+  }
 
   // ─── 3. Onboarding check ────────────────────────────────────────
   if (onboarding && !hasCompletedOnboarding) {
@@ -102,6 +106,11 @@ export function Guard({
       return <Navigate to="/onboarding" state={{ from: location }} replace />;
     }
     if (!types.includes(userType)) {
+      const isRedirect = Boolean(location.state && (location.state as any).fromRedirect);
+      if (isRedirect || isRoleHomePath(location.pathname)) {
+        return <Navigate to={getRoleHomePath({ userType })} replace />;
+      }
+
       return (
         <Navigate
           to="/not-allowed"

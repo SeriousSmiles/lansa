@@ -1,12 +1,21 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { useUserState } from "@/contexts/UserStateProvider";
+import { useUnifiedAuth } from "@/contexts/UnifiedAuthProvider";
 import { SEOHead } from "@/components/SEOHead";
 import { scrubTokensFromUrl } from "@/config/demo";
+import { getPostAuthDestination } from "@/utils/roleRoutes";
 
 export default function AuthCallback() {
-  const { session, loading, user } = useAuth();
+  const {
+    session,
+    loading,
+    user,
+    isAuthenticated,
+    userType,
+    hasCompletedOnboarding,
+    isAdmin,
+    refreshUserState,
+  } = useUnifiedAuth();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,33 +32,36 @@ export default function AuthCallback() {
     return () => clearTimeout(timer);
   }, []);
 
-  const userState = useUserState();
-
   // Simplified auth callback using UserStateProvider
   useEffect(() => {
     if (hasProcessedRef.current) return;
 
     const processAuthentication = async () => {
       try {
-        // Wait for UserStateProvider to load
-        if (userState.loading || loading) return;
+        // Wait for UnifiedAuthProvider to load auth + role data
+        if (loading) return;
 
-        // If authenticated, hand off to DefaultRoute (`/`) which routes
-        // by userType (job_seeker → /dashboard, employer → /employer-dashboard,
-        // mentor → /mentor-dashboard, admin bypass) and handles the
-        // "onboarding not complete" case. Keeping the routing rules in one
-        // place prevents drift (e.g. mentors previously landed on /dashboard
-        // and got blocked by the job_seeker-only Guard).
-        if (session?.user && userState.isAuthenticated) {
+        // If authenticated, route through the same role-aware resolver used
+        // across the app. This also respects a safe `next` value when a guarded
+        // route sent the user to Google OAuth.
+        if (session?.user && isAuthenticated) {
           hasProcessedRef.current = true;
           setIsProcessing(true);
-          navigate('/', { replace: true, state: { fromRedirect: true } });
+          await refreshUserState();
+          const nextPath = new URLSearchParams(window.location.search).get('next');
+          const destination = getPostAuthDestination({
+            requestedPath: nextPath,
+            userType,
+            hasCompletedOnboarding,
+            isAdmin,
+          });
+          navigate(destination, { replace: true, state: { fromRedirect: true } });
           setIsProcessing(false);
           return;
         }
 
         // If no session after auth should have completed, redirect back
-        if (!loading && !session && !userState.loading) {
+        if (!loading && !session) {
           redirectAttempts.current++;
           
           // Prevent infinite redirects
@@ -97,7 +109,7 @@ export default function AuthCallback() {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [loading, session, navigate, user, userState]);
+  }, [loading, session, navigate, user, isAuthenticated, userType, hasCompletedOnboarding, isAdmin, refreshUserState]);
 
   return (
     <>

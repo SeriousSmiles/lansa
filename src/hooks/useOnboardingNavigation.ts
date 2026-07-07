@@ -12,6 +12,7 @@ import {
   CareerPath 
 } from '@/services/navigation/onboardingNavigationService';
 import { useUserState } from '@/contexts/UserStateProvider';
+import { getRoleHomePath } from '@/utils/roleRoutes';
 
 export function useOnboardingNavigation() {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ export function useOnboardingNavigation() {
       } catch (error) {
         console.error('Error during post-onboarding navigation:', error);
         // Fallback navigation
-        navigate('/dashboard', { replace: true });
+        navigate(getRoleHomePath({ userType: userType as any, fallback: '/onboarding' }), { replace: true });
       } finally {
         setIsNavigating(false);
       }

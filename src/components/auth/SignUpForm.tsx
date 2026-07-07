@@ -10,6 +10,7 @@ import { PasswordStrengthIndicator } from "./PasswordStrengthIndicator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { getSafeInternalPath } from "@/utils/roleRoutes";
 interface SignUpFormData {
   firstName: string;
   lastName: string;
@@ -27,6 +28,13 @@ export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
+
+  const getOAuthCallbackUrl = () => {
+    const callbackUrl = new URL('/auth/callback', window.location.origin);
+    const nextPath = getSafeInternalPath('/onboarding');
+    if (nextPath) callbackUrl.searchParams.set('next', nextPath);
+    return callbackUrl.toString();
+  };
   
   const password = watch("password", "");
   const confirmPassword = watch("confirmPassword", "");
@@ -79,7 +87,7 @@ export function SignUpForm() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: getOAuthCallbackUrl()
         }
       });
       
