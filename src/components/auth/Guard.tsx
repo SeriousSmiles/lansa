@@ -80,9 +80,9 @@ export function Guard({
     return children; // Admin bypass — skip onboarding/type checks
   }
 
-  // Admins should land in admin, not stale role dashboards from old OAuth redirects
+  // Admins can access any in-app page — bypass onboarding / type restrictions.
+  // (Initial post-login landing is handled by DefaultRoute, not here.)
   if (isAdmin) {
-    if (types) return <Navigate to="/admin" replace />;
     return children;
   }
 
