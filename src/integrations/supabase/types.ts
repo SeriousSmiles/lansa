@@ -1938,6 +1938,39 @@ export type Database = {
           },
         ]
       }
+      resume_print_jobs: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          format: string
+          id: string
+          payload: Json
+          token_hash: string
+          user_id: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          format?: string
+          id?: string
+          payload: Json
+          token_hash: string
+          user_id: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          format?: string
+          id?: string
+          payload?: Json
+          token_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       resume_section_components: {
         Row: {
           category: string
