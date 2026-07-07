@@ -27,6 +27,7 @@ import ProfileStarter from "./pages/ProfileStarter";
 import Profile from "./pages/Profile";
 import SharedProfile from "./pages/SharedProfile";
 import ResumeEditor from "./pages/ResumeEditor";
+import ResumePrint from "./pages/ResumePrint";
 import Dashboard from "./pages/Dashboard";
 import BrowseCandidates from "./pages/BrowseCandidates";
 import EmployerDashboard from "./pages/EmployerDashboard";
@@ -107,6 +108,8 @@ const App: React.FC = () => {
                 <Route path="/for-business" element={<ForBusiness />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/verify/:code" element={<VerifyCertification />} />
+                {/* Signed print target for the Puppeteer render worker. Token = credential. */}
+                <Route path="/resume/print/:token" element={<ResumePrint />} />
                 
                 {/* Auth-only routes (no type/onboarding check) */}
                 <Route path="/onboarding" element={
