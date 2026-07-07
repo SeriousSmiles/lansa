@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { getSafeInternalPath } from "@/utils/roleRoutes";
 
 interface LoginFormData {
   email: string;
@@ -29,6 +30,21 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
   // Check if user just signed up
   const urlParams = new URLSearchParams(location.search);
   const fromSignup = urlParams.get('from') === 'signup';
+
+  const getOAuthCallbackUrl = () => {
+    const from = (location.state as any)?.from;
+    const nextPath = getSafeInternalPath(
+      from?.pathname ? `${from.pathname}${from.search || ''}${from.hash || ''}` : undefined
+    );
+
+    if (nextPath) {
+      sessionStorage.setItem('lansa.oauth.next', nextPath);
+    } else {
+      sessionStorage.removeItem('lansa.oauth.next');
+    }
+
+    return `${window.location.origin}/auth/callback`;
+  };
 
   const onSubmit = async (data: LoginFormData) => {
     if (isLoading) return;
@@ -67,7 +83,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: getOAuthCallbackUrl()
         }
       });
       

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ShieldAlert } from "lucide-react";
 import { useEffect } from "react";
+import { getRoleHomePath } from "@/utils/roleRoutes";
 
 export default function NotAllowed() {
   const location = useLocation();
@@ -25,8 +26,7 @@ export default function NotAllowed() {
   }, [state]);
 
   const getDashboardPath = () => {
-    if (state?.current === 'employer') return '/employer-dashboard';
-    return '/dashboard';
+    return getRoleHomePath({ userType: state?.current as any, fallback: '/' });
   };
 
   return (

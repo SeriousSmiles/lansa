@@ -45,8 +45,8 @@ export function getPostOnboardingDestination(
   }
 
   // Default fallback (should not happen in production)
-  console.warn(`Unknown user type: ${userType}, defaulting to /dashboard`);
-  return '/dashboard';
+  console.warn(`Unknown user type: ${userType}, defaulting to /onboarding`);
+  return '/onboarding';
 }
 
 /**

@@ -5,6 +5,7 @@ import { CandidateBrowseTab } from "@/components/dashboard/employer/CandidateBro
 import { MobileCandidateBrowser } from "@/components/mobile/employer/MobileCandidateBrowser";
 import { LoadingSpinner } from "@/components/loading";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getRoleHomePath } from "@/utils/roleRoutes";
 
 export default function BrowseCandidates() {
   const { user } = useAuth();
@@ -14,7 +15,7 @@ export default function BrowseCandidates() {
 
   // Redirect non-employers
   if (!userTypeLoading && userType !== 'employer') {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={getRoleHomePath({ userType })} replace />;
   }
 
   if (!user || userTypeLoading) {
@@ -30,7 +31,7 @@ export default function BrowseCandidates() {
     return (
       <MobileCandidateBrowser 
         userId={user.id}
-        onBack={() => navigate('/dashboard')}
+        onBack={() => navigate('/employer-dashboard')}
       />
     );
   }
