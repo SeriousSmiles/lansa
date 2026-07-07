@@ -34,20 +34,16 @@ export default function AuthCallback() {
         // Wait for UserStateProvider to load
         if (userState.loading || loading) return;
 
-        // If authenticated, use UserStateProvider's onboarding status
+        // If authenticated, hand off to DefaultRoute (`/`) which routes
+        // by userType (job_seeker → /dashboard, employer → /employer-dashboard,
+        // mentor → /mentor-dashboard, admin bypass) and handles the
+        // "onboarding not complete" case. Keeping the routing rules in one
+        // place prevents drift (e.g. mentors previously landed on /dashboard
+        // and got blocked by the job_seeker-only Guard).
         if (session?.user && userState.isAuthenticated) {
           hasProcessedRef.current = true;
           setIsProcessing(true);
-
-          // UserStateProvider already checked both old and new onboarding flags
-          if (userState.hasCompletedOnboarding && userState.userType) {
-            // Redirect to appropriate dashboard based on user type
-            const destination = userState.userType === 'employer' ? '/employer-dashboard' : '/dashboard';
-            navigate(destination, { replace: true, state: { fromRedirect: true } });
-          } else {
-            navigate('/onboarding', { replace: true, state: { fromRedirect: true } });
-          }
-          
+          navigate('/', { replace: true, state: { fromRedirect: true } });
           setIsProcessing(false);
           return;
         }
