@@ -20,7 +20,12 @@ export function DesktopChatLayout({ activeThreadId, onSelectThread }: DesktopCha
 
   if (!user) return null;
 
-  const dashboardPath = userType === 'employer' ? '/employer-dashboard' : '/dashboard';
+  const dashboardPath =
+    userType === 'employer'
+      ? '/employer-dashboard'
+      : userType === 'mentor'
+        ? '/mentor-dashboard'
+        : '/dashboard';
 
   return (
     <div className="min-h-screen bg-[#FDF8F2]">
