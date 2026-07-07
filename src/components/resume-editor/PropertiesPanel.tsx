@@ -7,6 +7,9 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { DesignTokens } from '@/types/designTokens';
+import { DesignTokensPanel } from './DesignTokensPanel';
 
 interface PropertiesPanelProps {
   selectedSection: SectionInstance | null;
@@ -15,6 +18,8 @@ interface PropertiesPanelProps {
   onGlobalStylesChange: (styles: GlobalStyles) => void;
   onSectionUpdate: (sectionId: string, updates: Partial<SectionInstance>) => void;
   onSectionWidthChange: (sectionId: string, width: 'full' | 'half' | 'third') => void;
+  tokens: DesignTokens;
+  onTokensChange: (next: DesignTokens) => void;
 }
 
 export function PropertiesPanel({
@@ -23,7 +28,9 @@ export function PropertiesPanel({
   layoutStructure,
   onGlobalStylesChange,
   onSectionUpdate,
-  onSectionWidthChange
+  onSectionWidthChange,
+  tokens,
+  onTokensChange,
 }: PropertiesPanelProps) {
   return (
     <ScrollArea className="h-full">
@@ -35,7 +42,27 @@ export function PropertiesPanel({
           </p>
         </div>
 
-        {/* Global Styles */}
+        <Tabs defaultValue="design" className="w-full">
+          <TabsList className="grid grid-cols-2 w-full">
+            <TabsTrigger value="design">Design system</TabsTrigger>
+            <TabsTrigger value="section">Section</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="design" className="mt-4">
+            <DesignTokensPanel tokens={tokens} onChange={onTokensChange} />
+          </TabsContent>
+
+          <TabsContent value="section" className="mt-4 space-y-4">
+            {renderLegacySection()}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </ScrollArea>
+  );
+
+  function renderLegacySection() {
+    return (
+      <>
         <Card className="p-4">
           <h3 className="font-semibold mb-4">Global Styles</h3>
           
@@ -192,7 +219,7 @@ export function PropertiesPanel({
             <Switch id="ats-safe" />
           </div>
         </Card>
-      </div>
-    </ScrollArea>
-  );
+      </>
+    );
+  }
 }

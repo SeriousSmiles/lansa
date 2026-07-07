@@ -12,6 +12,12 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { DesignTokens } from '@/types/designTokens';
+import { getTemplatePreset } from '@/config/templatePresets';
+import { DocumentPreviewDialog } from './DocumentPreviewDialog';
+import { useProfileData } from '@/hooks/useProfileData';
+import { useAuth } from '@/contexts/AuthContext';
+import { convertProfileToPDFData } from '@/utils/profileToPDFConverter';
 
 interface ResumeEditorLayoutProps {
   profileData: ProfileDataReturn;
@@ -27,7 +33,12 @@ export function ResumeEditorLayout({
   const [showAddSectionModal, setShowAddSectionModal] = useState(false);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [layoutStructure, setLayoutStructure] = useState<LayoutStructure>('single');
+  const [tokens, setTokens] = useState<DesignTokens>(() => getTemplatePreset('professional'));
+  const [previewOpen, setPreviewOpen] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const editorProfile = useProfileData(user?.id);
+  const pdfData = convertProfileToPDFData(editorProfile);
 
   const { sectionComponents, sectionInstances, setSectionInstances } = useResumeSections(resumeDesignId);
 
@@ -113,6 +124,8 @@ export function ResumeEditorLayout({
       <EditorToolbar
         onSave={handleSave}
         sections={sections}
+        tokens={tokens}
+        onOpenPreview={() => setPreviewOpen(true)}
       />
 
       {/* Main Editor Area */}
@@ -199,6 +212,8 @@ export function ResumeEditorLayout({
                 );
               }}
               onSectionWidthChange={handleSectionWidthChange}
+              tokens={tokens}
+              onTokensChange={setTokens}
             />
           )}
         </div>
@@ -210,6 +225,13 @@ export function ResumeEditorLayout({
         onClose={() => setShowAddSectionModal(false)}
         sectionComponents={sectionComponents}
         onSelectSection={(type) => handleAddSection(type)}
+      />
+
+      <DocumentPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        data={pdfData}
+        tokens={tokens}
       />
     </div>
   );

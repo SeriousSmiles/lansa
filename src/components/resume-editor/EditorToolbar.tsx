@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Save, Download, Home, Loader2 } from 'lucide-react';
+import { Save, Download, Home, Loader2, Eye } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,15 +15,18 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfileData } from '@/hooks/useProfileData';
 import { convertProfileToPDFData } from '@/utils/profileToPDFConverter';
 import { DEFAULT_TOKENS } from '@/types/designTokens';
+import type { DesignTokens } from '@/types/designTokens';
 
 interface EditorToolbarProps {
   onSave: () => void;
   sections: SectionInstance[];
+  tokens?: DesignTokens;
+  onOpenPreview?: () => void;
 }
 
 type ExportFormat = 'pdf' | 'pdf-a' | 'docx' | 'png' | 'jpeg';
 
-export function EditorToolbar({ onSave, sections }: EditorToolbarProps) {
+export function EditorToolbar({ onSave, sections, tokens, onOpenPreview }: EditorToolbarProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -73,13 +76,13 @@ export function EditorToolbar({ onSave, sections }: EditorToolbarProps) {
       });
 
       const pdfData = convertProfileToPDFData(profileData);
-      const tokens = { ...DEFAULT_TOKENS };
-      const options = { format, paper: 'A4' as const };
+      const activeTokens: DesignTokens = tokens ?? { ...DEFAULT_TOKENS };
+      const options = { format, paper: activeTokens.paper };
 
       const { data, error } = await supabase.functions.invoke('export-resume', {
         body: {
           data: pdfData,
-          tokens,
+          tokens: activeTokens,
           options,
           app_origin: window.location.origin,
         },
@@ -141,6 +144,12 @@ export function EditorToolbar({ onSave, sections }: EditorToolbarProps) {
       </div>
 
       <div className="flex items-center gap-2">
+        {onOpenPreview ? (
+          <Button variant="outline" size="sm" onClick={onOpenPreview}>
+            <Eye className="w-4 h-4 mr-2" />
+            Preview
+          </Button>
+        ) : null}
         <Button
           variant="outline"
           size="sm"
