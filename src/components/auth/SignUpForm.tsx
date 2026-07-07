@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
@@ -26,7 +25,6 @@ export function SignUpForm() {
   } = useForm<SignUpFormData>();
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
-  const navigate = useNavigate();
 
   const getOAuthCallbackUrl = () => {
     sessionStorage.setItem('lansa.oauth.next', '/onboarding');
