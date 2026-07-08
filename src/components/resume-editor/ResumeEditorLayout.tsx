@@ -3,6 +3,8 @@ import { ProfileDataReturn } from '@/hooks/useProfileData';
 import { SectionInstance, SectionComponentType, GlobalStyles, LayoutStructure } from '@/types/resumeSection';
 import { useResumeSections } from '@/hooks/resume/useResumeSections';
 import { ResumeCanvas } from './ResumeCanvas';
+import { ResumeDocument } from '@/components/resume/ResumeDocument';
+import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import { SectionLibrary } from './SectionLibrary';
 import { PropertiesPanel } from './PropertiesPanel';
 import { EditorToolbar } from './EditorToolbar';
@@ -39,6 +41,8 @@ export function ResumeEditorLayout({
   const { user } = useAuth();
   const editorProfile = useProfileData(user?.id);
   const pdfData = convertProfileToPDFData(editorProfile);
+  const [zoom, setZoom] = useState(0.75);
+  const [useLivePreview, setUseLivePreview] = useState(true);
 
   const { sectionComponents, sectionInstances, setSectionInstances } = useResumeSections(resumeDesignId);
 
@@ -171,16 +175,61 @@ export function ResumeEditorLayout({
 
         {/* Center Panel - Canvas */}
         <div className="flex-1 bg-muted/30 relative">
-          <ResumeCanvas
-            sections={sections}
-            onSectionsChange={setSectionInstances}
-            profileData={profileData}
-            globalStyles={globalStyles}
-            layoutStructure={layoutStructure}
-            selectedSectionId={selectedSectionId}
-            onSectionSelect={setSelectedSectionId}
-            onAddSectionClick={() => setShowAddSectionModal(true)}
-          />
+          {useLivePreview ? (
+            <div className="h-full flex flex-col">
+              <div className="p-3 border-b border-border flex items-center justify-between bg-card">
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setZoom((z) => Math.max(0.3, z - 0.1))}>
+                    <ZoomOut className="w-4 h-4" />
+                  </Button>
+                  <span className="text-sm font-medium min-w-[60px] text-center">
+                    {Math.round(zoom * 100)}%
+                  </span>
+                  <Button variant="outline" size="sm" onClick={() => setZoom((z) => Math.min(2, z + 0.1))}>
+                    <ZoomIn className="w-4 h-4" />
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setZoom(0.75)}>
+                    <Maximize2 className="w-4 h-4" />
+                  </Button>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => setUseLivePreview(false)}>
+                  Section editor
+                </Button>
+              </div>
+              <div className="flex-1 overflow-auto p-8">
+                <div className="flex items-start justify-center min-h-full">
+                  <div
+                    style={{
+                      transform: `scale(${zoom})`,
+                      transformOrigin: 'top center',
+                      transition: 'transform 0.15s ease-out',
+                    }}
+                    className="shadow-2xl bg-white"
+                  >
+                    <ResumeDocument data={pdfData} tokens={tokens} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="absolute top-3 right-3 z-20">
+                <Button variant="outline" size="sm" onClick={() => setUseLivePreview(true)}>
+                  Live preview
+                </Button>
+              </div>
+              <ResumeCanvas
+                sections={sections}
+                onSectionsChange={setSectionInstances}
+                profileData={profileData}
+                globalStyles={globalStyles}
+                layoutStructure={layoutStructure}
+                selectedSectionId={selectedSectionId}
+                onSectionSelect={setSelectedSectionId}
+                onAddSectionClick={() => setShowAddSectionModal(true)}
+              />
+            </>
+          )}
         </div>
 
         {/* Toggle Right Panel */}
