@@ -2,13 +2,17 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { X } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const CONSENT_KEY = 'lansa-analytics-consent';
 
 export const CookieConsent = () => {
   const [showBanner, setShowBanner] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
+    // Hide banner on mobile to avoid interrupting the small-screen journey
+    if (isMobile) return;
     // Check if user has already given consent
     const consent = localStorage.getItem(CONSENT_KEY);
     if (!consent && !import.meta.env.DEV) {
@@ -16,7 +20,7 @@ export const CookieConsent = () => {
       const timer = setTimeout(() => setShowBanner(true), 2000);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [isMobile]);
 
   const handleAccept = () => {
     localStorage.setItem(CONSENT_KEY, 'accepted');
