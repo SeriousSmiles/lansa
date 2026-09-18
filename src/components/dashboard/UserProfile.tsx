@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { safeHandler } from "@/config/demo";
 import { useUserState } from "@/contexts/UserStateProvider";
+import { ShieldCheck } from "lucide-react";
 
 interface UserProfileProps {
   userName: string;
@@ -23,7 +24,7 @@ interface UserProfileProps {
 
 export function UserProfile({ userName, email, handleLogout, themeColor }: UserProfileProps) {
   const { user } = useAuth();
-  const { userType } = useUserState();
+  const { userType, isAdmin } = useUserState();
   const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState<string>("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -84,6 +85,18 @@ export function UserProfile({ userName, email, handleLogout, themeColor }: UserP
           <p className="text-xs text-muted-foreground">{email}</p>
         </div>
         <DropdownMenuSeparator />
+        {isAdmin && (
+          <>
+            <DropdownMenuItem onSelect={() => {
+              setIsMenuOpen(false);
+              navigate("/admin");
+            }}>
+              <ShieldCheck className="mr-2 h-4 w-4" />
+              Open Admin
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         {userType !== 'employer' && (
           <DropdownMenuItem onSelect={() => {
             setIsMenuOpen(false);

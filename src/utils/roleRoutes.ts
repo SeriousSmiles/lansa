@@ -80,10 +80,10 @@ export function getSafeInternalPath(path?: string | null) {
 }
 
 export function getRoleHomePath({ userType, isAdmin = false, fallback = '/onboarding' }: RoleRouteInput = {}) {
-  if (isAdmin) return '/admin';
   if (userType === 'employer') return '/employer-dashboard';
   if (userType === 'mentor') return '/mentor-dashboard';
   if (userType === 'job_seeker') return '/dashboard';
+  if (isAdmin) return '/admin';
   return fallback;
 }
 
@@ -111,15 +111,17 @@ export function getPostAuthDestination({
     return homePath;
   }
 
-  if (isAdmin) {
-    return pathname.startsWith('/admin') ? safeRequestedPath : homePath;
-  }
+  if (isAdmin && pathname.startsWith('/admin')) return safeRequestedPath;
 
   if (PUBLIC_PATH_PREFIXES.some((prefix) => pathMatches(pathname, prefix))) {
     return safeRequestedPath;
   }
 
   if (COMMON_AUTH_PATH_PREFIXES.some((prefix) => pathMatches(pathname, prefix))) {
+    return safeRequestedPath;
+  }
+
+  if (isAdmin && Object.values(ROLE_PATH_PREFIXES).flat().some((prefix) => pathMatches(pathname, prefix))) {
     return safeRequestedPath;
   }
 
