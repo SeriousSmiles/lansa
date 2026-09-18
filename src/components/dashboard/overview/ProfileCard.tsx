@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { AnimatedCard } from "@/components/dashboard/AnimatedCard";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserState } from "@/contexts/UserStateProvider";
 import { useProfileData } from "@/hooks/useProfileData";
-import { User, MapPin, Briefcase, GraduationCap, Building2, Award } from "lucide-react";
+import { User, MapPin, Briefcase, GraduationCap, Building2, Award, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { PDFDownloadButton } from "@/components/pdf/PDFDownloadButton";
 
@@ -52,6 +53,7 @@ interface ProfileCardProps {
 
 export function ProfileCard({ role, goal }: ProfileCardProps) {
   const { user } = useAuth();
+  const { isAdmin } = useUserState();
   const navigate = useNavigate();
   const profileData = useProfileData(user?.id);
   const { 
@@ -277,6 +279,16 @@ export function ProfileCard({ role, goal }: ProfileCardProps) {
 
           {/* Action Buttons */}
           <div className="space-y-2">
+            {isAdmin && (
+              <Button
+                onClick={() => navigate('/admin')}
+                variant="outline"
+                className="w-full btn-animate"
+              >
+                <ShieldCheck className="mr-2 h-4 w-4" />
+                Open Admin
+              </Button>
+            )}
             <Button 
               onClick={handleCardClick}
               variant="primary" 

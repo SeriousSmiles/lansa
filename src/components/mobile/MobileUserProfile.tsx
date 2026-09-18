@@ -11,6 +11,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { safeHandler } from "@/config/demo";
+import { useUserState } from "@/contexts/UserStateProvider";
+import { ShieldCheck } from "lucide-react";
 
 interface MobileUserProfileProps {
   userName: string;
@@ -21,6 +23,7 @@ interface MobileUserProfileProps {
 
 export function MobileUserProfile({ userName, email, handleLogout, themeColor }: MobileUserProfileProps) {
   const { user } = useAuth();
+  const { isAdmin } = useUserState();
   const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState<string>("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -77,6 +80,18 @@ export function MobileUserProfile({ userName, email, handleLogout, themeColor }:
           <p className="text-xs text-muted-foreground">{email}</p>
         </div>
         <DropdownMenuSeparator />
+        {isAdmin && (
+          <>
+            <DropdownMenuItem onSelect={() => {
+              setIsMenuOpen(false);
+              navigate("/admin");
+            }}>
+              <ShieldCheck className="mr-2 h-4 w-4" />
+              Open Admin
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem onSelect={() => {
           setIsMenuOpen(false);
           navigate("/profile");

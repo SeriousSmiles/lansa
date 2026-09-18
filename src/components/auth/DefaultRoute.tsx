@@ -13,17 +13,12 @@ export function DefaultRoute() {
     if (loading) return;
     if (!isAuthenticated) return;
 
-    if (isAdmin) {
-      navigate('/admin', { replace: true, state: { fromRedirect: true } });
-      return;
-    }
-
-    if (!hasCompletedOnboarding) {
+    if (!hasCompletedOnboarding && !isAdmin) {
       navigate('/onboarding', { replace: true, state: { fromRedirect: true } });
       return;
     }
 
-    navigate(getRoleHomePath({ userType }), { replace: true, state: { fromRedirect: true } });
+    navigate(getRoleHomePath({ userType, isAdmin }), { replace: true, state: { fromRedirect: true } });
   }, [loading, isAuthenticated, userType, hasCompletedOnboarding, isAdmin, navigate]);
 
   // CRITICAL: Show loader while auth resolves — prevents landing page flash

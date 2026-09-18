@@ -9,9 +9,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User } from 'lucide-react';
+import { AppWindow, LogOut, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthProvider';
+import { getRoleHomePath } from '@/utils/roleRoutes';
 
 const PAGE_TITLES: Record<string, string> = {
   '/admin': 'Admin Dashboard',
@@ -30,6 +32,7 @@ const PAGE_TITLES: Record<string, string> = {
 export function AdminMobileHeader() {
   const location = useLocation();
   const { user } = useAuth();
+  const { userType, isAdmin } = useUnifiedAuth();
   const navigate = useNavigate();
   
   const pageTitle = PAGE_TITLES[location.pathname] || 'Admin';
@@ -68,6 +71,10 @@ export function AdminMobileHeader() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate(getRoleHomePath({ userType, isAdmin }))}>
+              <AppWindow className="mr-2 h-4 w-4" />
+              Go to app
+            </DropdownMenuItem>
             <DropdownMenuItem>
               <User className="mr-2 h-4 w-4" />
               Profile
