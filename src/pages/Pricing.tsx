@@ -373,8 +373,8 @@ const Pricing = () => {
   return (
     <div className="min-h-screen bg-[hsl(40_33%_96%)]">
       <SEOHead
-        title="Lansa Pricing — Plans for Professionals & Employers"
-        description="Free for professionals. Commitment-based plans for Caribbean employers. Transparent XCG pricing built for Curaçao."
+        title="Pricing for Job Seekers & Employers in Curaçao | Lansa"
+        description="Lansa is free for job seekers in Curaçao. See clear XCG pricing for certification exams and employer hiring plans, with no hidden fees."
         canonical="https://lansa.online/pricing"
         jsonLd={{
           "@context": "https://schema.org",

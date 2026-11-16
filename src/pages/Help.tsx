@@ -53,8 +53,8 @@ export default function Help() {
   return (
     <>
       <SEOHead
-        title="Help & Support - Lansa Career Development Platform"
-        description="Get help with Lansa's profile builder. Find answers about creating profiles, using AI insights, and growing your career."
+        title="Help & Support | Lansa"
+        description="Answers to common questions about building your CV, applying to jobs, certification and hiring on Lansa in Curaçao."
         keywords="lansa help, career development support, profile builder guide, AI career tools help, professional profile tips"
         canonical="https://lansa.online/help"
         jsonLd={helpJsonLd}

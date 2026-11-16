@@ -28,8 +28,8 @@ export default function IndexPage() {
   return (
     <>
       <SEOHead
-        title="Lansa — AI Profile Builder & Career Platform"
-        description="Build a standout professional profile with Lansa's AI tools, get career insights, and connect with the right opportunities."
+        title="Jobs & CV Builder in Curaçao | Lansa"
+        description="Find jobs in Curaçao and build a professional CV for free. Get certified, stand out to local employers, and apply to opportunities with Lansa."
         keywords="professional profile builder, AI career coach, career development, resume builder, job search platform, professional networking, career insights, profile optimization"
         canonical="https://lansa.online/"
       />

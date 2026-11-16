@@ -4,7 +4,7 @@ export default function Terms() {
   return (
     <>
       <SEOHead
-        title="Terms of Service - Lansa Career Development Platform"
+        title="Terms of Service | Lansa"
         description="Read Lansa's terms of service covering user responsibilities, platform usage guidelines, and service agreements for our career development platform."
         keywords="lansa terms of service, user agreement, platform terms, career development terms, service conditions"
         canonical="https://lansa.online/terms"

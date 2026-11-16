@@ -11,8 +11,8 @@ export default function LoginPage() {
   return (
     <>
       <SEOHead
-        title="Login - Lansa | AI-Powered Professional Profile Builder"
-        description="Sign in to your Lansa account to access your professional profile, career insights, and job opportunities."
+        title="Log In | Lansa – Jobs & CV Builder Curaçao"
+        description="Log in to Lansa to manage your CV, track job applications and chat with employers in Curaçao."
         canonical="https://lansa.online/login"
       />
       <AuthLayout imageSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/21db5620684d4cbbfb27b61d5dfc0736c8a7cd9c?placeholderIfAbsent=true">

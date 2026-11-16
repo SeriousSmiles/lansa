@@ -18,7 +18,7 @@ export default function ResetPasswordPage() {
   return (
     <>
       <SEOHead
-        title="Set New Password - Lansa | AI-Powered Professional Profile Builder"
+        title="Set New Password | Lansa"
         description="Set a new password for your Lansa account."
         canonical="https://lansa.online/reset-password"
         noindex

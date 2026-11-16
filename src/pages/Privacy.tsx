@@ -4,7 +4,7 @@ export default function Privacy() {
   return (
     <>
       <SEOHead
-        title="Privacy Policy - Lansa Career Development Platform"
+        title="Privacy Policy | Lansa"
         description="Learn how Lansa protects your privacy. Read our comprehensive privacy policy covering data collection, usage, security, and your rights as a user."
         keywords="lansa privacy policy, data protection, user privacy, career platform privacy, personal information security"
         canonical="https://lansa.online/privacy"

@@ -9,7 +9,7 @@ export default function ForgotPasswordPage() {
   return (
     <>
       <SEOHead
-        title="Reset Password - Lansa | AI-Powered Professional Profile Builder"
+        title="Reset Password | Lansa"
         description="Reset your Lansa account password to regain access to your professional profile and career tools."
         canonical="https://lansa.online/forgot-password"
         noindex

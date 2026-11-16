@@ -14,8 +14,8 @@ export default function ForBusiness() {
     return (
       <>
         <SEOHead
-          title="Lansa for Business — Hire Certified Caribbean Talent"
-          description="Discover certified, work-ready professionals in Curaçao with Lansa's hiring platform built for Caribbean employers."
+          title="Hire Certified Talent in Curaçao | Lansa for Business"
+          description="Post jobs and hire certified, work-ready professionals in Curaçao. Lansa helps local employers find, review and connect with verified candidates fast."
           canonical="https://lansa.online/for-business"
         />
         <AccessGate onUnlock={handleUnlock} />
@@ -26,8 +26,8 @@ export default function ForBusiness() {
   return (
     <>
       <SEOHead
-        title="Lansa for Business — Hire Certified Caribbean Talent"
-        description="Discover certified, work-ready professionals in Curaçao with Lansa's hiring platform built for Caribbean employers."
+        title="Hire Certified Talent in Curaçao | Lansa for Business"
+        description="Post jobs and hire certified, work-ready professionals in Curaçao. Lansa helps local employers find, review and connect with verified candidates fast."
         canonical="https://lansa.online/for-business"
       />
       <PresentationShell />

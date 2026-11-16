@@ -11,8 +11,8 @@ export default function SignupPage() {
   return (
     <>
       <SEOHead
-        title="Sign Up - Lansa | AI-Powered Professional Profile Builder"
-        description="Create your Lansa account and start building your professional profile with AI-powered insights and career opportunities."
+        title="Create a Free Account | Lansa Curaçao"
+        description="Sign up free to build your CV, get certified and apply to jobs in Curaçao. Employers can join to hire verified local talent."
         canonical="https://lansa.online/signup"
       />
       <AuthLayout imageSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/21db5620684d4cbbfb27b61d5dfc0736c8a7cd9c?placeholderIfAbsent=true">
