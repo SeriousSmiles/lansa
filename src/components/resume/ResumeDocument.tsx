@@ -15,155 +15,105 @@
  * you produce a new DesignTokens preset, not a new React tree.
  */
 
-import React from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { DesignTokens, densityScale } from '@/types/designTokens';
 import { PDFResumeData } from '@/types/pdf';
+import { PAPER_DIMENSIONS, bodySize, documentUnits, paginateHeights } from '@/lib/resumeDocumentModel';
 
 interface ResumeDocumentProps {
   data: PDFResumeData;
   tokens: DesignTokens;
+  onReady?: (pageCount: number) => void;
 }
 
-const PAPER_MM: Record<'A4' | 'Letter', { w: number; h: number }> = {
-  A4: { w: 210, h: 297 },
-  Letter: { w: 216, h: 279 },
-};
-
-export function ResumeDocument({ data, tokens }: ResumeDocumentProps) {
-  const paper = PAPER_MM[tokens.paper];
+/** Measure at unscaled physical size; preview and print share the same page tree. */
+export function ResumeDocument({ data, tokens, onReady }: ResumeDocumentProps) {
+  const paper = PAPER_DIMENSIONS[tokens.paper];
   const dens = densityScale(tokens.density);
-  const base = tokens.typography.baseSizePt * dens.fontMul;
   const gap = tokens.spacing.sectionGapMm * dens.gapMul;
-  const leading = tokens.typography.leading * dens.leadingMul;
+  const margin = tokens.spacing.pageMarginMm;
+  const sidebar = tokens.layout === 'sidebar-left' || tokens.layout === 'sidebar-right';
+  const units = documentUnits(data, tokens.sectionOrder);
+  const sideKeys = new Set(['skills', 'languages', 'certifications']);
+  const mainUnits = units.filter(u => !sidebar || !sideKeys.has(u.key));
+  const sideUnits = sidebar ? units.filter(u => sideKeys.has(u.key)) : [];
+  const measurement = useRef<HTMLDivElement>(null);
+  const [pagination, setPagination] = useState<{ signature: string; main: number[][]; side: number[][] } | null>(null);
+  const signature = JSON.stringify({ data, tokens });
+  const ready = pagination?.signature === signature;
+  const mainBlocks = [<Header key="identity" data={data} tokens={tokens} compact={sidebar} />,
+    ...mainUnits.map((u, i) => <SectionRenderer key={`main-${i}`} sectionKey={u.key} data={u.data} tokens={tokens} continued={u.continued} />)];
+  const sideBlocks = sidebar ? [<SidebarIdentity key="photo" data={data} tokens={tokens} />,
+    ...sideUnits.map((u, i) => <SectionRenderer key={`side-${i}`} sectionKey={u.key} data={u.data} tokens={tokens} variant="sidebar" continued={u.continued} />)] : [];
 
-  const cssVars: React.CSSProperties = {
-    // expose tokens as CSS vars for any nested component that wants them
-    ['--rd-primary' as any]: tokens.colors.primary,
-    ['--rd-secondary' as any]: tokens.colors.secondary,
-    ['--rd-text' as any]: tokens.colors.text,
-    ['--rd-muted' as any]: tokens.colors.muted,
-    ['--rd-surface' as any]: tokens.colors.surface,
-    ['--rd-sidebar' as any]: tokens.colors.sidebar ?? tokens.colors.primary,
-    ['--rd-heading-family' as any]: tokens.typography.pair.headingFamily,
-    ['--rd-body-family' as any]: tokens.typography.pair.bodyFamily,
-    ['--rd-heading-weight' as any]: String(tokens.typography.headingWeight),
-    ['--rd-body-weight' as any]: String(tokens.typography.bodyWeight),
-    ['--rd-tracking' as any]: `${tokens.typography.displayTracking}em`,
+  useLayoutEffect(() => {
+    let cancelled = false;
+    const root = measurement.current;
+    if (!root) return;
+    const measure = async () => {
+      await Promise.all([
+        document.fonts.load(`${tokens.typography.headingWeight} 12pt "${tokens.typography.pair.headingFamily}"`),
+        document.fonts.load(`${tokens.typography.bodyWeight} 12pt "${tokens.typography.pair.bodyFamily}"`),
+      ]);
+      await document.fonts.ready;
+      await Promise.all(Array.from(root.querySelectorAll('img')).map(img => img.decode().catch(() => undefined)));
+      if (cancelled) return;
+      const lane = root.querySelector<HTMLElement>('[data-measure-main]');
+      const side = root.querySelector<HTMLElement>('[data-measure-side]');
+      if (!lane) return;
+      const heights = (el: HTMLElement) => Array.from(el.children).map(c => (c as HTMLElement).offsetHeight);
+      // offsetHeight ignores editor zoom, unlike getBoundingClientRect.
+      const pxPerMm = root.offsetWidth / paper.w;
+      const capacity = (paper.h - margin * 2 - (tokens.personalization.showLansaBadge ? 5 : 0)) * pxPerMm;
+      setPagination({ signature, main: paginateHeights(heights(lane), capacity, gap * pxPerMm),
+        side: side ? paginateHeights(heights(side), capacity - 8 * pxPerMm, gap * pxPerMm) : [[]] });
+    };
+    void measure();
+    return () => { cancelled = true; };
+  }, [signature, paper.w, paper.h, margin, gap, tokens.personalization.showLansaBadge, tokens.typography.bodyWeight, tokens.typography.headingWeight, tokens.typography.pair.bodyFamily, tokens.typography.pair.headingFamily]);
+
+  useLayoutEffect(() => { if (ready && pagination) onReady?.(Math.max(pagination.main.length, pagination.side.length)); }, [ready, pagination, onReady]);
+
+  const vars: React.CSSProperties = {
+    ['--rd-heading-family' as string]: tokens.typography.pair.headingFamily,
+    ['--rd-body-family' as string]: tokens.typography.pair.bodyFamily,
+    ['--rd-tracking' as string]: '0em',
+    ['--rd-heading-size' as string]: `${bodySize(tokens) * tokens.typography.scaleRatio}pt`,
+    width: `${paper.w}mm`, color: tokens.colors.text, background: tokens.colors.surface,
+    fontFamily: `${tokens.typography.pair.bodyFamily}, sans-serif`, fontWeight: tokens.typography.bodyWeight,
+    fontSize: `${bodySize(tokens)}pt`, lineHeight: tokens.typography.leading * dens.leadingMul,
+    overflowWrap: 'anywhere', boxSizing: 'border-box',
   };
-
-  const pageStyle: React.CSSProperties = {
-    ...cssVars,
-    width: `${paper.w}mm`,
-    minHeight: `${paper.h}mm`,
-    padding: `${tokens.spacing.pageMarginMm}mm`,
-    background: tokens.colors.surface,
-    color: tokens.colors.text,
-    fontFamily: `var(--rd-body-family), system-ui, -apple-system, sans-serif`,
-    fontWeight: tokens.typography.bodyWeight,
-    fontSize: `${base}pt`,
-    lineHeight: leading,
-    boxSizing: 'border-box',
-    position: 'relative',
-    // vector-friendly: no filters, no transforms
-  };
-
-  const isSidebar = tokens.layout === 'sidebar-left' || tokens.layout === 'sidebar-right';
-
+  const laneStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: `${gap}mm`, minWidth: 0 };
+  const gridStyle: React.CSSProperties = { display: 'grid', gridTemplateColumns: sidebar ? (tokens.layout === 'sidebar-right' ? '1fr 30%' : '30% 1fr') : '1fr', gap: `${gap}mm` };
+  const renderLanes = (main: React.ReactNode[], side: React.ReactNode[], measuring = false) => (
+    <div style={gridStyle}>
+      {sidebar && tokens.layout === 'sidebar-left' && <aside data-measure-side={measuring ? '' : undefined} style={{ ...laneStyle, color: tokens.colors.surface, background: tokens.colors.sidebar ?? tokens.colors.primary, padding: '4mm' }}>{side}</aside>}
+      <main data-measure-main={measuring ? '' : undefined} style={laneStyle}>{main}</main>
+      {sidebar && tokens.layout === 'sidebar-right' && <aside data-measure-side={measuring ? '' : undefined} style={{ ...laneStyle, color: tokens.colors.surface, background: tokens.colors.sidebar ?? tokens.colors.primary, padding: '4mm' }}>{side}</aside>}
+    </div>
+  );
+  const count = ready && pagination ? Math.max(pagination.main.length, pagination.side.length) : 0;
+  const pageBlocks = (indexes: number[], blocks: React.ReactElement[], laneUnits: typeof units, identityOffset: number) => indexes.map((i, position) => {
+    const unit = laneUnits[i - identityOffset];
+    const previous = laneUnits[(indexes[position - 1] ?? -1) - identityOffset];
+    return <React.Fragment key={i}>{unit ? React.cloneElement(blocks[i], { continued: position === 0 && unit.continued, hideHeading: previous?.key === unit.key }) : blocks[i]}</React.Fragment>;
+  });
   return (
-    <div className="resume-document" style={pageStyle} data-resume-document>
-      {/* Injected print CSS: @page, page-break rules, font-face bootstrap */}
+    <div className="resume-pages" data-resume-pages data-resume-ready={ready ? 'true' : 'false'}>
       <ResumeDocumentStyles tokens={tokens} paper={paper} />
-
-      {tokens.personalization.watermark ? (
-        <div
-          aria-hidden
-          style={{
-            position: 'fixed',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            pointerEvents: 'none',
-            transform: 'rotate(-30deg)',
-            fontSize: '90pt',
-            color: tokens.colors.muted,
-            opacity: 0.08,
-            fontWeight: 900,
-            letterSpacing: '0.2em',
-            zIndex: 1,
-          }}
-        >
-          {tokens.personalization.watermark}
+      <div ref={measurement} aria-hidden style={{ ...vars, position: 'absolute', visibility: 'hidden', pointerEvents: 'none', top: 0, left: 0, padding: `${margin}mm` }}>
+        {renderLanes(mainBlocks, sideBlocks, true)}
+      </div>
+      {ready && pagination ? Array.from({ length: count }, (_, index) => (
+        <div key={index} className="resume-document" data-resume-document data-page-number={index + 1}
+          style={{ ...vars, height: `${paper.h}mm`, padding: `${margin}mm`, position: 'relative', overflow: 'hidden' }}>
+          {tokens.personalization.watermark && <div aria-hidden style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', opacity: 0.08, fontSize: '48pt', color: tokens.colors.muted, pointerEvents: 'none' }}>{tokens.personalization.watermark}</div>}
+          {renderLanes(pageBlocks(pagination.main[index] ?? [], mainBlocks, mainUnits, 1),
+            pageBlocks(pagination.side[index] ?? [], sideBlocks, sideUnits, 1))}
+          {tokens.personalization.showLansaBadge && <LansaBadge />}
         </div>
-      ) : null}
-
-      {isSidebar ? (
-        <SidebarLayout data={data} tokens={tokens} gap={gap} />
-      ) : (
-        <SingleColumnLayout data={data} tokens={tokens} gap={gap} />
-      )}
-
-      {tokens.personalization.showLansaBadge ? <LansaBadge /> : null}
-    </div>
-  );
-}
-
-/* --------------------------------- Layouts -------------------------------- */
-
-function SingleColumnLayout({
-  data,
-  tokens,
-  gap,
-}: {
-  data: PDFResumeData;
-  tokens: DesignTokens;
-  gap: number;
-}) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: `${gap}mm`, position: 'relative', zIndex: 2 }}>
-      <Header data={data} tokens={tokens} />
-      <Sections data={data} tokens={tokens} order={tokens.sectionOrder} />
-    </div>
-  );
-}
-
-function SidebarLayout({
-  data,
-  tokens,
-  gap,
-}: {
-  data: PDFResumeData;
-  tokens: DesignTokens;
-  gap: number;
-}) {
-  const side = tokens.layout === 'sidebar-right' ? 'row-reverse' : 'row';
-  const sidebarKeys = new Set<string>(['skills', 'languages', 'certifications']);
-  const mainKeys = tokens.sectionOrder.filter((k) => !sidebarKeys.has(k));
-  const sideOrder = tokens.sectionOrder.filter((k) => sidebarKeys.has(k));
-
-  return (
-    <div style={{ display: 'flex', flexDirection: side, gap: `${gap}mm`, position: 'relative', zIndex: 2, alignItems: 'stretch' }}>
-      <aside
-        style={{
-          width: '32%',
-          background: tokens.colors.sidebar ?? tokens.colors.primary,
-          color: '#fff',
-          padding: `${tokens.spacing.pageMarginMm}mm`,
-          margin: `-${tokens.spacing.pageMarginMm}mm 0 -${tokens.spacing.pageMarginMm}mm ${
-            side === 'row-reverse' ? '0' : `-${tokens.spacing.pageMarginMm}mm`
-          }`,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: `${gap}mm`,
-        }}
-      >
-        <SidebarIdentity data={data} tokens={tokens} />
-        <Sections data={data} tokens={tokens} order={sideOrder} variant="sidebar" />
-      </aside>
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: `${gap}mm`, minWidth: 0 }}>
-        <Header data={data} tokens={tokens} compact />
-        <Sections data={data} tokens={tokens} order={mainKeys} />
-      </main>
+      )) : <div role="status" style={{ ...vars, height: `${paper.h}mm`, padding: `${margin}mm` }}>Preparing pages…</div>}
     </div>
   );
 }
@@ -171,9 +121,9 @@ function SidebarLayout({
 /* --------------------------------- Header --------------------------------- */
 
 function Header({ data, tokens, compact }: { data: PDFResumeData; tokens: DesignTokens; compact?: boolean }) {
-  const nameSize = compact ? 22 : 28;
+  const nameSize = bodySize(tokens) * tokens.typography.scaleRatio ** (compact ? 3 : 4);
   return (
-    <header style={{ display: 'flex', gap: '6mm', alignItems: 'center' }}>
+    <header style={{ display: 'flex', gap: '6mm', alignItems: 'center', ...(tokens.layout === 'header-strip' ? { borderTop: `3mm solid ${tokens.colors.secondary}`, paddingTop: '4mm' } : {}) }}>
       {!compact && data.personalInfo.profileImage && tokens.personalization.photoShape !== 'none' ? (
         <Photo url={data.personalInfo.profileImage} shape={tokens.personalization.photoShape} />
       ) : null}
@@ -192,7 +142,7 @@ function Header({ data, tokens, compact }: { data: PDFResumeData; tokens: Design
           {data.personalInfo.name}
         </h1>
         {data.personalInfo.title ? (
-          <p style={{ margin: '2mm 0 0', color: tokens.colors.primary, fontWeight: 600, fontSize: `${12}pt` }}>
+          <p style={{ margin: '2mm 0 0', color: tokens.colors.primary, fontWeight: 600, fontSize: 'var(--rd-heading-size)' }}>
             {data.personalInfo.title}
           </p>
         ) : null}
@@ -210,7 +160,7 @@ function ContactLine({ data, tokens }: { data: PDFResumeData; tokens: DesignToke
   ].filter(Boolean) as string[];
   if (!bits.length) return null;
   return (
-    <p style={{ margin: '2mm 0 0', color: tokens.colors.muted, fontSize: `${9}pt` }}>
+    <p style={{ margin: '2mm 0 0', color: tokens.colors.muted, fontSize: '1em' }}>
       {bits.join('  ·  ')}
     </p>
   );
@@ -239,7 +189,7 @@ function SidebarIdentity({ data, tokens }: { data: PDFResumeData; tokens: Design
       {data.personalInfo.profileImage && tokens.personalization.photoShape !== 'none' ? (
         <Photo url={data.personalInfo.profileImage} shape={tokens.personalization.photoShape} />
       ) : null}
-      <div style={{ fontSize: '9pt', opacity: 0.9, display: 'flex', flexDirection: 'column', gap: '1mm' }}>
+      <div style={{ fontSize: '1em', opacity: 0.9, display: 'flex', flexDirection: 'column', gap: '1mm' }}>
         {data.personalInfo.email ? <span>{data.personalInfo.email}</span> : null}
         {data.personalInfo.phone ? <span>{data.personalInfo.phone}</span> : null}
         {data.personalInfo.location ? <span>{data.personalInfo.location}</span> : null}
@@ -275,16 +225,20 @@ function SectionRenderer({
   data,
   tokens,
   variant,
+  continued,
+  hideHeading,
 }: {
   sectionKey: string;
   data: PDFResumeData;
   tokens: DesignTokens;
   variant?: 'sidebar';
+  continued?: boolean;
+  hideHeading?: boolean;
 }) {
   switch (sectionKey) {
     case 'summary':
       return data.personalInfo.summary ? (
-        <Section title="Summary" tokens={tokens} variant={variant}>
+        <Section title="Summary" tokens={tokens} variant={variant} continued={continued} hideHeading={hideHeading}>
           <p style={{ margin: 0 }}>{data.personalInfo.summary}</p>
           {data.personalInfo.professionalGoal ? (
             <p style={{ margin: '3mm 0 0', color: tokens.colors.muted, fontStyle: 'italic' }}>
@@ -295,7 +249,7 @@ function SectionRenderer({
       ) : null;
     case 'experience':
       return data.experience?.length ? (
-        <Section title="Experience" tokens={tokens} variant={variant}>
+        <Section title="Experience" tokens={tokens} variant={variant} continued={continued} hideHeading={hideHeading}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4mm' }}>
             {data.experience.map((e, i) => (
               <ExperienceItem key={i} item={e} tokens={tokens} />
@@ -305,7 +259,7 @@ function SectionRenderer({
       ) : null;
     case 'education':
       return data.education?.length ? (
-        <Section title="Education" tokens={tokens} variant={variant}>
+        <Section title="Education" tokens={tokens} variant={variant} continued={continued} hideHeading={hideHeading}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '3mm' }}>
             {data.education.map((e, i) => (
               <EducationItem key={i} item={e} tokens={tokens} />
@@ -315,18 +269,18 @@ function SectionRenderer({
       ) : null;
     case 'skills':
       return data.skills?.length ? (
-        <Section title="Skills" tokens={tokens} variant={variant}>
+        <Section title="Skills" tokens={tokens} variant={variant} continued={continued} hideHeading={hideHeading}>
           <SkillChips skills={data.skills} tokens={tokens} inverted={variant === 'sidebar'} />
         </Section>
       ) : null;
     case 'languages':
       return data.languages?.length ? (
-        <Section title="Languages" tokens={tokens} variant={variant}>
+        <Section title="Languages" tokens={tokens} variant={variant} continued={continued} hideHeading={hideHeading}>
           <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-            {data.languages.map((l: any, i: number) => (
+            {data.languages.map((l, i) => (
               <li key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5mm 0' }}>
-                <span>{l.language ?? l.name ?? String(l)}</span>
-                {l.proficiency ? <span style={{ opacity: 0.8 }}>{l.proficiency}</span> : null}
+                <span>{l.name}</span>
+                {l.level ? <span style={{ opacity: 0.8 }}>{['Beginner', 'Elementary', 'Intermediate', 'Advanced', 'Native'][l.level - 1]}</span> : null}
               </li>
             ))}
           </ul>
@@ -334,12 +288,12 @@ function SectionRenderer({
       ) : null;
     case 'certifications':
       return data.certifications?.length ? (
-        <Section title="Certifications" tokens={tokens} variant={variant}>
+        <Section title="Certifications" tokens={tokens} variant={variant} continued={continued} hideHeading={hideHeading}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2mm' }}>
             {data.certifications.map((c, i) => (
               <div key={i}>
                 <div style={{ fontWeight: 600 }}>{c.title}</div>
-                <div style={{ fontSize: '9pt', color: variant === 'sidebar' ? 'rgba(255,255,255,0.85)' : tokens.colors.muted }}>
+                <div style={{ fontSize: '1em', color: variant === 'sidebar' ? 'rgba(255,255,255,0.85)' : tokens.colors.muted }}>
                   {[c.issuer, c.date].filter(Boolean).join(' · ')}
                 </div>
               </div>
@@ -349,22 +303,22 @@ function SectionRenderer({
       ) : null;
     case 'projects':
       return data.projects?.length ? (
-        <Section title="Projects" tokens={tokens} variant={variant}>
+        <Section title="Projects" tokens={tokens} variant={variant} continued={continued} hideHeading={hideHeading}>
           {data.projects.map((p, i) => (
             <div key={i} style={{ marginBottom: '3mm' }}>
               <div style={{ fontWeight: 600 }}>{p.title}</div>
-              <div style={{ fontSize: '10pt' }}>{p.description}</div>
+              <div style={{ fontSize: '1em' }}>{p.description}</div>
             </div>
           ))}
         </Section>
       ) : null;
     case 'awards':
       return data.awards?.length ? (
-        <Section title="Awards" tokens={tokens} variant={variant}>
+        <Section title="Awards" tokens={tokens} variant={variant} continued={continued} hideHeading={hideHeading}>
           {data.awards.map((a, i) => (
             <div key={i} style={{ marginBottom: '2mm' }}>
               <div style={{ fontWeight: 600 }}>{a.title}</div>
-              <div style={{ fontSize: '9pt', color: tokens.colors.muted }}>
+              <div style={{ fontSize: '1em', color: tokens.colors.muted }}>
                 {[a.issuer, a.date].filter(Boolean).join(' · ')}
               </div>
             </div>
@@ -373,22 +327,22 @@ function SectionRenderer({
       ) : null;
     case 'volunteer':
       return data.volunteer?.length ? (
-        <Section title="Volunteer" tokens={tokens} variant={variant}>
+        <Section title="Volunteer" tokens={tokens} variant={variant} continued={continued} hideHeading={hideHeading}>
           {data.volunteer.map((v, i) => (
             <div key={i} style={{ marginBottom: '2mm' }}>
               <div style={{ fontWeight: 600 }}>{v.title} · {v.organization}</div>
-              {v.description ? <div style={{ fontSize: '10pt' }}>{v.description}</div> : null}
+              {v.description ? <div style={{ fontSize: '1em' }}>{v.description}</div> : null}
             </div>
           ))}
         </Section>
       ) : null;
     case 'achievements':
       return data.achievements?.length ? (
-        <Section title="Achievements" tokens={tokens} variant={variant}>
+        <Section title="Achievements" tokens={tokens} variant={variant} continued={continued} hideHeading={hideHeading}>
           {data.achievements.map((a, i) => (
             <div key={i} style={{ marginBottom: '2mm' }}>
               <div style={{ fontWeight: 600 }}>{a.title}</div>
-              {a.description ? <div style={{ fontSize: '10pt' }}>{a.description}</div> : null}
+              {a.description ? <div style={{ fontSize: '1em' }}>{a.description}</div> : null}
             </div>
           ))}
         </Section>
@@ -403,23 +357,27 @@ function Section({
   children,
   tokens,
   variant,
+  continued,
+  hideHeading,
 }: {
   title: string;
   children: React.ReactNode;
   tokens: DesignTokens;
   variant?: 'sidebar';
+  continued?: boolean;
+  hideHeading?: boolean;
 }) {
   const invert = variant === 'sidebar';
   return (
-    <section style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-      <h2
+    <section style={{ pageBreakInside: 'avoid', breakInside: 'avoid', ...(tokens.layout === 'timeline' ? { borderLeft: `0.5mm solid ${tokens.colors.secondary}`, paddingLeft: '3mm' } : {}) }}>
+      {!hideHeading && <h2
         style={{
           margin: '0 0 2mm',
           fontFamily: 'var(--rd-heading-family)',
           fontWeight: tokens.typography.headingWeight,
-          fontSize: '11pt',
+          fontSize: 'var(--rd-heading-size)',
           textTransform: 'uppercase',
-          letterSpacing: '0.12em',
+          letterSpacing: 0,
           color: invert ? '#fff' : tokens.colors.primary,
           borderBottom: invert
             ? '1px solid rgba(255,255,255,0.3)'
@@ -427,23 +385,25 @@ function Section({
           paddingBottom: '1mm',
         }}
       >
-        {title}
-      </h2>
+        {title}{continued ? ' (continued)' : ''}
+      </h2>}
       <div>{children}</div>
     </section>
   );
 }
 
-function ExperienceItem({ item, tokens }: { item: any; tokens: DesignTokens }) {
+type DatedEntry = { title?: string; role?: string; degree?: string; company?: string; organization?: string; school?: string; institution?: string; description?: string; startDate?: string; endDate?: string; startYear?: number; endYear?: number | null; start_year?: number; end_year?: number; isCurrent?: boolean; is_current?: boolean };
+
+function ExperienceItem({ item, tokens }: { item: DatedEntry; tokens: DesignTokens }) {
   return (
     <div style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '4mm', alignItems: 'baseline' }}>
         <div>
           <div style={{ fontWeight: 700 }}>{item.title || item.role}</div>
-          <div style={{ color: tokens.colors.primary, fontSize: '10pt' }}>{item.company || item.organization}</div>
+          <div style={{ color: tokens.colors.primary, fontSize: '1em' }}>{item.company || item.organization}</div>
         </div>
-        <div style={{ color: tokens.colors.muted, fontSize: '9pt', whiteSpace: 'nowrap' }}>
-          {formatRange(item.startDate ?? item.start_year, item.endDate ?? item.end_year, item.isCurrent ?? item.is_current)}
+        <div style={{ color: tokens.colors.muted, fontSize: '1em', whiteSpace: 'nowrap' }}>
+          {formatRange(item.startDate ?? item.startYear ?? item.start_year, item.endDate ?? item.endYear ?? item.end_year, item.isCurrent ?? item.is_current ?? (item.startYear != null && item.endYear === null))}
         </div>
       </div>
       {item.description ? (
@@ -453,16 +413,16 @@ function ExperienceItem({ item, tokens }: { item: any; tokens: DesignTokens }) {
   );
 }
 
-function EducationItem({ item, tokens }: { item: any; tokens: DesignTokens }) {
+function EducationItem({ item, tokens }: { item: DatedEntry; tokens: DesignTokens }) {
   return (
     <div style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '4mm', alignItems: 'baseline' }}>
         <div>
           <div style={{ fontWeight: 700 }}>{item.degree || item.title}</div>
-          <div style={{ color: tokens.colors.primary, fontSize: '10pt' }}>{item.school || item.institution}</div>
+          <div style={{ color: tokens.colors.primary, fontSize: '1em' }}>{item.school || item.institution}</div>
         </div>
-        <div style={{ color: tokens.colors.muted, fontSize: '9pt', whiteSpace: 'nowrap' }}>
-          {formatRange(item.startDate ?? item.start_year, item.endDate ?? item.end_year, false)}
+        <div style={{ color: tokens.colors.muted, fontSize: '1em', whiteSpace: 'nowrap' }}>
+          {formatRange(item.startDate ?? item.startYear ?? item.start_year, item.endDate ?? item.endYear ?? item.end_year, false)}
         </div>
       </div>
       {item.description ? <p style={{ margin: '1mm 0 0' }}>{item.description}</p> : null}
@@ -480,9 +440,9 @@ function SkillChips({ skills, tokens, inverted }: { skills: string[]; tokens: De
             padding: '1mm 2.5mm',
             border: inverted ? '1px solid rgba(255,255,255,0.4)' : `1px solid ${tokens.colors.primary}`,
             borderRadius: '2mm',
-            fontSize: '9pt',
+            fontSize: '1em',
             color: inverted ? '#fff' : tokens.colors.text,
-            background: inverted ? 'transparent' : `${tokens.colors.primary}14`,
+            background: 'transparent',
           }}
         >
           {s}
@@ -510,7 +470,7 @@ function LansaBadge() {
   );
 }
 
-function formatRange(start?: any, end?: any, isCurrent?: boolean) {
+function formatRange(start?: string | number, end?: string | number | null, isCurrent?: boolean) {
   const s = start ? String(start) : '';
   const e = isCurrent ? 'Present' : end ? String(end) : '';
   if (!s && !e) return '';
@@ -529,11 +489,14 @@ function ResumeDocumentStyles({
     @media print {
       html, body { margin: 0; padding: 0; background: #fff; }
     }
-    .resume-document { box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin: 0 auto; }
+    .resume-pages { position: relative; display: flex; flex-direction: column; gap: 24px; width: fit-content; }
+    .resume-document { margin: 0 auto; flex-shrink: 0; }
     @media print {
-      .resume-document { box-shadow: none; margin: 0; }
+      .resume-pages { gap: 0; }
+      .resume-document { box-shadow: none; margin: 0; break-after: page; }
+      .resume-document:last-child { break-after: auto; }
     }
-    .resume-document h1, .resume-document h2, .resume-document h3 { font-family: var(--rd-heading-family), system-ui, sans-serif; }
+    .resume-pages h1, .resume-pages h2, .resume-pages h3 { font-family: var(--rd-heading-family), system-ui, sans-serif; }
     .resume-document section { break-inside: avoid; page-break-inside: avoid; }
   `;
   return (

@@ -49,11 +49,7 @@ export default function ResumePrint() {
         // fill in defaults if the caller supplied a partial tokens object
         const merged: DesignTokens = { ...DEFAULT_TOKENS, ...(p.tokens ?? {}) } as DesignTokens;
         setPayload({ data: p.data, tokens: merged });
-        // signal to Puppeteer that render is ready
-        requestAnimationFrame(() => {
-          document.title = 'resume-ready';
-          (window as any).__RESUME_READY__ = true;
-        });
+
       })
       .catch((e) => setError(e?.message ?? String(e)));
   }, [token]);
@@ -71,7 +67,7 @@ export default function ResumePrint() {
 
   return (
     <div style={{ background: '#fff', margin: 0, padding: 0 }}>
-      <ResumeDocument data={payload.data} tokens={payload.tokens} />
+      <ResumeDocument data={payload.data} tokens={payload.tokens} onReady={() => { document.title = 'resume-ready'; (window as unknown as { __RESUME_READY__: boolean }).__RESUME_READY__ = true; }} />
     </div>
   );
 }

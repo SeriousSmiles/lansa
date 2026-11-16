@@ -8,29 +8,27 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
-import { SectionInstance } from '@/types/resumeSection';
+import { PDFResumeData } from '@/types/pdf';
+import { PAPER_DIMENSIONS } from '@/lib/resumeDocumentModel';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { useProfileData } from '@/hooks/useProfileData';
-import { convertProfileToPDFData } from '@/utils/profileToPDFConverter';
 import { DEFAULT_TOKENS } from '@/types/designTokens';
 import type { DesignTokens } from '@/types/designTokens';
 
 interface EditorToolbarProps {
   onSave: () => void;
-  sections: SectionInstance[];
+  data: PDFResumeData;
+  isSaving?: boolean;
+  dirty?: boolean;
   tokens?: DesignTokens;
   onOpenPreview?: () => void;
 }
 
 type ExportFormat = 'pdf' | 'pdf-a' | 'docx' | 'png' | 'jpeg';
 
-export function EditorToolbar({ onSave, sections, tokens, onOpenPreview }: EditorToolbarProps) {
+export function EditorToolbar({ onSave, data: pdfData, tokens, isSaving, dirty, onOpenPreview }: EditorToolbarProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
-  const profileData = useProfileData(user?.id);
   const [isExporting, setIsExporting] = useState(false);
 
   const handleSave = async () => {
@@ -42,29 +40,29 @@ export function EditorToolbar({ onSave, sections, tokens, onOpenPreview }: Edito
   };
 
   const legacyClientExport = async (format: 'png' | 'jpeg' | 'pdf') => {
-    const canvasElement = document.querySelector('[data-resume-canvas]') as HTMLElement;
-    if (!canvasElement) throw new Error('Canvas not found');
+    const pagesRoot = document.querySelector<HTMLElement>('[data-resume-pages]');
+    if (!pagesRoot || pagesRoot.dataset.resumeReady !== 'true') throw new Error('Please wait for the pages to finish preparing.');
+    const pageElements = Array.from(pagesRoot.querySelectorAll<HTMLElement>('[data-resume-document]'));
+    const activeTokens = tokens ?? DEFAULT_TOKENS;
+    const paper = PAPER_DIMENSIONS[activeTokens.paper];
     const { default: html2canvas } = await import('html2canvas');
-    const canvas = await html2canvas(canvasElement, {
-      scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff',
-      width: canvasElement.scrollWidth, height: canvasElement.scrollHeight,
-    });
-    if (format === 'pdf') {
-      const { default: jsPDF } = await import('jspdf');
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const imgData = canvas.toDataURL('image/png', 1.0);
-      const imgWidth = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, Math.min(imgHeight, 297));
-      pdf.save('resume.pdf');
-    } else {
-      const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
-      const dataUrl = canvas.toDataURL(mimeType, 0.95);
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = `resume.${format}`;
-      link.click();
+    const { default: jsPDF } = await import('jspdf');
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [paper.w, paper.h] });
+    for (let i = 0; i < pageElements.length; i++) {
+      const canvas = await html2canvas(pageElements[i], {
+        scale: 2, useCORS: true, backgroundColor: activeTokens.colors.surface,
+        onclone: clone => { clone.querySelectorAll<HTMLElement>('[data-resume-pages]').forEach(el => { if (el.parentElement) el.parentElement.style.zoom = '1'; }); },
+      });
+      if (format === 'pdf') {
+        if (i > 0) pdf.addPage([paper.w, paper.h]);
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, paper.w, paper.h);
+      } else {
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL(format === 'png' ? 'image/png' : 'image/jpeg', 0.95);
+        link.download = `resume-page-${i + 1}.${format === 'jpeg' ? 'jpg' : format}`; link.click();
+      }
     }
+    if (format === 'pdf') pdf.save('resume.pdf');
   };
 
   const handleExport = async (format: ExportFormat) => {
@@ -72,10 +70,9 @@ export function EditorToolbar({ onSave, sections, tokens, onOpenPreview }: Edito
     try {
       toast({
         title: 'Preparing your resume…',
-        description: 'Rendering pixel-perfect vector output.',
+        description: 'Preparing your selected paper size and all pages.',
       });
 
-      const pdfData = convertProfileToPDFData(profileData);
       const activeTokens: DesignTokens = tokens ?? { ...DEFAULT_TOKENS };
       const options = { format, paper: activeTokens.paper };
 
@@ -92,7 +89,7 @@ export function EditorToolbar({ onSave, sections, tokens, onOpenPreview }: Edito
       const needsFallback = !data?.file_url && (data?.fallback === 'client_render' || error);
       if (needsFallback) {
         if (format === 'docx' || format === 'pdf-a') {
-          throw new Error('DOCX and PDF/A require the render worker. Deploy render-worker/ to Fly.io and set RENDER_WORKER_URL.');
+          throw new Error('Word and archival PDF downloads are not available yet. Choose PDF instead.');
         }
         console.warn('Vector engine unavailable, falling back to client render', data, error);
         await legacyClientExport(format as 'pdf' | 'png' | 'jpeg');
@@ -127,8 +124,8 @@ export function EditorToolbar({ onSave, sections, tokens, onOpenPreview }: Edito
   };
 
   return (
-    <div className="h-14 border-b border-border bg-card px-4 flex items-center justify-between">
-      <div className="flex items-center gap-4">
+    <div className="min-h-14 shrink-0 gap-2 flex-wrap py-2 border-b border-border bg-card px-4 flex items-center justify-between">
+      <div className="flex items-center gap-2 min-w-0">
         <Button
           variant="ghost"
           size="sm"
@@ -140,7 +137,7 @@ export function EditorToolbar({ onSave, sections, tokens, onOpenPreview }: Edito
 
         <div className="h-6 w-px bg-border" />
 
-        <h2 className="font-semibold">Resume Editor</h2>
+        <h2 className="font-semibold hidden sm:block">Resume Editor</h2>
       </div>
 
       <div className="flex items-center gap-2">
@@ -154,9 +151,10 @@ export function EditorToolbar({ onSave, sections, tokens, onOpenPreview }: Edito
           variant="outline"
           size="sm"
           onClick={handleSave}
+          disabled={isSaving}
         >
           <Save className="w-4 h-4 mr-2" />
-          Save
+          {isSaving ? 'Saving…' : dirty ? 'Save changes' : 'Save'}
         </Button>
 
         <DropdownMenu>
@@ -172,7 +170,7 @@ export function EditorToolbar({ onSave, sections, tokens, onOpenPreview }: Edito
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => handleExport('pdf')}>
-              PDF (vector)
+              PDF
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleExport('pdf-a')}>
               PDF/A (archival)

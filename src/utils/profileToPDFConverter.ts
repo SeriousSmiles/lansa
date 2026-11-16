@@ -8,6 +8,7 @@ export const convertProfileToPDFData = (profileData: ProfileDataReturn): PDFResu
       title: profileData.userTitle || '',
       email: profileData.userEmail || '',
       phone: profileData.phoneNumber || '',
+      location: profileData.location || '',
       summary: profileData.aboutText || '',
       professionalGoal: profileData.professionalGoal || '',
       biggestChallenge: profileData.biggestChallenge || '',
@@ -17,7 +18,8 @@ export const convertProfileToPDFData = (profileData: ProfileDataReturn): PDFResu
     education: profileData.educationItems || [],
     skills: profileData.userSkills || [],
     languages: profileData.userLanguages || [],
-    projects: [],
+    projects: (profileData.userProjects || []).map(p => ({ title: p.title, description: p.description || '', url: p.url })),
+    achievements: profileData.userAchievements || [],
     certifications: (profileData.userCertifications || []).map(cert => ({
       title: cert.title,
       issuer: cert.issuer,

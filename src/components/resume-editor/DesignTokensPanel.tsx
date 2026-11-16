@@ -13,7 +13,6 @@ import {
   Density,
   LayoutKind,
   PhotoShape,
-  IconSet,
   PaperSize,
   ResumeSectionKey,
 } from '@/types/designTokens';
@@ -34,6 +33,7 @@ import {
 } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { ArrowDown, ArrowUp } from 'lucide-react';
+import { toRgb } from '@/utils/wcagContrast';
 
 interface Props {
   tokens: DesignTokens;
@@ -69,7 +69,7 @@ export function DesignTokensPanel({ tokens, onChange }: Props) {
     [tokens.colors.primary, tokens.colors.surface]
   );
 
-  const applyTemplate = (id: string) => onChange(getTemplatePreset(id));
+  const applyTemplate = (id: string) => onChange({ ...getTemplatePreset(id), paper: tokens.paper, sectionOrder: tokens.sectionOrder });
 
   const moveSection = (idx: number, dir: -1 | 1) => {
     const next = [...tokens.sectionOrder];
@@ -81,6 +81,13 @@ export function DesignTokensPanel({ tokens, onChange }: Props) {
 
   return (
     <div className="space-y-4">
+      <section className="space-y-3 border-b border-border pb-4">
+        <h3 className="font-semibold text-sm">Paper size</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {(['A4', 'Letter'] as PaperSize[]).map(paper => <Button key={paper} variant={tokens.paper === paper ? 'primary' : 'outline'} onClick={() => set('paper', paper)}>{paper === 'Letter' ? 'US Letter' : 'A4'}</Button>)}
+        </div>
+        <p className="text-xs text-muted-foreground">{tokens.paper === 'A4' ? '210 × 297 mm' : '8.5 × 11 in'}</p>
+      </section>
       {/* Templates */}
       <Card className="p-4 space-y-3">
         <h3 className="font-semibold text-sm">Template</h3>
@@ -125,7 +132,7 @@ export function DesignTokensPanel({ tokens, onChange }: Props) {
         <SliderRow
           label="Heading weight"
           value={tokens.typography.headingWeight}
-          min={300}
+          min={400}
           max={900}
           step={100}
           onChange={(v) => setType('headingWeight', v)}
@@ -133,16 +140,16 @@ export function DesignTokensPanel({ tokens, onChange }: Props) {
         <SliderRow
           label="Body weight"
           value={tokens.typography.bodyWeight}
-          min={300}
-          max={700}
+          min={400}
+          max={500}
           step={100}
           onChange={(v) => setType('bodyWeight', v)}
         />
         <SliderRow
           label="Heading scale"
           value={tokens.typography.scaleRatio}
-          min={1.1}
-          max={1.4}
+          min={1.15}
+          max={1.35}
           step={0.01}
           onChange={(v) => setType('scaleRatio', Number(v.toFixed(2)))}
           format={(v) => v.toFixed(2)}
@@ -150,25 +157,16 @@ export function DesignTokensPanel({ tokens, onChange }: Props) {
         <SliderRow
           label="Body size (pt)"
           value={tokens.typography.baseSizePt}
-          min={9}
+          min={10}
           max={12}
           step={0.5}
           onChange={(v) => setType('baseSizePt', v)}
         />
         <SliderRow
-          label="Display tracking (em)"
-          value={tokens.typography.displayTracking}
-          min={-0.05}
-          max={0.05}
-          step={0.005}
-          onChange={(v) => setType('displayTracking', Number(v.toFixed(3)))}
-          format={(v) => v.toFixed(3)}
-        />
-        <SliderRow
           label="Leading"
           value={tokens.typography.leading}
-          min={1.2}
-          max={1.8}
+          min={1.3}
+          max={1.65}
           step={0.05}
           onChange={(v) => setType('leading', Number(v.toFixed(2)))}
           format={(v) => v.toFixed(2)}
@@ -179,15 +177,15 @@ export function DesignTokensPanel({ tokens, onChange }: Props) {
       <Card className="p-4 space-y-3">
         <h3 className="font-semibold text-sm">Color</h3>
         <ColorRow label="Primary" value={tokens.colors.primary} onChange={(v) => setColor('primary', v)} />
-        <ColorRow label="Secondary" value={tokens.colors.secondary} onChange={(v) => setColor('secondary', v)} />
+        {(tokens.layout === 'header-strip' || tokens.layout === 'timeline') && <ColorRow label="Secondary" value={tokens.colors.secondary} onChange={(v) => setColor('secondary', v)} />}
         <ColorRow label="Text" value={tokens.colors.text} onChange={(v) => setColor('text', v)} />
         <ColorRow label="Muted" value={tokens.colors.muted} onChange={(v) => setColor('muted', v)} />
-        <ColorRow label="Surface" value={tokens.colors.surface} onChange={(v) => setColor('surface', v)} />
-        <ColorRow
+        
+        {(tokens.layout === 'sidebar-left' || tokens.layout === 'sidebar-right') && <ColorRow
           label="Sidebar"
           value={tokens.colors.sidebar ?? tokens.colors.primary}
           onChange={(v) => setColor('sidebar', v)}
-        />
+        />}
 
         <div className="rounded-md border p-2 space-y-1 text-xs">
           <div className="flex justify-between">
@@ -204,17 +202,6 @@ export function DesignTokensPanel({ tokens, onChange }: Props) {
       {/* Layout */}
       <Card className="p-4 space-y-3">
         <h3 className="font-semibold text-sm">Layout</h3>
-
-        <div className="space-y-2">
-          <Label>Paper</Label>
-          <Select value={tokens.paper} onValueChange={(v) => set('paper', v as PaperSize)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="A4">A4</SelectItem>
-              <SelectItem value="Letter">Letter</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
 
         <div className="space-y-2">
           <Label>Structure</Label>
@@ -239,7 +226,7 @@ export function DesignTokensPanel({ tokens, onChange }: Props) {
                 size="sm"
                 variant={tokens.density === d ? 'primary' : 'outline'}
                 onClick={() => set('density', d)}
-                className="capitalize"
+                className="capitalize px-1 text-xs"
               >
                 {d}
               </Button>
@@ -250,7 +237,7 @@ export function DesignTokensPanel({ tokens, onChange }: Props) {
         <SliderRow
           label="Page margin (mm)"
           value={tokens.spacing.pageMarginMm}
-          min={8}
+          min={10}
           max={22}
           step={1}
           onChange={(v) => setSpacing('pageMarginMm', v)}
@@ -259,7 +246,7 @@ export function DesignTokensPanel({ tokens, onChange }: Props) {
           label="Section gap (mm)"
           value={tokens.spacing.sectionGapMm}
           min={3}
-          max={12}
+          max={10}
           step={1}
           onChange={(v) => setSpacing('sectionGapMm', v)}
         />
@@ -320,29 +307,6 @@ export function DesignTokensPanel({ tokens, onChange }: Props) {
               <SelectItem value="none">No photo</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label>Icon set</Label>
-          <Select
-            value={tokens.personalization.iconSet}
-            onValueChange={(v) => setPers('iconSet', v as IconSet)}
-          >
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="lucide">Lucide</SelectItem>
-              <SelectItem value="phosphor">Phosphor</SelectItem>
-              <SelectItem value="none">None</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <Label>QR code to profile</Label>
-          <Switch
-            checked={tokens.personalization.showQrCode}
-            onCheckedChange={(v) => setPers('showQrCode', v)}
-          />
         </div>
 
         <div className="flex items-center justify-between">
@@ -421,15 +385,11 @@ function ColorRow({
       <div className="flex gap-2">
         <Input
           type="color"
-          value={isHex ? value : '#000000'}
+          value={isHex ? value : `#${toRgb(value).map(c => c.toString(16).padStart(2, '0')).join('')}`}
           onChange={(e) => onChange(e.target.value)}
           className="h-9 w-14 p-1"
         />
-        <Input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="h-9 flex-1 font-mono text-xs"
-        />
+        <span className="self-center text-xs text-muted-foreground">{value}</span>
       </div>
     </div>
   );
@@ -444,7 +404,7 @@ function ContrastBadge({ ratio }: { ratio: number }) {
         ? 'secondary'
         : 'destructive';
   return (
-    <Badge variant={tone as any} className="text-[10px]">
+    <Badge variant={tone} className="text-[10px]">
       {ratio.toFixed(2)} · {grade}
     </Badge>
   );

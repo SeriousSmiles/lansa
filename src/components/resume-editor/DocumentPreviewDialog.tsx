@@ -23,7 +23,7 @@ export function DocumentPreviewDialog({ open, onOpenChange, data, tokens }: Prop
         <DialogHeader className="px-6 pt-6">
           <DialogTitle>Export preview</DialogTitle>
           <p className="text-xs text-muted-foreground">
-            This matches the exported PDF exactly. Zoom with your browser.
+            
           </p>
         </DialogHeader>
         <div className="max-h-[80vh] overflow-auto bg-muted/40 p-6">

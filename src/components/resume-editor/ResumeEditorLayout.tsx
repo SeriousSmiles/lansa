@@ -1,296 +1,82 @@
-import React, { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ProfileDataReturn } from '@/hooks/useProfileData';
-import { SectionInstance, SectionComponentType, GlobalStyles, LayoutStructure } from '@/types/resumeSection';
-import { useResumeSections } from '@/hooks/resume/useResumeSections';
-import { ResumeCanvas } from './ResumeCanvas';
 import { ResumeDocument } from '@/components/resume/ResumeDocument';
-import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
-import { SectionLibrary } from './SectionLibrary';
-import { PropertiesPanel } from './PropertiesPanel';
+import { ZoomIn, ZoomOut, Maximize2, ChevronLeft, ChevronRight, Undo2, Redo2 } from 'lucide-react';
 import { EditorToolbar } from './EditorToolbar';
-import { AddSectionModal } from './AddSectionModal';
-import { LayoutStructureSelector } from './LayoutStructureSelector';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
-import { DesignTokens } from '@/types/designTokens';
-import { getTemplatePreset } from '@/config/templatePresets';
+import { ResumeContentPanel } from './ResumeContentPanel';
+import { DesignTokensPanel } from './DesignTokensPanel';
 import { DocumentPreviewDialog } from './DocumentPreviewDialog';
-import { useProfileData } from '@/hooks/useProfileData';
-import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { getTemplatePreset } from '@/config/templatePresets';
 import { convertProfileToPDFData } from '@/utils/profileToPDFConverter';
+import { constrainDesign, ResumeSnapshot } from '@/lib/resumeDocumentModel';
+import { useResumeDesign } from '@/hooks/resume/useResumeDesign';
+import { useAuth } from '@/contexts/AuthContext';
 
-interface ResumeEditorLayoutProps {
-  profileData: ProfileDataReturn;
-  resumeDesignId?: string;
-}
-
-export function ResumeEditorLayout({
-  profileData,
-  resumeDesignId
-}: ResumeEditorLayoutProps) {
-  const [leftPanelOpen, setLeftPanelOpen] = useState(true);
-  const [rightPanelOpen, setRightPanelOpen] = useState(true);
-  const [showAddSectionModal, setShowAddSectionModal] = useState(false);
-  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
-  const [layoutStructure, setLayoutStructure] = useState<LayoutStructure>('single');
-  const [tokens, setTokens] = useState<DesignTokens>(() => getTemplatePreset('professional'));
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const { toast } = useToast();
+interface Props { profileData: ProfileDataReturn; resumeDesignId?: string }
+export function ResumeEditorLayout({ profileData, resumeDesignId }: Props) {
   const { user } = useAuth();
-  const editorProfile = useProfileData(user?.id);
-  const pdfData = convertProfileToPDFData(editorProfile);
+  const { currentDesign, loading, saveDesign } = useResumeDesign(user?.id);
+  const [snapshot, setSnapshot] = useState<ResumeSnapshot>(() => ({ tokens: constrainDesign(getTemplatePreset('professional')), data: convertProfileToPDFData(profileData) }));
+  const [past, setPast] = useState<ResumeSnapshot[]>([]);
+  const [future, setFuture] = useState<ResumeSnapshot[]>([]);
+  const [leftOpen, setLeftOpen] = useState(() => window.innerWidth >= 1024);
+  const [rightOpen, setRightOpen] = useState(() => window.innerWidth >= 1024);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [zoom, setZoom] = useState(0.75);
-  const [useLivePreview, setUseLivePreview] = useState(true);
-
-  const { sectionComponents, sectionInstances, setSectionInstances } = useResumeSections(resumeDesignId);
-
-  // Global styles state
-  const [globalStyles, setGlobalStyles] = useState<GlobalStyles>({
-    fontFamily: 'Inter',
-    primaryColor: '#000000',
-    secondaryColor: '#666666',
-    baseFontSize: 12
-  });
-
-  // Initialize with header section if no sections exist
-  const sections: SectionInstance[] = sectionInstances.length > 0 
-    ? sectionInstances 
-    : [{
-        id: 'default-header',
-        component_type: 'header',
-        position: 0,
-        zone: 'header',
-        width: 'full',
-        is_visible: true,
-        layout_config: { width: 'full' }
-      }];
-
-  const handleAddSection = (type: SectionComponentType, targetZone?: string) => {
-    const newSection: SectionInstance = {
-      id: `section-${Date.now()}`,
-      component_type: type,
-      position: sections.length,
-      zone: (targetZone as any) || 'main',
-      width: 'full',
-      is_visible: true,
-      layout_config: { width: 'full' }
-    };
-    
-    setSectionInstances([...sections, newSection]);
-    setShowAddSectionModal(false);
-    toast({
-      title: 'Section Added',
-      description: `${type} section has been added to your resume.`
-    });
+  const [pageCount, setPageCount] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const restored = useRef(false);
+  const change = (next: ResumeSnapshot) => {
+    restored.current = true;
+    setPast(p => [...p.slice(-49), snapshot]); setFuture([]);
+    setSnapshot({ ...next, tokens: constrainDesign(next.tokens) }); setDirty(true);
   };
-
-  const handleDeleteSection = (sectionId: string) => {
-    const updatedSections = sections
-      .filter(s => s.id !== sectionId)
-      .map((s, index) => ({ ...s, position: index }));
-    setSectionInstances(updatedSections);
+  useEffect(() => {
+    if (loading || restored.current) return;
+    restored.current = true;
+    const saved = currentDesign?.design_json;
+    if (saved?.tokens && saved?.data) setSnapshot({ data: saved.data, tokens: constrainDesign(saved.tokens) });
+  }, [loading, currentDesign]);
+  const undo = () => { const previous = past[past.length - 1]; if (!previous) return; setPast(p => p.slice(0, -1)); setFuture(f => [snapshot, ...f]); setSnapshot(previous); setDirty(true); };
+  const redo = () => { const next = future[0]; if (!next) return; setFuture(f => f.slice(1)); setPast(p => [...p, snapshot]); setSnapshot(next); setDirty(true); };
+  const save = async () => {
+    setSaving(true);
+    try { await saveDesign({ name: currentDesign?.name ?? 'My resume', template_id: snapshot.tokens.templateId, design_json: { version: 2, ...snapshot } }, resumeDesignId ?? currentDesign?.id); setDirty(false); }
+    finally { setSaving(false); }
   };
-
-  const handleReorderSections = (reorderedSections: SectionInstance[]) => {
-    setSectionInstances(reorderedSections);
-  };
-
-  const handleSectionZoneChange = (sectionId: string, newZone: string) => {
-    setSectionInstances(prev => 
-      prev.map(section => 
-        section.id === sectionId 
-          ? { ...section, zone: newZone as any }
-          : section
-      )
-    );
-  };
-
-  const handleSectionWidthChange = (sectionId: string, newWidth: 'full' | 'half' | 'third') => {
-    setSectionInstances(prev =>
-      prev.map(section =>
-        section.id === sectionId
-          ? { ...section, width: newWidth }
-          : section
-      )
-    );
-  };
-
-  const handleSave = async () => {
-    // TODO: Implement save functionality
-    console.log('Saving resume...', sections);
-  };
-
-  return (
-    <div className="h-screen flex flex-col bg-background">
-      {/* Toolbar */}
-      <EditorToolbar
-        onSave={handleSave}
-        sections={sections}
-        tokens={tokens}
-        onOpenPreview={() => setPreviewOpen(true)}
-      />
-
-      {/* Main Editor Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Section Library */}
-        <div
-          className={cn(
-            "relative shrink-0 border-r border-border bg-card transition-all duration-300 overflow-hidden",
-            leftPanelOpen ? "w-72 xl:w-80" : "w-0 border-r-0"
-          )}
-        >
-          {leftPanelOpen && (
-            <div className="h-full overflow-y-auto">
-              {useLivePreview ? (
-                <div className="p-4 border-b border-border">
-                  <p className="text-sm font-semibold">Page layout</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Pick a template and structure in the Design panel on the right. Changes show instantly in the preview.
-                  </p>
-                </div>
-              ) : (
-                <div className="p-4 border-b border-border">
-                  <LayoutStructureSelector
-                    currentStructure={layoutStructure}
-                    onStructureChange={setLayoutStructure}
-                  />
-                </div>
-              )}
-              
-              <SectionLibrary
-                sections={sections}
-                sectionComponents={sectionComponents}
-                layoutStructure={layoutStructure}
-                onAddSection={() => setShowAddSectionModal(true)}
-                onDeleteSection={handleDeleteSection}
-                onReorderSections={handleReorderSections}
-                onSectionZoneChange={handleSectionZoneChange}
-                selectedSectionId={selectedSectionId}
-                onSectionSelect={setSelectedSectionId}
-              />
-            </div>
-          )}
+  return <div className="h-dvh w-full min-w-0 flex flex-col bg-background">
+    <EditorToolbar onSave={save} tokens={snapshot.tokens} data={snapshot.data} isSaving={saving} dirty={dirty} onOpenPreview={() => setPreviewOpen(true)} />
+    <div className="flex-1 min-h-0 flex overflow-hidden">
+      <div className={cn('shrink-0 overflow-y-auto border-r border-border bg-card', leftOpen ? 'w-72 xl:w-80' : 'w-0')}>
+        {leftOpen && <ResumeContentPanel data={snapshot.data} tokens={snapshot.tokens} onDataChange={data => change({ ...snapshot, data })} onTokensChange={tokens => change({ ...snapshot, tokens })} />}
+      </div>
+      <Button variant="ghost" size="icon" className="shrink-0 self-center h-12 w-5 rounded-none border-y border-r border-border bg-card px-0" aria-label={leftOpen ? 'Hide content panel' : 'Show content panel'} onClick={() => setLeftOpen(!leftOpen)}>{leftOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}</Button>
+      <div className="flex-1 min-w-0 min-h-0 flex flex-col bg-dashboard-blue-surface/30">
+        <div className="p-3 border-b border-border flex flex-wrap items-center justify-between gap-2 bg-card">
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="icon" aria-label="Zoom out" onClick={() => setZoom(z => Math.max(0.3, z - 0.1))}><ZoomOut className="w-4 h-4" /></Button>
+            <span className="text-sm font-medium w-14 text-center">{Math.round(zoom * 100)}%</span>
+            <Button variant="outline" size="icon" aria-label="Zoom in" onClick={() => setZoom(z => Math.min(1.5, z + 0.1))}><ZoomIn className="w-4 h-4" /></Button>
+            <Button variant="ghost" size="icon" aria-label="Reset zoom" onClick={() => setZoom(0.75)}><Maximize2 className="w-4 h-4" /></Button>
+            <Button variant="ghost" size="icon" aria-label="Undo" disabled={!past.length} onClick={undo}><Undo2 className="w-4 h-4" /></Button>
+            <Button variant="ghost" size="icon" aria-label="Redo" disabled={!future.length} onClick={redo}><Redo2 className="w-4 h-4" /></Button>
+          </div>
+          <span className="text-xs font-medium text-muted-foreground">{snapshot.tokens.paper} · {pageCount || '…'} {pageCount === 1 ? 'page' : 'pages'}</span>
         </div>
-
-        {/* Toggle Left Panel */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="shrink-0 self-center h-12 w-5 rounded-none border-y border-r border-border bg-card px-0"
-          aria-label={leftPanelOpen ? 'Hide sections panel' : 'Show sections panel'}
-          onClick={() => setLeftPanelOpen(!leftPanelOpen)}
-        >
-          {leftPanelOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-        </Button>
-
-        {/* Center Panel - Canvas */}
-        <div className="flex-1 min-w-0 bg-muted/30 relative">
-          {useLivePreview ? (
-            <div className="h-full flex flex-col">
-              <div className="p-3 border-b border-border flex items-center justify-between bg-card">
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setZoom((z) => Math.max(0.3, z - 0.1))}>
-                    <ZoomOut className="w-4 h-4" />
-                  </Button>
-                  <span className="text-sm font-medium min-w-[60px] text-center">
-                    {Math.round(zoom * 100)}%
-                  </span>
-                  <Button variant="outline" size="sm" onClick={() => setZoom((z) => Math.min(2, z + 0.1))}>
-                    <ZoomIn className="w-4 h-4" />
-                  </Button>
-                  <Button variant="outline" size="sm" aria-label="Reset zoom" onClick={() => setZoom(0.75)}>
-                    <Maximize2 className="w-4 h-4" />
-                  </Button>
-                </div>
-                <Button variant="ghost" size="sm" onClick={() => setUseLivePreview(false)}>
-                  Section editor
-                </Button>
-              </div>
-              <div className="flex-1 overflow-auto p-6 lg:p-8">
-                <div className="flex items-start justify-center min-h-full w-max min-w-full">
-                  <div
-                    style={{ zoom } as React.CSSProperties}
-                    className="shadow-2xl bg-card"
-                  >
-                    <ResumeDocument data={pdfData} tokens={tokens} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="absolute top-3 right-3 z-20">
-                <Button variant="outline" size="sm" onClick={() => setUseLivePreview(true)}>
-                  Live preview
-                </Button>
-              </div>
-              <ResumeCanvas
-                sections={sections}
-                onSectionsChange={setSectionInstances}
-                profileData={profileData}
-                globalStyles={globalStyles}
-                layoutStructure={layoutStructure}
-                selectedSectionId={selectedSectionId}
-                onSectionSelect={setSelectedSectionId}
-                onAddSectionClick={() => setShowAddSectionModal(true)}
-              />
-            </>
-          )}
-        </div>
-
-        {/* Toggle Right Panel */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="shrink-0 self-center h-12 w-5 rounded-none border-y border-l border-border bg-card px-0"
-          aria-label={rightPanelOpen ? 'Hide design panel' : 'Show design panel'}
-          onClick={() => setRightPanelOpen(!rightPanelOpen)}
-        >
-          {rightPanelOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-        </Button>
-
-        {/* Right Panel - Properties */}
-        <div
-          className={cn(
-            "relative shrink-0 border-l border-border bg-card transition-all duration-300 overflow-hidden",
-            rightPanelOpen ? "w-80 xl:w-[22rem]" : "w-0 border-l-0"
-          )}
-        >
-          {rightPanelOpen && (
-            <PropertiesPanel
-              selectedSection={sections.find(s => s.id === selectedSectionId) || null}
-              globalStyles={globalStyles}
-              layoutStructure={layoutStructure}
-              onGlobalStylesChange={setGlobalStyles}
-              onSectionUpdate={(sectionId, updates) => {
-                setSectionInstances(prev =>
-                  prev.map(s => s.id === sectionId ? { ...s, ...updates } : s)
-                );
-              }}
-              onSectionWidthChange={handleSectionWidthChange}
-              tokens={tokens}
-              onTokensChange={setTokens}
-            />
-          )}
+        <div className="flex-1 min-h-0 overflow-auto p-6 lg:p-8">
+          <div className="flex items-start justify-center w-max min-w-full">
+            <div style={{ zoom }} className="shadow-dashboard"><ResumeDocument data={snapshot.data} tokens={snapshot.tokens} onReady={setPageCount} /></div>
+          </div>
         </div>
       </div>
-
-      {/* Add Section Modal */}
-      <AddSectionModal
-        isOpen={showAddSectionModal}
-        onClose={() => setShowAddSectionModal(false)}
-        sectionComponents={sectionComponents}
-        onSelectSection={(type) => handleAddSection(type)}
-      />
-
-      <DocumentPreviewDialog
-        open={previewOpen}
-        onOpenChange={setPreviewOpen}
-        data={pdfData}
-        tokens={tokens}
-      />
+      <Button variant="ghost" size="icon" className="shrink-0 self-center h-12 w-5 rounded-none border-y border-l border-border bg-card px-0" aria-label={rightOpen ? 'Hide design panel' : 'Show design panel'} onClick={() => setRightOpen(!rightOpen)}>{rightOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}</Button>
+      <div className={cn('shrink-0 overflow-y-auto border-l border-border bg-card', rightOpen ? 'w-80 xl:w-[22rem]' : 'w-0')}>
+        {rightOpen && <div className="p-4 space-y-4"><h2 className="text-lg font-semibold">Design</h2><DesignTokensPanel tokens={snapshot.tokens} onChange={tokens => change({ ...snapshot, tokens })} /></div>}
+      </div>
     </div>
-  );
+    <DocumentPreviewDialog open={previewOpen} onOpenChange={setPreviewOpen} data={snapshot.data} tokens={snapshot.tokens} />
+  </div>;
 }
