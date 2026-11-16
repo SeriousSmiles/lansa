@@ -31,7 +31,7 @@ export default function IndexPage() {
         title="Lansa — AI Profile Builder & Career Platform"
         description="Build a standout professional profile with Lansa's AI tools, get career insights, and connect with the right opportunities."
         keywords="professional profile builder, AI career coach, career development, resume builder, job search platform, professional networking, career insights, profile optimization"
-        canonical="https://www.lansa.online/"
+        canonical="https://lansa.online/"
       />
       <LandingNavbar />
       <Header83

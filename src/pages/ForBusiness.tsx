@@ -16,7 +16,7 @@ export default function ForBusiness() {
         <SEOHead
           title="Lansa for Business — Hire Certified Caribbean Talent"
           description="Discover certified, work-ready professionals in Curaçao with Lansa's hiring platform built for Caribbean employers."
-          canonical="https://www.lansa.online/for-business"
+          canonical="https://lansa.online/for-business"
         />
         <AccessGate onUnlock={handleUnlock} />
       </>
@@ -28,7 +28,7 @@ export default function ForBusiness() {
       <SEOHead
         title="Lansa for Business — Hire Certified Caribbean Talent"
         description="Discover certified, work-ready professionals in Curaçao with Lansa's hiring platform built for Caribbean employers."
-        canonical="https://www.lansa.online/for-business"
+        canonical="https://lansa.online/for-business"
       />
       <PresentationShell />
     </>

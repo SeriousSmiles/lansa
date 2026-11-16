@@ -35,7 +35,7 @@ export default function SharedProfile() {
   const displayName = profileData.userName?.trim() || "Professional";
   const title = `${displayName} — Professional Profile on Lansa`;
   const description = `View ${displayName}'s certified professional profile, skills, and experience on Lansa.`;
-  const canonical = `https://www.lansa.online/profile/share/${urlParam ?? ""}`;
+  const canonical = `https://lansa.online/profile/share/${urlParam ?? ""}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ProfilePage",

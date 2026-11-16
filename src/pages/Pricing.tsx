@@ -375,7 +375,7 @@ const Pricing = () => {
       <SEOHead
         title="Lansa Pricing — Plans for Professionals & Employers"
         description="Free for professionals. Commitment-based plans for Caribbean employers. Transparent XCG pricing built for Curaçao."
-        canonical="https://www.lansa.online/pricing"
+        canonical="https://lansa.online/pricing"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "FAQPage",

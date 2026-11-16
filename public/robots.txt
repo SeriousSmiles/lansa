@@ -2,7 +2,8 @@ User-agent: *
 Allow: /
 
 # Allow crawling of public pages
-Allow: /about
+Allow: /for-business
+Allow: /pricing
 Allow: /help
 Allow: /privacy
 Allow: /terms
