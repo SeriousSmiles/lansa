@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ProfileDataReturn } from '@/hooks/useProfileData';
 import { ResumeDocument } from '@/components/resume/ResumeDocument';
 import { ZoomIn, ZoomOut, Maximize2, ChevronLeft, ChevronRight, Undo2, Redo2 } from 'lucide-react';
@@ -14,6 +14,9 @@ import { constrainDesign, ResumeSnapshot } from '@/lib/resumeDocumentModel';
 import { useResumeDesign } from '@/hooks/resume/useResumeDesign';
 import { useAuth } from '@/contexts/AuthContext';
 
+const LEFT_MIN = 240, LEFT_MAX = 480, RIGHT_MIN = 280, RIGHT_MAX = 520;
+const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+
 interface Props { profileData: ProfileDataReturn; resumeDesignId?: string }
 export function ResumeEditorLayout({ profileData, resumeDesignId }: Props) {
   const { user } = useAuth();
@@ -23,6 +26,9 @@ export function ResumeEditorLayout({ profileData, resumeDesignId }: Props) {
   const [future, setFuture] = useState<ResumeSnapshot[]>([]);
   const [leftOpen, setLeftOpen] = useState(() => window.innerWidth >= 1024);
   const [rightOpen, setRightOpen] = useState(() => window.innerWidth >= 1024);
+  const [leftWidth, setLeftWidth] = useState(() => clamp(Math.round(window.innerWidth * 0.2), LEFT_MIN, 320));
+  const [rightWidth, setRightWidth] = useState(() => clamp(Math.round(window.innerWidth * 0.22), RIGHT_MIN, 352));
+  const [dragging, setDragging] = useState<'left' | 'right' | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [zoom, setZoom] = useState(0.75);
   const [pageCount, setPageCount] = useState(0);
@@ -47,12 +53,46 @@ export function ResumeEditorLayout({ profileData, resumeDesignId }: Props) {
     try { await saveDesign({ name: currentDesign?.name ?? 'My resume', template_id: snapshot.tokens.templateId, design_json: { version: 2, ...snapshot } }, resumeDesignId ?? currentDesign?.id); setDirty(false); }
     finally { setSaving(false); }
   };
-  return <div className="h-dvh w-full min-w-0 flex flex-col bg-background">
+
+  const startDrag = useCallback((side: 'left' | 'right') => (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragging(side);
+    const startX = e.clientX;
+    const startWidth = side === 'left' ? leftWidth : rightWidth;
+    const onMove = (ev: PointerEvent) => {
+      const delta = ev.clientX - startX;
+      if (side === 'left') setLeftWidth(clamp(startWidth + delta, LEFT_MIN, LEFT_MAX));
+      else setRightWidth(clamp(startWidth - delta, RIGHT_MIN, RIGHT_MAX));
+    };
+    const onUp = () => {
+      setDragging(null);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }, [leftWidth, rightWidth]);
+
+  const resizeHandle = (side: 'left' | 'right') => (
+    <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-label={side === 'left' ? 'Resize content panel' : 'Resize design panel'}
+      onPointerDown={startDrag(side)}
+      className={cn(
+        'shrink-0 w-1.5 cursor-col-resize transition-colors hover:bg-primary/40',
+        dragging === side ? 'bg-primary/60' : 'bg-transparent'
+      )}
+    />
+  );
+
+  return <div className={cn('h-dvh w-full min-w-0 flex flex-col bg-background', dragging && 'select-none cursor-col-resize')}>
     <EditorToolbar onSave={save} tokens={snapshot.tokens} data={snapshot.data} isSaving={saving} dirty={dirty} onOpenPreview={() => setPreviewOpen(true)} />
     <div className="flex-1 min-h-0 flex overflow-hidden">
-      <div className={cn('shrink-0 overflow-y-auto border-r border-border bg-card', leftOpen ? 'w-72 xl:w-80' : 'w-0')}>
+      <div className={cn('shrink-0 overflow-y-auto border-r border-border bg-card', !leftOpen && 'w-0 overflow-hidden')} style={leftOpen ? { width: leftWidth } : undefined}>
         {leftOpen && <ResumeContentPanel data={snapshot.data} tokens={snapshot.tokens} onDataChange={data => change({ ...snapshot, data })} onTokensChange={tokens => change({ ...snapshot, tokens })} />}
       </div>
+      {leftOpen && resizeHandle('left')}
       <Button variant="ghost" size="icon" className="shrink-0 self-center h-12 w-5 rounded-none border-y border-r border-border bg-card px-0" aria-label={leftOpen ? 'Hide content panel' : 'Show content panel'} onClick={() => setLeftOpen(!leftOpen)}>{leftOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}</Button>
       <div className="flex-1 min-w-0 min-h-0 flex flex-col bg-dashboard-ink/90">
         <div className="p-3 border-b border-border flex flex-wrap items-center justify-between gap-2 bg-card">
@@ -73,7 +113,8 @@ export function ResumeEditorLayout({ profileData, resumeDesignId }: Props) {
         </div>
       </div>
       <Button variant="ghost" size="icon" className="shrink-0 self-center h-12 w-5 rounded-none border-y border-l border-border bg-card px-0" aria-label={rightOpen ? 'Hide design panel' : 'Show design panel'} onClick={() => setRightOpen(!rightOpen)}>{rightOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}</Button>
-      <div className={cn('shrink-0 overflow-y-auto border-l border-border bg-card', rightOpen ? 'w-80 xl:w-[22rem]' : 'w-0')}>
+      {rightOpen && resizeHandle('right')}
+      <div className={cn('shrink-0 overflow-y-auto border-l border-border bg-card', !rightOpen && 'w-0 overflow-hidden')} style={rightOpen ? { width: rightWidth } : undefined}>
         {rightOpen && <div className="p-4 space-y-4"><h2 className="text-lg font-semibold">Design</h2><DesignTokensPanel tokens={snapshot.tokens} onChange={tokens => change({ ...snapshot, tokens })} /></div>}
       </div>
     </div>
