@@ -54,7 +54,7 @@ export function ResumeEditorLayout({ profileData, resumeDesignId }: Props) {
         {leftOpen && <ResumeContentPanel data={snapshot.data} tokens={snapshot.tokens} onDataChange={data => change({ ...snapshot, data })} onTokensChange={tokens => change({ ...snapshot, tokens })} />}
       </div>
       <Button variant="ghost" size="icon" className="shrink-0 self-center h-12 w-5 rounded-none border-y border-r border-border bg-card px-0" aria-label={leftOpen ? 'Hide content panel' : 'Show content panel'} onClick={() => setLeftOpen(!leftOpen)}>{leftOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}</Button>
-      <div className="flex-1 min-w-0 min-h-0 flex flex-col bg-dashboard-blue-surface/30">
+      <div className="flex-1 min-w-0 min-h-0 flex flex-col bg-dashboard-ink/90">
         <div className="p-3 border-b border-border flex flex-wrap items-center justify-between gap-2 bg-card">
           <div className="flex items-center gap-1">
             <Button variant="outline" size="icon" aria-label="Zoom out" onClick={() => setZoom(z => Math.max(0.3, z - 0.1))}><ZoomOut className="w-4 h-4" /></Button>

@@ -490,7 +490,7 @@ function ResumeDocumentStyles({
       html, body { margin: 0; padding: 0; background: #fff; }
     }
     .resume-pages { position: relative; display: flex; flex-direction: column; gap: 16px; width: fit-content; min-width: 100%; }
-    .resume-document { margin: 0 auto; flex-shrink: 0; }
+    .resume-document { margin: 0 auto; flex-shrink: 0; box-shadow: 0 1px 2px hsl(0 0% 0% / 0.25), 0 12px 32px hsl(0 0% 0% / 0.35); outline: 1px solid hsl(0 0% 100% / 0.08); }
     @media print {
       .resume-pages { gap: 0; }
       .resume-document { box-shadow: none; margin: 0; break-after: page; }
