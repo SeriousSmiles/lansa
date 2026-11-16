@@ -57,7 +57,7 @@ export function ResumeEditorLayout({ profileData, resumeDesignId }: Props) {
   const redo = () => { const next = future[0]; if (!next) return; setFuture(f => f.slice(1)); setPast(p => [...p, snapshot]); setSnapshot(next); setDirty(true); };
   const save = async () => {
     setSaving(true);
-    try { await saveDesign({ name: currentDesign?.name ?? 'My resume', template_id: snapshot.tokens.templateId, design_json: { version: 4, ...snapshot } }, resumeDesignId ?? currentDesign?.id); setDirty(false); }
+    try { await saveDesign({ name: currentDesign?.name ?? 'My resume', design_json: { version: 4, ...snapshot } }, resumeDesignId ?? currentDesign?.id); setDirty(false); }
     finally { setSaving(false); }
   };
 

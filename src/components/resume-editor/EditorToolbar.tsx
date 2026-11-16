@@ -45,23 +45,34 @@ export function EditorToolbar({ onSave, data: pdfData, tokens, isSaving, dirty, 
     const pageElements = Array.from(pagesRoot.querySelectorAll<HTMLElement>('[data-resume-document]'));
     const activeTokens = tokens ?? DEFAULT_TOKENS;
     const paper = PAPER_DIMENSIONS[activeTokens.paper];
-    const { default: html2canvas } = await import('html2canvas');
+    const { domToCanvas } = await import('modern-screenshot');
     const { default: jsPDF } = await import('jspdf');
-    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [paper.w, paper.h] });
+    await document.fonts.ready;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [paper.w, paper.h], compress: true });
+    // Temporarily remove editor zoom so pages are captured at true paper size.
+    const zoomHost = pagesRoot.parentElement;
+    const prevZoom = zoomHost?.style.zoom ?? '';
+    if (zoomHost) zoomHost.style.zoom = '1';
+    try {
     for (let i = 0; i < pageElements.length; i++) {
-      const canvas = await html2canvas(pageElements[i], {
-        scale: 2, useCORS: true, backgroundColor: activeTokens.colors.surface,
-        onclone: clone => { clone.querySelectorAll<HTMLElement>('[data-resume-pages]').forEach(el => { if (el.parentElement) el.parentElement.style.zoom = '1'; }); },
+      const el = pageElements[i];
+      // Browser-native renderer (SVG foreignObject) so output matches the on-screen page exactly.
+      const canvas = await domToCanvas(el, {
+        scale: 3, backgroundColor: activeTokens.colors.surface,
+        width: el.offsetWidth, height: el.offsetHeight,
+        style: { boxShadow: 'none', outline: 'none', margin: '0' },
+        fetch: { requestInit: { mode: 'cors' }, bypassingCache: true },
       });
       if (format === 'pdf') {
         if (i > 0) pdf.addPage([paper.w, paper.h]);
-        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, paper.w, paper.h);
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, paper.w, paper.h, undefined, 'FAST');
       } else {
         const link = document.createElement('a');
         link.href = canvas.toDataURL(format === 'png' ? 'image/png' : 'image/jpeg', 0.95);
         link.download = `resume-page-${i + 1}.${format === 'jpeg' ? 'jpg' : format}`; link.click();
       }
     }
+    } finally { if (zoomHost) zoomHost.style.zoom = prevZoom; }
     if (format === 'pdf') pdf.save('resume.pdf');
   };
 
@@ -76,6 +87,11 @@ export function EditorToolbar({ onSave, data: pdfData, tokens, isSaving, dirty, 
       const activeTokens: DesignTokens = tokens ?? { ...DEFAULT_TOKENS };
       const options = { format, paper: activeTokens.paper };
 
+      if (format === 'pdf' || format === 'png' || format === 'jpeg') {
+        await legacyClientExport(format);
+        toast({ title: 'Resume downloaded', description: 'Your file matches the preview exactly.' });
+        return;
+      }
       const { data, error } = await supabase.functions.invoke('export-resume', {
         body: {
           data: pdfData,
