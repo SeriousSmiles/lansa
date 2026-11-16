@@ -108,11 +108,11 @@ export function EditorToolbar({ onSave, data: pdfData, tokens, isSaving, dirty, 
           throw new Error('Word and archival PDF downloads are not available yet. Choose PDF instead.');
         }
         console.warn('Vector engine unavailable, falling back to client render', data, error);
-        await legacyClientExport(format as 'pdf' | 'png' | 'jpeg');
+        throw error ?? new Error('Export unavailable');
       } else if (data?.file_url) {
         const link = document.createElement('a');
         link.href = data.file_url;
-        const ext = format === 'jpeg' ? 'jpg' : format === 'pdf-a' ? 'pdf' : format;
+        const ext = format === 'pdf-a' ? 'pdf' : format;
         link.download = `resume.${ext}`;
         link.rel = 'noopener';
         link.target = '_blank';
