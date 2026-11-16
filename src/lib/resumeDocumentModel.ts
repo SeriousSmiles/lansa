@@ -95,7 +95,7 @@ export function documentUnits(data: PDFResumeData, order: ResumeSectionKey[]): D
     const entries = data[key];
     if (!Array.isArray(entries) || !entries.length) continue;
     if (key === 'skills' || key === 'languages') {
-      const size = key === 'skills' ? 6 : 5;
+      const size = key === 'skills' ? 18 : 5;
       for (let i = 0; i < entries.length; i += size) {
         units.push({ key, continued: i > 0, data: { ...data, [key]: entries.slice(i, i + size) } });
       }

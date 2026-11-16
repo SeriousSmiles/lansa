@@ -300,8 +300,8 @@ function SectionRenderer({
                   <span>{l.name}</span>
                   {l.level ? <span style={{ opacity: 0.8, fontSize: '0.9em' }}>{['Beginner', 'Elementary', 'Intermediate', 'Advanced', 'Native'][l.level - 1]}</span> : null}
                 </div>
-                {l.level ? <div aria-hidden style={{ marginTop: '0.8mm', height: '1mm', borderRadius: '1mm', background: variant === 'sidebar' ? 'rgba(255,255,255,0.2)' : `${tokens.colors.muted}33`, overflow: 'hidden' }}>
-                  <div style={{ width: `${(Math.min(5, Math.max(1, l.level)) / 5) * 100}%`, height: '100%', borderRadius: '1mm', background: variant === 'sidebar' ? tokens.colors.surface : tokens.colors.primary }} />
+                {l.level ? <div aria-hidden style={{ marginTop: '0.8mm', height: '3px', borderRadius: '3px', background: variant === 'sidebar' ? 'rgba(255,255,255,0.2)' : `${tokens.colors.muted}33`, overflow: 'hidden' }}>
+                  <div style={{ width: `${(Math.min(5, Math.max(1, l.level)) / 5) * 100}%`, height: '3px', borderRadius: '3px', background: variant === 'sidebar' ? tokens.colors.surface : tokens.colors.primary }} />
                 </div> : null}
               </li>
             ))}
@@ -452,15 +452,27 @@ function EducationItem({ item, tokens }: { item: DatedEntry; tokens: DesignToken
   );
 }
 
+type SkillStyle = 'bullets' | 'columns' | 'chips' | 'inline';
+const SKILL_STYLE: Record<string, SkillStyle> = {
+  professional: 'columns', timeline: 'columns', modern: 'chips', creative: 'chips', logos: 'chips',
+  classic: 'inline', academic: 'inline', minimal: 'inline',
+};
+
 function SkillChips({ skills, tokens, inverted }: { skills: string[]; tokens: DesignTokens; inverted?: boolean }) {
+  const color = inverted ? tokens.colors.surface : tokens.colors.text;
+  const accent = inverted ? 'rgba(255,255,255,0.7)' : tokens.colors.primary;
+  // Sidebars are narrow, so they always use a bullet list; otherwise each template keeps its own style.
+  const style: SkillStyle = inverted ? 'bullets' : SKILL_STYLE[tokens.templateId] ?? 'columns';
+  const dot = <span aria-hidden style={{ flexShrink: 0, width: '1.2mm', height: '1.2mm', borderRadius: '50%', transform: 'translateY(-0.3mm)', background: accent }} />;
+  if (style === 'chips') return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5mm' }}>
+      {skills.map((s, i) => <span key={i} style={{ padding: '0.6mm 2.2mm', borderRadius: '999px', background: `${tokens.colors.primary}1f`, color }}>{s}</span>)}
+    </div>
+  );
+  if (style === 'inline') return <p style={{ margin: 0, color }}>{skills.join('  ·  ')}</p>;
   return (
-    <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.8mm' }}>
-      {skills.map((s, i) => (
-        <li key={i} style={{ display: 'flex', gap: '1.8mm', alignItems: 'baseline', lineHeight: 1.3, color: inverted ? '#fff' : tokens.colors.text }}>
-          <span aria-hidden style={{ flexShrink: 0, width: '1.2mm', height: '1.2mm', borderRadius: '50%', transform: 'translateY(-0.3mm)', background: inverted ? 'rgba(255,255,255,0.7)' : tokens.colors.primary }} />
-          <span>{s}</span>
-        </li>
-      ))}
+    <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gridTemplateColumns: style === 'columns' ? 'repeat(3, minmax(0, 1fr))' : '1fr', columnGap: '4mm', rowGap: '0.8mm' }}>
+      {skills.map((s, i) => <li key={i} style={{ display: 'flex', gap: '1.8mm', alignItems: 'baseline', lineHeight: 1.3, color, minWidth: 0 }}>{dot}<span>{s}</span></li>)}
     </ul>
   );
 }
