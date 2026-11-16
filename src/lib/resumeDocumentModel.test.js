@@ -25,3 +25,11 @@ describe('fixed resume pages and guided editing', () => {
     expect(units[0].data.personalInfo.summary).toBe('Edited summary');
   });
 });
+import { paginateBlocks } from './resumeDocumentModel';
+describe('paginateBlocks', () => {
+  test('fills a page using mid-page heights so content does not jump early', () => {
+    // capacity 100: 40 + gap 5 + 25 + 5 + 25 = 100 fits on one page with compact heights
+    expect(paginateBlocks([40, 35, 35], [40, 25, 25], 100, 5)).toEqual([[0, 1, 2]]);
+    expect(paginateBlocks([40, 35, 35, 35], [40, 25, 25, 25], 100, 5)).toEqual([[0, 1, 2], [3]]);
+  });
+});

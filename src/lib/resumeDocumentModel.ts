@@ -52,7 +52,23 @@ export function paginateHeights(heights: number[], capacity: number, gap: number
   return pages;
 }
 
-function textChunks(text: string, max = 450): string[] {
+/**
+ * Paginate using the block's real height in context: `full` when it starts a page
+ * (repeats its section heading), `compact` when it follows on the same page.
+ */
+export function paginateBlocks(full: number[], compact: number[], capacity: number, gap: number): number[][] {
+  const pages: number[][] = [[]];
+  let used = 0;
+  full.forEach((fullHeight, index) => {
+    let page = pages[pages.length - 1];
+    if (page.length && used + gap + compact[index] > capacity) { page = []; pages.push(page); used = 0; }
+    used += page.length ? gap + compact[index] : fullHeight;
+    page.push(index);
+  });
+  return pages;
+}
+
+function textChunks(text: string, max = 220): string[] {
   if (!text) return [''];
   const result: string[] = [];
   let chunk = '';

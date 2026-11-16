@@ -18,7 +18,7 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { DesignTokens, densityScale } from '@/types/designTokens';
 import { PDFResumeData } from '@/types/pdf';
-import { PAPER_DIMENSIONS, bodySize, documentUnits, paginateHeights } from '@/lib/resumeDocumentModel';
+import { PAPER_DIMENSIONS, bodySize, documentUnits, paginateBlocks } from '@/lib/resumeDocumentModel';
 
 interface ResumeDocumentProps {
   data: PDFResumeData;
@@ -38,6 +38,12 @@ export function ResumeDocument({ data, tokens, onReady }: ResumeDocumentProps) {
   const mainUnits = units.filter(u => !sidebar || !sideKeys.has(u.key));
   const sideUnits = sidebar ? units.filter(u => sideKeys.has(u.key)) : [];
   const measurement = useRef<HTMLDivElement>(null);
+  const compactMeasurement = useRef<HTMLDivElement>(null);
+  // Same blocks as they appear mid-page: repeated section headings hidden.
+  const compactBlocks = (blocks: React.ReactElement[], laneUnits: typeof units) => blocks.map((b, i) => {
+    const unit = laneUnits[i - 1]; const prev = laneUnits[i - 2];
+    return unit && prev?.key === unit.key ? React.cloneElement(b, { hideHeading: true }) : b;
+  });
   const [pagination, setPagination] = useState<{ signature: string; main: number[][]; side: number[][] } | null>(null);
   const signature = JSON.stringify({ data, tokens });
   const ready = pagination?.signature === signature;
@@ -60,13 +66,16 @@ export function ResumeDocument({ data, tokens, onReady }: ResumeDocumentProps) {
       if (cancelled) return;
       const lane = root.querySelector<HTMLElement>('[data-measure-main]');
       const side = root.querySelector<HTMLElement>('[data-measure-side]');
-      if (!lane) return;
+      const cRoot = compactMeasurement.current;
+      const cLane = cRoot?.querySelector<HTMLElement>('[data-measure-main]');
+      const cSide = cRoot?.querySelector<HTMLElement>('[data-measure-side]');
+      if (!lane || !cLane) return;
       const heights = (el: HTMLElement) => Array.from(el.children).map(c => (c as HTMLElement).offsetHeight);
       // offsetHeight ignores editor zoom, unlike getBoundingClientRect.
       const pxPerMm = root.offsetWidth / paper.w;
-      const capacity = (paper.h - margin * 2 - (tokens.personalization.showLansaBadge ? 5 : 0)) * pxPerMm;
-      setPagination({ signature, main: paginateHeights(heights(lane), capacity, gap * pxPerMm),
-        side: side ? paginateHeights(heights(side), capacity, gap * pxPerMm) : [[]] });
+      const capacity = (paper.h - margin * 2 - (tokens.personalization.showLansaBadge ? 5 : 0) - 0.5) * pxPerMm;
+      setPagination({ signature, main: paginateBlocks(heights(lane), heights(cLane), capacity, gap * pxPerMm),
+        side: side && cSide ? paginateBlocks(heights(side), heights(cSide), capacity, gap * pxPerMm) : [[]] });
     };
     void measure();
     return () => { cancelled = true; };
@@ -109,6 +118,9 @@ export function ResumeDocument({ data, tokens, onReady }: ResumeDocumentProps) {
       <ResumeDocumentStyles tokens={tokens} paper={paper} />
       <div ref={measurement} aria-hidden style={{ ...vars, position: 'absolute', visibility: 'hidden', pointerEvents: 'none', top: 0, left: 0 }}>
         {renderLanes(mainBlocks, sideBlocks, true)}
+      </div>
+      <div ref={compactMeasurement} aria-hidden style={{ ...vars, position: 'absolute', visibility: 'hidden', pointerEvents: 'none', top: 0, left: 0 }}>
+        {renderLanes(compactBlocks(mainBlocks, mainUnits), compactBlocks(sideBlocks, sideUnits), true)}
       </div>
       {ready && pagination ? Array.from({ length: count }, (_, index) => (
         <div key={index} className="resume-document" data-resume-document data-page-number={index + 1}
