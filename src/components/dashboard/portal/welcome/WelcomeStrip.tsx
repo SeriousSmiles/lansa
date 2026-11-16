@@ -29,7 +29,7 @@ export function WelcomeStrip({ userName, insight, completeness }: WelcomeStripPr
   const firstName = (userName || "there").split(" ")[0];
 
   useEffect(() => {
-    if (!ref.current) return;
+    if (!ref.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const els = ref.current.querySelectorAll<HTMLElement>("[data-anim]");
     gsap.fromTo(
       els,
@@ -39,31 +39,31 @@ export function WelcomeStrip({ userName, insight, completeness }: WelcomeStripPr
   }, []);
 
   return (
-    <div ref={ref} className="pt-6 md:pt-10 pb-7 border-b border-border/30">
+    <header ref={ref} className="pt-6 md:pt-8 pb-6">
       <p
         data-anim
-        className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-medium"
+        className="text-xs text-muted-foreground font-medium"
       >
         {formatToday()}
       </p>
       <h1
         data-anim
-        className="mt-3 text-5xl md:text-7xl lg:text-[7rem] leading-[0.95] tracking-[-0.035em]"
+        className="mt-2 text-3xl md:text-4xl leading-tight break-words"
       >
-        <span className="font-extralight text-muted-foreground">{greeting},</span>{" "}
-        <span className="font-black text-foreground">{firstName}.</span>
+        <span className="font-normal text-foreground">{greeting},</span>{" "}
+        <span className="font-bold text-foreground">{firstName}.</span>
       </h1>
       {insight && (
         <p
           data-anim
-          className="mt-4 text-sm md:text-base text-muted-foreground max-w-2xl"
+          className="mt-3 text-sm text-muted-foreground"
         >
           {insight}
         </p>
       )}
       {typeof completeness === "number" && (
-        <div data-anim className="mt-5 flex items-center gap-3 max-w-md">
-          <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground font-medium shrink-0">
+        <div data-anim className="mt-4 flex items-center gap-3 w-full sm:w-80">
+          <span className="text-xs text-muted-foreground font-medium shrink-0">
             Profile
           </span>
           <div className="relative h-1 flex-1 rounded-full bg-border/50 overflow-hidden">
@@ -77,6 +77,6 @@ export function WelcomeStrip({ userName, insight, completeness }: WelcomeStripPr
           </span>
         </div>
       )}
-    </div>
+    </header>
   );
 }

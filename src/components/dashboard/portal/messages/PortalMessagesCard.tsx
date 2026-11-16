@@ -8,18 +8,19 @@ import { useDashboardPanel } from "../useDashboardPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
-export function PortalMessagesCard() {
+export function PortalMessagesCard({ navigation = "panel", audience = "seeker" }: { navigation?: "panel" | "route"; audience?: "seeker" | "employer" }) {
   const { user } = useAuth();
   const { threads, loading, clearUnread } = useChatThreads();
   const { openPanel } = useDashboardPanel();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
 
-  const openInbox = () => (isMobile ? navigate("/chat") : openPanel("inbox"));
+  const openInbox = () => ((isMobile || navigation === "route") ? navigate("/chat") : openPanel("inbox"));
   const openThread = (id: string) => {
     clearUnread(id);
-    if (isMobile) navigate(`/chat/${id}`);
+    if (isMobile || navigation === "route") navigate(`/chat/${id}`);
     else openPanel("inbox", { threadId: id });
   };
 
@@ -34,7 +35,7 @@ export function PortalMessagesCard() {
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xs uppercase tracking-[0.16em] text-muted-foreground font-medium flex items-center gap-2">
+        <h2 className="text-lg text-foreground font-bold flex items-center gap-2">
           Messages
           {totalUnread > 0 && (
             <span className="rounded-full bg-primary text-primary-foreground text-[10px] font-semibold px-2 py-0.5">
@@ -42,16 +43,16 @@ export function PortalMessagesCard() {
             </span>
           )}
         </h2>
-        <button
-          type="button"
+        <Button
+          variant="ghost"
           onClick={openInbox}
-          className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+          size="sm"
         >
           View all
-        </button>
+        </Button>
       </div>
 
-      <div className="rounded-3xl border border-border/40 bg-card/70 backdrop-blur-sm overflow-hidden">
+      <div className="rounded-lg border border-border bg-card overflow-hidden">
         {loading && top.length === 0 ? (
           <div className="p-4 space-y-3">
             {[0, 1, 2].map((i) => (
@@ -59,10 +60,10 @@ export function PortalMessagesCard() {
             ))}
           </div>
         ) : top.length === 0 ? (
-          <button
-            type="button"
+          <Button
+            variant="ghost"
             onClick={openInbox}
-            className="w-full flex items-center gap-3 p-5 text-left hover:bg-accent/30 transition-colors"
+            className="w-full h-auto whitespace-normal justify-start flex items-center gap-3 p-5 text-left hover:bg-accent/30 transition-colors"
           >
             <div className="w-10 h-10 rounded-2xl bg-muted/80 flex items-center justify-center flex-shrink-0">
               <MessageCircle className="w-5 h-5 text-muted-foreground/50" />
@@ -70,10 +71,10 @@ export function PortalMessagesCard() {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground/80">No conversations yet</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Connect with employers to start chatting.
+                {audience === "employer" ? "Your conversations with candidates will appear here." : "Your conversations with employers will appear here."}
               </p>
             </div>
-          </button>
+          </Button>
         ) : (
           <ul className="divide-y divide-border/30">
             {top.map((t) => {
@@ -89,17 +90,16 @@ export function PortalMessagesCard() {
                 : "";
               return (
                 <li key={t.id}>
-                  <button
-                    type="button"
+                  <Button
+                    variant="ghost"
                     onClick={() => openThread(t.id)}
-                    className="group w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-accent/30 transition-colors"
+                    className="group w-full h-auto whitespace-normal justify-start flex items-center gap-3 px-4 py-3.5 text-left hover:bg-accent/30 transition-colors"
                   >
                     <div className="relative flex-shrink-0">
                       <Avatar className="w-10 h-10">
                         <AvatarImage src={avatarSrc} alt={name} />
                         <AvatarFallback
-                          className="text-xs font-bold text-white"
-                          style={{ background: isEmployer ? "#2B7FE8" : "#F2713B" }}
+                          className={cn("text-xs font-bold", isEmployer ? "bg-secondary text-secondary-foreground" : "bg-primary text-primary-foreground")}
                         >
                           {initials}
                         </AvatarFallback>
@@ -132,7 +132,7 @@ export function PortalMessagesCard() {
                       </p>
                     </div>
                     <ArrowRight className="h-4 w-4 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-                  </button>
+                  </Button>
                 </li>
               );
             })}

@@ -29,7 +29,7 @@ export function EmployerDashboardTabs({ businessData, defaultTab, openJobId }: E
   const [activeTab, setActiveTab] = useState(defaultTab || "overview");
   
   useEffect(() => {
-    if (tabsRef.current) {
+    if (tabsRef.current && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       gsap.from(tabsRef.current, {
         y: 20,
         opacity: 0,
@@ -39,32 +39,32 @@ export function EmployerDashboardTabs({ businessData, defaultTab, openJobId }: E
     }
   }, []);
 
-  const tabCount = 4 + (canManageOrgSettings ? 1 : 0);
+
   
   return (
     <div ref={tabsRef}>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className={`grid w-full grid-cols-${tabCount}`}>
-          <TabsTrigger value="overview" className="flex items-center gap-1.5 transition-colors hover:bg-muted">
+        <TabsList className="flex w-full h-auto flex-wrap justify-start gap-1 rounded-none border-b border-border bg-background px-0 pb-3">
+          <TabsTrigger value="overview" className="min-h-11 flex items-center gap-1.5 transition-colors hover:bg-accent">
             <Building2 className="h-4 w-4" />
             Overview
           </TabsTrigger>
-          <TabsTrigger value="jobs" className="flex items-center gap-1.5 transition-colors hover:bg-muted">
+          <TabsTrigger value="jobs" className="min-h-11 flex items-center gap-1.5 transition-colors hover:bg-accent">
             <FileText className="h-4 w-4" />
             Job Listings
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex items-center gap-1.5 transition-colors hover:bg-muted">
+          <TabsTrigger value="analytics" className="min-h-11 flex items-center gap-1.5 transition-colors hover:bg-accent">
             <BarChart3 className="h-4 w-4" />
             Analytics
           </TabsTrigger>
-          <TabsTrigger value="subscription" className="flex items-center gap-1.5 transition-colors hover:bg-muted">
+          <TabsTrigger value="subscription" className="min-h-11 flex items-center gap-1.5 transition-colors hover:bg-accent">
             <CreditCard className="h-4 w-4" />
             Plan
           </TabsTrigger>
           {canManageOrgSettings && (
             <TabsTrigger 
               value="settings" 
-              className="flex items-center gap-1.5 transition-colors hover:bg-muted"
+              className="min-h-11 flex items-center gap-1.5 transition-colors hover:bg-accent"
               onClick={() => navigate('/organization/settings')}
             >
               <Settings className="h-4 w-4" />

@@ -121,7 +121,7 @@ export function DashboardLayout({ children, userName, email, themeColor, hideTop
   }, []);
 
   return (
-    <div className="flex min-h-screen w-full bg-[rgba(253,248,242,1)] flex-col overflow-x-clip">
+    <div className="flex min-h-screen w-full bg-background flex-col overflow-x-clip">
       {!hideTopNav && (
         <div className={`sticky top-0 z-40 transition-transform duration-300 ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}>
           <AnnouncementBanner />

@@ -238,12 +238,12 @@ export default function EmployerDashboard() {
     <>
       <div className="employer-theme">
         <DashboardLayout userName={userName} email={user?.email || ""}>
-          <div className="p-4 md:p-6">
+          <div className="py-4 md:py-6">
             <div className="w-full">
               <div className="flex items-center justify-between mb-4 animate-fade-in">
                 <div>
                   <div className="flex items-center gap-3">
-                    <h1 className="text-2xl md:text-3xl font-bold">Employer Dashboard</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold">Your hiring workspace</h1>
                     <Badge variant="secondary" className="text-xs">Beta</Badge>
                   </div>
                   <p className="text-muted-foreground mt-1">{activeOrganization.name}</p>
