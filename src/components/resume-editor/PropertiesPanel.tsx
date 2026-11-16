@@ -33,7 +33,7 @@ export function PropertiesPanel({
   onTokensChange,
 }: PropertiesPanelProps) {
   return (
-    <ScrollArea className="h-full">
+    <ScrollArea className="h-full [&>[data-radix-scroll-area-viewport]>div]:!block">
       <div className="space-y-6 p-4">
         <div>
           <h2 className="text-lg font-semibold mb-2">Properties</h2>

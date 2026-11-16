@@ -90,10 +90,10 @@ export function DesignTokensPanel({ tokens, onChange }: Props) {
               key={p.id}
               variant={tokens.templateId === p.id ? 'primary' : 'outline'}
               size="sm"
-              className="justify-start capitalize"
+              className="min-w-0 justify-start capitalize"
               onClick={() => applyTemplate(p.id)}
             >
-              {p.name}
+              <span className="truncate">{p.name}</span>
             </Button>
           ))}
         </div>

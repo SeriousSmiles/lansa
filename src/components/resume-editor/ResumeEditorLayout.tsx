@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ProfileDataReturn } from '@/hooks/useProfileData';
 import { SectionInstance, SectionComponentType, GlobalStyles, LayoutStructure } from '@/types/resumeSection';
 import { useResumeSections } from '@/hooks/resume/useResumeSections';
@@ -137,16 +137,27 @@ export function ResumeEditorLayout({
         {/* Left Panel - Section Library */}
         <div
           className={cn(
-            "border-r border-border bg-card transition-all duration-300",
-            leftPanelOpen ? "w-80" : "w-0"
+            "relative shrink-0 border-r border-border bg-card transition-all duration-300 overflow-hidden",
+            leftPanelOpen ? "w-72 xl:w-80" : "w-0 border-r-0"
           )}
         >
           {leftPanelOpen && (
             <div className="h-full overflow-y-auto">
-              <LayoutStructureSelector
-                currentStructure={layoutStructure}
-                onStructureChange={setLayoutStructure}
-              />
+              {useLivePreview ? (
+                <div className="p-4 border-b border-border">
+                  <p className="text-sm font-semibold">Page layout</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Pick a template and structure in the Design panel on the right. Changes show instantly in the preview.
+                  </p>
+                </div>
+              ) : (
+                <div className="p-4 border-b border-border">
+                  <LayoutStructureSelector
+                    currentStructure={layoutStructure}
+                    onStructureChange={setLayoutStructure}
+                  />
+                </div>
+              )}
               
               <SectionLibrary
                 sections={sections}
@@ -167,14 +178,15 @@ export function ResumeEditorLayout({
         <Button
           variant="ghost"
           size="icon"
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-r-md rounded-l-none"
+          className="shrink-0 self-center h-12 w-5 rounded-none border-y border-r border-border bg-card px-0"
+          aria-label={leftPanelOpen ? 'Hide sections panel' : 'Show sections panel'}
           onClick={() => setLeftPanelOpen(!leftPanelOpen)}
         >
           {leftPanelOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </Button>
 
         {/* Center Panel - Canvas */}
-        <div className="flex-1 bg-muted/30 relative">
+        <div className="flex-1 min-w-0 bg-muted/30 relative">
           {useLivePreview ? (
             <div className="h-full flex flex-col">
               <div className="p-3 border-b border-border flex items-center justify-between bg-card">
@@ -188,7 +200,7 @@ export function ResumeEditorLayout({
                   <Button variant="outline" size="sm" onClick={() => setZoom((z) => Math.min(2, z + 0.1))}>
                     <ZoomIn className="w-4 h-4" />
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => setZoom(0.75)}>
+                  <Button variant="outline" size="sm" aria-label="Reset zoom" onClick={() => setZoom(0.75)}>
                     <Maximize2 className="w-4 h-4" />
                   </Button>
                 </div>
@@ -196,15 +208,11 @@ export function ResumeEditorLayout({
                   Section editor
                 </Button>
               </div>
-              <div className="flex-1 overflow-auto p-8">
-                <div className="flex items-start justify-center min-h-full">
+              <div className="flex-1 overflow-auto p-6 lg:p-8">
+                <div className="flex items-start justify-center min-h-full w-max min-w-full">
                   <div
-                    style={{
-                      transform: `scale(${zoom})`,
-                      transformOrigin: 'top center',
-                      transition: 'transform 0.15s ease-out',
-                    }}
-                    className="shadow-2xl bg-white"
+                    style={{ zoom } as React.CSSProperties}
+                    className="shadow-2xl bg-card"
                   >
                     <ResumeDocument data={pdfData} tokens={tokens} />
                   </div>
@@ -236,7 +244,8 @@ export function ResumeEditorLayout({
         <Button
           variant="ghost"
           size="icon"
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-l-md rounded-r-none"
+          className="shrink-0 self-center h-12 w-5 rounded-none border-y border-l border-border bg-card px-0"
+          aria-label={rightPanelOpen ? 'Hide design panel' : 'Show design panel'}
           onClick={() => setRightPanelOpen(!rightPanelOpen)}
         >
           {rightPanelOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -245,8 +254,8 @@ export function ResumeEditorLayout({
         {/* Right Panel - Properties */}
         <div
           className={cn(
-            "border-l border-border bg-card transition-all duration-300",
-            rightPanelOpen ? "w-80" : "w-0"
+            "relative shrink-0 border-l border-border bg-card transition-all duration-300 overflow-hidden",
+            rightPanelOpen ? "w-80 xl:w-[22rem]" : "w-0 border-l-0"
           )}
         >
           {rightPanelOpen && (
