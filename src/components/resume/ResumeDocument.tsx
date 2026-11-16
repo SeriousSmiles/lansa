@@ -437,23 +437,14 @@ function EducationItem({ item, tokens }: { item: DatedEntry; tokens: DesignToken
 
 function SkillChips({ skills, tokens, inverted }: { skills: string[]; tokens: DesignTokens; inverted?: boolean }) {
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5mm' }}>
+    <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.8mm' }}>
       {skills.map((s, i) => (
-        <span
-          key={i}
-          style={{
-            padding: '1mm 2.5mm',
-            border: inverted ? '1px solid rgba(255,255,255,0.4)' : `1px solid ${tokens.colors.primary}`,
-            borderRadius: '2mm',
-            fontSize: '1em',
-            color: inverted ? '#fff' : tokens.colors.text,
-            background: 'transparent',
-          }}
-        >
-          {s}
-        </span>
+        <li key={i} style={{ display: 'flex', gap: '1.8mm', alignItems: 'baseline', lineHeight: 1.3, color: inverted ? '#fff' : tokens.colors.text }}>
+          <span aria-hidden style={{ flexShrink: 0, width: '1.2mm', height: '1.2mm', borderRadius: '50%', transform: 'translateY(-0.3mm)', background: inverted ? 'rgba(255,255,255,0.7)' : tokens.colors.primary }} />
+          <span>{s}</span>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }
 
