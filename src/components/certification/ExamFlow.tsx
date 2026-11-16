@@ -7,15 +7,13 @@ import { Progress } from "@/components/ui/progress";
 import { Loader2, ArrowRight, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { WrittenQuestionCard } from "./WrittenQuestionCard";
-import { CertQuestion, ExamSector, QuestionType } from "@/types/certification";
+import { CertQuestion, ExamSector } from "@/types/certification";
 import gsap from "gsap";
 
 interface ExamFlowProps {
   sector: ExamSector;
   userId: string;
 }
-
-const ENABLE_WRITTEN_QUESTIONS = false; // Feature flag
 
 export default function ExamFlow({ sector, userId }: ExamFlowProps) {
   const navigate = useNavigate();
@@ -90,82 +88,25 @@ export default function ExamFlow({ sector, userId }: ExamFlowProps) {
   };
 
   const initializeExam = async () => {
-    const { data: allQuestions, error: qError } = await supabase
-      .from('cert_questions')
-      .select('*')
-      .eq('sector', sector);
-
-    if (qError || !allQuestions || allQuestions.length === 0) {
-      toast({
-        title: "Error",
-        description: "No questions available for this sector.",
-        variant: "destructive",
-      });
-      navigate('/certification');
-      return;
-    }
-
-    // Select questions with type filtering
-    const categories = ['mindset', 'workplace_intelligence', 'performance_habits', 'applied_thinking'];
-    const selected: CertQuestion[] = [];
-    
-    categories.forEach(cat => {
-      const catQuestions = allQuestions
-        .filter(q => q.category === cat)
-        .map(q => ({
-          ...q,
-          choices: q.choices as Array<{ id: string; text: string; points: number }>,
-          question_type: (q.question_type || 'mcq') as QuestionType,
-          time_limit_seconds: q.time_limit_seconds || 40,
-        } as CertQuestion));
-      
-      // Filter by type based on feature flag
-      const filteredQuestions = ENABLE_WRITTEN_QUESTIONS 
-        ? catQuestions 
-        : catQuestions.filter(q => q.question_type !== 'written');
-      
-      const count = cat === 'mindset' || cat === 'applied_thinking' ? 4 : 3;
-      const randomPicks = filteredQuestions
-        .sort(() => Math.random() - 0.5)
-        .slice(0, Math.min(count, filteredQuestions.length));
-      selected.push(...randomPicks);
+    // The server authenticates the caller, checks payment, and assigns questions.
+    // Never load the whole bank or let the browser choose session question IDs.
+    const { data, error } = await supabase.rpc('start_certification_exam', {
+      p_sector: sector,
     });
+    const session = data as unknown as { session_id: string; questions: CertQuestion[] } | null;
 
-    // If written questions enabled, ensure mix (12 MCQ + 3 written)
-    let finalSelection;
-    if (ENABLE_WRITTEN_QUESTIONS) {
-      const written = selected.filter(q => q.question_type === 'written').slice(0, 3);
-      const mcq = selected.filter(q => q.question_type === 'mcq').slice(0, 12);
-      finalSelection = [...mcq, ...written].sort(() => Math.random() - 0.5).slice(0, 15);
-    } else {
-      finalSelection = selected.sort(() => Math.random() - 0.5).slice(0, 15);
-    }
-
-    setQuestions(finalSelection);
-
-    // Create exam session
-    const { data: session, error: sError } = await supabase
-      .from('cert_sessions')
-      .insert({
-        user_id: userId,
-        sector,
-        selected_questions: finalSelection.map(q => q.id),
-        status: 'in_progress',
-      })
-      .select()
-      .single();
-
-    if (sError || !session) {
+    if (error || !session?.session_id || !Array.isArray(session.questions) || !session.questions.length) {
       toast({
         title: "Error",
-        description: "Failed to start exam session.",
+        description: "Unable to start this exam. Check your payment and try again.",
         variant: "destructive",
       });
       navigate('/certification');
       return;
     }
 
-    setSessionId(session.id);
+    setQuestions(session.questions);
+    setSessionId(session.session_id);
     setLoading(false);
   };
 

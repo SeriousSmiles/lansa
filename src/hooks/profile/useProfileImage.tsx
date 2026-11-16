@@ -18,7 +18,7 @@ export function useProfileImage({ userId, updateProfileData }: UseProfileImagePr
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}-profile-${Date.now()}.${fileExt}`;
-      const filePath = `profile-images/${fileName}`;
+      const filePath = `profile-images/${userId}/${fileName}`;
       
       // Upload image to Supabase Storage
       const { error: uploadError } = await supabase.storage

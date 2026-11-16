@@ -3279,6 +3279,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      start_certification_exam: {
+        Args: { p_sector: Database["public"]["Enums"]["exam_sector"] }
+        Returns: Json
+      }
       sync_last_sign_in_to_profile: {
         Args: { p_signed_in_at?: string; p_user_id: string }
         Returns: undefined
