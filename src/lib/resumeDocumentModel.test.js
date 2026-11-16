@@ -11,8 +11,11 @@ describe('fixed resume pages and guided editing', () => {
   test('compact layout cannot reduce body text below 10 points', () => { expect(bodySize({ ...DEFAULT_TOKENS, density: 'compact', typography: { ...DEFAULT_TOKENS.typography, baseSizePt: 10 } })).toBe(10); });
   test('guided editing prevents unsafe margins and unreadable text', () => {
     const result = constrainDesign({ ...DEFAULT_TOKENS, spacing: { pageMarginMm: 0, sectionGapMm: 100 }, colors: { ...DEFAULT_TOKENS.colors, text: '#ffffff' } });
-    expect(result.spacing).toEqual({ pageMarginMm: 10, sectionGapMm: 10 });
+    expect(result.spacing).toEqual({ pageMarginMm: 2, sectionGapMm: 10 });
     expect(result.colors.text).toBe(DEFAULT_TOKENS.colors.text);
+  });
+  test('legacy wide margins migrate to the tight default', () => {
+    expect(constrainDesign({ ...DEFAULT_TOKENS, spacing: { ...DEFAULT_TOKENS.spacing, pageMarginMm: 14 } }).spacing.pageMarginMm).toBe(2.6);
   });
   test('hidden sections stay absent and edited content feeds the document', () => {
     const data = { personalInfo: { name: 'Test', title: '', email: '', phone: '', summary: 'Edited summary', professionalGoal: '' }, experience: [{ title: 'Edited role', description: 'Work' }], education: [], skills: ['Skill'], colors: { primary: '', secondary: '' } };
