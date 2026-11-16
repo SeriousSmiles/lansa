@@ -8,6 +8,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        "dashboard-cta": "bg-dashboard-on-ink text-dashboard-ink border border-dashboard-on-ink hover:bg-dashboard-soft-ink shadow-dashboard focus-visible:ring-dashboard-on-ink focus-visible:ring-offset-dashboard-ink",
         primary: "bg-[#FF6B4A] text-white shadow-[0px_32px_24px_0px_rgba(255,255,255,0.05)_inset,0px_2px_1px_0px_rgba(255,255,255,0.25)_inset,0px_0px_0px_1px_rgba(13,5,4,0.15)_inset,0px_-2px_1px_0px_rgba(0,0,0,0.20)_inset,0px_1px_2px_0px_rgba(13,5,4,0.05)] hover:bg-[#FF6B4A]/90",
         google: "bg-[#1A1F71] text-white shadow-[0px_0px_0px_1px_rgba(13,5,4,0.05)_inset,0px_-2px_1px_0px_rgba(13,5,4,0.05)_inset,0px_1px_2px_0px_rgba(13,5,4,0.05)] hover:bg-[#1A1F71]/90",
         outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",

@@ -1,6 +1,4 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Public+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400;1,9..144,500&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -46,6 +44,14 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
+    --dashboard-ink: 236 64% 27%;
+    --dashboard-on-ink: 0 0% 100%;
+    --dashboard-soft-ink: 224 65% 87%;
+    --dashboard-blue-surface: 215 85% 97%;
+    --dashboard-orange-surface: 14 90% 97%;
+    --dashboard-blue-text: 215 80% 35%;
+    --dashboard-orange-text: 14 75% 35%;
+    --dashboard-shadow: 0 4px 16px hsl(236 64% 27% / 0.06);
 
     --sidebar-background: 0 0% 98%;
 
@@ -65,6 +71,11 @@
   }
 
   .dark {
+    --dashboard-blue-surface: 215 45% 16%;
+    --dashboard-orange-surface: 14 40% 16%;
+    --dashboard-blue-text: 215 85% 78%;
+    --dashboard-orange-text: 14 90% 78%;
+    --dashboard-shadow: 0 4px 16px hsl(0 0% 0% / 0.18);
     /* Dark Mode - Mobile App-like */
     --bg: 0 0% 6%;
     --surface: 0 0% 9%;
@@ -151,6 +162,38 @@
 }
 
 /* Custom masonry layout styles */
+.dashboard-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+.dashboard-section-title::before {
+  content: "";
+  width: 0.25rem;
+  height: 1rem;
+  border-radius: 0.125rem;
+  background: hsl(var(--primary));
+  flex-shrink: 0;
+}
+.dashboard-shortcut {
+  border-color: hsl(var(--primary) / 0.2);
+  background: hsl(var(--dashboard-orange-surface));
+  box-shadow: var(--dashboard-shadow);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+.dashboard-shortcut-blue {
+  border-color: hsl(var(--secondary) / 0.2);
+  background: hsl(var(--dashboard-blue-surface));
+}
+.dashboard-shortcut:hover {
+  border-color: hsl(var(--primary) / 0.5);
+  background: hsl(var(--dashboard-orange-surface));
+}
+.dashboard-shortcut-blue:hover {
+  border-color: hsl(var(--secondary) / 0.5);
+  background: hsl(var(--dashboard-blue-surface));
+}
+
 .masonry-grid {
   display: flex;
   flex-wrap: wrap;

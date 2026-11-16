@@ -100,13 +100,13 @@ export function PortalDistricts({ autoOpenCareer }: PortalDistrictsProps) {
 
   return (
     <section className="space-y-5">
-      <h2 className="text-lg font-bold">Your progress</h2>
+      <h2 className="dashboard-section-title text-lg font-bold">Your progress</h2>
       <div className="grid grid-cols-2 gap-3">
-        <Button variant="outline" onClick={() => setActive("visibility")} className="h-auto min-h-24 whitespace-normal justify-start text-left p-4 gap-3"><Eye className="h-5 w-5 shrink-0 text-primary" /><span><span className="block font-semibold">Employer visibility</span><span className="block text-xs text-muted-foreground mt-1">{!loaded ? "Loading…" : signals.isVisible && signals.isCertified ? "Profile is live" : "Not live yet"}</span></span></Button>
-        <Button variant="outline" onClick={() => setActive("certification")} className="h-auto min-h-24 whitespace-normal justify-start text-left p-4 gap-3"><ShieldCheck className="h-5 w-5 shrink-0 text-secondary" /><span><span className="block font-semibold">Certification</span><span className="block text-xs text-muted-foreground mt-1">{!loaded ? "Loading…" : signals.isCertified ? "Certified & verified" : "Your next milestone"}</span></span></Button>
+        <Button variant="outline" onClick={() => setActive("visibility")} className="h-auto min-h-24 whitespace-normal justify-start text-left p-4 gap-3 border-primary/25 bg-card shadow-dashboard"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-dashboard-orange-text"><Eye className="h-5 w-5" /></span><span className="min-w-0"><span className="block font-semibold">Employer visibility</span><span className="block text-xs text-dashboard-orange-text mt-1">{!loaded ? "Loading…" : signals.isVisible && signals.isCertified ? "Profile is live" : "Not live yet"}</span></span></Button>
+        <Button variant="outline" onClick={() => setActive("certification")} className="h-auto min-h-24 whitespace-normal justify-start text-left p-4 gap-3 border-secondary/25 bg-card shadow-dashboard"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary/10 text-dashboard-blue-text"><ShieldCheck className="h-5 w-5" /></span><span className="min-w-0"><span className="block font-semibold">Certification</span><span className="block text-xs text-dashboard-blue-text mt-1">{!loaded ? "Loading…" : signals.isCertified ? "Certified & verified" : "Your next milestone"}</span></span></Button>
       </div>
       <div className="flex flex-wrap gap-1 border-b border-border pb-2" role="group" aria-label="Progress views">
-        {DISTRICTS.map(d => <Button key={d.key} variant={active === d.key ? "primary" : "ghost"} size="sm" aria-pressed={active === d.key} onClick={() => setActive(d.key)} className="min-h-11 gap-2"><d.icon className="h-4 w-4" />{d.label}</Button>)}
+        {DISTRICTS.map(d => <Button key={d.key} variant="ghost" size="sm" aria-pressed={active === d.key} onClick={() => setActive(d.key)} className={`min-h-11 gap-2 ${active === d.key ? "bg-dashboard-ink text-dashboard-on-ink hover:bg-dashboard-ink/90 hover:text-dashboard-on-ink" : "text-muted-foreground"}`}><d.icon className="h-4 w-4" />{d.label}</Button>)}
       </div>
       {active === "career" && <AICareerPlanCard autoOpen={autoOpenCareer} />}
       {active === "visibility" && <div className="space-y-4"><ListingActivationCard /><WhoIsInterestedSection /></div>}

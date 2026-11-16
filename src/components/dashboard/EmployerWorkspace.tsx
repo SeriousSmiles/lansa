@@ -30,16 +30,16 @@ export function EmployerWorkspace({ stats, loading, onPostJob, onBrowseCandidate
       />
       <section aria-label="Hiring overview" className="grid grid-cols-3 gap-3 border-b border-border pb-6">
         {[{ label: "Active jobs", value: stats.activeJobs }, { label: "Applications", value: stats.totalApplications }, { label: "Candidates viewed", value: stats.candidatesViewed }].map(item => (
-          <div key={item.label} className="min-w-0 border-l-2 border-primary/30 pl-3 sm:pl-5"><p className="text-3xl font-bold tabular-nums">{loading ? "—" : item.value}</p><p className="mt-1 text-xs sm:text-sm leading-relaxed text-muted-foreground">{item.label}</p></div>
+          <div key={item.label} className="min-w-0 border-l-2 border-primary pl-3 sm:pl-5"><p className="text-3xl font-bold tabular-nums text-dashboard-blue-text">{loading ? "—" : item.value}</p><p className="mt-1 text-xs sm:text-sm leading-relaxed text-muted-foreground">{item.label}</p></div>
         ))}
       </section>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="min-w-0 lg:col-span-7 space-y-6">
           <section>
-            <h2 className="text-lg font-bold mb-4">Your hiring workspace</h2>
-            <div className="divide-y divide-border">
+            <h2 className="dashboard-section-title text-lg font-bold mb-4">Your hiring workspace</h2>
+            <div className="space-y-3">
               {[{ label: "Job listings & applications", detail: "Your open roles and the people who applied.", icon: FileText, action: onManageJobs }, { label: "Discover candidates", detail: "Real people. Certified skills. A stronger team.", icon: Users, action: onBrowseCandidates }].map(item => (
-                <Button key={item.label} variant="ghost" onClick={item.action} className="w-full h-auto min-h-24 justify-start p-3 gap-4 whitespace-normal text-left rounded-lg"><item.icon className="h-5 w-5 shrink-0 text-primary" /><span className="min-w-0 flex-1"><span className="block font-semibold text-base">{item.label}</span><span className="block mt-1 text-xs font-normal text-muted-foreground">{item.detail}</span></span><ArrowUpRight className="h-4 w-4 shrink-0" /></Button>
+                <Button key={item.label} variant="outline" onClick={item.action} className="dashboard-shortcut dashboard-shortcut-blue w-full h-auto min-h-28 justify-start p-5 gap-4 whitespace-normal text-left rounded-lg"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-dashboard-blue-text"><item.icon className="h-5 w-5" /></span><span className="min-w-0 flex-1"><span className="block font-semibold text-base text-foreground">{item.label}</span><span className="block mt-1 text-xs font-normal text-muted-foreground">{item.detail}</span></span><ArrowUpRight className="h-4 w-4 shrink-0 text-dashboard-blue-text" /></Button>
               ))}
             </div>
             <Button variant="outline" className="mt-4 min-h-11" onClick={onPostJob}><FileText className="mr-2 h-4 w-4" />Post a new job</Button>
@@ -49,7 +49,7 @@ export function EmployerWorkspace({ stats, loading, onPostJob, onBrowseCandidate
         <aside className="min-w-0 lg:col-span-5 space-y-7">
           <PortalMessagesCard navigation="route" audience="employer" />
           <section className="border-t border-border pt-5">
-            <h2 className="text-lg font-bold mb-3">Organization</h2>
+            <h2 className="dashboard-section-title text-lg font-bold mb-3">Organization</h2>
             <div className="flex flex-wrap gap-2">
               {onViewAnalytics && <Button variant="outline" onClick={onViewAnalytics}><Building2 className="mr-2 h-4 w-4" />Hiring insights</Button>}
               {onSettings && <Button variant="ghost" onClick={onSettings}><Settings className="mr-2 h-4 w-4" />Settings</Button>}

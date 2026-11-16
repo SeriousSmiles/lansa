@@ -21,6 +21,7 @@ export default {
 			}
 		},
 		extend: {
+			boxShadow: { dashboard: 'var(--dashboard-shadow)' },
 		fontFamily: {
 			inter: ['Inter', 'sans-serif'],
 			'public-sans': ['Public Sans', 'sans-serif'],
@@ -28,6 +29,13 @@ export default {
 			'fraunces': ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
 		},
 			colors: {
+				'dashboard-ink': 'hsl(var(--dashboard-ink))',
+				'dashboard-on-ink': 'hsl(var(--dashboard-on-ink))',
+				'dashboard-soft-ink': 'hsl(var(--dashboard-soft-ink))',
+				'dashboard-blue-surface': 'hsl(var(--dashboard-blue-surface))',
+				'dashboard-orange-surface': 'hsl(var(--dashboard-orange-surface))',
+				'dashboard-blue-text': 'hsl(var(--dashboard-blue-text))',
+				'dashboard-orange-text': 'hsl(var(--dashboard-orange-text))',
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',

@@ -35,7 +35,7 @@ export function PortalMessagesCard({ navigation = "panel", audience = "seeker" }
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg text-foreground font-bold flex items-center gap-2">
+        <h2 className="dashboard-section-title text-lg text-foreground font-bold flex items-center gap-2">
           Messages
           {totalUnread > 0 && (
             <span className="rounded-full bg-primary text-primary-foreground text-[10px] font-semibold px-2 py-0.5">
@@ -52,7 +52,7 @@ export function PortalMessagesCard({ navigation = "panel", audience = "seeker" }
         </Button>
       </div>
 
-      <div className="rounded-lg border border-border bg-card overflow-hidden">
+      <div className="rounded-lg border border-secondary/20 border-t-2 border-t-secondary bg-card shadow-dashboard overflow-hidden">
         {loading && top.length === 0 ? (
           <div className="p-4 space-y-3">
             {[0, 1, 2].map((i) => (
@@ -65,8 +65,8 @@ export function PortalMessagesCard({ navigation = "panel", audience = "seeker" }
             onClick={openInbox}
             className="w-full h-auto whitespace-normal justify-start flex items-center gap-3 p-5 text-left hover:bg-accent/30 transition-colors"
           >
-            <div className="w-10 h-10 rounded-2xl bg-muted/80 flex items-center justify-center flex-shrink-0">
-              <MessageCircle className="w-5 h-5 text-muted-foreground/50" />
+            <div className="w-10 h-10 rounded-lg bg-dashboard-blue-surface flex items-center justify-center flex-shrink-0">
+              <MessageCircle className="w-5 h-5 text-dashboard-blue-text" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground/80">No conversations yet</p>
@@ -93,7 +93,7 @@ export function PortalMessagesCard({ navigation = "panel", audience = "seeker" }
                   <Button
                     variant="ghost"
                     onClick={() => openThread(t.id)}
-                    className="group w-full h-auto whitespace-normal justify-start flex items-center gap-3 px-4 py-3.5 text-left hover:bg-accent/30 transition-colors"
+                    className={cn("group w-full h-auto whitespace-normal justify-start flex items-center gap-3 px-4 py-4 text-left rounded-none hover:bg-dashboard-blue-surface transition-colors", hasUnread && "bg-dashboard-blue-surface")}
                   >
                     <div className="relative flex-shrink-0">
                       <Avatar className="w-10 h-10">
@@ -118,7 +118,7 @@ export function PortalMessagesCard({ navigation = "panel", audience = "seeker" }
                         >
                           {name}
                         </span>
-                        <span className="text-[11px] text-muted-foreground/70 flex-shrink-0">
+                        <span className="text-[11px] text-muted-foreground flex-shrink-0">
                           {timeAgo}
                         </span>
                       </div>

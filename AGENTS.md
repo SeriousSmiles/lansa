@@ -8,3 +8,4 @@
 # Dashboard presentation
 
 - Use the shared DashboardActionBand and EmployerWorkspace for overview hierarchy across account types and device sizes; keep data access and hiring actions in their existing owners to avoid divergent behavior.
+- Keep dashboard contrast, tinted surfaces, and shadows in global semantic tokens and the dashboard CTA button variant so seeker and employer overviews share a theme-aware visual hierarchy.

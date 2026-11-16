@@ -58,15 +58,15 @@ export function PortalShell({ userName, role, goal, openAIPlan }: PortalShellPro
           <div className="min-w-0 lg:col-span-7 space-y-8">
             <section>
               <div className="mb-4 flex items-center justify-between gap-3">
-                <h2 className="text-lg font-bold">Your opportunities</h2>
+                <h2 className="dashboard-section-title text-lg font-bold">Your opportunities</h2>
                 <Button variant="ghost" size="sm" onClick={() => navigate("/jobs")}>View jobs<ArrowUpRight className="ml-1 h-4 w-4" /></Button>
               </div>
               <div className="grid sm:grid-cols-2 gap-3">
                 {[
                   { label: "Explore jobs", detail: "Find a role that fits your next chapter.", icon: Briefcase, path: "/jobs" },
                   { label: "My profile", detail: "Show the experience behind your story.", icon: UserRound, path: "/profile" },
-                ].map(item => <Button key={item.label} variant="outline" className="h-auto min-h-28 justify-start whitespace-normal p-5 text-left gap-3 rounded-lg" onClick={() => navigate(item.path)}>
-                  <item.icon className="h-5 w-5 shrink-0 text-primary" /><span className="min-w-0"><span className="block text-base font-semibold">{item.label}</span><span className="mt-1 block text-xs font-normal leading-relaxed text-muted-foreground">{item.detail}</span></span>
+                ].map((item, index) => <Button key={item.label} variant="outline" className={`dashboard-shortcut ${index === 1 ? "dashboard-shortcut-blue" : ""} group h-auto min-h-36 flex-col items-start justify-between whitespace-normal p-5 text-left gap-4 rounded-lg`} onClick={() => navigate(item.path)}>
+                  <span className="flex w-full items-center justify-between"><span className={`flex h-10 w-10 items-center justify-center rounded-lg ${index === 1 ? "bg-secondary/10 text-dashboard-blue-text" : "bg-primary/10 text-dashboard-orange-text"}`}><item.icon className="h-5 w-5" /></span><ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground" /></span><span className="min-w-0"><span className="block text-base font-semibold text-foreground">{item.label}</span><span className="mt-1 block text-xs font-normal leading-relaxed text-muted-foreground">{item.detail}</span></span>
                 </Button>)}
               </div>
             </section>
@@ -75,11 +75,11 @@ export function PortalShell({ userName, role, goal, openAIPlan }: PortalShellPro
           <aside className="min-w-0 lg:col-span-5 space-y-8">
             <PortalMessagesCard />
             <section>
-              <div className="flex items-center justify-between mb-3"><h2 className="text-lg font-bold">Recent activity</h2><Button variant="ghost" size="sm" onClick={() => openPanel("activity")}>View all<ArrowUpRight className="ml-1 h-4 w-4" /></Button></div>
+              <div className="flex items-center justify-between mb-3"><h2 className="dashboard-section-title text-lg font-bold">Recent activity</h2><Button variant="ghost" size="sm" onClick={() => openPanel("activity")}>View all<ArrowUpRight className="ml-1 h-4 w-4" /></Button></div>
               <ActivityStream limit={3} />
             </section>
             <section className="border-t border-border pt-5">
-              <h2 className="text-lg font-bold mb-2">Make it yours</h2>
+              <h2 className="dashboard-section-title text-lg font-bold mb-3">Make it yours</h2>
               <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => navigate("/profile/resume-editor")}><FileText className="mr-2 h-4 w-4" />My resume</Button><Button variant="ghost" onClick={() => navigate("/profile")}><UserRound className="mr-2 h-4 w-4" />My profile</Button></div>
             </section>
           </aside>
