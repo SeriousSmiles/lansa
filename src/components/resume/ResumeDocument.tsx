@@ -283,9 +283,14 @@ function SectionRenderer({
         <Section title="Languages" tokens={tokens} variant={variant} continued={continued} hideHeading={hideHeading}>
           <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
             {data.languages.map((l, i) => (
-              <li key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5mm 0' }}>
-                <span>{l.name}</span>
-                {l.level ? <span style={{ opacity: 0.8 }}>{['Beginner', 'Elementary', 'Intermediate', 'Advanced', 'Native'][l.level - 1]}</span> : null}
+              <li key={i} style={{ padding: '0.8mm 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '2mm' }}>
+                  <span>{l.name}</span>
+                  {l.level ? <span style={{ opacity: 0.8, fontSize: '0.9em' }}>{['Beginner', 'Elementary', 'Intermediate', 'Advanced', 'Native'][l.level - 1]}</span> : null}
+                </div>
+                {l.level ? <div aria-hidden style={{ marginTop: '0.8mm', height: '1mm', borderRadius: '1mm', background: variant === 'sidebar' ? 'rgba(255,255,255,0.2)' : `${tokens.colors.muted}33`, overflow: 'hidden' }}>
+                  <div style={{ width: `${(Math.min(5, Math.max(1, l.level)) / 5) * 100}%`, height: '100%', borderRadius: '1mm', background: variant === 'sidebar' ? tokens.colors.surface : tokens.colors.primary }} />
+                </div> : null}
               </li>
             ))}
           </ul>

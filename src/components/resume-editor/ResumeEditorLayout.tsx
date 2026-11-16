@@ -44,12 +44,15 @@ export function ResumeEditorLayout({ profileData, resumeDesignId }: Props) {
     if (loading || restored.current) return;
     restored.current = true;
     const saved = currentDesign?.design_json;
-    if (saved?.tokens && saved?.data) {
+    if (saved?.tokens) {
       // Designs saved before version 3 used the old wide page margin (10mm+); reset to the tight default.
       const tokens = (saved.version ?? 0) < 3 ? { ...saved.tokens, spacing: { ...saved.tokens.spacing, pageMarginMm: 2.6 } } : saved.tokens;
-      setSnapshot({ data: saved.data, tokens: constrainDesign(tokens) });
+      setSnapshot(s => ({ ...s, tokens: constrainDesign(tokens) }));
     }
   }, [loading, currentDesign]);
+  // Content always mirrors the profile builder; only the design is saved/restored.
+  const profileJson = JSON.stringify(convertProfileToPDFData(profileData));
+  useEffect(() => { setSnapshot(s => JSON.stringify(s.data) === profileJson ? s : { ...s, data: JSON.parse(profileJson) }); }, [profileJson]);
   const undo = () => { const previous = past[past.length - 1]; if (!previous) return; setPast(p => p.slice(0, -1)); setFuture(f => [snapshot, ...f]); setSnapshot(previous); setDirty(true); };
   const redo = () => { const next = future[0]; if (!next) return; setFuture(f => f.slice(1)); setPast(p => [...p, snapshot]); setSnapshot(next); setDirty(true); };
   const save = async () => {
@@ -94,7 +97,7 @@ export function ResumeEditorLayout({ profileData, resumeDesignId }: Props) {
     <EditorToolbar onSave={save} tokens={snapshot.tokens} data={snapshot.data} isSaving={saving} dirty={dirty} onOpenPreview={() => setPreviewOpen(true)} />
     <div className="flex-1 min-h-0 flex overflow-hidden">
       <div className={cn('shrink-0 overflow-y-auto border-r border-border bg-card', !leftOpen && 'w-0 overflow-hidden')} style={leftOpen ? { width: leftWidth } : undefined}>
-        {leftOpen && <ResumeContentPanel data={snapshot.data} tokens={snapshot.tokens} onDataChange={data => change({ ...snapshot, data })} onTokensChange={tokens => change({ ...snapshot, tokens })} />}
+        {leftOpen && <ResumeContentPanel data={snapshot.data} tokens={snapshot.tokens} onTokensChange={tokens => change({ ...snapshot, tokens })} />}
       </div>
       {leftOpen && resizeHandle('left')}
       <Button variant="ghost" size="icon" className="shrink-0 self-center h-12 w-5 rounded-none border-y border-r border-border bg-card px-0" aria-label={leftOpen ? 'Hide content panel' : 'Show content panel'} onClick={() => setLeftOpen(!leftOpen)}>{leftOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}</Button>
