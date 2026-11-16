@@ -27,7 +27,7 @@ export function constrainDesign(input: DesignTokens): DesignTokens {
       scaleRatio: clamp(input.typography.scaleRatio, 1.15, 1.35),
       displayTracking: 0,
     },
-    spacing: { pageMarginMm: input.spacing.pageMarginMm > 10 ? 2.6 : clamp(input.spacing.pageMarginMm, 2, 10), sectionGapMm: clamp(input.spacing.sectionGapMm, 3, 10) },
+    spacing: { pageMarginMm: input.spacing.pageMarginMm > 10 ? 5.3 : clamp(input.spacing.pageMarginMm, 2, 10), sectionGapMm: clamp(input.spacing.sectionGapMm, 3, 10) },
     sectionOrder: [...new Set(input.sectionOrder.filter(k => SECTION_KEYS.includes(k)))],
   };
 }

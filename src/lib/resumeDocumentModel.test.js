@@ -15,7 +15,7 @@ describe('fixed resume pages and guided editing', () => {
     expect(result.colors.text).toBe(DEFAULT_TOKENS.colors.text);
   });
   test('legacy wide margins migrate to the tight default', () => {
-    expect(constrainDesign({ ...DEFAULT_TOKENS, spacing: { ...DEFAULT_TOKENS.spacing, pageMarginMm: 14 } }).spacing.pageMarginMm).toBe(2.6);
+    expect(constrainDesign({ ...DEFAULT_TOKENS, spacing: { ...DEFAULT_TOKENS.spacing, pageMarginMm: 14 } }).spacing.pageMarginMm).toBe(5.3);
   });
   test('hidden sections stay absent and edited content feeds the document', () => {
     const data = { personalInfo: { name: 'Test', title: '', email: '', phone: '', summary: 'Edited summary', professionalGoal: '' }, experience: [{ title: 'Edited role', description: 'Work' }], education: [], skills: ['Skill'], colors: { primary: '', secondary: '' } };

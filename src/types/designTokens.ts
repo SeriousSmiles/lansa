@@ -157,7 +157,7 @@ export const DEFAULT_TOKENS: DesignTokens = {
   },
   spacing: {
     sectionGapMm: 6,
-    pageMarginMm: 2.6,
+    pageMarginMm: 5.3,
   },
   personalization: {
     photoShape: 'circle',

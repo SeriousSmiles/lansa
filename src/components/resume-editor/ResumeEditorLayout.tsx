@@ -45,8 +45,8 @@ export function ResumeEditorLayout({ profileData, resumeDesignId }: Props) {
     restored.current = true;
     const saved = currentDesign?.design_json;
     if (saved?.tokens) {
-      // Designs saved before version 3 used the old wide page margin (10mm+); reset to the tight default.
-      const tokens = (saved.version ?? 0) < 3 ? { ...saved.tokens, spacing: { ...saved.tokens.spacing, pageMarginMm: 2.6 } } : saved.tokens;
+      // Designs saved before version 4 used the old wide page margin (10mm+); reset to the tight default.
+      const tokens = (saved.version ?? 0) < 4 ? { ...saved.tokens, spacing: { ...saved.tokens.spacing, pageMarginMm: 5.3 } } : saved.tokens;
       setSnapshot(s => ({ ...s, tokens: constrainDesign(tokens) }));
     }
   }, [loading, currentDesign]);
@@ -57,7 +57,7 @@ export function ResumeEditorLayout({ profileData, resumeDesignId }: Props) {
   const redo = () => { const next = future[0]; if (!next) return; setFuture(f => f.slice(1)); setPast(p => [...p, snapshot]); setSnapshot(next); setDirty(true); };
   const save = async () => {
     setSaving(true);
-    try { await saveDesign({ name: currentDesign?.name ?? 'My resume', template_id: snapshot.tokens.templateId, design_json: { version: 3, ...snapshot } }, resumeDesignId ?? currentDesign?.id); setDirty(false); }
+    try { await saveDesign({ name: currentDesign?.name ?? 'My resume', template_id: snapshot.tokens.templateId, design_json: { version: 4, ...snapshot } }, resumeDesignId ?? currentDesign?.id); setDirty(false); }
     finally { setSaving(false); }
   };
 
