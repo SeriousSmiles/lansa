@@ -66,7 +66,7 @@ export function ResumeEditorLayout({ profileData, resumeDesignId }: Props) {
           </div>
           <span className="text-xs font-medium text-muted-foreground">{snapshot.tokens.paper} · {pageCount || '…'} {pageCount === 1 ? 'page' : 'pages'}</span>
         </div>
-        <div className="flex-1 min-h-0 overflow-auto p-6 lg:p-8">
+        <div className="flex-1 min-h-0 overflow-auto">
           <div className="flex items-start justify-center w-max min-w-full">
             <div style={{ zoom }} className="shadow-dashboard"><ResumeDocument data={snapshot.data} tokens={snapshot.tokens} onReady={setPageCount} /></div>
           </div>
