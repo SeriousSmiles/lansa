@@ -66,7 +66,7 @@ export function ResumeDocument({ data, tokens, onReady }: ResumeDocumentProps) {
       const pxPerMm = root.offsetWidth / paper.w;
       const capacity = (paper.h - margin * 2 - (tokens.personalization.showLansaBadge ? 5 : 0)) * pxPerMm;
       setPagination({ signature, main: paginateHeights(heights(lane), capacity, gap * pxPerMm),
-        side: side ? paginateHeights(heights(side), capacity - 8 * pxPerMm, gap * pxPerMm) : [[]] });
+        side: side ? paginateHeights(heights(side), capacity, gap * pxPerMm) : [[]] });
     };
     void measure();
     return () => { cancelled = true; };
@@ -85,12 +85,17 @@ export function ResumeDocument({ data, tokens, onReady }: ResumeDocumentProps) {
     overflowWrap: 'anywhere', boxSizing: 'border-box',
   };
   const laneStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: `${gap}mm`, minWidth: 0 };
-  const gridStyle: React.CSSProperties = { display: 'grid', gridTemplateColumns: sidebar ? (tokens.layout === 'sidebar-right' ? '1fr 30%' : '30% 1fr') : '1fr', gap: `${gap}mm` };
+  // Pages have no outer padding: each lane carries its own padding so colored
+  // lanes (sidebar) bleed to the paper edge while text lanes keep the margin.
+  const gridStyle = (measuring: boolean): React.CSSProperties => ({
+    display: 'grid', gridTemplateColumns: sidebar ? (tokens.layout === 'sidebar-right' ? '1fr 30%' : '30% 1fr') : '1fr', gap: 0,
+    ...(measuring ? {} : { height: '100%', gridTemplateRows: 'minmax(0, 1fr)' }),
+  });
   const renderLanes = (main: React.ReactNode[], side: React.ReactNode[], measuring = false) => (
-    <div style={gridStyle}>
-      {sidebar && tokens.layout === 'sidebar-left' && <aside data-measure-side={measuring ? '' : undefined} style={{ ...laneStyle, color: tokens.colors.surface, background: tokens.colors.sidebar ?? tokens.colors.primary, padding: '4mm' }}>{side}</aside>}
-      <main data-measure-main={measuring ? '' : undefined} style={laneStyle}>{main}</main>
-      {sidebar && tokens.layout === 'sidebar-right' && <aside data-measure-side={measuring ? '' : undefined} style={{ ...laneStyle, color: tokens.colors.surface, background: tokens.colors.sidebar ?? tokens.colors.primary, padding: '4mm' }}>{side}</aside>}
+    <div style={gridStyle(measuring)}>
+      {sidebar && tokens.layout === 'sidebar-left' && <aside data-measure-side={measuring ? '' : undefined} style={{ ...laneStyle, color: tokens.colors.surface, background: tokens.colors.sidebar ?? tokens.colors.primary, padding: `${margin}mm` }}>{side}</aside>}
+      <main data-measure-main={measuring ? '' : undefined} style={{ ...laneStyle, padding: `${margin}mm` }}>{main}</main>
+      {sidebar && tokens.layout === 'sidebar-right' && <aside data-measure-side={measuring ? '' : undefined} style={{ ...laneStyle, color: tokens.colors.surface, background: tokens.colors.sidebar ?? tokens.colors.primary, padding: `${margin}mm` }}>{side}</aside>}
     </div>
   );
   const count = ready && pagination ? Math.max(pagination.main.length, pagination.side.length) : 0;
@@ -102,18 +107,18 @@ export function ResumeDocument({ data, tokens, onReady }: ResumeDocumentProps) {
   return (
     <div className="resume-pages" data-resume-pages data-resume-ready={ready ? 'true' : 'false'}>
       <ResumeDocumentStyles tokens={tokens} paper={paper} />
-      <div ref={measurement} aria-hidden style={{ ...vars, position: 'absolute', visibility: 'hidden', pointerEvents: 'none', top: 0, left: 0, padding: `${margin}mm` }}>
+      <div ref={measurement} aria-hidden style={{ ...vars, position: 'absolute', visibility: 'hidden', pointerEvents: 'none', top: 0, left: 0 }}>
         {renderLanes(mainBlocks, sideBlocks, true)}
       </div>
       {ready && pagination ? Array.from({ length: count }, (_, index) => (
         <div key={index} className="resume-document" data-resume-document data-page-number={index + 1}
-          style={{ ...vars, height: `${paper.h}mm`, padding: `${margin}mm`, position: 'relative', overflow: 'hidden' }}>
+          style={{ ...vars, height: `${paper.h}mm`, position: 'relative', overflow: 'hidden' }}>
           {tokens.personalization.watermark && <div aria-hidden style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', opacity: 0.08, fontSize: '48pt', color: tokens.colors.muted, pointerEvents: 'none' }}>{tokens.personalization.watermark}</div>}
           {renderLanes(pageBlocks(pagination.main[index] ?? [], mainBlocks, mainUnits, 1),
             pageBlocks(pagination.side[index] ?? [], sideBlocks, sideUnits, 1))}
           {tokens.personalization.showLansaBadge && <LansaBadge />}
         </div>
-      )) : <div role="status" style={{ ...vars, height: `${paper.h}mm`, padding: `${margin}mm` }}>Preparing pages…</div>}
+      )) : <div role="status" style={{ ...vars, height: `${paper.h}mm` }}>Preparing pages…</div>}
     </div>
   );
 }
