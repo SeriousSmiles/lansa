@@ -235,11 +235,11 @@ export function DesignTokensPanel({ tokens, onChange }: Props) {
         </div>
 
         <SliderRow
-          label="Page margin (mm)"
+          label="Content padding (mm)"
           value={tokens.spacing.pageMarginMm}
-          min={10}
-          max={22}
-          step={1}
+          min={2}
+          max={10}
+          step={0.5}
           onChange={(v) => setSpacing('pageMarginMm', v)}
         />
         <SliderRow
