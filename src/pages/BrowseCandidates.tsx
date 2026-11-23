@@ -1,8 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserState } from "@/contexts/UserStateProvider";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { CandidateBrowseTab } from "@/components/dashboard/employer/CandidateBrowseTab";
-import { MobileCandidateBrowser } from "@/components/mobile/employer/MobileCandidateBrowser";
 import { LoadingSpinner } from "@/components/loading";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getRoleHomePath } from "@/utils/roleRoutes";
@@ -10,7 +9,6 @@ import { getRoleHomePath } from "@/utils/roleRoutes";
 export default function BrowseCandidates() {
   const { user } = useAuth();
   const { userType, loading: userTypeLoading } = useUserState();
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   // Redirect non-employers
@@ -28,12 +26,7 @@ export default function BrowseCandidates() {
 
   // Mobile view
   if (isMobile) {
-    return (
-      <MobileCandidateBrowser 
-        userId={user.id}
-        onBack={() => navigate('/employer-dashboard')}
-      />
-    );
+    return <Navigate to="/employer-dashboard?tab=discover" replace />;
   }
 
   // Desktop view - use CandidateBrowseTab with split-panel layout and certified candidates filter

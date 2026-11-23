@@ -41,6 +41,7 @@ interface MobileEmployerDashboardProps {
   onBrowseCandidates: () => void;
   onManageJobs?: () => void;
   onViewAnalytics?: () => void;
+  canManageOrgSettings?: boolean;
 }
 
 interface ActivityItem {
@@ -67,6 +68,7 @@ export function MobileEmployerDashboard({
   onBrowseCandidates,
   onManageJobs,
   onViewAnalytics,
+  canManageOrgSettings = false,
 }: MobileEmployerDashboardProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -117,7 +119,7 @@ export function MobileEmployerDashboard({
   }, [user?.id]);
 
   return (
-    <div className="mobile-safe-top bg-background min-h-screen">
+    <div className="bg-background">
       {/* Header with Organization Branding */}
       <div className="px-4 py-6 bg-background">
         <div className="flex items-center justify-between mb-2">
@@ -183,6 +185,7 @@ export function MobileEmployerDashboard({
                   <User className="mr-3 h-5 w-5" />
                   My Profile
                 </Button>
+                {canManageOrgSettings && (
                 <Button
                   variant="ghost"
                   className="w-full justify-start h-12"
@@ -194,6 +197,7 @@ export function MobileEmployerDashboard({
                   <Building2 className="mr-3 h-5 w-5" />
                   Organization Settings
                 </Button>
+                )}
                 <div className="border-t my-3" />
                 <Button
                   variant="ghost"
@@ -246,9 +250,9 @@ export function MobileEmployerDashboard({
               {recentActivity.map((item) => {
                 const IconComponent = NOTIFICATION_ICONS[item.type] || NOTIFICATION_ICONS.default;
                 return (
-                  <button
+                  <Button variant="ghost"
                     key={item.id}
-                    className="w-full flex items-start gap-3 p-4 hover:bg-muted/50 transition-colors text-left"
+                    className="w-full flex items-start gap-3 p-4 hover:bg-accent transition-colors text-left h-auto whitespace-normal justify-start"
                     onClick={() => item.action_url && navigate(item.action_url)}
                   >
                     <div className="p-2 bg-primary/10 rounded-full shrink-0 mt-0.5">
@@ -261,7 +265,7 @@ export function MobileEmployerDashboard({
                         {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
                       </p>
                     </div>
-                  </button>
+                  </Button>
                 );
               })}
             </div>

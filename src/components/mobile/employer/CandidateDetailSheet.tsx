@@ -1,211 +1,51 @@
-import { Drawer, DrawerContent } from "@/components/ui/drawer";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import {
-  MapPin, Briefcase, GraduationCap, Award, Globe, User,
-  Heart, X, Zap
-} from "lucide-react";
-import type { DiscoveryProfile } from "@/services/discoveryService";
+import { useEffect, useState } from 'react';
+import { Drawer, DrawerContent, DrawerTitle, DrawerDescription } from '@/components/ui/drawer';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { MapPin, Briefcase, GraduationCap, Award, Globe, X, Sparkles, BadgeCheck } from 'lucide-react';
+import type { DiscoveryProfile } from '@/services/discoveryService';
+import type { SwipeDirection } from '@/services/swipeService';
+import { matchSummaryService } from '@/services/matchSummaryService';
+import { CandidateActions } from './CandidateActions';
+import { initials, skillNames } from './mobileDiscoveryModel';
 
-interface CandidateDetailSheetProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  profile: DiscoveryProfile | null;
-  onAction: (direction: 'left' | 'right' | 'nudge') => void;
-}
-
-export function CandidateDetailSheet({
-  open,
-  onOpenChange,
-  profile,
-  onAction,
-}: CandidateDetailSheetProps) {
+interface CandidateDetailSheetProps { open: boolean; onOpenChange: (open: boolean) => void; profile: DiscoveryProfile | null; onAction: (direction: SwipeDirection) => void; userId?: string; disabled?: boolean }
+export function CandidateDetailSheet({ open, onOpenChange, profile, onAction, userId, disabled }: CandidateDetailSheetProps) {
+  const [insight, setInsight] = useState<string | null>(null);
+  useEffect(() => {
+    if (!open || !profile || !userId) return;
+    let active = true;
+    setInsight(null);
+    matchSummaryService.getMatchSummary(userId, profile).then(value => { if (active) setInsight(value); }).catch(() => { if (active) setInsight(matchSummaryService.generateFallbackSummary(profile)); });
+    return () => { active = false; };
+  }, [open, profile, userId]);
   if (!profile) return null;
-
-  const skillNames: string[] = Array.isArray(profile.skills)
-    ? profile.skills.map((s: any) => (typeof s === 'string' ? s : s?.name)).filter(Boolean)
-    : [];
-
-  const languageNames: string[] = Array.isArray(profile.languages)
-    ? profile.languages.map((l: any) => (typeof l === 'string' ? l : l?.name)).filter(Boolean)
-    : [];
-
-  const accentColor = profile.highlight_color || 'hsl(var(--primary))';
-
-  const handleAction = (direction: 'left' | 'right' | 'nudge') => {
-    onAction(direction);
-    onOpenChange(false);
-  };
-
-  return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[92vh] rounded-t-2xl">
-        <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-muted-foreground/30 my-3" />
-
-        <div className="overflow-y-auto px-5 pb-36">
-          {/* Header */}
-          <div className="flex items-start gap-4 mb-6">
-            <Avatar className="w-16 h-16 ring-2 ring-border shadow-md flex-shrink-0">
-              <AvatarImage src={profile.profile_image} alt={profile.name} />
-              <AvatarFallback
-                style={{ backgroundColor: accentColor }}
-                className="text-white text-xl font-semibold"
-              >
-                {profile.name?.charAt(0) || <User className="w-8 h-8" />}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold text-foreground truncate">{profile.name}</h2>
-              <p className="text-muted-foreground text-sm">{profile.title}</p>
-              {profile.location && (
-                <p className="text-muted-foreground text-xs flex items-center gap-1 mt-1">
-                  <MapPin className="w-3 h-3" />
-                  {profile.location}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* About */}
-          {profile.about_text && (
-            <Section title="About">
-              <p className="text-muted-foreground text-sm leading-relaxed">{profile.about_text}</p>
-            </Section>
-          )}
-
-          {/* Skills */}
-          {skillNames.length > 0 && (
-            <Section title="Skills">
-              <div className="flex flex-wrap gap-2">
-                {skillNames.map((skill, i) => (
-                  <Badge
-                    key={i}
-                    variant="secondary"
-                    className="text-xs font-medium"
-                    style={{ backgroundColor: `${accentColor}18`, color: accentColor }}
-                  >
-                    {skill}
-                  </Badge>
-                ))}
-              </div>
-            </Section>
-          )}
-
-          {/* Experience */}
-          {profile.experiences && profile.experiences.length > 0 && (
-            <Section title="Experience" icon={<Briefcase className="w-4 h-4" />}>
-              <div className="space-y-3">
-                {profile.experiences.map((exp, i) => (
-                  <div key={i} className="p-3 rounded-lg bg-muted/30">
-                    <p className="text-sm font-semibold text-foreground">{exp.title}</p>
-                    <p className="text-xs text-muted-foreground">{exp.subtitle}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{exp.period}</p>
-                    {exp.description && (
-                      <p className="text-xs text-muted-foreground mt-2">{exp.description}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </Section>
-          )}
-
-          {/* Education */}
-          {profile.education && profile.education.length > 0 && (
-            <Section title="Education" icon={<GraduationCap className="w-4 h-4" />}>
-              <div className="space-y-3">
-                {profile.education.map((edu, i) => (
-                  <div key={i} className="p-3 rounded-lg bg-muted/30">
-                    <p className="text-sm font-semibold text-foreground">{edu.title}</p>
-                    <p className="text-xs text-muted-foreground">{edu.description}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{edu.period}</p>
-                  </div>
-                ))}
-              </div>
-            </Section>
-          )}
-
-          {/* Achievements */}
-          {profile.achievements && profile.achievements.filter(a => a.isFeatured).length > 0 && (
-            <Section title="Achievements" icon={<Award className="w-4 h-4" />}>
-              <div className="space-y-2">
-                {profile.achievements.filter(a => a.isFeatured).map((a, i) => (
-                  <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-muted/20">
-                    <div
-                      className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
-                      style={{ backgroundColor: accentColor }}
-                    />
-                    <div>
-                      <p className="text-xs font-semibold text-foreground">{a.title}</p>
-                      <p className="text-xs text-muted-foreground">{a.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Section>
-          )}
-
-          {/* Languages */}
-          {languageNames.length > 0 && (
-            <Section title="Languages" icon={<Globe className="w-4 h-4" />}>
-              <div className="flex flex-wrap gap-2">
-                {languageNames.map((lang, i) => (
-                  <Badge key={i} variant="outline" className="text-xs">{lang}</Badge>
-                ))}
-              </div>
-            </Section>
-          )}
+  const skills = skillNames(profile);
+  return <Drawer open={open} onOpenChange={value => { if (!disabled) onOpenChange(value); }} shouldScaleBackground={false}>
+    <DrawerContent className="employer-theme discovery-sheet discovery-detail-sheet">
+      <div className="flex items-center justify-between px-5 py-2 border-b border-border shrink-0">
+        <span className="text-sm font-semibold">Professional profile</span><Button variant="ghost" size="icon" className="w-11 h-11" disabled={disabled} aria-label="Close profile" onClick={() => onOpenChange(false)}><X size={22} /></Button>
+      </div>
+      <DrawerDescription className="sr-only">Professional background and qualifications of {profile.name}.</DrawerDescription>
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5">
+        <div className="flex items-start gap-4 mb-6"><Avatar className="h-20 w-20 rounded-xl shrink-0"><AvatarImage src={profile.profile_image} alt="" className="object-cover object-[center_25%]" /><AvatarFallback className="bg-primary/10 text-primary font-bold text-2xl rounded-xl">{initials(profile.name)}</AvatarFallback></Avatar>
+          <div className="min-w-0"><DrawerTitle className="text-2xl break-words">{profile.name}</DrawerTitle><p className="text-sm mt-1">{profile.title}</p>{profile.location && <p className="text-xs text-muted-foreground mt-2 flex gap-1"><MapPin size={14} className="shrink-0" />{profile.location}</p>}{profile.isCertified && <p className="text-xs text-primary mt-2 flex items-center gap-1"><BadgeCheck size={14} />Lansa certified</p>}</div>
         </div>
-
-        {/* Sticky action buttons — matching main browser style */}
-        <div className="absolute bottom-0 left-0 right-0 bg-card border-t border-border/50 p-4 pb-safe">
-          <div className="flex justify-center items-center gap-5">
-            {/* Pass */}
-            <button
-              onClick={() => handleAction('left')}
-              className="w-14 h-14 rounded-full border-[2.5px] flex items-center justify-center bg-card shadow-md active:scale-95 transition-all"
-              style={{ borderColor: '#ef4444', color: '#ef4444' }}
-            >
-              <X className="w-6 h-6" strokeWidth={2.5} />
-            </button>
-            {/* Nudge */}
-            <button
-              onClick={() => handleAction('nudge')}
-              className="w-12 h-12 rounded-full border-[2.5px] flex items-center justify-center bg-card shadow-md active:scale-95 transition-all"
-              style={{ borderColor: '#f59e0b', color: '#f59e0b' }}
-            >
-              <Zap className="w-5 h-5" strokeWidth={2.5} />
-            </button>
-            {/* Interested */}
-            <button
-              onClick={() => handleAction('right')}
-              className="w-14 h-14 rounded-full border-[2.5px] flex items-center justify-center bg-card shadow-md active:scale-95 transition-all"
-              style={{ borderColor: '#3b82f6', color: '#3b82f6' }}
-            >
-              <Heart className="w-6 h-6" strokeWidth={2.5} />
-            </button>
-          </div>
-        </div>
-      </DrawerContent>
-    </Drawer>
-  );
+        {userId && <Section title="Why this match" icon={<Sparkles size={17} />}><p className="text-sm text-muted-foreground leading-relaxed">{insight || 'Reviewing professional strengths…'}</p></Section>}
+        {profile.about_text && <Section title="About"><p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{profile.about_text}</p></Section>}
+        {Boolean(profile.experiences?.length) && <Section title="Experience" icon={<Briefcase size={17} />}><div className="space-y-4">{profile.experiences?.map((e, i) => <div key={i} className="border-l-2 border-primary/25 pl-3"><h4 className="text-sm font-semibold">{e.title}</h4>{e.subtitle && <p className="text-sm text-muted-foreground">{e.subtitle}</p>}<p className="text-xs text-muted-foreground mt-1">{e.period}</p>{e.description && <p className="text-sm leading-relaxed mt-2 whitespace-pre-line">{e.description}</p>}</div>)}</div></Section>}
+        {skills.length > 0 && <Section title="Skills"><div className="flex flex-wrap gap-2">{skills.map((s, i) => <Badge key={i} variant="outline" className="bg-primary/5 text-foreground py-1.5 px-3 break-words">{s}</Badge>)}</div></Section>}
+        {Boolean(profile.languages?.length) && <Section title="Languages" icon={<Globe size={17} />}><p className="text-sm">{profile.languages?.join(' · ')}</p></Section>}
+        {Boolean(profile.education?.length) && <Section title="Education" icon={<GraduationCap size={17} />}><div className="space-y-3">{profile.education?.map((e, i) => <div key={i}><h4 className="text-sm font-semibold">{e.title}</h4><p className="text-sm text-muted-foreground">{e.description}</p><p className="text-xs text-muted-foreground mt-1">{e.period}</p></div>)}</div></Section>}
+        {profile.achievements?.some(a => a.isFeatured) && <Section title="Featured achievements" icon={<Award size={17} />}><div className="space-y-3">{profile.achievements.filter(a => a.isFeatured).map((a, i) => <div key={i}><h4 className="text-sm font-semibold">{a.title}</h4><p className="text-sm text-muted-foreground">{a.description}</p></div>)}</div></Section>}
+        {profile.professional_goal && <Section title="Professional goal"><p className="text-sm text-muted-foreground">{profile.professional_goal}</p></Section>}
+        {profile.biggest_challenge && <Section title="Biggest challenge"><p className="text-sm text-muted-foreground">{profile.biggest_challenge}</p></Section>}
+      </div>
+      <div className="discovery-sheet-footer !p-0 border-t border-border"><CandidateActions disabled={disabled} onAction={onAction} /></div>
+    </DrawerContent>
+  </Drawer>;
 }
-
-function Section({
-  title,
-  icon,
-  children,
-}: {
-  title: string;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="mb-5">
-      <h4 className="font-semibold text-foreground text-sm mb-2.5 flex items-center gap-2">
-        {icon}
-        {title}
-      </h4>
-      {children}
-    </div>
-  );
+function Section({ title, icon, children }: { title: string; icon?: React.ReactNode; children: React.ReactNode }) {
+  return <section className="py-5 border-t border-border"><h3 className="text-base font-bold mb-3 flex items-center gap-2">{icon}{title}</h3>{children}</section>;
 }

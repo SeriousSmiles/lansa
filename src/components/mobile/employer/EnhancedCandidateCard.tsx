@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Award, User, ChevronUp, Sparkles } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { DiscoveryProfile } from "@/services/discoveryService";
-import { SwipeOverlayIndicator } from "./SwipeOverlayIndicator";
-import { matchSummaryService } from "@/services/matchSummaryService";
+import { useState } from 'react';
+import { MapPin, BadgeCheck, ArrowUpRight, Briefcase } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import type { DiscoveryProfile } from '@/services/discoveryService';
+import { initials, skillNames } from './mobileDiscoveryModel';
 
 interface EnhancedCandidateCardProps {
   profile: DiscoveryProfile;
@@ -15,161 +13,41 @@ interface EnhancedCandidateCardProps {
   onTapExpand?: () => void;
   stackPosition?: number;
   userId?: string;
+  disabled?: boolean;
 }
 
-export function EnhancedCandidateCard({
-  profile,
-  className,
-  swipeDirection = null,
-  swipeProgress = 0,
-  onTapExpand,
-  stackPosition = 0,
-  userId,
-}: EnhancedCandidateCardProps) {
-  const [aiSummary, setAiSummary] = useState<string | null>(null);
-  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
-
-  const skillNames: string[] = Array.isArray(profile.skills)
-    ? profile.skills.map((s: any) => (typeof s === 'string' ? s : s?.name)).filter(Boolean).slice(0, 5)
-    : [];
-
-  const accentColor = profile.highlight_color || 'hsl(var(--primary))';
-  const coverColor = profile.cover_color || accentColor;
-
-  // Only fetch AI summary for the top card
-  useEffect(() => {
-    if (stackPosition !== 0 || !userId) return;
-    setIsLoadingSummary(true);
-    matchSummaryService.getMatchSummary(userId, profile)
-      .then(summary => setAiSummary(summary))
-      .finally(() => setIsLoadingSummary(false));
-  }, [stackPosition, userId, profile.user_id]);
-
-  // Stack visual offsets
-  const stackScale = 1 - stackPosition * 0.04;
-  const stackY = stackPosition * 8;
-  const stackOpacity = stackPosition === 0 ? 1 : stackPosition === 1 ? 0.7 : 0.4;
-
-  const handleContentTap = () => {
-    if (swipeProgress < 0.1 && onTapExpand) {
-      onTapExpand();
-    }
-  };
-
-  const summaryText = aiSummary || (stackPosition === 0 ? matchSummaryService.generateFallbackSummary(profile) : null);
-
-  return (
-    <div
-      className={cn(
-        "absolute inset-0 rounded-2xl shadow-xl overflow-hidden bg-card border border-border/30 flex flex-col select-none",
-        stackPosition === 0 && "z-10",
-        stackPosition === 1 && "z-[5]",
-        stackPosition === 2 && "z-0",
-        className
-      )}
-      style={{
-        transform: `translateY(${stackY}px) scale(${stackScale})`,
-        opacity: stackOpacity,
-        pointerEvents: stackPosition === 0 ? 'auto' : 'none',
-      }}
-    >
-      {/* Swipe overlay indicator - only on top card */}
-      {stackPosition === 0 && (
-        <SwipeOverlayIndicator direction={swipeDirection} progress={swipeProgress} />
-      )}
-
-      {/* Cover header */}
-      <div
-        className="relative p-5 pb-14 flex-shrink-0"
-        style={{ background: `linear-gradient(150deg, ${coverColor}ee 0%, ${accentColor}cc 60%, ${accentColor}99 100%)` }}
-      >
-        {profile.isCertified && (
-          <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
-            <Award className="w-3.5 h-3.5 text-white" />
-            <span className="text-[10px] font-bold text-white tracking-wide">CERTIFIED</span>
-          </div>
-        )}
-        <div className="flex items-start gap-4">
-          <Avatar className="w-16 h-16 ring-4 ring-white/30 shadow-lg flex-shrink-0">
-            <AvatarImage src={profile.profile_image} alt={profile.name} />
-            <AvatarFallback style={{ backgroundColor: accentColor }} className="text-white text-xl font-semibold">
-              {profile.name?.charAt(0) || <User className="w-8 h-8" />}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0 text-white">
-            <h2 className="text-xl font-bold truncate">{profile.name}</h2>
-            <p className="text-white/90 text-sm truncate">{profile.title}</p>
-            {profile.location && (
-              <p className="text-white/70 text-xs flex items-center gap-1 mt-1">
-                <MapPin className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">{profile.location}</span>
-              </p>
-            )}
-          </div>
+export function EnhancedCandidateCard({ profile, className, swipeDirection, swipeProgress = 0, onTapExpand, stackPosition = 0, disabled }: EnhancedCandidateCardProps) {
+  const [photoFailed, setPhotoFailed] = useState(false);
+  const hasPhoto = Boolean(profile.profile_image) && !photoFailed;
+  const skills = skillNames(profile).slice(0, 3);
+  const experience = profile.experiences?.find(e => e.title?.trim());
+  return <article aria-label={stackPosition ? undefined : `${profile.name}, ${profile.title}`} aria-hidden={stackPosition > 0 || undefined}
+    className={cn('discovery-portrait', stackPosition > 0 && 'discovery-portrait-next', className)}>
+    {hasPhoto ? <img src={profile.profile_image} alt="" draggable={false} className="discovery-photo"
+      onError={() => setPhotoFailed(true)} onLoad={event => {
+        if (event.currentTarget.naturalWidth < 160 || event.currentTarget.naturalHeight < 160) setPhotoFailed(true);
+      }} /> : <div className="discovery-monogram" aria-hidden="true"><span>{initials(profile.name)}</span><Briefcase size={28} /></div>}
+    {hasPhoto && <div className="discovery-photo-scrim" />}
+    {profile.isCertified && <div className="discovery-cert"><BadgeCheck size={15} aria-hidden="true" /><span>Lansa certified</span></div>}
+    {stackPosition === 0 && swipeDirection && swipeProgress > 0.12 && <div className={cn('discovery-stamp', swipeDirection === 'left' ? 'discovery-stamp-pass' : 'discovery-stamp-interest')} aria-live="off">
+      {swipeDirection === 'left' ? 'PASS' : 'INTERESTED'}
+    </div>}
+    <div className="discovery-identity">
+      <h2>{profile.name}</h2>
+      {profile.title && <p className="discovery-role">{profile.title}</p>}
+      {profile.location && <p className="discovery-location"><MapPin size={13} aria-hidden="true" /><span>{profile.location}</span></p>}
+      <div className="discovery-evidence">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs font-semibold text-muted-foreground">{skills.length ? 'Professional strengths' : experience ? 'Experience highlight' : 'Professional profile'}</span>
+          {onTapExpand && <Button variant="ghost" disabled={disabled} className="discovery-profile-button" onPointerDown={e => e.stopPropagation()} onClick={onTapExpand}>
+            View profile <ArrowUpRight size={15} aria-hidden="true" />
+          </Button>}
         </div>
-      </div>
-
-      {/* Content body — tappable to open drawer */}
-      <div
-        className="flex-1 relative -mt-6 rounded-t-2xl bg-card flex flex-col overflow-hidden cursor-pointer"
-        onClick={handleContentTap}
-      >
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
-
-          {/* Skills chips */}
-          {skillNames.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {skillNames.map((skill, i) => (
-                <Badge
-                  key={i}
-                  variant="secondary"
-                  className="text-[11px] font-medium px-2.5 py-0.5"
-                  style={{
-                    backgroundColor: `${accentColor}18`,
-                    borderColor: `${accentColor}30`,
-                    color: accentColor,
-                  }}
-                >
-                  {skill}
-                </Badge>
-              ))}
-            </div>
-          )}
-
-          {/* AI Match Insight */}
-          <div
-            className="rounded-xl p-3.5"
-            style={{ backgroundColor: `${accentColor}10`, border: `1px solid ${accentColor}30` }}
-          >
-            <div className="flex items-center gap-1.5 mb-2">
-              <Sparkles className="w-3.5 h-3.5 flex-shrink-0" style={{ color: accentColor }} />
-              <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: accentColor }}>
-                Why this match?
-              </span>
-            </div>
-            {isLoadingSummary ? (
-              <div className="space-y-1.5">
-                <div className="h-3 bg-muted/60 rounded animate-pulse w-full" />
-                <div className="h-3 bg-muted/60 rounded animate-pulse w-5/6" />
-                <div className="h-3 bg-muted/60 rounded animate-pulse w-3/4" />
-              </div>
-            ) : (
-              <p className="text-sm text-foreground/85 leading-relaxed">
-                {summaryText}
-              </p>
-            )}
-          </div>
-
-        </div>
-
-        {/* Tap to expand — sticky footer */}
-        {onTapExpand && stackPosition === 0 && (
-          <div className="flex-shrink-0 w-full py-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground border-t border-border/30 bg-card">
-            <ChevronUp className="w-3.5 h-3.5" />
-            <span>Tap to see full profile</span>
-          </div>
-        )}
+        {skills.length ? <ul className="discovery-skills">{skills.map((skill, i) => <li key={i}>{skill}</li>)}</ul>
+          : experience ? <div className="text-sm"><p className="font-semibold line-clamp-2">{experience.title}</p>{experience.subtitle && <p className="text-xs text-muted-foreground truncate">{experience.subtitle}</p>}</div>
+          : profile.about_text ? <p className="text-sm line-clamp-2">{profile.about_text}</p>
+          : <p className="text-sm text-muted-foreground">{profile.title || profile.name}</p>}
       </div>
     </div>
-  );
+  </article>;
 }

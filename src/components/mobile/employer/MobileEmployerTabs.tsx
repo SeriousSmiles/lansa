@@ -1,25 +1,22 @@
-import { useState, useEffect, useRef } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState, useEffect } from "react";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Briefcase, BarChart3, Plus, Eye, CheckCircle2, XCircle, Settings, RefreshCw, Mail } from "lucide-react";
+import { LayoutDashboard, Users, Briefcase, Plus, Eye, CheckCircle2, XCircle, RefreshCw, Mail } from "lucide-react";
 import { MobileEmployerDashboard } from "./MobileEmployerDashboard";
 import { MobileCandidateBrowser } from "./MobileCandidateBrowser";
+import { MobileChatInbox } from "@/components/chat/mobile/MobileChatInbox";
 import { MobileJobCreator } from "./MobileJobCreator";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { useOrgPermissions } from "@/hooks/useOrgPermissions";
 import { useUnreadChatCount } from "@/hooks/useUnreadChatCount";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { discoveryService } from "@/services/discoveryService";
-import { swipeService } from "@/services/swipeService";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { matchService } from "@/services/matchService";
 import { jobPostingService, type JobListing } from "@/services/jobPostingService";
-import type { DiscoveryProfile } from "@/services/discoveryService";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { gsap } from "gsap";
 import { ApplicationsSheet } from "@/components/employer/ApplicationsSheet";
 
 interface BusinessData {
@@ -27,6 +24,7 @@ interface BusinessData {
   business_size: string;
   role_function: string;
   business_services: string;
+  company_logo?: string;
 }
 
 interface EmployerStats {
@@ -46,11 +44,18 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
   const { canManageOrgSettings } = useOrgPermissions();
   const navigate = useNavigate();
   const unreadCount = useUnreadChatCount();
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab');
+  const activeTab = searchParams.has('jobId') ? 'jobs' : requestedTab === 'messages' || requestedTab === 'inbox' ? 'messages' : requestedTab === 'overview' || requestedTab === 'dashboard' ? 'dashboard' : requestedTab === 'applications' || requestedTab === 'jobs' ? 'jobs' : requestedTab === 'analytics' ? 'analytics' : 'candidates';
+  const setActiveTab = (tab: string) => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.set('tab', tab === 'dashboard' ? 'overview' : tab === 'candidates' ? 'discover' : tab);
+      next.delete('jobId');
+      return next;
+    });
+  };
   const [showJobCreator, setShowJobCreator] = useState(false);
-  const [showCandidateBrowser, setShowCandidateBrowser] = useState(false);
-  const [isAtBottom, setIsAtBottom] = useState(false);
-  const navRef = useRef<HTMLDivElement>(null);
   
   // Data states
   const [stats, setStats] = useState<EmployerStats>({
@@ -59,8 +64,6 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
     candidatesViewed: 0,
     newMatches: 0
   });
-  const [candidates, setCandidates] = useState<DiscoveryProfile[]>([]);
-  const [isLoadingCandidates, setIsLoadingCandidates] = useState(false);
   const [jobs, setJobs] = useState<JobListing[]>([]);
   const [isLoadingJobs, setIsLoadingJobs] = useState(false);
   const [isRefreshingStats, setIsRefreshingStats] = useState(false);
@@ -80,49 +83,13 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
     }
   }, [user?.id, activeTab]);
 
-  // Scroll detection for navigation animation
   useEffect(() => {
-    const handleScroll = (e: Event) => {
-      const target = e.target as HTMLElement;
-      const scrollTop = target.scrollTop;
-      const scrollHeight = target.scrollHeight;
-      const clientHeight = target.clientHeight;
-      
-      // Check if scrolled to within 50px of bottom
-      const isBottom = scrollHeight - scrollTop - clientHeight < 50;
-      
-      if (isBottom !== isAtBottom) {
-        setIsAtBottom(isBottom);
-        
-        // GSAP animation
-        if (navRef.current) {
-          if (isBottom) {
-            // Animate to footer mode
-            gsap.to(navRef.current, {
-              position: 'relative',
-              bottom: 0,
-              opacity: 0.95,
-              duration: 0.3,
-              ease: "power2.out"
-            });
-          } else {
-            // Animate back to fixed mode
-            gsap.to(navRef.current, {
-              position: 'fixed',
-              opacity: 1,
-              duration: 0.3,
-              ease: "power2.out"
-            });
-          }
-        }
-      }
-    };
-
-    const scrollContainer = document.querySelector('.employer-scroll-container');
-    scrollContainer?.addEventListener('scroll', handleScroll);
-    
-    return () => scrollContainer?.removeEventListener('scroll', handleScroll);
-  }, [isAtBottom]);
+    const jobId = searchParams.get('jobId');
+    if (!jobId) return;
+    setSelectedJobId(jobId);
+    setSelectedJobTitle(jobs.find(job => job.id === jobId)?.title || 'Job applications');
+    setShowApplicationsSheet(true);
+  }, [searchParams, jobs]);
 
   const loadEmployerStats = async () => {
     if (!user?.id || !activeOrganization?.id) return;
@@ -179,75 +146,14 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
     }
   };
 
-  const loadCandidates = async () => {
-    if (!user?.id) return;
+  const handleCreateJob = () => setShowJobCreator(true);
+  const handleBrowseCandidates = () => setActiveTab('candidates');
 
-    try {
-      setIsLoadingCandidates(true);
-      const profiles = await discoveryService.getDiscoveryProfiles(user.id, 'employee');
-      setCandidates(profiles);
-    } catch (error) {
-      console.error('Error loading candidates:', error);
-      toast.error("Failed to load candidates");
-    } finally {
-      setIsLoadingCandidates(false);
-    }
-  };
-
-  const handleCreateJob = () => {
-    setShowJobCreator(true);
-  };
-
-  const handleBrowseCandidates = async () => {
-    await loadCandidates();
-    setShowCandidateBrowser(true);
-  };
-
-  const handleJobCreated = async (jobData: any) => {
-    if (!user?.id) return;
-
-    try {
-      // Map mobile job creator output to JobFormData
-      const jobFormData = {
-        title: jobData.title,
-        description: jobData.description,
-        location: jobData.location || '',
-        jobType: jobData.jobType || 'full_time',
-        workType: jobData.workType || 'remote',
-        salaryMin: jobData.salaryMin || '',
-        salaryMax: jobData.salaryMax || '',
-        currency: jobData.currency || 'USD',
-        requirements: jobData.requirements || [],
-        benefits: jobData.benefits || [],
-        skills: jobData.skills || [],
-        experienceLevel: jobData.experienceLevel || 'entry',
-        isRemote: jobData.isRemote ?? true,
-        isActive: jobData.isActive ?? true,
-        targetUserTypes: jobData.targetUserTypes || ['job_seeker'],
-        category: jobData.category || 'technology',
-        expiresAt: jobData.expiresAt,
-        jobImage: jobData.jobImage,
-        jobImageUrl: jobData.jobImageUrl
-      };
-
-      if (!activeOrganization?.id) {
-        toast.error("Organization context is required");
-        return;
-      }
-
-      const result = await jobPostingService.createJobListing(user.id, activeOrganization.id, jobFormData);
-
-      if (result) {
-        toast.success("Job posted successfully!");
-        setShowJobCreator(false);
-        await Promise.all([loadEmployerStats(), loadJobs()]); // Refresh stats and job list
-      } else {
-        throw new Error("Failed to create job listing");
-      }
-    } catch (error) {
-      console.error('Error creating job:', error);
-      toast.error("Failed to post job");
-    }
+  // JobPostingWizard owns persistence; completion here only refreshes its result.
+  const handleJobCreated = async () => {
+    setShowJobCreator(false);
+    setActiveTab('jobs');
+    await Promise.all([loadEmployerStats(), loadJobs()]);
   };
 
   const handleToggleJobStatus = async (jobId: string, currentStatus: boolean) => {
@@ -260,37 +166,6 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
     } catch (error) {
       console.error('Error toggling job status:', error);
       toast.error("Failed to update job status");
-    }
-  };
-
-  const handleCandidateSwipe = async (profile: DiscoveryProfile, direction: 'left' | 'right' | 'nudge') => {
-    if (!user?.id) return;
-
-    try {
-      await swipeService.recordSwipe({
-        swiper_user_id: user.id,
-        target_user_id: profile.user_id,
-        direction: direction === 'right' ? 'right' : direction === 'nudge' ? 'nudge' : 'left',
-        context: 'employee',
-      });
-
-      if (direction === 'right' || direction === 'nudge') {
-        const isMatch = await swipeService.checkForMatch(
-          user.id,
-          profile.user_id,
-          'employee'
-        );
-
-        if (isMatch) {
-          toast.success("It's a match! 🎉");
-          setStats(prev => ({ ...prev, newMatches: prev.newMatches + 1 }));
-        }
-      }
-
-      setStats(prev => ({ ...prev, candidatesViewed: prev.candidatesViewed + 1 }));
-    } catch (error) {
-      console.error('Error recording swipe:', error);
-      toast.error("Failed to record action");
     }
   };
 
@@ -307,27 +182,18 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
     );
   }
 
-  if (showCandidateBrowser) {
-    return (
-      <MobileCandidateBrowser
-        userId={user?.id || ""}
-        onBack={() => setShowCandidateBrowser(false)}
-      />
-    );
-  }
-
   return (
-    <div className="employer-theme h-full bg-background">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
-        {/* Tab Content */}
-        <div className={`h-[calc(100vh-64px)] overflow-y-auto employer-scroll-container ${isAtBottom ? 'pb-2' : 'pb-20'}`}>
-          <TabsContent value="dashboard" className="h-full m-0">
+    <div className="employer-theme employer-phone">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
+        <div className={`flex-1 min-h-0 ${activeTab === 'candidates' || activeTab === 'messages' ? 'overflow-hidden flex flex-col' : 'overflow-y-auto overscroll-contain'} employer-scroll-container`}>
+          <TabsContent value="dashboard" className="m-0">
             <div className="md:hidden">
               <div className="sticky top-0 z-10 bg-background border-b px-4 py-3 flex items-center justify-between">
-                <h2 className="text-xl font-bold">Dashboard</h2>
+                <h2 className="text-xl font-bold">Hiring workspace</h2>
                 <Button
                   variant="ghost"
                   size="sm"
+                  aria-label="Refresh hiring workspace"
                   onClick={loadEmployerStats}
                   disabled={isRefreshingStats}
                 >
@@ -342,11 +208,12 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
                 onBrowseCandidates={handleBrowseCandidates}
                 onManageJobs={() => setActiveTab('jobs')}
                 onViewAnalytics={() => setActiveTab('analytics')}
+                canManageOrgSettings={canManageOrgSettings}
               />
             </div>
           </TabsContent>
 
-          <TabsContent value="jobs" className="h-full m-0 p-4">
+          <TabsContent value="jobs" className="m-0 p-4">
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold">Job Postings</h2>
@@ -354,6 +221,7 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
                   <Button
                     variant="ghost"
                     size="sm"
+                    aria-label="Refresh jobs"
                     onClick={loadJobs}
                     disabled={isLoadingJobs}
                   >
@@ -449,45 +317,17 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="candidates" className="h-full m-0 p-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold">Browse Candidates</h2>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <Card>
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-foreground">{stats.newMatches}</div>
-                    <p className="text-xs text-muted-foreground">Matches</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-foreground">{stats.candidatesViewed}</div>
-                    <p className="text-xs text-muted-foreground">Reviewed</p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="font-semibold mb-2">Discover Talent</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Browse through qualified candidates and find your next hire
-                  </p>
-                  <Button onClick={handleBrowseCandidates} className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground">
-                    Start Browsing
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+          <TabsContent value="candidates" className="flex-1 min-h-0 m-0 data-[state=active]:flex flex-col">
+            {user?.id && <MobileCandidateBrowser userId={user.id} onBack={() => setActiveTab('dashboard')} employerName={businessData?.company_name || activeOrganization?.name} employerAvatar={businessData?.company_logo || activeOrganization?.logo_url || undefined} />}
           </TabsContent>
 
-          <TabsContent value="analytics" className="h-full m-0 p-4">
+          <TabsContent value="messages" className="flex-1 min-h-0 m-0 data-[state=active]:flex flex-col">
+            <MobileChatInbox embedded activeThreadId={null} onSelectThread={id => navigate(`/chat/${id}`)} onBack={() => setActiveTab('candidates')} />
+          </TabsContent>
+
+          <TabsContent value="analytics" className="m-0 p-4">
             <div className="space-y-4">
-              <h2 className="text-xl font-bold">Analytics</h2>
+              <div className="flex items-center justify-between"><h2 className="text-2xl font-black">Analytics</h2><Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Refresh analytics" disabled={isRefreshingStats} onClick={loadEmployerStats}><RefreshCw size={20} /></Button></div>
               
               <div className="grid grid-cols-2 gap-4">
                 <Card>
@@ -495,7 +335,7 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
                     <CardTitle className="text-sm">Active Jobs</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <div className="text-2xl font-bold">{stats.activeJobs}</div>
+                    <div className="text-4xl font-black">{stats.activeJobs}</div>
                   </CardContent>
                 </Card>
 
@@ -504,7 +344,7 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
                     <CardTitle className="text-sm">Candidates Viewed</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <div className="text-2xl font-bold">{stats.candidatesViewed}</div>
+                    <div className="text-4xl font-black">{stats.candidatesViewed}</div>
                   </CardContent>
                 </Card>
 
@@ -513,7 +353,7 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
                     <CardTitle className="text-sm">Matches</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <div className="text-2xl font-bold">{stats.newMatches}</div>
+                    <div className="text-4xl font-black">{stats.newMatches}</div>
                   </CardContent>
                 </Card>
 
@@ -522,78 +362,21 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
                     <CardTitle className="text-sm">Applications</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <div className="text-2xl font-bold">{stats.totalApplications}</div>
+                    <div className="text-4xl font-black">{stats.totalApplications}</div>
                   </CardContent>
                 </Card>
               </div>
 
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="font-semibold mb-2">Detailed Analytics</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Advanced analytics features coming soon
-                  </p>
-                </CardContent>
-              </Card>
             </div>
           </TabsContent>
         </div>
 
-        {/* Bottom Tab Navigation - Phase 4: Added Settings Tab */}
-        <TabsList 
-          ref={navRef}
-          className={`fixed bottom-0 left-0 right-0 h-16 bg-white shadow-lg px-4 py-2 flex justify-between items-center ${canManageOrgSettings ? 'gap-1' : 'gap-2'}`}
-          style={{ maxWidth: '100vw' }}
-        >
-          <TabsTrigger 
-            value="dashboard" 
-            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-white text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-          >
-            <LayoutDashboard className="h-7 w-7" />
-          </TabsTrigger>
-          <TabsTrigger 
-            value="jobs" 
-            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-white text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-          >
-            <Briefcase className="h-7 w-7" />
-          </TabsTrigger>
-          <TabsTrigger 
-            value="candidates" 
-            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-white text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-          >
-            <Users className="h-7 w-7" />
-          </TabsTrigger>
-          <TabsTrigger 
-            value="analytics" 
-            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-white text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-          >
-            <BarChart3 className="h-7 w-7" />
-          </TabsTrigger>
-          <TabsTrigger 
-            value="messages" 
-            onClick={() => navigate('/chat')}
-            className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-white text-gray-700 hover:text-gray-900 hover:bg-gray-100 relative"
-          >
-              <div className="relative">
-              <Mail className="h-7 w-7" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-2 -right-2 h-4 w-4 bg-destructive text-white text-xs rounded-full flex items-center justify-center">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-            </div>
-          </TabsTrigger>
-          {canManageOrgSettings && (
-            <TabsTrigger 
-              value="settings" 
-              onClick={() => navigate('/organization/settings')}
-              className="flex-1 flex items-center justify-center h-full rounded-lg transition-all shadow-sm data-[state=active]:shadow-md data-[state=active]:bg-primary data-[state=active]:text-white text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-            >
-              <Settings className="h-7 w-7" />
-            </TabsTrigger>
-          )}
-        </TabsList>
+        <nav className="employer-phone-nav" aria-label="Employer navigation">
+          <Button variant="ghost" aria-current={activeTab === 'candidates' ? 'page' : undefined} className={activeTab === 'candidates' ? 'text-primary' : 'text-muted-foreground'} onClick={() => setActiveTab('candidates')}><Users size={23} /><span>Discover</span></Button>
+          <Button variant="ghost" aria-current={activeTab === 'jobs' ? 'page' : undefined} className={activeTab === 'jobs' ? 'text-primary' : 'text-muted-foreground'} onClick={() => setActiveTab('jobs')}><Briefcase size={23} /><span>Jobs</span></Button>
+          <Button variant="ghost" aria-label="Inbox" aria-current={activeTab === 'messages' ? 'page' : undefined} className={activeTab === 'messages' ? 'text-primary relative' : 'text-muted-foreground relative'} onClick={() => setActiveTab('messages')}><span className="relative"><Mail size={23} />{unreadCount > 0 && <span className="employer-unread">{unreadCount > 9 ? '9+' : unreadCount}</span>}</span><span>Inbox</span>{unreadCount > 0 && <span className="sr-only">{unreadCount} unread messages</span>}</Button>
+          <Button variant="ghost" aria-current={activeTab === 'dashboard' || activeTab === 'analytics' ? 'page' : undefined} className={activeTab === 'dashboard' || activeTab === 'analytics' ? 'text-primary' : 'text-muted-foreground'} onClick={() => setActiveTab('dashboard')}><LayoutDashboard size={23} /><span>Home</span></Button>
+        </nav>
       </Tabs>
 
       {/* Applications Sheet */}
@@ -602,7 +385,10 @@ export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
           jobId={selectedJobId}
           jobTitle={selectedJobTitle}
           open={showApplicationsSheet}
-          onOpenChange={setShowApplicationsSheet}
+          onOpenChange={open => {
+            setShowApplicationsSheet(open);
+            if (!open && searchParams.has('jobId')) setSearchParams(prev => { const next = new URLSearchParams(prev); next.delete('jobId'); return next; }, { replace: true });
+          }}
         />
       )}
     </div>

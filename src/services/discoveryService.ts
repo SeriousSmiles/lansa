@@ -48,63 +48,68 @@ export const discoveryService = {
     context: SwipeContext, 
     filters: DiscoveryFilters = {},
     limit: number = 10,
-    certifiedOnly: boolean = false
+    certifiedOnly: boolean = false,
+    strictErrors: boolean = false
   ): Promise<DiscoveryProfile[]> {
     try {
       // Step 1: Fetch already-swiped candidate IDs to exclude them
-      const { data: swipeHistory } = await supabase
+      const { data: swipeHistory, error: historyError } = await supabase
         .from('swipes')
         .select('target_user_id')
         .eq('swiper_user_id', userId)
         .eq('context', context);
 
+      if (strictErrors && historyError) throw historyError;
       const swipedIds = swipeHistory?.map(s => s.target_user_id) || [];
 
-      // Step 2: Fetch profiles, excluding already-swiped ones and self
-      console.log('Fetching profiles from user_profiles_public, certifiedOnly:', certifiedOnly, 'excluding', swipedIds.length, 'swiped profiles');
-      
-      let query = supabase
-        .from('user_profiles_public')
-        .select('*')
-        .neq('user_id', userId)
-        .limit(limit);
-
-      // Exclude already-swiped candidates
-      if (swipedIds.length > 0) {
-        query = query.not('user_id', 'in', `(${swipedIds.join(',')})`);
-      }
-
-      const { data: publicProfiles, error } = await query;
-
-      console.log('Query result:', { data: publicProfiles, error });
-
-      if (error) {
-        console.error('Error fetching discovery profiles:', error);
-        throw new Error(`Failed to fetch candidates: ${error.message}`);
-      }
-
-      if (!publicProfiles || publicProfiles.length === 0) {
-        console.log('No profiles returned from user_profiles_public');
-        return [];
-      }
-
-      if (publicProfiles && publicProfiles.length > 0) {
-        // Always fetch certification data so we can show badges
-        let certifiedUserIds: Set<string> = new Set();
-        {
-          const { data: certifications, error: certError } = await supabase
-            .from('user_certifications')
-            .select('user_id, lansa_certified, verified')
-            .eq('lansa_certified', true)
-            .eq('verified', true);
-
-          if (certError) {
-            console.error('Error fetching certifications:', certError);
-          } else if (certifications) {
-            certifiedUserIds = new Set(certifications.map(cert => cert.user_id));
-          }
+      // Mobile scans a stable, bounded page at a time before applying the display limit.
+      // Otherwise uncertified or non-matching rows in the first page can create a false empty state.
+      const certifiedUserIds = new Set<string>();
+      const loadCertifications = async () => {
+        let offset = 0;
+        do {
+          let certQuery = supabase.from('user_certifications').select('user_id, lansa_certified, verified').eq('lansa_certified', true).eq('verified', true);
+          if (strictErrors) certQuery = certQuery.order('user_id').range(offset, offset + 199);
+          const { data, error } = await certQuery;
+          if (error) { if (strictErrors) throw error; console.error('Error fetching certifications:', error); return; }
+          data?.forEach(cert => certifiedUserIds.add(cert.user_id));
+          if (!strictErrors || !data || data.length < 200) break;
+          offset += 200;
+        } while (true);
+      };
+      if (strictErrors) await loadCertifications();
+      const makeQuery = () => {
+        let query = supabase.from('user_profiles_public').select('*').neq('user_id', userId);
+        if (swipedIds.length) query = query.not('user_id', 'in', `(${swipedIds.join(',')})`);
+        return query;
+      };
+      const first = await (strictErrors ? makeQuery().order('user_id').range(0, 99) : makeQuery().limit(limit));
+      if (first.error) throw first.error;
+      const publicProfiles = [...(first.data || [])];
+      if (strictErrors) {
+        let batchLength = first.data?.length || 0;
+        let offset = 100;
+        const requestedSkills = filters.skills || [];
+        const isEligible = (profile: typeof publicProfiles[number]) => {
+          if (!profile.name?.trim() || (certifiedOnly && !certifiedUserIds.has(profile.user_id))) return false;
+          if (!requestedSkills.length) return true;
+          const skills: unknown[] = Array.isArray(profile.skills) ? profile.skills : [];
+          return requestedSkills.some(skill => skills.some(value => {
+            const name = typeof value === 'string' ? value : value && typeof value === 'object' && 'name' in value ? value.name : null;
+            return typeof name === 'string' && name.toLowerCase().includes(skill.toLowerCase());
+          }));
+        };
+        while (batchLength === 100 && publicProfiles.filter(isEligible).length < limit) {
+          const batch = await makeQuery().order('user_id').range(offset, offset + 99);
+          if (batch.error) throw batch.error;
+          publicProfiles.push(...(batch.data || []));
+          batchLength = batch.data?.length || 0;
+          offset += 100;
         }
-
+      }
+      if (!publicProfiles.length) return [];
+      if (!strictErrors) await loadCertifications();
+      {
         // Convert database records to DiscoveryProfile format
         const discoveryProfiles: DiscoveryProfile[] = publicProfiles
           .filter(profile => {
@@ -135,7 +140,7 @@ export const discoveryService = {
             isCertified: certifiedOnly ? true : certifiedUserIds.has(profile.user_id),
             experiences: Array.isArray(profile.experiences)
               ? profile.experiences
-                  .slice(0, 3)
+                  .slice(0, strictErrors ? undefined : 3)
                   .map((exp: any) => ({
                     title: exp.title || '',
                     subtitle: exp.company || '',
@@ -173,20 +178,21 @@ export const discoveryService = {
         let filteredProfiles = discoveryProfiles;
         if (filters.skills && filters.skills.length > 0) {
           filteredProfiles = discoveryProfiles.filter(profile =>
-            filters.skills!.some(skill => 
+            (filters.skills || []).some(skill => 
               profile.skills.some(profileSkill => 
-                profileSkill.toLowerCase().includes(skill.toLowerCase())
+                typeof profileSkill === 'string' && profileSkill.toLowerCase().includes(skill.toLowerCase())
               )
             )
           );
         }
 
-        return filteredProfiles;
+        return strictErrors ? filteredProfiles.slice(0, limit) : filteredProfiles;
       }
 
       return [];
     } catch (error) {
       console.error('Error fetching discovery profiles:', error);
+      if (strictErrors) throw error;
       return [];
     }
   },

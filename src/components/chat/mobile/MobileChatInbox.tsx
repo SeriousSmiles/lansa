@@ -8,12 +8,14 @@ import { MessageCircle, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ChatThread } from "@/services/chatService";
 import { useUserState } from "@/contexts/UserStateProvider";
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
 interface MobileChatInboxProps {
   activeThreadId: string | null;
   onSelectThread: (id: string) => void;
   onBack: () => void;
+  embedded?: boolean;
 }
 
 function ThreadRow({
@@ -97,6 +99,7 @@ export function MobileChatInbox({
   activeThreadId,
   onSelectThread,
   onBack,
+  embedded = false,
 }: MobileChatInboxProps) {
   const { user } = useAuth();
   const { threads, loading, clearUnread } = useChatThreads();
@@ -117,11 +120,11 @@ export function MobileChatInbox({
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#FDF8F2]">
+    <div className={embedded ? "flex flex-col h-full min-h-0 bg-background" : "flex flex-col min-h-screen bg-[#FDF8F2]"}>
       {/* Header */}
-      <div className="px-5 pt-safe-top pb-4 bg-white sticky top-0 z-10 border-b border-border/40">
+      <div className={embedded ? "px-5 py-4 bg-background border-b border-border/40 shrink-0" : "px-5 pt-safe-top pb-4 bg-white sticky top-0 z-10 border-b border-border/40"}>
         <div className="flex items-center gap-2">
-          {userType === 'employer' && (
+          {userType === 'employer' && !embedded && (
             <button
               onClick={() => navigate('/employer-dashboard')}
               className="p-2 -ml-1 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-muted min-w-[44px] min-h-[44px] flex items-center justify-center"
@@ -131,7 +134,7 @@ export function MobileChatInbox({
             </button>
           )}
           <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Messages</h1>
+            <h1 className="text-2xl font-bold text-foreground">{embedded ? "Inbox" : "Messages"}</h1>
             {!loading && threads.length > 0 && (
               <p className="text-xs text-muted-foreground/60">
                 {threads.length} conversation{threads.length !== 1 ? "s" : ""}
@@ -142,8 +145,8 @@ export function MobileChatInbox({
       </div>
 
       {/* Thread List */}
-      <div className="flex-1 divide-y divide-border/30">
-        {threads.length === 0 ? (
+      <div className={embedded ? "flex-1 min-h-0 overflow-y-auto overscroll-contain divide-y divide-border/30" : "flex-1 divide-y divide-border/30"}>
+        {embedded && loading ? <div role="status" className="p-5 space-y-4 animate-pulse"><div className="h-16 bg-primary/10 rounded-lg" /><div className="h-16 bg-primary/10 rounded-lg" /><p className="text-sm text-muted-foreground">Loading conversations…</p></div> : threads.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center px-8 py-24">
             <div className="w-20 h-20 rounded-3xl bg-muted/70 flex items-center justify-center mb-5">
               <MessageCircle className="w-10 h-10 text-muted-foreground/30" />
@@ -152,6 +155,7 @@ export function MobileChatInbox({
             <p className="text-sm text-muted-foreground/70 leading-relaxed max-w-xs">
               Chats open after you and another person both connect.
             </p>
+            {embedded && <Button variant="outline" className="h-12 mt-5" onClick={onBack}>Discover talent</Button>}
           </div>
         ) : (
           threads.map(thread => (

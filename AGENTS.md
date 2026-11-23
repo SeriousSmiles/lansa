@@ -15,3 +15,8 @@
 - Use one ResumeSnapshot for guided content edits, design, save/restore, preview, and export; do not expose the disconnected free-form canvas in this editor because it produces divergent output.
 - Measure document blocks at physical paper size and render fixed-height paginated ResumeDocument sheets for both preview and printing; wait for fonts and images before signalling print readiness to prevent clipped exports.
 - Keep page dimensions and bounded typography/margins in resumeDocumentModel with regression tests so personalization cannot change the physical paper or make body text unreadable.
+# Mobile employer discovery
+- Route mobile direct browse through the guarded employer dashboard and share MobileCandidateBrowser inside one safe-area shell; this keeps discovery, hiring tools, deep links and four fixed destinations consistent without duplicating candidate fetches.
+- Keep mobile deck decisions gated through confirmed persistence and dismissal; target Undo by the returned pass ID and retain match presentation independently of the remaining deck to avoid duplicates, wrong restores and lost final-card matches.
+- Offer only implemented skill filters in the mobile discovery sheet and opt into strict discovery errors on mobile; unsupported filters and failed reads must not masquerade as genuine empty results.
+- Keep JobPostingWizard as the single owner of job creation; mobile completion callbacks only refresh results so one completed wizard cannot submit a second job.

@@ -20,7 +20,7 @@ export const candidateDiscoveryService = {
   ): Promise<DiscoveryProfile[]> {
     // Delegate to the same proven service used by the desktop browser,
     // with certifiedOnly: true to ensure only certified candidates appear
-    return discoveryService.getDiscoveryProfiles(userId, 'employee', filters, limit, true);
+    return discoveryService.getDiscoveryProfiles(userId, 'employee', filters, limit, true, true);
   },
 
   async swipeCandidate(
