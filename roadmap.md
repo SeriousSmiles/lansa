@@ -22,3 +22,9 @@ Validation: changed overview files pass lint; shared employer layout checked at 
 - [x] Verify single decisions, refused-write recovery, exact one-time Undo and responsive presentation without real candidate writes.
 
 Discovery validation: eight focused tests pass; preview build OK; local fixture checks at 320×568, 375×667, 390×844 and 430×932 pass. Checked details, skills filters, retry, refused writes, Undo including the final card, drag feedback, reduced motion, last-card matches, chat destination, applications deep links, pending organization guard, gated settings and fixed navigation. Desktop 1280×1800 smoke check passes with local-only providers. Real-account sessions, live RLS writes and message delivery were deliberately not exercised; no production rows changed and nothing published. Before/after captures and test scripts remain outside source.
+
+## Employer environment redesign
+- [x] Peach/ink employer theme across employer routes; five-tab phone shell with Company tab.
+- [x] Home metrics and vacancies needing attention, Jobs by status with detail sheet, applicant filters and permission-aware decisions, Analytics, native Company and /organization/settings, employer inbox/thread styling.
+- [x] Local-fixture checks at 320, 390, 768 and 1280; owner vs view-only roles; no real writes.
+- [ ] Mobile job editing. Blocker: the existing edit flow creates a new posting instead of updating; needs an update path in JobPostingWizard first.

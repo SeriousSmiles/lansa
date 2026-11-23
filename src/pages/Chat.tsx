@@ -14,22 +14,29 @@ export default function Chat() {
 
   if (isMobile && userType === "employer" && !threadId) return <Navigate to="/employer-dashboard?tab=messages" replace />;
 
+  // Employers get the employer environment; back from a thread returns to the employer Inbox tab.
+  const theme = userType === "employer" ? "employer-theme" : undefined;
+
   if (isMobile) {
     return (
-      <MobileChatInbox
-        activeThreadId={threadId ?? null}
-        onSelectThread={(id) => navigate(`/chat/${id}`)}
-        onBack={() => navigate("/chat")}
-      />
+      <div className={theme}>
+        <MobileChatInbox
+          activeThreadId={threadId ?? null}
+          onSelectThread={(id) => navigate(`/chat/${id}`)}
+          onBack={() => navigate(userType === "employer" ? "/employer-dashboard?tab=messages" : "/chat")}
+        />
+      </div>
     );
   }
 
   return (
-    <PortalPageShell fullBleed>
-      <DesktopChatLayout
-        activeThreadId={threadId ?? null}
-        onSelectThread={(id) => navigate(`/chat/${id}`)}
-      />
-    </PortalPageShell>
+    <div className={theme}>
+      <PortalPageShell fullBleed>
+        <DesktopChatLayout
+          activeThreadId={threadId ?? null}
+          onSelectThread={(id) => navigate(`/chat/${id}`)}
+        />
+      </PortalPageShell>
+    </div>
   );
 }

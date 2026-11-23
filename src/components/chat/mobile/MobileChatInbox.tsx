@@ -52,14 +52,13 @@ function ThreadRow({
         <Avatar className="w-12 h-12">
           <AvatarImage src={avatarSrc} alt={name} />
           <AvatarFallback
-            className="text-sm font-bold text-white"
-            style={{ background: isEmployer ? "#2B7FE8" : "#F2713B" }}
+            className={`text-sm font-bold ${isEmployer ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}
           >
             {initials}
           </AvatarFallback>
         </Avatar>
         {hasUnread && (
-          <span className="absolute top-0 right-0 w-3 h-3 bg-[#F2713B] rounded-full border-2 border-background" />
+          <span className="absolute top-0 right-0 w-3 h-3 bg-secondary rounded-full border-2 border-background" />
         )}
       </div>
 
@@ -74,13 +73,13 @@ function ThreadRow({
           </span>
           <span className={cn(
             "text-[11px] flex-shrink-0 whitespace-nowrap",
-            hasUnread ? "text-[#F2713B] font-medium" : "text-muted-foreground/60"
+            hasUnread ? "text-secondary font-medium" : "text-muted-foreground/60"
           )}>
             {timeAgo}
           </span>
         </div>
         {other?.organization_name && (
-          <p className="text-xs font-semibold truncate mb-0.5" style={{ color: "#2B7FE8" }}>
+          <p className="text-xs font-semibold truncate mb-0.5 text-primary" >
             {other.organization_name}
           </p>
         )}
@@ -120,9 +119,9 @@ export function MobileChatInbox({
   }
 
   return (
-    <div className={embedded ? "flex flex-col h-full min-h-0 bg-background" : "flex flex-col min-h-screen bg-[#FDF8F2]"}>
+    <div className={embedded ? "flex flex-col h-full min-h-0 bg-background" : "flex flex-col min-h-screen bg-background"}>
       {/* Header */}
-      <div className={embedded ? "px-5 py-4 bg-background border-b border-border/40 shrink-0" : "px-5 pt-safe-top pb-4 bg-white sticky top-0 z-10 border-b border-border/40"}>
+      <div className={embedded ? "px-5 py-4 bg-background border-b border-border/40 shrink-0" : "px-5 pt-safe-top pb-4 bg-card sticky top-0 z-10 border-b border-border/40"}>
         <div className="flex items-center gap-2">
           {userType === 'employer' && !embedded && (
             <button

@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { JobPostingWizard } from "@/components/jobs/JobPostingWizard";
 import { JobFormData } from "@/services/jobPostingService";
 
@@ -19,8 +20,9 @@ export function MobileJobCreator({
 }: MobileJobCreatorProps) {
   return (
     <div className="fixed inset-0 z-50 bg-background flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur">
-        <h2 className="font-semibold text-lg">Create Job Posting</h2>
+      <div className="ee-header" style={{ paddingTop: "calc(6px + env(safe-area-inset-top, 0px))" }}>
+        <h1>Post a job</h1>
+        <button type="button" className="ee-icon-btn" aria-label="Close job posting" onClick={onClose}><X size={22} /></button>
       </div>
       <div className="flex-1 overflow-y-auto p-4">
         <JobPostingWizard

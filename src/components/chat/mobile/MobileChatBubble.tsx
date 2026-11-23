@@ -38,8 +38,7 @@ export function MobileChatBubble({
           <Avatar className="w-8 h-8 flex-shrink-0 mb-1">
             <AvatarImage src={senderImage} alt={displayName} />
             <AvatarFallback
-              className="text-[10px] font-bold text-white"
-              style={{ background: isEmployerMessage ? "#2B7FE8" : "#F2713B" }}
+              className={`text-[10px] font-bold ${isEmployerMessage ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}
             >
               {initials}
             </AvatarFallback>
@@ -65,8 +64,8 @@ export function MobileChatBubble({
           className={cn(
             "px-4 py-3 text-[15px] leading-relaxed break-words",
             isSelf
-              ? "bg-[#F2713B] text-white rounded-[20px] rounded-br-[6px] shadow-sm"
-              : "bg-white text-foreground rounded-[20px] rounded-bl-[6px] border border-border/20 shadow-sm"
+              ? "bg-primary text-primary-foreground rounded-[20px] rounded-br-[6px] shadow-sm"
+              : "bg-card text-card-foreground rounded-[20px] rounded-bl-[6px] border border-border/20 shadow-sm"
           )}
         >
           {message.body}

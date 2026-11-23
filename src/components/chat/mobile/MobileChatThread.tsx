@@ -34,12 +34,12 @@ export function MobileChatThread({ threadId, currentUserId, onBack }: MobileChat
 
   return (
     <div
-      className="flex flex-col overflow-hidden bg-[#F4F1ED]"
+      className="flex flex-col overflow-hidden bg-background"
       style={{ height: '100dvh' }}
     >
       {/* Header — fixed at top */}
       <div
-        className="flex items-center gap-2 px-4 pb-4 border-b border-border/40 bg-white flex-shrink-0 shadow-sm z-10"
+        className="flex items-center gap-2 px-4 pb-4 border-b border-border/40 bg-card flex-shrink-0 shadow-sm z-10"
         style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)' }}
       >
         <button
@@ -53,8 +53,7 @@ export function MobileChatThread({ threadId, currentUserId, onBack }: MobileChat
         <Avatar className="w-9 h-9 flex-shrink-0 ring-2 ring-border/40">
           <AvatarImage src={avatarSrc} alt={otherName} />
           <AvatarFallback
-            className="text-xs font-bold text-white"
-            style={{ background: isEmployerThread ? "#2B7FE8" : "#F2713B" }}
+            className={`text-xs font-bold ${isEmployerThread ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}
           >
             {otherInitials}
           </AvatarFallback>
@@ -63,7 +62,7 @@ export function MobileChatThread({ threadId, currentUserId, onBack }: MobileChat
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-foreground text-[15px] leading-tight truncate">{otherName}</p>
           {other?.organization_name && (
-            <p className="text-xs font-medium truncate mt-0.5" style={{ color: "#2B7FE8" }}>
+            <p className="text-xs font-medium truncate mt-0.5 text-primary" >
               {other.organization_name}
             </p>
           )}
@@ -106,7 +105,7 @@ export function MobileChatThread({ threadId, currentUserId, onBack }: MobileChat
 
       {/* Input — fixed at bottom */}
       <div
-        className="px-4 border-t border-border/40 bg-white flex-shrink-0 shadow-[0_-1px_8px_0_rgba(0,0,0,0.06)]"
+        className="px-4 border-t border-border/40 bg-card flex-shrink-0 shadow-[0_-1px_8px_0_rgba(0,0,0,0.06)]"
         style={{ paddingTop: '12px', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
       >
         <ChatInput

@@ -67,7 +67,8 @@ export function TopNavbar({ items, userName, email, onLogout, themeColor }: TopN
           <AnimatedTabNav items={items} themeColor={themeColor} />
           {userType === 'employer' && (
             <>
-              <OrganizationSwitcher />
+              {/* Tablet widths lack room; switching stays available from lg and in Company settings. */}
+              <div className="hidden lg:block"><OrganizationSwitcher /></div>
               {canManageOrgSettings && (
                 <Button
                   variant="ghost"

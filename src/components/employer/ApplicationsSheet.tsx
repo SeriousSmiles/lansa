@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, User, Calendar, FileText, Eye, Clock, CheckCircle, XCircle, Undo2 } from "lucide-react";
+import { Loader2, User, Calendar, FileText, Eye } from "lucide-react";
+import { useOrgPermissions } from "@/hooks/useOrgPermissions";
+import { APPLICATION_STATUS_LABEL, ApplicationStatus } from "@/components/mobile/employer/employerUi";
 import { applicationService, JobApplication } from "@/services/applicationService";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
@@ -22,6 +21,7 @@ export function ApplicationsSheet({ jobId, jobTitle, open, onOpenChange }: Appli
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { canManageApplications } = useOrgPermissions();
   const [selectedApplicantId, setSelectedApplicantId] = useState<string | null>(null);
   const [selectedProfile, setSelectedProfile] = useState<DiscoveryProfile | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -94,124 +94,85 @@ export function ApplicationsSheet({ jobId, jobTitle, open, onOpenChange }: Appli
     setSelectedApplicantId(null);
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'pending': 
-        return <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />;
-      case 'accepted': 
-        return <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />;
-      case 'declined': 
-        return <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />;
-      case 'withdrawn': 
-        return <Undo2 className="h-5 w-5 text-gray-600 dark:text-gray-400" />;
-      default: 
-        return <Clock className="h-5 w-5 text-muted-foreground" />;
-    }
+  const [filter, setFilter] = useState<"all" | JobApplication['status']>("all");
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const visible = filter === "all" ? applications : applications.filter(a => a.status === filter);
+  const countOf = (f: string) => f === "all" ? applications.length : applications.filter(a => a.status === f).length;
+  const decide = async (id: string, status: JobApplication['status']) => {
+    setUpdatingId(id);
+    try { await handleStatusUpdate(id, status); } finally { setUpdatingId(null); }
   };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[85vh]">
-        <SheetHeader>
-          <SheetTitle>Applications for {jobTitle}</SheetTitle>
+      <SheetContent side="bottom" className="employer-theme ee-sheet h-[90dvh] flex flex-col gap-0 p-0">
+        <SheetHeader className="px-5 pt-6 pb-3 text-left">
+          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Applicants</p>
+          <SheetTitle className="ee-title text-2xl font-extrabold leading-tight pr-8 break-words">{jobTitle}</SheetTitle>
         </SheetHeader>
+        <div className="px-5 pb-3">
+          <div className="ee-chips" role="tablist" aria-label="Application status">
+            {(["all", "pending", "accepted", "declined"] as const).map(f => (
+              <button key={f} type="button" role="tab" className="ee-chip" aria-selected={filter === f} onClick={() => setFilter(f)}>
+                {f === "all" ? "All" : APPLICATION_STATUS_LABEL[f]} <span className="opacity-60">{countOf(f)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <div className="flex items-center justify-center flex-1">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-label="Loading applicants" />
           </div>
-        ) : applications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-center">
-            <User className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No applications yet</h3>
-            <p className="text-sm text-muted-foreground">
-              Applications for this job will appear here
-            </p>
-          </div>
+        ) : visible.length === 0 ? (
+          <div className="px-5"><div className="ee-empty">
+            <User className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
+            <h3>{applications.length === 0 ? "No applications yet" : "Nothing in this status"}</h3>
+            <p>{applications.length === 0 ? "Applications for this job will appear here." : "Choose another status to see more applicants."}</p>
+          </div></div>
         ) : (
-          <ScrollArea className="h-[calc(85vh-8rem)] mt-4">
-            <div className="space-y-4">
-              {applications.map((application) => (
-                <div
-                  key={application.id}
-                  className="border rounded-lg p-4 space-y-4"
-                >
-                  <div className="flex items-start gap-3">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={application.applicant?.profile_image || undefined} />
-                      <AvatarFallback>
-                        {application.applicant?.name?.[0]?.toUpperCase() || 'U'}
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 pb-[calc(20px+env(safe-area-inset-bottom))]">
+            <ul className="flex flex-col gap-3">
+              {visible.map((application) => (
+                <li key={application.id} className="ee-group p-4 flex flex-col gap-3">
+                  <button type="button" className="flex items-start gap-3 text-left w-full" onClick={() => handleViewDetails(application.applicant_user_id)} aria-label={`View profile of ${application.applicant?.name || 'applicant'}`}>
+                    <Avatar className="h-14 w-14 rounded-2xl">
+                      <AvatarImage src={application.applicant?.profile_image || undefined} className="object-cover object-[center_25%]" />
+                      <AvatarFallback className="rounded-2xl bg-primary text-primary-foreground font-bold text-lg">
+                        {application.applicant?.name?.[0]?.toUpperCase() || 'A'}
                       </AvatarFallback>
                     </Avatar>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold truncate">
-                    {application.applicant?.name || 'Anonymous User'}
-                  </h4>
-                      {application.applicant?.title && (
-                        <p className="text-sm text-muted-foreground truncate">
-                          {application.applicant.title}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-2 mt-1">
-                        <Calendar className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">
-                          Applied {formatDistanceToNow(new Date(application.created_at), { addSuffix: true })}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex-shrink-0" title={application.status}>
-                      {getStatusIcon(application.status)}
-                    </div>
-                  </div>
+                    <span className="flex-1 min-w-0">
+                      <span className="block ee-title font-bold text-[17px] break-words">{application.applicant?.name || 'Applicant'}</span>
+                      {application.applicant?.title && <span className="block text-sm text-muted-foreground break-words">{application.applicant.title}</span>}
+                      <span className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                        <Calendar className="h-3 w-3" aria-hidden="true" />
+                        Applied {formatDistanceToNow(new Date(application.created_at), { addSuffix: true })}
+                      </span>
+                    </span>
+                    <ApplicationStatus status={application.status} />
+                  </button>
 
                   {application.cover_note && (
-                    <div className="bg-muted/50 rounded-md p-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Cover Note</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground line-clamp-3">
-                        {application.cover_note}
-                      </p>
+                    <div className="rounded-xl bg-muted/60 p-3">
+                      <div className="flex items-center gap-2 mb-1"><FileText className="h-4 w-4 text-muted-foreground" aria-hidden="true" /><span className="text-sm font-semibold">Cover note</span></div>
+                      <p className="text-sm text-muted-foreground line-clamp-4">{application.cover_note}</p>
                     </div>
                   )}
 
-                  <div className="flex gap-2 flex-wrap">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleViewDetails(application.applicant_user_id)}
-                      className="text-primary border-primary hover:bg-primary hover:text-white"
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      View Details
-                    </Button>
-                    
-                    {application.status === 'pending' && (
+                  <div className="grid grid-cols-3 gap-2">
+                    <button type="button" className="ee-secondary !min-h-[44px] !px-2 text-sm" onClick={() => handleViewDetails(application.applicant_user_id)}><Eye className="h-4 w-4" /> Profile</button>
+                    {application.status === 'pending' && canManageApplications && (
                       <>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-green-600 border-green-600 hover:bg-green-600 hover:text-white"
-                          onClick={() => handleStatusUpdate(application.id, 'accepted')}
-                        >
-                          Accept
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
-                          onClick={() => handleStatusUpdate(application.id, 'declined')}
-                        >
-                          Decline
-                        </Button>
+                        <button type="button" className="ee-secondary !min-h-[44px] !px-2 text-sm" disabled={updatingId === application.id} onClick={() => decide(application.id, 'declined')}>Decline</button>
+                        <button type="button" className="ee-primary !min-h-[44px] !px-2 text-sm" disabled={updatingId === application.id} onClick={() => decide(application.id, 'accepted')}>Accept</button>
                       </>
                     )}
                   </div>
-                </div>
+                </li>
               ))}
-            </div>
-          </ScrollArea>
+            </ul>
+          </div>
         )}
       </SheetContent>
 

@@ -1,11 +1,14 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Briefcase, Plus, Eye, CheckCircle2, XCircle, RefreshCw, Mail } from "lucide-react";
-import { MobileEmployerDashboard } from "./MobileEmployerDashboard";
+import { Briefcase, Building2, LayoutDashboard, Mail, RefreshCw, Users } from "lucide-react";
+import { MobileEmployerDashboard, type EmployerStats } from "./MobileEmployerDashboard";
 import { MobileCandidateBrowser } from "./MobileCandidateBrowser";
 import { MobileChatInbox } from "@/components/chat/mobile/MobileChatInbox";
 import { MobileJobCreator } from "./MobileJobCreator";
+import { EmployerJobsPanel } from "./EmployerJobsPanel";
+import { EmployerCompanyHub } from "./EmployerCompanyHub";
+import { EmployerEmpty, EmployerGroup, EmployerHeader, EmployerRow } from "./employerUi";
+import { countApplications, jobsNeedingAttention, totalPending, type JobCounts } from "./employerJobsModel";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { useOrgPermissions } from "@/hooks/useOrgPermissions";
@@ -15,382 +18,235 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { matchService } from "@/services/matchService";
 import { jobPostingService, type JobListing } from "@/services/jobPostingService";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ApplicationsSheet } from "@/components/employer/ApplicationsSheet";
 
-interface BusinessData {
-  company_name: string;
-  business_size: string;
-  role_function: string;
-  business_services: string;
-  company_logo?: string;
+interface BusinessData { company_name: string; business_size: string; role_function: string; business_services: string; company_logo?: string }
+
+type Tab = "candidates" | "jobs" | "messages" | "dashboard" | "analytics" | "company";
+const URL_TAB: Record<Tab, string> = { candidates: "discover", jobs: "jobs", messages: "messages", dashboard: "overview", analytics: "analytics", company: "company" };
+
+/** Reads existing tab aliases so older links (applications, inbox, dashboard, settings) keep working. */
+function resolveTab(params: URLSearchParams): Tab {
+  if (params.has("jobId")) return "jobs";
+  const t = params.get("tab");
+  if (t === "messages" || t === "inbox") return "messages";
+  if (t === "overview" || t === "dashboard") return "dashboard";
+  if (t === "applications" || t === "jobs") return "jobs";
+  if (t === "analytics") return "analytics";
+  if (t === "company" || t === "settings" || t === "account") return "company";
+  return "candidates";
 }
 
-interface EmployerStats {
-  activeJobs: number;
-  totalApplications: number;
-  candidatesViewed: number;
-  newMatches: number;
-}
-
-interface MobileEmployerTabsProps {
-  businessData: BusinessData | null;
-}
-
-export function MobileEmployerTabs({ businessData }: MobileEmployerTabsProps) {
+export function MobileEmployerTabs({ businessData }: { businessData: BusinessData | null }) {
   const { user } = useAuth();
   const { activeOrganization } = useOrganization();
-  const { canManageOrgSettings } = useOrgPermissions();
+  const { canCreateJobs, canEditJobs, canViewAnalytics } = useOrgPermissions();
   const navigate = useNavigate();
   const unreadCount = useUnreadChatCount();
   const [searchParams, setSearchParams] = useSearchParams();
-  const requestedTab = searchParams.get('tab');
-  const activeTab = searchParams.has('jobId') ? 'jobs' : requestedTab === 'messages' || requestedTab === 'inbox' ? 'messages' : requestedTab === 'overview' || requestedTab === 'dashboard' ? 'dashboard' : requestedTab === 'applications' || requestedTab === 'jobs' ? 'jobs' : requestedTab === 'analytics' ? 'analytics' : 'candidates';
-  const setActiveTab = (tab: string) => {
-    setSearchParams(prev => {
-      const next = new URLSearchParams(prev);
-      next.set('tab', tab === 'dashboard' ? 'overview' : tab === 'candidates' ? 'discover' : tab);
-      next.delete('jobId');
-      return next;
-    });
-  };
-  const [showJobCreator, setShowJobCreator] = useState(false);
-  
-  // Data states
-  const [stats, setStats] = useState<EmployerStats>({
-    activeJobs: 0,
-    totalApplications: 0,
-    candidatesViewed: 0,
-    newMatches: 0
-  });
-  const [jobs, setJobs] = useState<JobListing[]>([]);
-  const [isLoadingJobs, setIsLoadingJobs] = useState(false);
-  const [isRefreshingStats, setIsRefreshingStats] = useState(false);
-  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
-  const [selectedJobTitle, setSelectedJobTitle] = useState<string>("");
-  const [showApplicationsSheet, setShowApplicationsSheet] = useState(false);
+  const activeTab = resolveTab(searchParams);
+  const setActiveTab = (tab: Tab) => setSearchParams(prev => { const next = new URLSearchParams(prev); next.set("tab", URL_TAB[tab]); next.delete("jobId"); return next; });
 
-  useEffect(() => {
-    if (user?.id && activeOrganization?.id) {
-      loadEmployerStats();
+  const [showJobCreator, setShowJobCreator] = useState(false);
+  const [stats, setStats] = useState<EmployerStats>({ activeJobs: 0, totalApplications: 0, candidatesViewed: 0, newMatches: 0 });
+  const [statsError, setStatsError] = useState(false);
+  const [refreshingStats, setRefreshingStats] = useState(false);
+  const [jobs, setJobs] = useState<JobListing[]>([]);
+  const [counts, setCounts] = useState<JobCounts>({});
+  const [jobsLoading, setJobsLoading] = useState(true);
+  const [jobsError, setJobsError] = useState(false);
+  const [sheetJob, setSheetJobState] = useState<{ id: string; title: string } | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  // Keep the sheet mounted while it animates closed so the page never stays locked after dismissal.
+  const setSheetJob = (job: { id: string; title: string }) => { setSheetJobState(job); setSheetOpen(true); };
+
+  const loadStats = useCallback(async () => {
+    if (!user?.id || !activeOrganization?.id) return;
+    setRefreshingStats(true);
+    try {
+      const [jobsRes, appsRes, swipesRes, matches] = await Promise.all([
+        supabase.from("job_listings_v2").select("*", { count: "exact", head: true }).eq("organization_id", activeOrganization.id).eq("is_active", true),
+        supabase.from("job_applications_v2").select("*", { count: "exact", head: true }).eq("organization_id", activeOrganization.id),
+        supabase.from("swipes").select("*", { count: "exact", head: true }).eq("swiper_user_id", user.id),
+        matchService.getMatches(user.id),
+      ]);
+      if (jobsRes.error || appsRes.error) throw jobsRes.error || appsRes.error;
+      setStats({ activeJobs: jobsRes.count || 0, totalApplications: appsRes.count || 0, candidatesViewed: swipesRes.count || 0, newMatches: matches.length });
+      setStatsError(false);
+    } catch (error) {
+      console.error("Error loading employer stats:", error);
+      setStatsError(true);
+    } finally {
+      setRefreshingStats(false);
     }
   }, [user?.id, activeOrganization?.id]);
 
-  useEffect(() => {
-    if (user?.id && activeTab === 'jobs') {
-      loadJobs();
-    }
-  }, [user?.id, activeTab]);
-
-  useEffect(() => {
-    const jobId = searchParams.get('jobId');
-    if (!jobId) return;
-    setSelectedJobId(jobId);
-    setSelectedJobTitle(jobs.find(job => job.id === jobId)?.title || 'Job applications');
-    setShowApplicationsSheet(true);
-  }, [searchParams, jobs]);
-
-  const loadEmployerStats = async () => {
-    if (!user?.id || !activeOrganization?.id) return;
-
-    setIsRefreshingStats(true);
-    try {
-      // ✅ FIXED: Count active job listings by organization_id (aligned with desktop)
-      const { count: jobCount } = await supabase
-        .from('job_listings_v2')
-        .select('*', { count: 'exact', head: true })
-        .eq('organization_id', activeOrganization.id)
-        .eq('is_active', true);
-
-      // ✅ FIXED: Count organization-wide applications (aligned with desktop)
-      const { count: appCount } = await supabase
-        .from('job_applications_v2')
-        .select('*', { count: 'exact', head: true })
-        .eq('organization_id', activeOrganization.id);
-
-      // Count total swipes (candidate views)
-      const { count: swipeCount } = await supabase
-        .from('swipes')
-        .select('*', { count: 'exact', head: true })
-        .eq('swiper_user_id', user.id);
-
-      // Get matches
-      const matches = await matchService.getMatches(user.id);
-
-      setStats({
-        activeJobs: jobCount || 0,
-        totalApplications: appCount || 0,
-        candidatesViewed: swipeCount || 0,
-        newMatches: matches.length
-      });
-    } catch (error) {
-      console.error('Error loading employer stats:', error);
-    } finally {
-      setIsRefreshingStats(false);
-    }
-  };
-
-  const loadJobs = async () => {
+  const loadJobs = useCallback(async () => {
     if (!user?.id) return;
-
+    setJobsLoading(true);
     try {
-      setIsLoadingJobs(true);
-      const jobListings = await jobPostingService.getJobListings(user.id);
-      setJobs(jobListings);
-    } catch (error) {
-      console.error('Error loading jobs:', error);
-      toast.error("Failed to load job listings");
-    } finally {
-      setIsLoadingJobs(false);
-    }
-  };
-
-  const handleCreateJob = () => setShowJobCreator(true);
-  const handleBrowseCandidates = () => setActiveTab('candidates');
-
-  // JobPostingWizard owns persistence; completion here only refreshes its result.
-  const handleJobCreated = async () => {
-    setShowJobCreator(false);
-    setActiveTab('jobs');
-    await Promise.all([loadEmployerStats(), loadJobs()]);
-  };
-
-  const handleToggleJobStatus = async (jobId: string, currentStatus: boolean) => {
-    try {
-      const success = await jobPostingService.toggleJobStatus(jobId, !currentStatus);
-      if (success) {
-        toast.success(`Job ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
-        await Promise.all([loadJobs(), loadEmployerStats()]);
+      const listings = await jobPostingService.getJobListings(user.id);
+      setJobs(listings);
+      if (activeOrganization?.id) {
+        const { data, error } = await supabase.from("job_applications_v2").select("job_id, status").eq("organization_id", activeOrganization.id);
+        if (error) throw error;
+        setCounts(countApplications((data as { job_id: string; status: string }[]) || []));
       }
+      setJobsError(false);
     } catch (error) {
-      console.error('Error toggling job status:', error);
-      toast.error("Failed to update job status");
+      console.error("Error loading jobs:", error);
+      setJobsError(true);
+    } finally {
+      setJobsLoading(false);
     }
+  }, [user?.id, activeOrganization?.id]);
+
+  useEffect(() => { loadStats(); }, [loadStats]);
+  useEffect(() => { loadJobs(); }, [loadJobs]);
+
+  // Deep link: /employer-dashboard?tab=applications&jobId=...
+  const deepJobId = searchParams.get("jobId");
+  useEffect(() => {
+    if (!deepJobId) return;
+    setSheetJob({ id: deepJobId, title: jobs.find(j => j.id === deepJobId)?.title || "Job applications" });
+  }, [deepJobId, jobs]);
+
+  const refreshAll = () => Promise.all([loadStats(), loadJobs()]);
+  const attention = useMemo(() => jobsNeedingAttention(jobs, counts), [jobs, counts]);
+
+  const handleJobCreated = async () => { setShowJobCreator(false); setActiveTab("jobs"); await refreshAll(); };
+
+  const toggleJob = async (job: JobListing) => {
+    const ok = await jobPostingService.toggleJobStatus(job.id, !job.is_active);
+    if (ok) await refreshAll();
+    return ok;
   };
 
-  // Show full-screen components
   if (showJobCreator && activeOrganization?.id) {
     return (
-      <MobileJobCreator
-        userId={user?.id || ""}
-        organizationId={activeOrganization.id}
-        onComplete={handleJobCreated}
-        onClose={() => setShowJobCreator(false)}
-        companyName={businessData?.company_name}
-      />
+      <div className="employer-theme">
+        <MobileJobCreator userId={user?.id || ""} organizationId={activeOrganization.id} onComplete={handleJobCreated} onClose={() => setShowJobCreator(false)} companyName={businessData?.company_name} />
+      </div>
     );
   }
 
+  const NAV: Array<{ tab: Tab; label: string; icon: typeof Users; also?: Tab[] }> = [
+    { tab: "candidates", label: "Discover", icon: Users },
+    { tab: "jobs", label: "Jobs", icon: Briefcase },
+    { tab: "messages", label: "Inbox", icon: Mail },
+    { tab: "dashboard", label: "Home", icon: LayoutDashboard, also: ["analytics"] },
+    { tab: "company", label: "Company", icon: Building2 },
+  ];
+  const fills = activeTab === "candidates" || activeTab === "messages";
+
   return (
     <div className="employer-theme employer-phone">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
-        <div className={`flex-1 min-h-0 ${activeTab === 'candidates' || activeTab === 'messages' ? 'overflow-hidden flex flex-col' : 'overflow-y-auto overscroll-contain'} employer-scroll-container`}>
+      <Tabs value={activeTab} onValueChange={v => setActiveTab(v as Tab)} className="flex flex-col flex-1 min-h-0">
+        <div className={`flex-1 min-h-0 ${fills ? "overflow-hidden flex flex-col" : "overflow-y-auto overscroll-contain"} employer-scroll-container`}>
           <TabsContent value="dashboard" className="m-0">
-            <div className="md:hidden">
-              <div className="sticky top-0 z-10 bg-background border-b px-4 py-3 flex items-center justify-between">
-                <h2 className="text-xl font-bold">Hiring workspace</h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Refresh hiring workspace"
-                  onClick={loadEmployerStats}
-                  disabled={isRefreshingStats}
-                >
-                  <RefreshCw className={`h-4 w-4 ${isRefreshingStats ? 'animate-spin' : ''}`} />
-                </Button>
-              </div>
-              <MobileEmployerDashboard
-                userName={user?.displayName || businessData?.company_name || "Employer"}
-                businessData={businessData}
-                stats={stats}
-                onCreateJob={handleCreateJob}
-                onBrowseCandidates={handleBrowseCandidates}
-                onManageJobs={() => setActiveTab('jobs')}
-                onViewAnalytics={() => setActiveTab('analytics')}
-                canManageOrgSettings={canManageOrgSettings}
-              />
-            </div>
+            <MobileEmployerDashboard
+              businessData={businessData}
+              stats={stats}
+              statsError={statsError}
+              pendingTotal={totalPending(counts)}
+              attention={attention}
+              jobsLoading={jobsLoading}
+              refreshing={refreshingStats}
+              canCreateJobs={canCreateJobs}
+              canViewAnalytics={canViewAnalytics}
+              onRefresh={refreshAll}
+              onCreateJob={() => setShowJobCreator(true)}
+              onBrowseCandidates={() => setActiveTab("candidates")}
+              onManageJobs={() => setActiveTab("jobs")}
+              onOpenApplications={job => setSheetJob({ id: job.id, title: job.title })}
+              onViewAnalytics={() => setActiveTab("analytics")}
+              onOpenInbox={() => setActiveTab("messages")}
+            />
           </TabsContent>
 
-          <TabsContent value="jobs" className="m-0 p-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold">Job Postings</h2>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    aria-label="Refresh jobs"
-                    onClick={loadJobs}
-                    disabled={isLoadingJobs}
-                  >
-                    <RefreshCw className={`h-4 w-4 ${isLoadingJobs ? 'animate-spin' : ''}`} />
-                  </Button>
-                  <Button onClick={handleCreateJob} size="sm" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Job
-                  </Button>
-                </div>
-              </div>
-
-              {isLoadingJobs ? (
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <p className="text-sm text-muted-foreground">Loading jobs...</p>
-                  </CardContent>
-                </Card>
-              ) : jobs.length === 0 ? (
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="font-semibold mb-2">No Jobs Posted</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Start by posting your first job listing
-                    </p>
-                    <Button onClick={handleCreateJob} className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Post Your First Job
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="space-y-3">
-                  {jobs.map((job) => (
-                    <Card key={job.id}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-semibold">{job.title}</h3>
-                              <Badge variant={job.is_active ? "default" : "secondary"}>
-                                {job.is_active ? "Active" : "Inactive"}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              {job.location} • {job.job_type?.replace('_', ' ')}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Posted {new Date(job.posted_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex gap-2 mt-3">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1"
-                            onClick={() => handleToggleJobStatus(job.id, job.is_active)}
-                          >
-                            {job.is_active ? (
-                              <>
-                                <XCircle className="h-3 w-3 mr-1" />
-                                Deactivate
-                              </>
-                            ) : (
-                              <>
-                                <CheckCircle2 className="h-3 w-3 mr-1" />
-                                Activate
-                              </>
-                            )}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1"
-                            onClick={() => {
-                              setSelectedJobId(job.id);
-                              setSelectedJobTitle(job.title);
-                              setShowApplicationsSheet(true);
-                            }}
-                          >
-                            <Eye className="h-3 w-3 mr-1" />
-                            Applications
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
+          <TabsContent value="jobs" className="m-0">
+            <EmployerJobsPanel
+              jobs={jobs}
+              counts={counts}
+              loading={jobsLoading}
+              error={jobsError}
+              canCreate={canCreateJobs}
+              canEdit={canEditJobs}
+              onRefresh={loadJobs}
+              onCreate={() => setShowJobCreator(true)}
+              onToggle={toggleJob}
+              onOpenApplications={job => setSheetJob({ id: job.id, title: job.title })}
+            />
           </TabsContent>
 
           <TabsContent value="candidates" className="flex-1 min-h-0 m-0 data-[state=active]:flex flex-col">
-            {user?.id && <MobileCandidateBrowser userId={user.id} onBack={() => setActiveTab('dashboard')} employerName={businessData?.company_name || activeOrganization?.name} employerAvatar={businessData?.company_logo || activeOrganization?.logo_url || undefined} />}
+            {user?.id && <MobileCandidateBrowser userId={user.id} onBack={() => setActiveTab("dashboard")} employerName={businessData?.company_name || activeOrganization?.name} employerAvatar={businessData?.company_logo || activeOrganization?.logo_url || undefined} />}
           </TabsContent>
 
           <TabsContent value="messages" className="flex-1 min-h-0 m-0 data-[state=active]:flex flex-col">
-            <MobileChatInbox embedded activeThreadId={null} onSelectThread={id => navigate(`/chat/${id}`)} onBack={() => setActiveTab('candidates')} />
+            <MobileChatInbox embedded activeThreadId={null} onSelectThread={id => navigate(`/chat/${id}`)} onBack={() => setActiveTab("candidates")} />
           </TabsContent>
 
-          <TabsContent value="analytics" className="m-0 p-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between"><h2 className="text-2xl font-black">Analytics</h2><Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Refresh analytics" disabled={isRefreshingStats} onClick={loadEmployerStats}><RefreshCw size={20} /></Button></div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Active Jobs</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-4xl font-black">{stats.activeJobs}</div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Candidates Viewed</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-4xl font-black">{stats.candidatesViewed}</div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Matches</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-4xl font-black">{stats.newMatches}</div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Applications</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-4xl font-black">{stats.totalApplications}</div>
-                  </CardContent>
-                </Card>
+          <TabsContent value="analytics" className="m-0">
+            <div className="ee-screen">
+              <EmployerHeader title="Analytics" onBack={() => setActiveTab("dashboard")} backLabel="Back to home" actions={<button type="button" className="ee-icon-btn" aria-label="Refresh analytics" disabled={refreshingStats} onClick={refreshAll}><RefreshCw size={20} className={refreshingStats ? "animate-spin" : ""} /></button>} />
+              <div className="ee-body ee-fade">
+                {!canViewAnalytics ? (
+                  <EmployerEmpty title="Analytics aren't available for your role" body="Ask an organization admin if you need access." />
+                ) : statsError ? (
+                  <EmployerEmpty title="Couldn't load analytics" body="Try again in a moment." action={<button className="ee-secondary" onClick={refreshAll}>Try again</button>} />
+                ) : (
+                  <>
+                    <section aria-label="Totals" className="ee-metrics">
+                      <div className="ee-metric is-lead"><span className="ee-metric-label">Applications</span><span><span className="ee-metric-value block">{stats.totalApplications}</span><span className="ee-metric-note block">{totalPending(counts)} waiting for a decision</span></span></div>
+                      <div className="ee-metric"><span className="ee-metric-label">Open jobs</span><span className="ee-metric-value">{stats.activeJobs}</span></div>
+                      <div className="ee-metric"><span className="ee-metric-label">Matches</span><span className="ee-metric-value">{stats.newMatches}</span></div>
+                    </section>
+                    <div className="ee-metric" style={{ minHeight: 0 }}><span className="ee-metric-label">Candidate profiles reviewed</span><span className="ee-metric-value">{stats.candidatesViewed}</span></div>
+                    <EmployerGroup label="Applications per job">
+                      {jobs.length === 0 ? <div className="px-4 py-5 text-sm text-muted-foreground">Post a job to see applications per vacancy.</div> :
+                        jobs.map(j => <EmployerRow key={j.id} icon={Briefcase} label={j.title} detail={j.is_active ? "Open" : "Closed"} trail={<span className="font-semibold text-foreground">{counts[j.id]?.total ?? 0}</span>} onClick={() => setSheetJob({ id: j.id, title: j.title })} />)}
+                    </EmployerGroup>
+                  </>
+                )}
               </div>
-
             </div>
+          </TabsContent>
+
+          <TabsContent value="company" className="m-0">
+            <EmployerCompanyHub onOpenSection={s => navigate(`/organization/settings?section=${s}`)} />
           </TabsContent>
         </div>
 
         <nav className="employer-phone-nav" aria-label="Employer navigation">
-          <Button variant="ghost" aria-current={activeTab === 'candidates' ? 'page' : undefined} className={activeTab === 'candidates' ? 'text-primary' : 'text-muted-foreground'} onClick={() => setActiveTab('candidates')}><Users size={23} /><span>Discover</span></Button>
-          <Button variant="ghost" aria-current={activeTab === 'jobs' ? 'page' : undefined} className={activeTab === 'jobs' ? 'text-primary' : 'text-muted-foreground'} onClick={() => setActiveTab('jobs')}><Briefcase size={23} /><span>Jobs</span></Button>
-          <Button variant="ghost" aria-label="Inbox" aria-current={activeTab === 'messages' ? 'page' : undefined} className={activeTab === 'messages' ? 'text-primary relative' : 'text-muted-foreground relative'} onClick={() => setActiveTab('messages')}><span className="relative"><Mail size={23} />{unreadCount > 0 && <span className="employer-unread">{unreadCount > 9 ? '9+' : unreadCount}</span>}</span><span>Inbox</span>{unreadCount > 0 && <span className="sr-only">{unreadCount} unread messages</span>}</Button>
-          <Button variant="ghost" aria-current={activeTab === 'dashboard' || activeTab === 'analytics' ? 'page' : undefined} className={activeTab === 'dashboard' || activeTab === 'analytics' ? 'text-primary' : 'text-muted-foreground'} onClick={() => setActiveTab('dashboard')}><LayoutDashboard size={23} /><span>Home</span></Button>
+          {NAV.map(({ tab, label, icon: Icon, also }) => {
+            const current = activeTab === tab || !!also?.includes(activeTab);
+            const isInbox = tab === "messages";
+            return (
+              <button key={tab} type="button" aria-label={label} aria-current={current ? "page" : undefined} className={current ? "" : "text-muted-foreground"} onClick={() => setActiveTab(tab)}>
+                <span className="relative inline-flex self-center"><Icon size={23} aria-hidden="true" />{isInbox && unreadCount > 0 && <span className="employer-unread" aria-hidden="true">{unreadCount > 9 ? "9+" : unreadCount}</span>}</span>
+                <span>{label}</span>
+                {isInbox && unreadCount > 0 && <span className="sr-only">{unreadCount} unread messages</span>}
+              </button>
+            );
+          })}
         </nav>
       </Tabs>
 
-      {/* Applications Sheet */}
-      {selectedJobId && (
+      {sheetJob && (
         <ApplicationsSheet
-          jobId={selectedJobId}
-          jobTitle={selectedJobTitle}
-          open={showApplicationsSheet}
+          jobId={sheetJob.id}
+          jobTitle={sheetJob.title}
+          open={sheetOpen}
           onOpenChange={open => {
-            setShowApplicationsSheet(open);
-            if (!open && searchParams.has('jobId')) setSearchParams(prev => { const next = new URLSearchParams(prev); next.delete('jobId'); return next; }, { replace: true });
+            if (open) return;
+            setSheetOpen(false);
+            loadJobs();
+            if (searchParams.has("jobId")) setSearchParams(prev => { const next = new URLSearchParams(prev); next.delete("jobId"); return next; }, { replace: true });
           }}
         />
       )}
+
     </div>
   );
 }
