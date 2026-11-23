@@ -307,6 +307,71 @@ export type Database = {
           },
         ]
       }
+      career_post_bookmarks: {
+        Row: {
+          created_at: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          post_id: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "career_post_bookmarks_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "career_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      career_posts: {
+        Row: {
+          author_id: string
+          author_name: string | null
+          author_title: string | null
+          body: string
+          category: string
+          created_at: string
+          id: string
+          title: string | null
+          updated_at: string
+          work_url: string | null
+        }
+        Insert: {
+          author_id?: string
+          author_name?: string | null
+          author_title?: string | null
+          body: string
+          category?: string
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+          work_url?: string | null
+        }
+        Update: {
+          author_id?: string
+          author_name?: string | null
+          author_title?: string | null
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+          work_url?: string | null
+        }
+        Relationships: []
+      }
       catalogue_entries: {
         Row: {
           availability: string | null

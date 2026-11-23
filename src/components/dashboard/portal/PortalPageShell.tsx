@@ -48,7 +48,7 @@ export function PortalPageShell({
   const showHeader = !!(title || subtitle || eyebrow || actions);
 
   return (
-    <div className="flex w-full min-h-screen bg-[rgba(253,248,242,1)]">
+    <div className="seeker-theme flex w-full min-h-screen bg-background">
       <PortalRail />
 
       <div className="flex-1 min-w-0 flex flex-col">

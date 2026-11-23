@@ -46,6 +46,14 @@ export function QuickActionsSheet({ isOpen, onClose, userName, onAddAchievement 
 
   const getQuickActions = (): QuickAction[] => [
     {
+      id: 'share-update',
+      label: 'Share an Update',
+      icon: Sparkles,
+      bgColor: 'bg-primary/10 hover:bg-primary/20',
+      iconColor: 'text-primary',
+      action: () => { navigate('/feed?compose=1'); onClose(); }
+    },
+    {
       id: 'get-certified',
       label: 'Get Certified',
       icon: ShieldCheck,

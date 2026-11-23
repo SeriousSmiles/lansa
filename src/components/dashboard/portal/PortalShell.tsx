@@ -13,6 +13,8 @@ import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { DashboardActionBand } from "../DashboardActionBand";
+import { SeekerMobileHome } from "./SeekerMobileHome";
+import { useCompactSeeker } from "@/hooks/useCompactSeeker";
 
 interface PortalShellProps {
   userName: string;
@@ -39,9 +41,20 @@ export function PortalShell({ userName, role, goal, openAIPlan }: PortalShellPro
   const nextStep = completion.missing_steps[0];
   const profileNeedsWork = !completion.is_complete && Boolean(nextStep);
   const loading = completion.loading || certified === null;
+  const compact = useCompactSeeker();
+  const next = {
+    title: profileNeedsWork ? nextStep?.label || "Complete your profile" : !certified ? "Let employers see your potential" : "Find your next opportunity",
+    description: profileNeedsWork ? "Bring your experience into focus, one step at a time." : !certified ? "Explore a sector certification and take the next step toward employer discovery." : "Explore open roles and keep the opportunities that feel right for you.",
+    action: profileNeedsWork ? "Continue my profile" : !certified ? "Explore certification" : "Explore jobs",
+    route: profileNeedsWork ? nextStep?.cta_route || "/profile" : !certified ? "/certification" : "/jobs",
+  };
+
+  if (compact) {
+    return <SeekerMobileHome userId={user?.id} firstName={userName.split(" ")[0] || "there"} score={completion.loading ? null : completion.score} loading={loading} next={next} />;
+  }
 
   return (
-    <div className="flex w-full min-h-screen bg-background">
+    <div className="seeker-theme flex w-full min-h-screen bg-background">
       <PortalRail />
       <div className="flex-1 min-w-0 px-4 sm:px-6 lg:px-10 pb-24">
         <WelcomeStrip userName={userName} completeness={completion.loading ? null : completion.score} />

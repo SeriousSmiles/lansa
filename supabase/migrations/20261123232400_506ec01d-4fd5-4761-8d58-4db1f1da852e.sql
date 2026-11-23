@@ -1,0 +1,1 @@
+CREATE INDEX career_post_bookmarks_post_idx ON public.career_post_bookmarks (post_id);

@@ -2,6 +2,8 @@ import { ReactNode, RefObject } from "react";
 import { PortalPageShell } from "@/components/dashboard/portal/PortalPageShell";
 import { ProfileHeaderActions } from "../ProfileHeaderActions";
 import { AnnouncementBanner } from "@/components/common/AnnouncementBanner";
+import { NativeProfileLayout } from "../native/NativeProfileLayout";
+import { useCompactSeeker } from "@/hooks/useCompactSeeker";
 
 interface ProfilePortalLayoutProps {
   children: ReactNode;
@@ -46,6 +48,30 @@ export function ProfilePortalLayout({
   onModeToggle,
 }: ProfilePortalLayoutProps) {
   const firstName = userName?.split(" ")[0] || "your";
+  const compact = useCompactSeeker();
+  const actions = (
+    <ProfileHeaderActions
+      userId={userId}
+      userName={userName}
+      coverColor={coverColor}
+      highlightColor={highlightColor}
+      onCoverColorChange={onCoverColorChange}
+      onHighlightColorChange={onHighlightColorChange}
+      textColor="hsl(var(--foreground))"
+      isDarkTheme={false}
+      isMobile={compact}
+      onOpenGuidedSetup={onOpenGuidedSetup}
+      userProfile={userProfile}
+      currentPalette={currentPalette}
+      activePalette={activePalette}
+      onPaletteChange={onPaletteChange}
+      onModeToggle={onModeToggle}
+    />
+  );
+
+  if (compact && userProfile) {
+    return <NativeProfileLayout profile={userProfile} userId={userId} headerActions={actions}>{children}</NativeProfileLayout>;
+  }
 
   return (
     <PortalPageShell
@@ -57,25 +83,7 @@ export function ProfilePortalLayout({
         </>
       }
       subtitle="Reflect on your story and shape how employers see you. Edits save automatically."
-      actions={
-        <ProfileHeaderActions
-          userId={userId}
-          userName={userName}
-          coverColor={coverColor}
-          highlightColor={highlightColor}
-          onCoverColorChange={onCoverColorChange}
-          onHighlightColorChange={onHighlightColorChange}
-          textColor="hsl(var(--foreground))"
-          isDarkTheme={false}
-          isMobile={false}
-          onOpenGuidedSetup={onOpenGuidedSetup}
-          userProfile={userProfile}
-          currentPalette={currentPalette}
-          activePalette={activePalette}
-          onPaletteChange={onPaletteChange}
-          onModeToggle={onModeToggle}
-        />
-      }
+      actions={actions}
     >
       <AnnouncementBanner />
       {/* No ref={mainContentRef} here — Portal v2 skips the gsap fade-in

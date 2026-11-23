@@ -34,19 +34,31 @@ export function AppShell({ children }: AppShellProps) {
   const userName = user?.displayName;
   
   const isActiveThread = /^\/chat\/.+/.test(location.pathname);
-  const isFullBleedRoute = isActiveThread || location.pathname === '/jobs';
+  const isFullBleedRoute = isActiveThread;
 
   // CRITICAL: Only show mobile navigation for job seekers
   // Employers have their own navigation in MobileEmployerTabs
   // Admin routes have their own navigation in AdminMobileLayout
-  const showMobileNavigation = useMemo(
-    () => isMobile && !loading && !userStateLoading && user && userType === 'job_seeker' && !isAuthRoute && !isOnboardingRoute && !isSharedProfile && !isAdminRoute,
-    [isMobile, loading, userStateLoading, user, userType, isAuthRoute, isOnboardingRoute, isSharedProfile, isAdminRoute]
+  const showSeekerNav = useMemo(
+    () => !loading && !userStateLoading && user && userType === 'job_seeker' && !isAuthRoute && !isOnboardingRoute && !isSharedProfile && !isAdminRoute,
+    [loading, userStateLoading, user, userType, isAuthRoute, isOnboardingRoute, isSharedProfile, isAdminRoute]
   );
   
   // On desktop, just render children without mobile shell
+  const showMobileNavigation = isMobile && showSeekerNav;
   if (!isMobile) {
-    return <>{children}</>;
+    // Tablet widths have no sidebar rail (it starts at lg), so seekers keep the thumb tabs there.
+    return (
+      <>
+        {children}
+        {showSeekerNav && !isActiveThread && (
+          <div className="lg:hidden">
+            <div className="sk-nav-spacer" aria-hidden />
+            <BottomNav />
+          </div>
+        )}
+      </>
+    );
   }
 
   return (
@@ -58,7 +70,7 @@ export function AppShell({ children }: AppShellProps) {
       <main 
         className={`
           flex-1 relative
-          ${showMobileNavigation && !isFullBleedRoute ? 'pb-20' : ''}
+          ${showMobileNavigation && !isFullBleedRoute ? 'sk-nav-pad' : ''}
         `}
         style={{
           minHeight: showMobileNavigation && !isFullBleedRoute
@@ -67,14 +79,10 @@ export function AppShell({ children }: AppShellProps) {
         }}
       >
         <motion.div
-          key={location.pathname}
-          initial={isLanding ? { opacity: 0 } : { opacity: 0, x: 20 }}
-          animate={isLanding ? { opacity: 1 } : { opacity: 1, x: 0 }}
-          exit={isLanding ? { opacity: 0 } : { opacity: 0, x: -20 }}
-          transition={isLanding 
-            ? { duration: 0.25, ease: "easeOut" }
-            : { type: "spring", stiffness: 400, damping: 30, duration: 0.3 }
-          }
+          key={location.pathname.split('/').slice(0, 2).join('/')}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
           className="h-full"
         >
           {children}
@@ -83,21 +91,7 @@ export function AppShell({ children }: AppShellProps) {
 
       {/* Bottom Navigation */}
       <AnimatePresence>
-        {showMobileNavigation && (
-          <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            transition={{ 
-              type: "spring", 
-              stiffness: 400, 
-              damping: 30,
-              delay: 0.1 
-            }}
-          >
-            <BottomNav />
-          </motion.div>
-        )}
+        {showMobileNavigation && <BottomNav />}
       </AnimatePresence>
 
       {/* Quick Actions Sheet */}

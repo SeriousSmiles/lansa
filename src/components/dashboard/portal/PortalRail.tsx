@@ -15,6 +15,7 @@ import {
   LogOut,
   User as UserIcon,
   Brain,
+  Newspaper,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -93,6 +94,7 @@ export function PortalRail({ unreadNotifications = 0 }: PortalRailProps) {
     {
       label: "Discover",
       items: [
+        { label: "Feed", icon: Newspaper, href: "/feed" },
         { label: "Jobs", icon: Briefcase, href: "/jobs" },
         { label: "Resources", icon: BookOpen, href: "/resources" },
         { label: "Content", icon: Video, href: "/content" },

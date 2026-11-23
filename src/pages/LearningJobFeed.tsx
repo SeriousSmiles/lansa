@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { PortalPageShell } from "@/components/dashboard/portal/PortalPageShell";
 import { LearningJobPostCard } from "@/components/jobs/LearningJobPostCard";
@@ -35,7 +35,14 @@ export default function LearningJobFeed() {
   const [isCertified, setIsCertified] = useState(false);
   const [isTeaser, setIsTeaser] = useState(false);
   const [hasRecommendations, setHasRecommendations] = useState(false);
-  const [mobileTab, setMobileTab] = useState<MobileTab>("discover");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [mobileTab, setMobileTab] = useState<MobileTab>(searchParams.get("tab") === "saved" ? "saved" : "discover");
+  const selectMobileTab = (t: MobileTab) => {
+    setMobileTab(t);
+    const p = new URLSearchParams(searchParams);
+    t === "saved" ? p.set("tab", "saved") : p.delete("tab");
+    setSearchParams(p, { replace: true });
+  };
   const [swipedIds, setSwipedIds] = useState<Set<string>>(new Set());
   const [sessionSwiped, setSessionSwiped] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState<LearningFeedFilters>({
@@ -87,6 +94,15 @@ export default function LearningJobFeed() {
       setLoading(false);
     }
   };
+
+  // Deep link: /jobs?job=<id> opens that listing's details once loaded.
+  useEffect(() => {
+    const id = searchParams.get("job");
+    if (!id || loading) return;
+    const found = jobs.find((j) => j.id === id);
+    if (found) setSelectedJob(found);
+    const p = new URLSearchParams(searchParams); p.delete("job"); setSearchParams(p, { replace: true });
+  }, [loading, jobs]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleFilterChange = (newFilters: Partial<LearningFeedFilters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
@@ -201,56 +217,19 @@ export default function LearningJobFeed() {
   // Mobile: full-bleed swipe surface with slim top bar, no PortalPageShell, no bottom nav (hidden in BottomNav)
   if (isMobile && user) {
     return (
-      <div className="fixed inset-0 z-40 flex flex-col bg-background">
-        {/* Slim top bar */}
-        <div
-          className="sticky top-0 z-10 flex items-center gap-2 px-3 py-2 bg-background/90 backdrop-blur border-b border-border/40"
-          style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}
-        >
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 shrink-0"
-            onClick={() => navigate(-1)}
-            aria-label="Back"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-
-          <div className="flex-1 flex items-center gap-1 p-1 bg-muted rounded-lg">
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "flex-1 h-8 gap-1.5 rounded-md text-xs",
-                mobileTab === "discover" && "bg-background shadow-sm"
-              )}
-              onClick={() => setMobileTab("discover")}
-            >
-              <Search className="h-3.5 w-3.5" /> Discover
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "flex-1 h-8 gap-1.5 rounded-md text-xs",
-                mobileTab === "saved" && "bg-background shadow-sm"
-              )}
-              onClick={() => setMobileTab("saved")}
-            >
-              <Bookmark className="h-3.5 w-3.5" /> Saved
-            </Button>
+      <div className="seeker-theme sk-jobs-screen">
+        <header className="ee-header">
+          <h1>Jobs</h1>
+          <button type="button" className="ee-icon-btn" aria-label={showFilters ? "Hide filters" : "Filters"} aria-expanded={showFilters} onClick={() => setShowFilters((s) => !s)}>
+            <SlidersHorizontal size={20} />
+          </button>
+        </header>
+        <div className="px-4 pb-2">
+          <div className="ee-chips" role="toolbar" aria-label="Jobs view">
+            <button type="button" className="ee-chip" aria-pressed={mobileTab === "discover"} onClick={() => selectMobileTab("discover")}><Search size={15} />Discover</button>
+            <button type="button" className="ee-chip" aria-pressed={mobileTab === "saved"} onClick={() => selectMobileTab("saved")}><Bookmark size={15} />Saved & applied</button>
+            <button type="button" className="ee-chip" aria-pressed={false} onClick={() => navigate("/discovery")}>Companies</button>
           </div>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 shrink-0"
-            onClick={() => setShowFilters((s) => !s)}
-            aria-label="Filters"
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-          </Button>
         </div>
 
         {mobileTab === "saved" ? (

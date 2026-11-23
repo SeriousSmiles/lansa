@@ -1,173 +1,36 @@
-import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Home, User, Briefcase, MessageSquare, Plus, Mail } from 'lucide-react';
-import { useUIStore } from '@/stores/uiStore';
-import { cn } from '@/lib/utils';
+import { Home, Newspaper, Briefcase, MessageCircle, UserRound } from 'lucide-react';
 import { useUnreadChatCount } from '@/hooks/useUnreadChatCount';
+import { seekerTabFor, type SeekerTab } from './seekerNavModel';
 
-interface NavTab {
-  id: string;
-  label: string;
-  icon: React.ElementType;
-  to: string;
-  badge?: number;
-}
-
-const baseTabs: NavTab[] = [
+const TABS: { id: SeekerTab; label: string; icon: typeof Home; to: string }[] = [
   { id: 'home', label: 'Home', icon: Home, to: '/dashboard' },
-  { id: 'profile', label: 'Profile', icon: User, to: '/profile' },
-  { id: 'center', label: 'Create', icon: Plus, to: '#' }, // FAB placeholder
-  { id: 'opportunities', label: 'Jobs', icon: Briefcase, to: '/jobs' },
-  { id: 'messages', label: 'Messages', icon: Mail, to: '/chat' },
+  { id: 'feed', label: 'Feed', icon: Newspaper, to: '/feed' },
+  { id: 'jobs', label: 'Jobs', icon: Briefcase, to: '/jobs' },
+  { id: 'inbox', label: 'Inbox', icon: MessageCircle, to: '/chat' },
+  { id: 'profile', label: 'Profile', icon: UserRound, to: '/profile' },
 ];
 
+/** Fixed five-tab seeker navigation. Hidden only inside an open conversation, which has its own back control. */
 export function BottomNav() {
-  const location = useLocation();
-  const { setQuickActionsOpen } = useUIStore();
-  const unreadCount = useUnreadChatCount();
-  const [hidden, setHidden] = useState(false);
-  const lastScrollY = useRef(0);
-
-  // Hide on active chat thread (full-screen chat) and on mobile jobs swipe page
-  const isActiveThread = /^\/chat\/.+/.test(location.pathname);
-  const isJobsPage = location.pathname === '/jobs';
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentY = window.scrollY;
-      const delta = currentY - lastScrollY.current;
-      if (Math.abs(delta) > 8) {
-        setHidden(delta > 0 && currentY > 60);
-        lastScrollY.current = currentY;
-      }
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  if (isActiveThread || isJobsPage) return null;
-
-  const tabs: NavTab[] = baseTabs.map(t =>
-    t.id === 'messages' ? { ...t, badge: unreadCount || undefined } : t
-  );
-
-  const getActiveTab = () => {
-    if (location.pathname === '/dashboard') return 'home';
-    if (location.pathname === '/profile') return 'profile';
-    if (location.pathname === '/jobs' || location.pathname === '/opportunity-discovery' || location.pathname === '/discovery') return 'opportunities';
-    if (location.pathname.startsWith('/chat')) return 'messages';
-    if (location.pathname === '/content') return 'coach';
-    return 'home';
-  };
-
-  const activeTab = getActiveTab();
-
-  const handleFABClick = () => {
-    // Haptic feedback if available
-    if ('vibrate' in navigator) {
-      navigator.vibrate(50);
-    }
-    setQuickActionsOpen(true);
-  };
-
+  const { pathname } = useLocation();
+  const unread = useUnreadChatCount();
+  if (/^\/chat\/.+/.test(pathname)) return null;
+  const active = seekerTabFor(pathname);
   return (
-    <motion.nav
-      className="fixed bottom-0 left-0 right-0 z-navigation bg-card/95 border-t border-border/50 backdrop-blur-xl"
-      animate={{ y: hidden ? 100 : 0 }}
-      transition={{ type: "spring", stiffness: 400, damping: 35 }}
-    >
-      <div className="mobile-safe-bottom">
-        <div className="grid grid-cols-5 h-20 items-center px-2">
-          {tabs.map((tab) => {
-            if (tab.id === 'center') {
-              return (
-                <div key={tab.id} className="flex justify-center -mt-10">
-                  <motion.button
-                    onClick={handleFABClick}
-                    className="
-                      h-14 w-14 rounded-2xl bg-gradient-to-r from-primary to-secondary
-                      text-white shadow-[0_10px_30px_-6px_hsl(var(--primary)/0.55)]
-                      ring-4 ring-card hover:shadow-[0_14px_36px_-6px_hsl(var(--primary)/0.65)]
-                      transition-all duration-200
-                      flex items-center justify-center touch-target
-                      active:scale-95 transform
-                    "
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ 
-                      type: "spring", 
-                      stiffness: 400, 
-                      damping: 20,
-                      delay: 0.2 
-                    }}
-                  >
-                    <Plus className="h-6 w-6" />
-                  </motion.button>
-                </div>
-              );
-            }
-
-            const isActive = activeTab === tab.id;
-            const Icon = tab.icon;
-
-            return (
-              <Link
-                key={tab.id}
-                to={tab.to}
-                className={cn(
-                  "flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 touch-target relative",
-                  isActive 
-                    ? "text-primary bg-primary/10" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                )}
-              >
-                <motion.div
-                  className="relative"
-                  animate={isActive ? { scale: 1.1 } : { scale: 1 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                >
-                  <Icon className={cn(
-                    "h-5 w-5 transition-all duration-200",
-                    isActive && "text-primary"
-                  )} />
-                  
-                  {/* Active indicator */}
-                  {isActive && (
-                    <motion.div
-                      className="absolute -top-1 -right-1 h-2 w-2 bg-primary rounded-full"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                    />
-                  )}
-                  
-                  {/* Badge */}
-                  {tab.badge && (
-                    <motion.div
-                      className="absolute -top-2 -right-2 h-4 w-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                    >
-                      {tab.badge}
-                    </motion.div>
-                  )}
-                </motion.div>
-                
-                <span className={cn(
-                  "text-xs font-medium mt-1 transition-all duration-200",
-                  isActive ? "text-primary" : "text-muted-foreground"
-                )}>
-                  {tab.label}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-    </motion.nav>
+    <nav className="seeker-theme sk-nav" aria-label="Main navigation">
+      {TABS.map(({ id, label, icon: Icon, to }) => {
+        const isActive = id === active;
+        return (
+          <Link key={id} to={to} className="sk-nav-tab" aria-current={isActive ? 'page' : undefined} aria-label={id === 'inbox' && unread ? `Inbox, ${unread} unread` : label}>
+            <span className="sk-nav-icon">
+              <Icon size={22} strokeWidth={isActive ? 2.4 : 1.9} />
+              {id === 'inbox' && unread > 0 && <span className="sk-nav-badge" aria-hidden>{unread > 9 ? '9+' : unread}</span>}
+            </span>
+            <span>{label}</span>
+          </Link>
+        );
+      })}
+    </nav>
   );
 }

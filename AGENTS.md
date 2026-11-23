@@ -26,5 +26,10 @@
 - Phone employer navigation is five fixed tabs (Discover, Jobs, Inbox, Home, Company) driven by ?tab= with legacy aliases; /organization/settings?section= is the single owner of team settings on every device.
 - Keep the job-applications sheet mounted while it closes; unmounting an open Radix sheet leaves the page unclickable.
 
+# Seeker environment
+- Seeker screens wrap in .seeker-theme (same tokens and .ee-* primitives as employers, seeker-only .sk-*); below lg they render native phone layouts (SeekerMobileHome, NativeProfileLayout) while desktop keeps PortalPageShell layouts.
+- Seeker navigation is five fixed tabs (Home, Feed, Jobs, Inbox, Profile) shown below lg; seekerNavModel maps every seeker path to exactly one tab.
+- The professional feed is member-authored only (career_posts, private career_post_bookmarks); validation lives in both careerFeedModel and the prepare_career_post trigger, which also snapshots only author name and title, so keep them in sync.
+
 # Public home hero
 - Home hero copy, name pairs and business marks live in homeHeroContent.ts with local assets only; swap a mark by editing one entry so the animated layout never changes.

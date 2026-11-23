@@ -37,6 +37,7 @@ import ContentLibrary from "./pages/ContentLibrary";
 import MentorDashboard from "./pages/MentorDashboard";
 import Card from "./pages/Card";
 import LearningJobFeed from "./pages/LearningJobFeed";
+import Feed from "./pages/Feed";
 import DevTools from "./pages/DevTools";
 import Certification from "./pages/Certification";
 import VerifyCertification from "./pages/VerifyCertification";
@@ -137,6 +138,12 @@ const App: React.FC = () => {
                 {/* Job Seeker Routes */}
                 <Route path="/dashboard" element={
                   <Guard auth onboarding types={['job_seeker']}><Dashboard /></Guard>
+                } />
+                <Route path="/feed" element={
+                  <Guard auth onboarding types={['job_seeker']}><Feed /></Guard>
+                } />
+                <Route path="/feed/:postId" element={
+                  <Guard auth onboarding types={['job_seeker']}><Feed /></Guard>
                 } />
                 <Route path="/jobs" element={
                   <Guard auth onboarding types={['job_seeker']}><LearningJobFeed /></Guard>

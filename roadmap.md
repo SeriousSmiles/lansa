@@ -28,3 +28,10 @@ Discovery validation: eight focused tests pass; preview build OK; local fixture 
 - [x] Home metrics and vacancies needing attention, Jobs by status with detail sheet, applicant filters and permission-aware decisions, Analytics, native Company and /organization/settings, employer inbox/thread styling.
 - [x] Local-fixture checks at 320, 390, 768 and 1280; owner vs view-only roles; no real writes.
 - [ ] Mobile job editing. Blocker: the existing edit flow creates a new posting instead of updating; needs an update path in JobPostingWizard first.
+
+## Seeker environment (stage 2)
+- [x] Seeker theme and five-tab navigation across /dashboard, /feed, /jobs, /discovery, /chat, /notifications, /profile, resume, card, certification, resources, content.
+- [x] Professional feed with categories, Saved, post detail, compose with https link check, owner-only delete (new member-only tables).
+- [x] Phone profile builder: Edit/Preview, next missing section opens its editor, proof of work, visibility & sharing, CV import, resume and card.
+- [x] Jobs: labeled Pass / Details / Save, Saved & applied tab and ?tab=saved / ?job= links.
+- [ ] Onboarding redesign (next stage).
