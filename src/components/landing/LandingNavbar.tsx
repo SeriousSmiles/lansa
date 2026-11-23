@@ -5,7 +5,11 @@ import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import lansaLogo from "@/assets/lansa-logo-blue.png";
 
-export const LandingNavbar = () => {
+type LandingNavbarProps = { /** "light" = dark ink over a light hero (home). Default keeps the original over-dark treatment. */
+  tone?: "dark" | "light";
+};
+
+export const LandingNavbar = ({ tone = "dark" }: LandingNavbarProps = {}) => {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -16,6 +20,9 @@ export const LandingNavbar = () => {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const ink = scrolled || tone === "light";
+  const focus = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-md";
 
   const links = [
     { label: "How It Works", href: "#how-it-works" },
@@ -41,11 +48,12 @@ export const LandingNavbar = () => {
       }`}
     >
       <div className="mx-auto max-w-[1440px] flex items-center justify-between px-[5%] py-3">
-        <button onClick={() => navigate("/")} className="flex items-center gap-2">
+        <button onClick={() => navigate("/")} className={`flex items-center gap-2 ${focus}`}
+          aria-label="Lansa home">
           <img
             src={lansaLogo}
             alt="Lansa"
-            className={`h-7 transition-all duration-300 ${scrolled ? "" : "brightness-0 invert"}`}
+            className={`h-7 transition-all duration-300 ${ink ? "" : "brightness-0 invert"}`}
           />
         </button>
 
@@ -55,8 +63,8 @@ export const LandingNavbar = () => {
             <button
               key={l.label}
               onClick={() => scrollOrNavigate(l.href)}
-              className={`text-sm font-public-sans transition-colors duration-300 ${
-                scrolled ? "text-foreground/70 hover:text-foreground" : "text-white/80 hover:text-white"
+              className={`text-sm font-public-sans transition-colors duration-300 ${focus} ${
+                ink ? "text-foreground/70 hover:text-foreground" : "text-white/80 hover:text-white"
               }`}
             >
               {l.label}
@@ -71,7 +79,7 @@ export const LandingNavbar = () => {
             size="sm"
             onClick={() => navigate("/login")}
             className={`font-urbanist transition-colors duration-300 ${
-              scrolled ? "" : "text-white hover:text-white hover:bg-white/10"
+              ink ? "" : "text-white hover:text-white hover:bg-white/10"
             }`}
           >
             Sign In
@@ -83,7 +91,9 @@ export const LandingNavbar = () => {
 
         {/* Mobile hamburger */}
         <button
-          className={`md:hidden p-2 transition-colors duration-300 ${scrolled ? "text-foreground" : "text-white"}`}
+          className={`md:hidden p-2 transition-colors duration-300 ${focus} ${ink ? "text-foreground" : "text-white"}`}
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileOpen}
           onClick={() => setMobileOpen(!mobileOpen)}
         >
           {mobileOpen ? <X size={22} /> : <Menu size={22} />}

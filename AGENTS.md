@@ -20,3 +20,6 @@
 - Keep mobile deck decisions gated through confirmed persistence and dismissal; target Undo by the returned pass ID and retain match presentation independently of the remaining deck to avoid duplicates, wrong restores and lost final-card matches.
 - Offer only implemented skill filters in the mobile discovery sheet and opt into strict discovery errors on mobile; unsupported filters and failed reads must not masquerade as genuine empty results.
 - Keep JobPostingWizard as the single owner of job creation; mobile completion callbacks only refresh results so one completed wizard cannot submit a second job.
+
+# Public home hero
+- Home hero copy, name pairs and business marks live in homeHeroContent.ts with local assets only; swap a mark by editing one entry so the animated layout never changes.
