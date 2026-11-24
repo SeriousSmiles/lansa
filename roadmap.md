@@ -38,3 +38,4 @@ Discovery validation: eight focused tests pass; preview build OK; local fixture 
 
 ## Stage 3 — Onboarding carousel (done, preview only)
 - [x] Role-aware /signup (role → account → check email/resend) and /onboarding carousel for seeker, create company, join company; mentor path kept
+- [x] Safe job editing on phone and desktop (update-only, current company)

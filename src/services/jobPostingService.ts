@@ -282,6 +282,24 @@ export const jobPostingService = {
     }
   },
 
+  /**
+   * Edit an existing vacancy. Scoped by ID and organization, update-only:
+   * it throws on any error or when no row matched and never inserts.
+   */
+  async saveJobEdits(jobId: string, organizationId: string, patch: Partial<JobListing>): Promise<JobListing> {
+    if (!jobId || !organizationId) throw new Error('Missing job or company');
+    const { data, error } = await supabase
+      .from('job_listings_v2')
+      .update(patch as any)
+      .eq('id', jobId)
+      .eq('organization_id', organizationId)
+      .select()
+      .maybeSingle();
+    if (error) throw new Error(error.message || 'Could not save changes');
+    if (!data || (data as any).id !== jobId) throw new Error('This job could not be updated. It may belong to another company or you may not have permission.');
+    return data as any;
+  },
+
   async deleteJobListing(jobId: string): Promise<boolean> {
     try {
       const { error } = await supabase

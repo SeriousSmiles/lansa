@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { Briefcase, Eye, Lock, MapPin, Plus, RefreshCw, Unlock } from "lucide-react";
+import { Briefcase, Edit2, Eye, Lock, MapPin, Plus, RefreshCw, Unlock } from "lucide-react";
+import { JobEditForm } from "@/components/jobs/JobEditForm";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import type { JobListing } from "@/services/jobPostingService";
 import { EmployerEmpty, EmployerHeader, JOB_TYPE_LABEL, JobStatus } from "./employerUi";
@@ -17,6 +18,8 @@ interface Props {
   onCreate: () => void;
   onToggle: (job: JobListing) => Promise<boolean>;
   onOpenApplications: (job: JobListing) => void;
+  organizationId?: string;
+  onEdited?: (job: JobListing) => void;
 }
 
 const FILTERS: Array<[JobFilter, string]> = [["open", "Open"], ["closed", "Closed"], ["all", "All"]];
@@ -27,6 +30,8 @@ export function EmployerJobsPanel(p: Props) {
   const [filter, setFilter] = useState<JobFilter>("open");
   const [detailId, setDetailId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const editing = p.jobs.find((j) => j.id === editId) || null;
   const list = filterJobs(p.jobs, filter);
   const detail = p.jobs.find((j) => j.id === detailId) || null;
   const n = (f: JobFilter) => filterJobs(p.jobs, f).length;
@@ -113,12 +118,27 @@ export function EmployerJobsPanel(p: Props) {
                 </div>
               )}
               {p.canEdit && (
-                <div className="grid grid-cols-1">
+                <div className="grid grid-cols-2 gap-3">
+                  {p.organizationId && <button type="button" className="ee-secondary" onClick={() => { setEditId(detail.id); setDetailId(null); }}><Edit2 size={16} /> Edit job</button>}
                   <button type="button" className="ee-secondary" disabled={busy} onClick={() => toggle(detail)}>
                     {detail.is_active ? <><Lock size={16} /> Close job</> : <><Unlock size={16} /> Reopen job</>}
                   </button>
                 </div>
               )}
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={!!editing} onOpenChange={(o) => !o && setEditId(null)}>
+        <SheetContent side="bottom" className="employer-theme ee-sheet h-[94dvh] overflow-y-auto">
+          {editing && p.organizationId && (
+            <div className="px-5 pt-6 flex flex-col gap-4">
+              <SheetTitle className="ee-title text-[26px] font-extrabold leading-tight">Edit job</SheetTitle>
+              <SheetDescription className="sr-only">Change the details of {editing.title}</SheetDescription>
+              <JobEditForm key={editing.id} job={editing as any} organizationId={p.organizationId} canEdit={p.canEdit}
+                onCancel={() => setEditId(null)}
+                onSaved={(j) => { p.onEdited?.(j); setEditId(null); setDetailId(j.id); }} />
             </div>
           )}
         </SheetContent>

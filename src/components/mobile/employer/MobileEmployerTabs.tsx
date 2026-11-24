@@ -85,9 +85,12 @@ export function MobileEmployerTabs({ businessData }: { businessData: BusinessDat
     if (!user?.id) return;
     setJobsLoading(true);
     try {
-      const listings = await jobPostingService.getJobListings(user.id);
-      setJobs(listings);
-      if (activeOrganization?.id) {
+      // Same scope as desktop: every job of the current organization, never other companies' jobs.
+      if (!activeOrganization?.id) { setJobs([]); setJobsError(false); return; }
+      const { data: listings, error: listError } = await supabase.from("job_listings_v2").select("*").eq("organization_id", activeOrganization.id).order("posted_at", { ascending: false });
+      if (listError) throw listError;
+      setJobs((listings as JobListing[]) || []);
+      {
         const { data, error } = await supabase.from("job_applications_v2").select("job_id, status").eq("organization_id", activeOrganization.id);
         if (error) throw error;
         setCounts(countApplications((data as { job_id: string; status: string }[]) || []));
@@ -176,6 +179,8 @@ export function MobileEmployerTabs({ businessData }: { businessData: BusinessDat
               onCreate={() => setShowJobCreator(true)}
               onToggle={toggleJob}
               onOpenApplications={job => setSheetJob({ id: job.id, title: job.title })}
+              organizationId={activeOrganization?.id}
+              onEdited={(updated) => { setJobs(prev => prev.map(j => j.id === updated.id ? { ...j, ...updated } : j)); loadJobs(); }}
             />
           </TabsContent>
 

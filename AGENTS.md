@@ -38,3 +38,5 @@
 - /signup and /onboarding share the carousel primitives in src/components/onboarding/carousel; step order, resume, swipe and validation rules live in onboardingFlowModel (tested) so flows stay consistent.
 - Onboarding drafts are non-sensitive, user-scoped `user_answers.onboarding_inputs` with flow_version 2; step values save straight to user_profiles/organizations, and an open v2 draft blocks the legacy career_path auto-complete.
 - Finish only through markOnboardingComplete then refreshUserState; company creation reuses a recorded/owned org and join requests treat "already pending" as success, so retries never duplicate.
+- Editing a vacancy goes only through JobEditForm + jobPostingService.saveJobEdits (update by id and organization, changed fields only, throws, never inserts); JobPostingWizard stays create-only because it flattens structured fields.
+- Phone and desktop job lists both read job_listings_v2 by the active organization_id so edit/close controls only ever target the current company's jobs.
