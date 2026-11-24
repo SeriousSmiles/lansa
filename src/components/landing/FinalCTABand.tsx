@@ -38,10 +38,10 @@ export const FinalCTABand = () => {
             does the heavy lifting — you just stay you.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <PillButton variant="orange" onClick={() => navigate("/signup")}>
+            <PillButton variant="white" onClick={() => navigate("/signup")}>
               Create my profile
             </PillButton>
-            <PillButton variant="white" onClick={() => navigate("/pricing")}>
+            <PillButton variant="outline" onClick={() => navigate("/pricing")}>
               See pricing
             </PillButton>
           </div>
