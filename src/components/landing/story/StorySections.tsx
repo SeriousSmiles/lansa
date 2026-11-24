@@ -227,7 +227,7 @@ function StepView({ step }: { step: number }) {
       <div className="space-y-3">
         <div className="flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2.5 text-sm text-muted-foreground"><Search className="h-4 w-4" />Hospitality · Willemstad</div>
         {PIPE.map((r) => (
-          <div key={r.name} className="flex items-center gap-3 rounded-2xl border border-border bg-background p-3">
+          <div key={r.name} className="flex items-center gap-3 rounded-2xl bg-card p-3 shadow-sm">
             <img src={r.img} alt="" className="h-11 w-11 rounded-full object-cover" />
             <div className="min-w-0 flex-1"><p className="text-sm font-bold">{r.name}</p><p className="text-xs text-muted-foreground">{r.role}</p></div>
             <span className="flex items-center gap-1 rounded-full bg-secondary/10 px-2.5 py-1 text-xs font-semibold text-secondary"><BadgeCheck className="h-3.5 w-3.5" />Certified</span>
@@ -239,7 +239,7 @@ function StepView({ step }: { step: number }) {
     return (
       <div className="grid grid-cols-3 gap-3">
         {(["New", "Interview", "Matched"] as const).map((col) => (
-          <div key={col} className="rounded-2xl bg-background p-3">
+          <div key={col} className="rounded-2xl bg-card p-3">
             <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">{col}</p>
             {PIPE.filter((r) => r.stage === col).map((r) => (
               <div key={r.name} className="rounded-xl border border-border p-2 text-center">
@@ -252,13 +252,13 @@ function StepView({ step }: { step: number }) {
       </div>
     );
   return (
-    <div className="rounded-2xl bg-background p-4">
+    <div className="rounded-2xl bg-card p-4">
       <div className="mb-4 flex items-center gap-3 border-b border-border pb-3">
         <img src={p4} alt="" className="h-10 w-10 rounded-full object-cover" />
         <div><p className="text-sm font-bold">Jurgen R.</p><p className="text-xs text-secondary">Matched · both interested</p></div>
       </div>
       <div className="space-y-2 text-sm">
-        <p className="w-fit max-w-[85%] rounded-2xl rounded-bl-sm bg-muted px-3 py-2">Bon dia Jurgen! Free for a call Thursday?</p>
+        <p className="w-fit max-w-[85%] rounded-2xl rounded-bl-sm bg-home-mist px-3 py-2">Bon dia Jurgen! Free for a call Thursday?</p>
         <p className="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-sm bg-dashboard-ink px-3 py-2 text-dashboard-on-ink">Yes! 10am works great.</p>
       </div>
     </div>
@@ -274,7 +274,7 @@ export function CapabilitiesStory() {
   useMotionValueEvent(scrollYProgress, "change", (v) => setStep(v < 0.34 ? 0 : v < 0.67 ? 1 : 2));
 
   return (
-    <section className="bg-muted/50 text-dashboard-ink" aria-labelledby="for-employers">
+    <section className="bg-home-mist text-dashboard-ink" aria-labelledby="for-employers">
       <div ref={ref} className={reduce ? "" : "relative lg:h-[240vh]"}>
         <div className="mx-auto grid max-w-7xl gap-12 px-6 py-24 md:px-12 lg:sticky lg:top-0 lg:min-h-[100svh] lg:grid-cols-12 lg:items-center">
           <div className="lg:col-span-5">
@@ -286,11 +286,11 @@ export function CapabilitiesStory() {
                 return (
                   <li key={st.title}>
                     <button type="button" onClick={() => setStep(i)} aria-current={on}
-                      className={`flex w-full gap-4 rounded-2xl p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary ${on ? "bg-background shadow-sm" : "hover:bg-background/60"}`}>
-                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${on ? "bg-dashboard-ink text-dashboard-on-ink" : "bg-background text-dashboard-ink"}`}><st.icon className="h-5 w-5" /></span>
+                      className={`flex w-full gap-4 rounded-2xl p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary ${on ? "bg-card shadow-md ring-1 ring-home-mist-deep" : "hover:bg-card/60"}`}>
+                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${on ? "bg-dashboard-ink text-dashboard-on-ink" : "bg-home-mist-deep text-dashboard-ink"}`}><st.icon className="h-5 w-5" /></span>
                       <span>
                         <span className="block font-urbanist text-lg font-extrabold">{i + 1}. {st.title}</span>
-                        <span className={`block text-sm leading-relaxed text-muted-foreground ${on ? "" : "hidden md:block"}`}>{st.body}</span>
+                        <span className={`block text-sm leading-relaxed text-dashboard-ink/70 ${on ? "" : "hidden md:block"}`}>{st.body}</span>
                       </span>
                     </button>
                   </li>
@@ -299,16 +299,18 @@ export function CapabilitiesStory() {
             </ol>
           </div>
           <div className="lg:col-span-7">
-            <div className="rounded-[2rem] border border-border bg-card p-5 shadow-xl">
-              <div className="mb-4 flex items-center justify-between">
+            <div className="overflow-hidden rounded-[2rem] bg-card shadow-2xl shadow-dashboard-ink/15">
+              <div className="flex items-center justify-between bg-dashboard-ink px-5 py-4 text-dashboard-on-ink">
                 <p className="font-urbanist font-extrabold">Customer Success Lead</p>
-                <span className="text-xs font-semibold text-muted-foreground">Step {step + 1} of 3</span>
+                <span className="rounded-full bg-dashboard-on-ink/15 px-3 py-1 text-xs font-semibold">Step {step + 1} of 3</span>
               </div>
-              <motion.div key={step} initial={reduce ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="min-h-[300px] rounded-2xl bg-muted/60 p-4">
+              <div className="p-5">
+              <motion.div key={step} initial={reduce ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="min-h-[300px] rounded-2xl bg-home-mist p-4">
                 <StepView step={step} />
               </motion.div>
+              </div>
             </div>
-            <p className="mt-3 text-center text-xs text-muted-foreground">Illustrative preview with sample names.</p>
+            <p className="mt-3 text-center text-xs text-dashboard-ink/60">Illustrative preview with sample names.</p>
           </div>
         </div>
       </div>
@@ -316,15 +318,15 @@ export function CapabilitiesStory() {
       <div className="mx-auto max-w-7xl px-6 pb-24 md:px-12">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {TILES.map((t) => (
-            <article key={t.title} className="rounded-[1.75rem] border border-border bg-background p-6">
-              <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-dashboard-ink"><t.icon className="h-6 w-6" /></span>
+            <article key={t.title} className="rounded-[1.75rem] bg-card p-6 shadow-sm">
+              <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-home-mist text-secondary"><t.icon className="h-6 w-6" /></span>
               <h3 className="font-urbanist text-xl font-extrabold tracking-tight">{t.title}</h3>
               <p className="mt-2 font-public-sans text-sm leading-relaxed text-muted-foreground">{t.body}</p>
             </article>
           ))}
         </div>
         <button type="button" onClick={() => navigate("/signup")}
-          className="group mx-auto mt-10 flex min-h-[56px] items-center gap-3 rounded-full bg-primary px-8 font-urbanist text-lg font-bold text-primary-foreground transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40">
+          className="group mx-auto mt-10 flex min-h-[56px] items-center gap-3 rounded-full bg-dashboard-ink px-8 font-urbanist text-lg font-bold text-dashboard-on-ink transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-dashboard-ink/30">
           Start free<ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
         </button>
       </div>

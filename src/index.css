@@ -46,6 +46,9 @@
     --radius: 0.5rem;
     --dashboard-ink: 236 64% 27%;
     --dashboard-on-ink: 0 0% 100%;
+    /* Public homepage section surfaces (independent of app white canvas) */
+    --home-mist: 215 80% 94%;
+    --home-mist-deep: 215 70% 88%;
     --dashboard-soft-ink: 224 65% 87%;
     --dashboard-blue-surface: 215 85% 97%;
     --dashboard-orange-surface: 14 90% 97%;

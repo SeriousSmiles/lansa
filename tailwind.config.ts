@@ -30,6 +30,7 @@ export default {
 		},
 			colors: {
 				'dashboard-ink': 'hsl(var(--dashboard-ink))',
+				'home-mist': { DEFAULT: 'hsl(var(--home-mist))', deep: 'hsl(var(--home-mist-deep))' },
 				'dashboard-on-ink': 'hsl(var(--dashboard-on-ink))',
 				'dashboard-soft-ink': 'hsl(var(--dashboard-soft-ink))',
 				'dashboard-blue-surface': 'hsl(var(--dashboard-blue-surface))',
