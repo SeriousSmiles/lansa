@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Bell, Briefcase, BarChart3, Heart, MessageCircle, Plus, RefreshCw, UserCheck, Users } from "lucide-react";
+import { Bell, Briefcase, BarChart3, MessageCircle, Plus, RefreshCw, UserCheck, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { EmployerEmpty, EmployerGroup, EmployerHeader, EmployerRow } from "./employerUi";
 import type { JobListing } from "@/services/jobPostingService";
+import { EMPLOYER_ACTIVITY_TYPES, isEmployerActivity } from "./employerActivityModel";
 
 interface BusinessData { company_name: string; business_size: string; role_function: string; business_services: string; company_logo?: string }
 export interface EmployerStats { activeJobs: number; totalApplications: number; candidatesViewed: number; newMatches: number }
@@ -28,8 +29,8 @@ interface Props {
   onOpenInbox: () => void;
 }
 
-interface ActivityItem { id: string; title: string; message: string; type: string; created_at: string }
-const ACTIVITY_ICONS: Record<string, typeof Bell> = { employer_interest_received: Heart, match_created: UserCheck, chat_request_accepted: MessageCircle, job_application_received: Briefcase };
+interface ActivityItem { id: string; title: string; message: string; type: string; created_at: string; metadata?: { other_user_id?: unknown } | null }
+const ACTIVITY_ICONS: Record<string, typeof Bell> = { match_created: UserCheck, chat_request_accepted: MessageCircle, job_application_received: Briefcase };
 
 /** Employer Home: one primary hiring action, grouped real metrics, vacancies waiting on a decision. */
 export function MobileEmployerDashboard(p: Props) {
@@ -43,14 +44,14 @@ export function MobileEmployerDashboard(p: Props) {
     (async () => {
       const { data, error } = await supabase
         .from("notifications")
-        .select("id, title, message, type, created_at")
+        .select("id, title, message, type, created_at, metadata")
         .eq("user_id", user.id)
-        .in("type", ["employer_interest_received", "match_created", "chat_request_accepted", "job_application_received"])
+        .in("type", [...EMPLOYER_ACTIVITY_TYPES])
         .order("created_at", { ascending: false })
         .limit(5);
       if (!live) return;
       setActivityError(!!error);
-      setActivity((data as ActivityItem[]) || []);
+      setActivity(((data as ActivityItem[]) || []).filter(item => isEmployerActivity(item, user.id)));
     })();
     return () => { live = false; };
   }, [user?.id]);

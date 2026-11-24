@@ -22,6 +22,7 @@
 - Keep JobPostingWizard as the single owner of job creation; mobile completion callbacks only refresh results so one completed wizard cannot submit a second job.
 
 # Employer environment
+- Use employerActivityModel for employer Home event eligibility; seeker-addressed interest alerts must never be relabelled as candidate interest, and self-match metadata must not be presented as a candidate match.
 - Employer surfaces share the scoped .employer-theme tokens and .ee-* primitives (employerUi.tsx); restyle there rather than per screen so desktop and phone stay coordinated without changing the global theme.
 - Phone employer navigation is five fixed tabs (Discover, Jobs, Inbox, Home, Company) driven by ?tab= with legacy aliases; /organization/settings?section= is the single owner of team settings on every device.
 - Keep the job-applications sheet mounted while it closes; unmounting an open Radix sheet leaves the page unclickable.
