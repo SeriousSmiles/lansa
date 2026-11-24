@@ -1,11 +1,7 @@
-import { useRef, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, useReducedMotion, useScroll, useSpring, useTransform, type MotionValue } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useSpring, useTransform, useMotionValueEvent, type MotionValue } from "framer-motion";
 import { ArrowRight, BadgeCheck, Check, Clock, Heart, MessageCircle, Search, Sparkles, X, Briefcase, Users, TrendingUp } from "lucide-react";
-import iProfile from "@/assets/illustrations/i-profile.webp";
-import iResume from "@/assets/illustrations/i-resume.webp";
-import iCert from "@/assets/illustrations/i-cert.webp";
-import iDiscover from "@/assets/illustrations/i-discover.webp";
 import p1 from "@/assets/landing/people/p1-couch-phone.jpg";
 import p2 from "@/assets/landing/people/p2-cafe-laptop.jpg";
 import p4 from "@/assets/landing/people/p4-videocall.jpg";
@@ -205,12 +201,18 @@ export function ChapterStory() {
   );
 }
 
-/* ---------- 3. The employer console: a SaaS dashboard assembling on scroll ---------- */
+/* ---------- 3. Employer workspace: one clear story, three steps, one product view ---------- */
+const STEPS = [
+  { icon: Search, title: "Search certified talent", body: "Every profile you see has passed a Lansa sector exam and been verified." },
+  { icon: Users, title: "Shortlist in one pipeline", body: "Move people from New to Interview to Matched — no spreadsheets, no CV pile." },
+  { icon: MessageCircle, title: "Talk when it's mutual", body: "Chat opens once both sides say yes, so every conversation is wanted." },
+] as const;
+
 const TILES = [
-  { icon: iProfile, title: "AI Profile Builder", body: "Guided prompts turn a story into a complete profile in minutes." },
-  { icon: iResume, title: "Resume Studio", body: "Designer-quality resumes, exported as print-ready PDF." },
-  { icon: iCert, title: "Lansa Certification", body: "Sector exams and a verified badge employers trust." },
-  { icon: iDiscover, title: "Smart Discovery", body: "Companies browse certified talent. Real conversations follow." },
+  { icon: Sparkles, title: "AI Profile Builder", body: "Guided prompts turn a story into a complete profile in minutes." },
+  { icon: Briefcase, title: "Resume Studio", body: "Designer-quality resumes, exported as print-ready PDF." },
+  { icon: BadgeCheck, title: "Lansa Certification", body: "Sector exams and a verified badge employers trust." },
+  { icon: TrendingUp, title: "Smart Discovery", body: "Companies browse certified talent. Real conversations follow." },
 ] as const;
 
 const PIPE = [
@@ -219,14 +221,46 @@ const PIPE = [
   { name: "Gabriela S.", role: "Front Desk", stage: "New", img: p2 },
 ];
 
-function Metric({ icon: Icon, label, to, p }: { icon: typeof Users; label: string; to: number; p: MotionValue<number> }) {
-  const v = useTransform(p, [0.15, 0.45], [0, to]);
-  const t = useTransform(v, (x) => String(Math.round(x)));
+function StepView({ step }: { step: number }) {
+  if (step === 0)
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2.5 text-sm text-muted-foreground"><Search className="h-4 w-4" />Hospitality · Willemstad</div>
+        {PIPE.map((r) => (
+          <div key={r.name} className="flex items-center gap-3 rounded-2xl border border-border bg-background p-3">
+            <img src={r.img} alt="" className="h-11 w-11 rounded-full object-cover" />
+            <div className="min-w-0 flex-1"><p className="text-sm font-bold">{r.name}</p><p className="text-xs text-muted-foreground">{r.role}</p></div>
+            <span className="flex items-center gap-1 rounded-full bg-secondary/10 px-2.5 py-1 text-xs font-semibold text-secondary"><BadgeCheck className="h-3.5 w-3.5" />Certified</span>
+          </div>
+        ))}
+      </div>
+    );
+  if (step === 1)
+    return (
+      <div className="grid grid-cols-3 gap-3">
+        {(["New", "Interview", "Matched"] as const).map((col) => (
+          <div key={col} className="rounded-2xl bg-background p-3">
+            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">{col}</p>
+            {PIPE.filter((r) => r.stage === col).map((r) => (
+              <div key={r.name} className="rounded-xl border border-border p-2 text-center">
+                <img src={r.img} alt="" className="mx-auto h-10 w-10 rounded-full object-cover" />
+                <p className="mt-1 text-xs font-bold">{r.name}</p>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
   return (
-    <div className="rounded-2xl bg-muted/60 p-4">
-      <Icon className="h-4 w-4 text-secondary" />
-      <motion.p className="mt-2 font-urbanist text-3xl font-black">{t}</motion.p>
-      <p className="text-xs text-muted-foreground">{label}</p>
+    <div className="rounded-2xl bg-background p-4">
+      <div className="mb-4 flex items-center gap-3 border-b border-border pb-3">
+        <img src={p4} alt="" className="h-10 w-10 rounded-full object-cover" />
+        <div><p className="text-sm font-bold">Jurgen R.</p><p className="text-xs text-secondary">Matched · both interested</p></div>
+      </div>
+      <div className="space-y-2 text-sm">
+        <p className="w-fit max-w-[85%] rounded-2xl rounded-bl-sm bg-muted px-3 py-2">Bon dia Jurgen! Free for a call Thursday?</p>
+        <p className="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-sm bg-dashboard-ink px-3 py-2 text-dashboard-on-ink">Yes! 10am works great.</p>
+      </div>
     </div>
   );
 }
@@ -234,79 +268,64 @@ function Metric({ icon: Icon, label, to, p }: { icon: typeof Users; label: strin
 export function CapabilitiesStory() {
   const navigate = useNavigate();
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const x1 = useTransform(scrollYProgress, [0, 1], ["5%", "-45%"]);
-  const x2 = useTransform(scrollYProgress, [0, 1], ["-45%", "5%"]);
-  const tilt = useTransform(scrollYProgress, [0.05, 0.35], [18, 0]);
-  const dashScale = useTransform(scrollYProgress, [0.05, 0.35], [0.88, 1]);
-  const chipY = useTransform(scrollYProgress, [0, 1], ["60%", "-80%"]);
-  const photoY = useTransform(scrollYProgress, [0, 1], ["30%", "-40%"]);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  const [step, setStep] = useState(0);
+  useMotionValueEvent(scrollYProgress, "change", (v) => setStep(v < 0.34 ? 0 : v < 0.67 ? 1 : 2));
 
   return (
-    <section ref={ref} className="relative overflow-hidden bg-dashboard-ink py-24 text-dashboard-on-ink md:py-36">
-      <div aria-hidden className="pointer-events-none select-none space-y-2">
-        <motion.p style={{ x: x1 }} className="lx-story-marquee whitespace-nowrap">Build · Certify · Get discovered · Build · Certify · Get discovered ·</motion.p>
-        <motion.p style={{ x: x2 }} className="lx-story-marquee lx-story-marquee--outline whitespace-nowrap">People first · Careers that move · People first · Careers that move ·</motion.p>
+    <section className="bg-muted/50 text-dashboard-ink" aria-labelledby="for-employers">
+      <div ref={ref} className={reduce ? "" : "relative lg:h-[240vh]"}>
+        <div className="mx-auto grid max-w-7xl gap-12 px-6 py-24 md:px-12 lg:sticky lg:top-0 lg:min-h-[100svh] lg:grid-cols-12 lg:items-center">
+          <div className="lg:col-span-5">
+            <p className="font-urbanist text-sm font-bold uppercase tracking-[0.25em] text-secondary">For employers</p>
+            <h2 id="for-employers" className="lx-story-title mt-3">Hire certified people in three steps.</h2>
+            <ol className="mt-10 space-y-3">
+              {STEPS.map((st, i) => {
+                const on = i === step;
+                return (
+                  <li key={st.title}>
+                    <button type="button" onClick={() => setStep(i)} aria-current={on}
+                      className={`flex w-full gap-4 rounded-2xl p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary ${on ? "bg-background shadow-sm" : "hover:bg-background/60"}`}>
+                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${on ? "bg-dashboard-ink text-dashboard-on-ink" : "bg-background text-dashboard-ink"}`}><st.icon className="h-5 w-5" /></span>
+                      <span>
+                        <span className="block font-urbanist text-lg font-extrabold">{i + 1}. {st.title}</span>
+                        <span className={`block text-sm leading-relaxed text-muted-foreground ${on ? "" : "hidden md:block"}`}>{st.body}</span>
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+          <div className="lg:col-span-7">
+            <div className="rounded-[2rem] border border-border bg-card p-5 shadow-xl">
+              <div className="mb-4 flex items-center justify-between">
+                <p className="font-urbanist font-extrabold">Customer Success Lead</p>
+                <span className="text-xs font-semibold text-muted-foreground">Step {step + 1} of 3</span>
+              </div>
+              <motion.div key={step} initial={reduce ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="min-h-[300px] rounded-2xl bg-muted/60 p-4">
+                <StepView step={step} />
+              </motion.div>
+            </div>
+            <p className="mt-3 text-center text-xs text-muted-foreground">Illustrative preview with sample names.</p>
+          </div>
+        </div>
       </div>
 
-      <div className="mx-auto mt-16 max-w-6xl px-6 md:px-12">
-        <p className="font-urbanist text-sm font-bold uppercase tracking-[0.25em] text-primary">For employers</p>
-        <h2 className="lx-story-title mt-3 max-w-3xl">One workspace to find, certify-check and hire. <span className="text-primary">No CV pile.</span></h2>
-
-        <div className="relative mt-14" style={{ perspective: 1400 }}>
-          <motion.img src={p1} alt="" aria-hidden style={{ y: photoY }} className="absolute -left-16 -top-10 hidden aspect-square w-44 rounded-3xl object-cover shadow-2xl lg:block" />
-          <motion.div style={{ rotateX: tilt, scale: dashScale }} className="relative overflow-hidden rounded-[2rem] border border-border bg-background text-dashboard-ink shadow-2xl">
-            <div className="flex items-center gap-2 border-b border-border px-5 py-3">
-              <span className="h-3 w-3 rounded-full bg-primary/70" /><span className="h-3 w-3 rounded-full bg-secondary/50" /><span className="h-3 w-3 rounded-full bg-muted-foreground/30" />
-              <div className="ml-4 flex flex-1 items-center gap-2 rounded-full bg-muted px-4 py-1.5 text-xs text-muted-foreground"><Search className="h-3.5 w-3.5" />Search certified talent…</div>
-            </div>
-            <div className="grid gap-5 p-5 md:grid-cols-12">
-              <div className="grid grid-cols-3 gap-3 md:col-span-12">
-                <Metric icon={Briefcase} label="Open vacancies" to={4} p={scrollYProgress} />
-                <Metric icon={Users} label="New applicants" to={27} p={scrollYProgress} />
-                <Metric icon={TrendingUp} label="Matches this week" to={9} p={scrollYProgress} />
-              </div>
-              <div className="md:col-span-7">
-                <p className="mb-2 font-urbanist font-extrabold">Pipeline · Customer Success Lead</p>
-                <ul className="space-y-2">
-                  {PIPE.map((r, i) => (
-                    <motion.li key={r.name} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ delay: 0.15 * i, type: "spring", stiffness: 120, damping: 16 }}
-                      className="flex items-center gap-3 rounded-2xl border border-border p-3">
-                      <img src={r.img} alt="" className="h-10 w-10 rounded-full object-cover" />
-                      <div className="min-w-0 flex-1"><p className="flex items-center gap-1 text-sm font-bold">{r.name}<BadgeCheck className="h-4 w-4 text-primary" /></p><p className="truncate text-xs text-muted-foreground">{r.role}</p></div>
-                      <span className={`rounded-full px-3 py-1 text-xs font-bold ${r.stage === "Matched" ? "bg-primary text-primary-foreground" : "bg-secondary/10 text-secondary"}`}>{r.stage}</span>
-                    </motion.li>
-                  ))}
-                </ul>
-              </div>
-              <div className="md:col-span-5">
-                <p className="mb-2 font-urbanist font-extrabold">Inbox</p>
-                <div className="space-y-2 rounded-2xl bg-muted/60 p-4 text-sm">
-                  <motion.p initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="w-fit max-w-[85%] rounded-2xl rounded-bl-sm bg-background px-3 py-2">Bon dia Jurgen! Free for a call Thursday?</motion.p>
-                  <motion.p initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: 0.5 }} className="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-sm bg-secondary px-3 py-2 text-secondary-foreground">Yes! 10am works great 🙌</motion.p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-          <motion.div style={{ y: chipY }} className="absolute -right-4 top-1/3 hidden md:block">
-            <div className="flex items-center gap-2 rounded-full bg-primary px-4 py-2 font-urbanist text-sm font-extrabold text-primary-foreground shadow-2xl"><BadgeCheck className="h-4 w-4" />Only certified & verified</div>
-          </motion.div>
-        </div>
-        <p className="mt-4 text-center text-xs text-dashboard-on-ink/80">Illustrative preview with sample names.</p>
-
-        <div className="mt-20 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {TILES.map((t, i) => (
-            <motion.article key={t.title} initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ type: "spring", stiffness: 90, damping: 16, delay: i * 0.08 }} whileHover={{ y: -6 }}
-              className="rounded-[1.75rem] bg-background p-6 text-dashboard-ink">
-              <img src={t.icon} alt="" aria-hidden loading="lazy" className="mb-4 h-14 w-14" />
+      <div className="mx-auto max-w-7xl px-6 pb-24 md:px-12">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {TILES.map((t) => (
+            <article key={t.title} className="rounded-[1.75rem] border border-border bg-background p-6">
+              <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-dashboard-ink"><t.icon className="h-6 w-6" /></span>
               <h3 className="font-urbanist text-xl font-extrabold tracking-tight">{t.title}</h3>
               <p className="mt-2 font-public-sans text-sm leading-relaxed text-muted-foreground">{t.body}</p>
-            </motion.article>
+            </article>
           ))}
         </div>
         <button type="button" onClick={() => navigate("/signup")}
-          className="group mt-8 flex min-h-[64px] w-full items-center justify-between rounded-full bg-primary px-8 py-5 font-urbanist text-lg font-bold text-primary-foreground transition-transform hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40">
-          Start free<ArrowRight className="h-6 w-6 transition-transform group-hover:translate-x-1" />
+          className="group mx-auto mt-10 flex min-h-[56px] items-center gap-3 rounded-full bg-primary px-8 font-urbanist text-lg font-bold text-primary-foreground transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40">
+          Start free<ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
         </button>
       </div>
     </section>
