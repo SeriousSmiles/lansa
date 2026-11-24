@@ -788,3 +788,10 @@
 @media (min-width: 768px) {
   .employer-theme .ee-header h1, .seeker-theme .ee-header h1 { font-size: 30px; }
 }
+
+/* Homepage story sections */
+.lx-story-giant { font-family: Urbanist, sans-serif; font-weight: 900; letter-spacing: -0.035em; line-height: 0.95; font-size: clamp(2.6rem, 8vw, 7.5rem); }
+.lx-story-title { font-family: Urbanist, sans-serif; font-weight: 900; letter-spacing: -0.03em; line-height: 0.95; font-size: clamp(2.4rem, 5.5vw, 5rem); }
+.lx-story-number { font-family: Urbanist, sans-serif; font-weight: 900; line-height: 1; font-size: clamp(10rem, 30vw, 26rem); }
+.lx-story-marquee { font-family: Urbanist, sans-serif; font-weight: 900; letter-spacing: -0.04em; line-height: 1; font-size: clamp(3.5rem, 11vw, 10rem); }
+.lx-story-marquee--outline { color: transparent; -webkit-text-stroke: 2px hsl(var(--primary)); }

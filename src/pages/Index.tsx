@@ -2,9 +2,7 @@ import { HomeHero } from "@/components/landing/HomeHero";
 import { SEOHead } from "@/components/SEOHead";
 import { LandingNavbar } from "@/components/landing/LandingNavbar";
 import { TrustStrip } from "@/components/landing/TrustStrip";
-import { ValuePropBand } from "@/components/landing/ValuePropBand";
-import { HowItWorksChapters } from "@/components/landing/HowItWorksChapters";
-import { CapabilitiesBand } from "@/components/landing/CapabilitiesBand";
+import { ManifestoScroll, ChapterStory, CapabilitiesStory } from "@/components/landing/story/StorySections";
 import { TestimonialBand } from "@/components/landing/TestimonialBand";
 import { CompaniesSoonBand } from "@/components/landing/CompaniesSoonBand";
 import { LeadMagnetTeaser } from "@/components/landing/LeadMagnetTeaser";
@@ -24,9 +22,9 @@ export default function IndexPage() {
       <LandingNavbar tone="light" />
       <HomeHero />
       <TrustStrip />
-      <ValuePropBand />
-      <HowItWorksChapters />
-      <CapabilitiesBand />
+      <ManifestoScroll />
+      <ChapterStory />
+      <CapabilitiesStory />
       <TestimonialBand />
       <CompaniesSoonBand />
       <LeadMagnetTeaser />
