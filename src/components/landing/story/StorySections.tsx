@@ -8,7 +8,15 @@ import {
   useTransform,
   type MotionValue,
 } from "framer-motion";
-import { ArrowRight, BadgeCheck, FileText, ScrollText, Search } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import manifesto from "@/assets/illustrations/manifesto.webp";
+import buildArt from "@/assets/illustrations/build.webp";
+import certifyArt from "@/assets/illustrations/certify.webp";
+import discoverArt from "@/assets/illustrations/discover.webp";
+import iProfile from "@/assets/illustrations/i-profile.webp";
+import iResume from "@/assets/illustrations/i-resume.webp";
+import iCert from "@/assets/illustrations/i-cert.webp";
+import iDiscover from "@/assets/illustrations/i-discover.webp";
 import welcome from "@/assets/illustrations/welcome.webp";
 import feed from "@/assets/illustrations/feed.webp";
 import learning from "@/assets/illustrations/learning.webp";
@@ -56,7 +64,7 @@ export function ManifestoScroll() {
     <section ref={ref} className="relative h-[260vh] bg-background" aria-label="Why Lansa">
       <div className="sticky top-0 flex h-[100svh] items-center overflow-hidden px-6 md:px-12">
         <motion.img
-          src={welcome}
+          src={manifesto}
           alt=""
           aria-hidden
           style={{ y: artY, rotate: artRotate }}
@@ -87,7 +95,7 @@ const CHAPTERS = [
     kicker: "Build",
     title: "Tell your real story.",
     body: "Lansa's guided builder turns your background — even an untraditional one — into a profile that lands.",
-    art: feed,
+    art: buildArt,
     photo: p2,
   },
   {
@@ -95,7 +103,7 @@ const CHAPTERS = [
     kicker: "Get certified",
     title: "Prove what you know.",
     body: "Take a Lansa Certification in your sector. Pass once and the badge follows your profile everywhere.",
-    art: learning,
+    art: certifyArt,
     photo: p3,
   },
   {
@@ -103,7 +111,7 @@ const CHAPTERS = [
     kicker: "Get discovered",
     title: "The right employer comes to you.",
     body: "Certified, verified profiles surface to companies on Lansa. They start the conversation — you stay in control.",
-    art: hiring,
+    art: discoverArt,
     photo: p4,
   },
 ] as const;
@@ -177,10 +185,10 @@ export function ChapterStory() {
 
 /* ---------- 3. Horizontal marquee + capability cards ---------- */
 const TILES = [
-  { icon: FileText, title: "AI Profile Builder", body: "Guided prompts turn your story into a complete profile in minutes.", art: welcome },
-  { icon: ScrollText, title: "Resume Studio", body: "Designer-quality resumes, exported as PDF, ready to send.", art: jobs },
-  { icon: BadgeCheck, title: "Lansa Certification", body: "A sector exam and a verified badge employers trust.", art: learning },
-  { icon: Search, title: "Smart Discovery", body: "Companies find certified profiles. Real conversations follow.", art: inbox },
+  { icon: iProfile, title: "AI Profile Builder", body: "Guided prompts turn your story into a complete profile in minutes.", art: welcome },
+  { icon: iResume, title: "Resume Studio", body: "Designer-quality resumes, exported as PDF, ready to send.", art: jobs },
+  { icon: iCert, title: "Lansa Certification", body: "A sector exam and a verified badge employers trust.", art: learning },
+  { icon: iDiscover, title: "Smart Discovery", body: "Companies find certified profiles. Real conversations follow.", art: inbox },
 ] as const;
 
 export function CapabilitiesStory() {
@@ -227,9 +235,7 @@ export function CapabilitiesStory() {
               className={`group relative overflow-hidden rounded-[2rem] bg-background p-7 text-dashboard-ink ${i % 2 ? "sm:mt-12" : ""}`}
             >
               <img src={t.art} alt="" aria-hidden loading="lazy" className="mx-auto -mt-2 mb-4 h-36 w-36 object-contain transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3" />
-              <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-                <t.icon className="h-5 w-5" strokeWidth={2.5} />
-              </div>
+              <img src={t.icon} alt="" aria-hidden loading="lazy" className="mb-3 h-14 w-14" />
               <h3 className="font-urbanist text-2xl font-extrabold tracking-tight">{t.title}</h3>
               <p className="mt-2 font-public-sans leading-relaxed text-muted-foreground">{t.body}</p>
             </motion.article>
