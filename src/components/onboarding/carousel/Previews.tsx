@@ -1,7 +1,7 @@
 import { Building2, MapPin, Eye, EyeOff } from "lucide-react";
 import { initials } from "@/components/feed/careerFeedModel";
 
-export function MiniProfileCard(p: { name: string; title: string; location?: string; goal?: string; skills: string[]; photo?: string | null; visible?: boolean; background?: string[] }) {
+export function MiniProfileCard(p: { name: string; title: string; location?: string; goal?: string; skills: string[]; photo?: string | null; visibility?: string; background?: string[] }) {
   const name = p.name.trim() || 'Your name';
   return (
     <div className="ob-mini" data-testid="mini-profile">
@@ -19,8 +19,8 @@ export function MiniProfileCard(p: { name: string; title: string; location?: str
         {p.background && p.background.length > 0 && (
           <ul className="ob-mini-bg">{p.background.slice(0, 2).map((b, i) => <li key={i}>{b}</li>)}</ul>
         )}
-        {p.visible !== undefined && (
-          <span className="ob-mini-vis">{p.visible ? <><Eye className="h-3 w-3" /> Visible to employers</> : <><EyeOff className="h-3 w-3" /> Hidden from employers</>}</span>
+        {p.visibility && (
+          <span className="ob-mini-vis">{p.visibility === 'Only you' ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />} {p.visibility}</span>
         )}
       </div>
     </div>

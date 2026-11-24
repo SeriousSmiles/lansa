@@ -61,7 +61,7 @@ export default function SignupPage() {
 
   const preview = intent === 'employer'
     ? <MiniCompanyCard name="Your company" industry="Hospitality" location="Willemstad, Curaçao" status="Browse certified candidates" />
-    : intent === 'job_seeker' ? <MiniProfileCard name="Your name" title="Your headline" skills={['Customer service', 'English']} visible /> : null;
+    : intent === 'job_seeker' ? <MiniProfileCard name="Your name" title="Your headline" skills={['Customer service', 'English']} visibility="You choose who sees it" /> : null;
 
   return (<>{seo}
     <CarouselFrame stepKey="role" direction={dir} progress={{ index: 1, total: 3 }} media={intent ? undefined : heroImg} eyebrow="Join LANSA, free"

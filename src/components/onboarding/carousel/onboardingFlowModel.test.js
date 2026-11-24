@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { resumeStep, progressFor, isSwipeable, shouldAutoCompleteLegacy, sanitizeDraft, validateSeekerIdentity, validateSkills, validateCompanyName, validateWebsite, addSkill, FLOW_VERSION } from './onboardingFlowModel';
+import { resumeStep, progressFor, isSwipeable, shouldAutoCompleteLegacy, sanitizeDraft, validateSeekerIdentity, validateSkills, validateCompanyName, validateWebsite, seekerVisibilitySummary, validateProfilePhoto, addSkill, FLOW_VERSION } from './onboardingFlowModel';
 
 describe('onboarding flow rules', () => {
   it('open v2 seeker draft is not auto-completed from career_path alone', () => {
@@ -46,5 +46,18 @@ describe('onboarding flow rules', () => {
     expect(validateCompanyName('Acme')).toEqual({});
     expect(validateWebsite('ftp://x').website).toBeTruthy();
     expect(validateWebsite('')).toEqual({});
+  });
+  it('visibility summary covers all four combinations truthfully', () => {
+    expect(seekerVisibilitySummary(false, false).line).toMatch(/Only you/);
+    const link = seekerVisibilitySummary(true, false);
+    expect(link.line).toMatch(/share link to can view/); expect(link.line).toMatch(/won’t appear in employer discovery/);
+    const emp = seekerVisibilitySummary(false, true);
+    expect(emp.line).toMatch(/once your profile is LANSA certified and verified/); expect(emp.line).not.toMatch(/can now find/);
+    expect(seekerVisibilitySummary(true, true).line).toMatch(/share link.*certified and verified/);
+  });
+  it('profile photo must be a small image', () => {
+    expect(validateProfilePhoto({ type: 'image/png', size: 1000 })).toBeNull();
+    expect(validateProfilePhoto({ type: 'application/pdf', size: 1000 })).toBeTruthy();
+    expect(validateProfilePhoto({ type: 'image/jpeg', size: 6 * 1024 * 1024 })).toBeTruthy();
   });
 });

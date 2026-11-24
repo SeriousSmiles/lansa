@@ -127,3 +127,18 @@ export function addSkill(skills: string[], raw: string): string[] {
   if (skills.length >= 15) return skills;
   return [...skills, s];
 }
+
+/** Visibility copy shared by the onboarding toggles, mini card and finish line; mirrors SeekerProfilePreview. */
+export function seekerVisibilitySummary(isPublic: boolean, visibleToEmployers: boolean): { badge: string; line: string } {
+  if (!isPublic && !visibleToEmployers) return { badge: 'Only you', line: 'Only you can see your card for now. Turn on your share link or employer discovery from your profile when you’re ready.' };
+  if (isPublic && !visibleToEmployers) return { badge: 'Share link on', line: 'People you send your share link to can view your profile. You won’t appear in employer discovery.' };
+  if (!isPublic) return { badge: 'Employer discovery on', line: 'You’ve opted into employer discovery. You can appear there once your profile is LANSA certified and verified. Your share link is off.' };
+  return { badge: 'Share link + discovery on', line: 'People with your share link can view your profile. You can appear in employer discovery once your profile is LANSA certified and verified.' };
+}
+
+export const PHOTO_MAX_BYTES = 5 * 1024 * 1024;
+export function validateProfilePhoto(file: { type: string; size: number }): string | null {
+  if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type)) return 'Choose a JPG, PNG, WebP or GIF image.';
+  if (file.size > PHOTO_MAX_BYTES) return 'That photo is over 5 MB. Choose a smaller one.';
+  return null;
+}

@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GraduationCap, Briefcase, Search, X, FileUp, Plus } from "lucide-react";
+import { GraduationCap, Briefcase, Search, X, FileUp, Plus, Camera, Loader2 } from "lucide-react";
+import { useProfileImage } from "@/hooks/profile/useProfileImage";
 import { supabase } from "@/integrations/supabase/client";
 import { CVUploadModal } from "@/components/onboarding/cv/CVUploadModal";
 import { Switch } from "@/components/ui/switch";
 import { CarouselFrame, Field, ChoiceList } from "./CarouselFrame";
 import { MiniProfileCard } from "./Previews";
 import { saveDraft, type DraftInputs } from "./onboardingDraftService";
-import { SEEKER_STEPS, progressFor, resumeStep, validateSeekerIdentity, validateSkills, addSkill, type Errors } from "./onboardingFlowModel";
+import { SEEKER_STEPS, progressFor, resumeStep, validateSeekerIdentity, validateSkills, addSkill, seekerVisibilitySummary, validateProfilePhoto, type Errors } from "./onboardingFlowModel";
 import introImg from "@/assets/landing/people/p7-blazer-laptop.jpg";
 import doneImg from "@/assets/landing/people/p3-desk-certificate.jpg";
 
@@ -43,6 +44,25 @@ export function SeekerFlow({ userId, draft, setDraft, onChangeRole, onFinish }: 
   const [bgKind, setBgKind] = useState<'experience' | 'education'>('experience');
   const [bg, setBg] = useState({ title: '', description: '', startYear: '' });
   const [cvOpen, setCvOpen] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const photoInput = useRef<HTMLInputElement>(null);
+  const { uploadProfileImage } = useProfileImage({
+    userId,
+    updateProfileData: async (d) => {
+      const { error } = await supabase.from('user_profiles').upsert({ user_id: userId, ...d, updated_at: new Date().toISOString() } as never, { onConflict: 'user_id' });
+      if (error) throw error;
+    },
+  });
+  const pickPhoto = async (file: File | undefined) => {
+    if (!file || photoBusy) return;
+    const invalid = validateProfilePhoto(file);
+    if (invalid) { setPhotoError(invalid); return; }
+    setPhotoBusy(true); setPhotoError(null);
+    try { const url = await uploadProfileImage(file); if (url) setP((cur) => ({ ...cur, profile_image: url })); }
+    catch { setPhotoError('Your photo didn’t upload. Try again, or continue without one.'); }
+    finally { setPhotoBusy(false); if (photoInput.current) photoInput.current.value = ''; }
+  };
 
   const loadProfile = async () => {
     const { data, error } = await supabase
@@ -90,9 +110,10 @@ export function SeekerFlow({ userId, draft, setDraft, onChangeRole, onFinish }: 
   const back = (to: string) => { setErrors({}); setSaveError(null); setDir(-1); setStep(to); saveDraft(userId, draft, { user_intent: 'job_seeker', step: to }).then(setDraft).catch(() => {}); };
   const prevOf = (s: string) => SEEKER_STEPS[Math.max(0, SEEKER_STEPS.indexOf(s as any) - 1)];
 
+  const vis = seekerVisibilitySummary(p.is_public, p.visible_to_employers);
   const fullName = `${p.first_name} ${p.last_name}`.trim();
   const bgLines = [...p.experiences, ...p.education].map((x: any) => x?.title).filter(Boolean);
-  const preview = <MiniProfileCard name={fullName} title={p.title} location={p.location} goal={p.professional_goal} skills={p.skills} photo={p.profile_image} visible={step === 'visibility' || step === 'done' ? p.visible_to_employers : undefined} background={bgLines} />;
+  const preview = <MiniProfileCard name={fullName} title={p.title} location={p.location} goal={p.professional_goal} skills={p.skills} photo={p.profile_image} visibility={step === 'visibility' || step === 'done' ? vis.badge : undefined} background={bgLines} />;
   const prog = progressFor('job_seeker', step);
   const common = { stepKey: step, direction: dir, progress: prog, busy, error: saveError };
 
@@ -128,6 +149,16 @@ export function SeekerFlow({ userId, draft, setDraft, onChangeRole, onFinish }: 
       return (
         <CarouselFrame {...common} aside={preview} title="Who should employers meet?" lead="Your headline is the first line under your name." onBack={() => back('stage')} onNext={submit}>
           <form className="ob-form" onSubmit={(e) => { e.preventDefault(); submit(); }} noValidate>
+            <div className="flex items-center gap-3">
+              <button type="button" className="ee-secondary" onClick={() => photoInput.current?.click()} disabled={photoBusy} aria-describedby={photoError ? 'ob-photo-err' : 'ob-photo-hint'}>
+                {photoBusy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Camera className="h-4 w-4" aria-hidden="true" />}
+                {photoBusy ? 'Uploading…' : photoError ? 'Try another photo' : p.profile_image ? 'Change photo' : 'Add photo'}
+              </button>
+              <span id={photoError ? 'ob-photo-err' : 'ob-photo-hint'} role={photoError ? 'alert' : undefined} className={`text-sm ${photoError ? 'text-destructive' : 'text-muted-foreground'}`}>
+                {photoError || (p.profile_image ? 'Photo saved to your profile.' : 'Optional · JPG or PNG, up to 5 MB')}
+              </span>
+              <input ref={photoInput} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" tabIndex={-1} aria-label="Profile photo" onChange={(e) => pickPhoto(e.target.files?.[0])} />
+            </div>
             <div className="ob-row2">
               <Field id="ob-first" label="First name" error={errors.firstName}><input id="ob-first" className="ob-input" autoComplete="given-name" value={p.first_name} aria-invalid={!!errors.firstName} aria-describedby={errors.firstName ? 'ob-first-err' : undefined} onChange={(e) => setP({ ...p, first_name: e.target.value })} /></Field>
               <Field id="ob-last" label="Last name" error={errors.lastName}><input id="ob-last" className="ob-input" autoComplete="family-name" value={p.last_name} aria-invalid={!!errors.lastName} aria-describedby={errors.lastName ? 'ob-last-err' : undefined} onChange={(e) => setP({ ...p, last_name: e.target.value })} /></Field>
@@ -219,7 +250,7 @@ export function SeekerFlow({ userId, draft, setDraft, onChangeRole, onFinish }: 
     }
     case 'visibility':
       return (
-        <CarouselFrame {...common} aside={preview} title="Who can see your card?" lead="Both are off until you choose. You can change them later in your profile."
+        <CarouselFrame {...common} aside={preview} title="Who can see your card?" lead="Choose each one separately. You can change them later in your profile."
           onBack={() => back('background')} nextLabel="Finish my card"
           onNext={async () => {
             if (lock.current) return;
@@ -227,14 +258,15 @@ export function SeekerFlow({ userId, draft, setDraft, onChangeRole, onFinish }: 
           }}>
           <div className="ee-group">
             <label className="ee-row ob-toggle">
-              <span className="ee-row-text"><span className="ee-row-label">Show me to employers</span><span className="ee-row-detail">Verified LANSA employers can find your card. Contact details stay private.</span></span>
+              <span className="ee-row-text"><span className="ee-row-label">Show me to employers</span><span className="ee-row-detail">Opt in to appear in employer discovery once your profile is LANSA certified and verified.</span></span>
               <Switch checked={p.visible_to_employers} onCheckedChange={(v) => setP({ ...p, visible_to_employers: v })} aria-label="Show me to employers" />
             </label>
             <label className="ee-row ob-toggle">
-              <span className="ee-row-text"><span className="ee-row-label">Shareable link</span><span className="ee-row-detail">Anyone with your link can view your profile.</span></span>
+              <span className="ee-row-text"><span className="ee-row-label">Shareable link</span><span className="ee-row-detail">Anyone you send your link to can view your profile. Off means the link won’t open.</span></span>
               <Switch checked={p.is_public} onCheckedChange={(v) => setP({ ...p, is_public: v })} aria-label="Shareable link" />
             </label>
           </div>
+          <p className="text-sm text-muted-foreground mt-3" role="status" aria-live="polite">{vis.line}</p>
         </CarouselFrame>
       );
     case 'done':
@@ -243,7 +275,7 @@ export function SeekerFlow({ userId, draft, setDraft, onChangeRole, onFinish }: 
         <DoneCard
           media={doneImg} preview={preview}
           title={`Nice work${p.first_name ? `, ${p.first_name}` : ''}. Your card is ready.`}
-          lead={p.visible_to_employers ? 'Employers can now find you. Next, add your strongest proof of work.' : 'Your card is private for now. Open your profile to finish it, then switch on visibility when you’re ready.'}
+          lead={vis.line}
           actionLabel="Open my profile"
           onAction={async () => { await onFinish({ first: p.first_name.trim(), last: p.last_name.trim() }); navigate('/profile', { replace: true, state: { fromOnboarding: true } }); }}
           onBack={() => back('visibility')}
