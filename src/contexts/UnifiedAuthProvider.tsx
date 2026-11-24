@@ -35,7 +35,7 @@ interface UnifiedAuthState {
 
   // Actions
   signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string; full_name?: string }) => Promise<{ error: any; data: any }>;
+  signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string; full_name?: string; signup_intent?: string }) => Promise<{ error: any; data: any }>;
   signOut: () => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   updatePassword: (password: string) => Promise<{ error: any }>;
@@ -284,7 +284,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
     }
   }, []);
 
-  const signUp = React.useCallback(async (email: string, password: string, metadata?: { first_name?: string; last_name?: string; full_name?: string }) => {
+  const signUp = React.useCallback(async (email: string, password: string, metadata?: { first_name?: string; last_name?: string; full_name?: string; signup_intent?: string }) => {
     try {
       const redirectUrl = `${window.location.origin}/onboarding`;
       return await supabase.auth.signUp({

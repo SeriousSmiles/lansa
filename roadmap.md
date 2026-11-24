@@ -34,4 +34,7 @@ Discovery validation: eight focused tests pass; preview build OK; local fixture 
 - [x] Professional feed with categories, Saved, post detail, compose with https link check, owner-only delete (new member-only tables).
 - [x] Phone profile builder: Edit/Preview, next missing section opens its editor, proof of work, visibility & sharing, CV import, resume and card.
 - [x] Jobs: labeled Pass / Details / Save, Saved & applied tab and ?tab=saved / ?job= links.
-- [ ] Onboarding redesign (next stage).
+- [x] Onboarding redesign (stage 3).
+
+## Stage 3 — Onboarding carousel (done, preview only)
+- [x] Role-aware /signup (role → account → check email/resend) and /onboarding carousel for seeker, create company, join company; mentor path kept

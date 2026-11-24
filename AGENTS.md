@@ -33,3 +33,8 @@
 
 # Public home hero
 - Home hero copy, name pairs and business marks live in homeHeroContent.ts with local assets only; swap a mark by editing one entry so the animated layout never changes.
+
+# Onboarding
+- /signup and /onboarding share the carousel primitives in src/components/onboarding/carousel; step order, resume, swipe and validation rules live in onboardingFlowModel (tested) so flows stay consistent.
+- Onboarding drafts are non-sensitive, user-scoped `user_answers.onboarding_inputs` with flow_version 2; step values save straight to user_profiles/organizations, and an open v2 draft blocks the legacy career_path auto-complete.
+- Finish only through markOnboardingComplete then refreshUserState; company creation reuses a recorded/owned org and join requests treat "already pending" as success, so retries never duplicate.

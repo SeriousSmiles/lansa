@@ -9,6 +9,7 @@ import { PasswordStrengthIndicator } from "./PasswordStrengthIndicator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { rememberSignupIntent } from "@/components/onboarding/carousel/onboardingDraftService";
 interface SignUpFormData {
   firstName: string;
   lastName: string;
@@ -16,7 +17,11 @@ interface SignUpFormData {
   password: string;
   confirmPassword: string;
 }
-export function SignUpForm() {
+interface SignUpFormProps {
+  intent?: 'job_seeker' | 'employer' | null;
+  onSubmitted?: (email: string, signedIn: boolean) => void;
+}
+export function SignUpForm({ intent, onSubmitted }: SignUpFormProps = {}) {
   const {
     register,
     handleSubmit,
@@ -24,10 +29,12 @@ export function SignUpForm() {
     formState: { errors }
   } = useForm<SignUpFormData>();
   const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const { signUp } = useAuth();
 
   const getOAuthCallbackUrl = () => {
     sessionStorage.setItem('lansa.oauth.next', '/onboarding');
+    if (intent) rememberSignupIntent(intent);
     return `${window.location.origin}/auth/callback`;
   };
   
@@ -46,24 +53,34 @@ export function SignUpForm() {
     }
 
     setIsLoading(true);
+    setFormError(null);
+    if (intent) rememberSignupIntent(intent);
     try {
       const fullName = `${data.firstName} ${data.lastName}`;
 
       // Sign up user with metadata - the database trigger will handle profile creation
-      const { error } = await signUp(data.email, data.password, {
+      const { error, data: signUpData } = await signUp(data.email, data.password, {
         first_name: data.firstName,
         last_name: data.lastName,
-        full_name: fullName
+        full_name: fullName,
+        ...(intent ? { signup_intent: intent } : {})
       });
       
       if (error) {
-        toast.error(error.message || "Failed to sign up");
+        setFormError(error.message || "We couldn't create your account. Try again.");
         setIsLoading(false);
         return;
       }
 
-      toast.success("Account created successfully! Please check your email to confirm your account. Once confirmed, you'll be automatically signed in.");
+      // Supabase hides existing accounts by returning a user with no identities.
+      if (signUpData?.user && Array.isArray(signUpData.user.identities) && signUpData.user.identities.length === 0) {
+        setFormError("An account with this email may already exist. Sign in instead, or reset your password.");
+        setIsLoading(false);
+        return;
+      }
       setIsLoading(false);
+      if (onSubmitted) onSubmitted(data.email, !!signUpData?.session);
+      else toast.success("Account created! Check your email to confirm your account.");
     } catch (error: any) {
       if (process.env.NODE_ENV === 'development') {
         console.error(error);
@@ -163,8 +180,9 @@ export function SignUpForm() {
         )}
       </div>
 
+      {formError && <p role="alert" className="w-full mt-4 text-sm text-destructive">{formError}</p>}
       <div className="flex w-full flex-col items-center mt-6">
-        <div className="w-full text-white font-medium">
+        <div className="w-full font-medium">
           <Button
             type="submit"
             disabled={isLoading || !validation.isValid || !passwordsMatch}

@@ -9,7 +9,8 @@ import { error as logErrorUtil } from "@/utils/logger";
 
 export async function markOnboardingComplete(
   userId: string,
-  userType: 'job_seeker' | 'employer'
+  userType: 'job_seeker' | 'employer',
+  names?: { first?: string; last?: string }
 ): Promise<void> {
   try {
     // Get user's auth metadata for name extraction
@@ -22,6 +23,7 @@ export async function markOnboardingComplete(
 
     // Extract name from auth metadata
     let displayName = 'Lansa User';
+    // Names typed during onboarding win over sign-up metadata.
     let firstName: string | undefined;
     let lastName: string | undefined;
 
@@ -37,6 +39,11 @@ export async function markOnboardingComplete(
       } else if (firstName) {
         displayName = firstName;
       }
+    }
+    if (names?.first || names?.last) {
+      firstName = names.first || firstName;
+      lastName = names.last || lastName;
+      displayName = [firstName, lastName].filter(Boolean).join(' ') || displayName;
     }
 
     // CRITICAL: Update ALL flags simultaneously for consistency
