@@ -8,11 +8,12 @@ import iCert from "@/assets/illustrations/i-cert.webp";
 import iDiscover from "@/assets/illustrations/i-discover.webp";
 import p1 from "@/assets/landing/people/p1-couch-phone.jpg";
 import p2 from "@/assets/landing/people/p2-cafe-laptop.jpg";
-import p3 from "@/assets/landing/people/p3-desk-certificate.jpg";
 import p4 from "@/assets/landing/people/p4-videocall.jpg";
-import p5 from "@/assets/landing/people/p5-hands-phone.jpg";
-import p6 from "@/assets/landing/people/p6-friends-phone.jpg";
 import p7 from "@/assets/landing/people/p7-blazer-laptop.jpg";
+import handPhone from "@/assets/landing/action/hand-phone-discover.webp";
+import workPhoto from "@/assets/landing/action/work.webp";
+import examPhoto from "@/assets/landing/action/exam.webp";
+import hirePhoto from "@/assets/landing/action/hire.webp";
 
 /* Illustrative product UI — fictional sample content, for marketing only. */
 function Panel({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -23,7 +24,7 @@ function Panel({ children, className = "" }: { children: ReactNode; className?: 
 const MANIFESTO = "Bo ta bon. You have the skills, the story and the drive. Lansa makes sure the right people finally see it.";
 
 function Word({ word, progress, range }: { word: string; progress: MotionValue<number>; range: [number, number] }) {
-  const opacity = useTransform(progress, range, [0.12, 1]);
+  const opacity = useTransform(progress, range, [0.28, 1]);
   const y = useTransform(progress, range, [18, 0]);
   const accent = /^(bon\.|see|it\.)$/i.test(word);
   return <motion.span style={{ opacity, y }} className={`mr-[0.22em] inline-block ${accent ? "text-primary" : ""}`}>{word}</motion.span>;
@@ -34,32 +35,40 @@ export function ManifestoScroll() {
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const words = MANIFESTO.split(" ");
-  const aY = useTransform(scrollYProgress, [0, 1], ["15%", "-35%"]);
-  const bY = useTransform(scrollYProgress, [0, 1], ["50%", "-50%"]);
-  const aR = useTransform(scrollYProgress, [0, 1], [-5, 4]);
+  const phoneY = useTransform(scrollYProgress, [0, 1], ["8%", "-8%"]);
+  const phoneR = useTransform(scrollYProgress, [0, 1], [-4, 3]);
   const notif = useTransform(scrollYProgress, [0.55, 0.75], [0, 1]);
   const notifY = useTransform(scrollYProgress, [0.55, 0.75], [30, 0]);
-
+  const Phone = (
+    <div className="relative mx-auto w-full max-w-[380px]">
+      <motion.img src={handPhone} alt="A hand holding a phone showing the Lansa Discover screen" style={reduce ? undefined : { y: phoneY, rotate: phoneR }}
+        className="aspect-[2/3] w-full rounded-[2.5rem] object-cover shadow-2xl ring-1 ring-dashboard-on-ink/10" />
+      <motion.div style={reduce ? undefined : { opacity: notif, y: notifY }} className="absolute -left-6 bottom-10 sm:-left-16">
+        <Panel className="flex w-64 items-center gap-3 p-4">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"><Heart className="h-5 w-5" /></span>
+          <div className="min-w-0"><p className="font-urbanist text-sm font-extrabold">Caribe Logistics is interested</p><p className="text-xs text-muted-foreground">Viewed your profile · just now</p></div>
+        </Panel>
+      </motion.div>
+    </div>
+  );
   if (reduce) {
-    return <section className="bg-background px-6 py-28"><p className="lx-story-giant mx-auto max-w-6xl text-dashboard-ink">{MANIFESTO}</p></section>;
+    return (
+      <section className="bg-dashboard-ink px-6 py-24 text-dashboard-on-ink">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-12"><p className="lx-story-title lg:col-span-7">{MANIFESTO}</p><div className="lg:col-span-5">{Phone}</div></div>
+      </section>
+    );
   }
   return (
-    <section ref={ref} className="relative h-[260vh] bg-background" aria-label="Why Lansa">
-      <div className="sticky top-0 flex h-[100svh] items-center overflow-hidden px-6 md:px-12">
-        <motion.img src={p6} alt="" aria-hidden style={{ y: aY, rotate: aR }}
-          className="pointer-events-none absolute -right-20 top-[10%] aspect-[4/5] w-[44vw] max-w-[440px] rounded-[2.5rem] object-cover opacity-90 shadow-2xl md:right-[3%]" />
-        <motion.img src={p1} alt="" aria-hidden style={{ y: bY }}
-          className="pointer-events-none absolute -left-8 bottom-[-6%] hidden aspect-square w-[20vw] max-w-[260px] rounded-[2rem] object-cover opacity-80 shadow-xl md:block" />
-        <motion.div style={{ opacity: notif, y: notifY }} className="absolute right-[6%] top-[62%] z-20 hidden md:block">
-          <Panel className="flex w-72 items-center gap-3 p-4">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground"><Heart className="h-5 w-5" /></span>
-            <div className="min-w-0"><p className="font-urbanist text-sm font-extrabold">Caribe Logistics is interested</p><p className="text-xs text-muted-foreground">Viewed your profile · just now</p></div>
-          </Panel>
-        </motion.div>
-        <p className="lx-story-giant relative z-10 mx-auto max-w-6xl text-dashboard-ink">
-          {words.map((w, i) => { const s = i / words.length; return <Word key={i} word={w} progress={scrollYProgress} range={[s * 0.85, s * 0.85 + 0.12]} />; })}
-        </p>
+    <section ref={ref} className="relative h-[220vh] bg-dashboard-ink text-dashboard-on-ink" aria-label="Why Lansa">
+      <div className="sticky top-0 flex min-h-[100svh] items-center overflow-hidden px-6 py-16 md:px-12">
+        <div className="mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-12">
+          <p className="lx-story-title lg:col-span-7">
+            {words.map((w, i) => { const s = i / words.length; return <Word key={i} word={w} progress={scrollYProgress} range={[s * 0.8, s * 0.8 + 0.12]} />; })}
+          </p>
+          <div className="hidden lg:col-span-5 lg:block">{Phone}</div>
+        </div>
       </div>
+      <div className="px-6 pb-20 lg:hidden">{Phone}</div>
     </section>
   );
 }
@@ -143,9 +152,9 @@ function DiscoverUI({ p }: { p: MotionValue<number> }) {
 }
 
 const CHAPTERS = [
-  { n: "01", kicker: "Build", title: "Tell your real story.", body: "Guided prompts and gentle AI turn your background — even an untraditional one — into a profile that lands.", photo: p2, UI: BuilderUI },
-  { n: "02", kicker: "Get certified", title: "Prove what you know.", body: "A timed sector exam. Pass once and the verified badge follows your profile everywhere employers look.", photo: p3, UI: ExamUI },
-  { n: "03", kicker: "Get discovered", title: "The right employer comes to you.", body: "Certified, verified profiles surface to companies. They show interest — you decide when to talk.", photo: p5, UI: DiscoverUI },
+  { n: "01", kicker: "Build", title: "Tell your real story.", body: "Guided prompts and gentle AI turn your background — even an untraditional one — into a profile that lands.", photo: workPhoto, UI: BuilderUI },
+  { n: "02", kicker: "Get certified", title: "Prove what you know.", body: "A timed sector exam. Pass once and the verified badge follows your profile everywhere employers look.", photo: examPhoto, UI: ExamUI },
+  { n: "03", kicker: "Get discovered", title: "The right employer comes to you.", body: "Certified, verified profiles surface to companies. They show interest — you decide when to talk.", photo: hirePhoto, UI: DiscoverUI },
 ] as const;
 
 function Chapter({ c, index }: { c: (typeof CHAPTERS)[number]; index: number }) {
@@ -162,9 +171,9 @@ function Chapter({ c, index }: { c: (typeof CHAPTERS)[number]; index: number }) 
   const UI = c.UI;
   return (
     <div ref={ref} className="relative grid min-h-[120svh] items-center gap-10 py-20 md:grid-cols-12">
-      <motion.span aria-hidden style={{ y: numY }} className={`lx-story-number pointer-events-none absolute top-1/2 -translate-y-1/2 text-primary/10 ${flip ? "right-0" : "left-0"}`}>{c.n}</motion.span>
+      <motion.span aria-hidden style={{ y: numY }} className={`lx-story-number pointer-events-none absolute top-1/2 -translate-y-1/2 text-dashboard-ink/[0.06] ${flip ? "right-0" : "left-0"}`}>{c.n}</motion.span>
       <div className={`relative md:col-span-7 ${flip ? "md:order-2" : ""}`}>
-        <motion.div style={{ y: photoY }} className="relative mx-auto aspect-[4/5] w-[78%] max-w-[460px] overflow-hidden rounded-[2.5rem] shadow-2xl">
+        <motion.div style={{ y: photoY }} className="relative mx-auto aspect-[4/5] w-[86%] max-w-[500px] overflow-hidden rounded-[2.5rem] shadow-2xl">
           <motion.img src={c.photo} alt="" aria-hidden loading="lazy" style={{ scale: photoScale }} className="h-full w-full object-cover" />
         </motion.div>
         <motion.div style={{ y: uiY }} className={`absolute bottom-[4%] z-10 ${flip ? "left-0" : "right-0"} origin-bottom scale-[0.82] sm:scale-100`}>
@@ -283,7 +292,7 @@ export function CapabilitiesStory() {
             <div className="flex items-center gap-2 rounded-full bg-primary px-4 py-2 font-urbanist text-sm font-extrabold text-primary-foreground shadow-2xl"><BadgeCheck className="h-4 w-4" />Only certified & verified</div>
           </motion.div>
         </div>
-        <p className="mt-4 text-center text-xs text-dashboard-on-ink/60">Illustrative preview with sample names.</p>
+        <p className="mt-4 text-center text-xs text-dashboard-on-ink/80">Illustrative preview with sample names.</p>
 
         <div className="mt-20 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {TILES.map((t, i) => (
