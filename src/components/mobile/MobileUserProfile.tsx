@@ -23,7 +23,7 @@ interface MobileUserProfileProps {
 
 export function MobileUserProfile({ userName, email, handleLogout, themeColor }: MobileUserProfileProps) {
   const { user } = useAuth();
-  const { isAdmin } = useUserState();
+  const { isAdmin, userType } = useUserState();
   const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState<string>("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -92,12 +92,14 @@ export function MobileUserProfile({ userName, email, handleLogout, themeColor }:
             <DropdownMenuSeparator />
           </>
         )}
-        <DropdownMenuItem onSelect={() => {
-          setIsMenuOpen(false);
-          navigate("/profile");
-        }}>
-          Resume Builder
-        </DropdownMenuItem>
+        {userType !== 'employer' && (
+          <DropdownMenuItem onSelect={() => {
+            setIsMenuOpen(false);
+            navigate("/profile");
+          }}>
+            Resume Builder
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onSelect={() => {
           setIsMenuOpen(false);
           safeHandler(() => {}, "Settings")();

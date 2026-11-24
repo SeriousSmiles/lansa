@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Building2, Check, CreditCard, HelpCircle, LogOut, Mail, User, UserPlus, Users } from "lucide-react";
+import { Bell, Building2, Check, CreditCard, HelpCircle, LogOut, Mail, UserPlus, Users } from "lucide-react";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { useOrgPermissions } from "@/hooks/useOrgPermissions";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,7 +64,6 @@ export function EmployerCompanyHub({ onOpenSection, onBack, title = "Company" }:
         </EmployerGroup>
 
         <EmployerGroup label="Account">
-          <EmployerRow icon={User} label="My profile" onClick={() => navigate("/profile")} />
           <EmployerRow icon={Bell} label="Notifications" onClick={() => navigate("/notifications")} />
           <EmployerRow icon={HelpCircle} label="Help" onClick={() => navigate("/help")} />
           <EmployerRow icon={LogOut} label="Sign out" danger onClick={signOut} />
