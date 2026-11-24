@@ -27,7 +27,7 @@ export const TestimonialBand = () => {
               <p className="font-urbanist font-bold text-[#0d0d0d]">
                 Shaniqua R.
               </p>
-              <p className="font-public-sans text-sm text-[#0d0d0d]/60">
+              <p className="font-public-sans text-sm text-[#0d0d0d]/80">
                 Hospitality · Willemstad
               </p>
             </div>

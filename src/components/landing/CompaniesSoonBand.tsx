@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 import { Band, Display, Eyebrow, Lede, PillButton, ImageFrame } from "./_shared";
-import photo from "@/assets/landing/people/p7-blazer-laptop.jpg";
+import photo from "@/assets/landing/action/hire.webp";
 
 export const CompaniesSoonBand = () => {
   const navigate = useNavigate();
@@ -32,7 +32,7 @@ export const CompaniesSoonBand = () => {
               Get listed early
               <ArrowUpRight className="ml-2 h-5 w-5" />
             </PillButton>
-            <span className="font-public-sans text-sm text-[#0d0d0d]/70">
+            <span className="font-public-sans text-sm text-[#0d0d0d]/85">
               Free for the first 50 organizations.
             </span>
           </div>

@@ -17,7 +17,7 @@ export const TrustStrip = () => {
   return (
     <section className="relative bg-[hsl(40_33%_94%)] border-y border-[#191f71]/10 overflow-hidden">
       <div className="mx-auto max-w-[1200px] px-6 py-6 flex items-center gap-6">
-        <div className="flex items-center gap-2 shrink-0 text-[#191f71]/70">
+        <div className="flex items-center gap-2 shrink-0 text-[#191f71]">
           <Sparkles className="h-4 w-4 text-primary" />
           <span className="text-xs uppercase tracking-[0.18em] font-urbanist font-bold whitespace-nowrap">
             Trusted across
