@@ -110,21 +110,22 @@
   }
 
   /* === Recruiter/Employer Theme Overrides === */
-  /* === Employer environment: LANSA peach, ink/navy and focused white surfaces === */
+  /* === Employer and seeker environments: white surfaces with LANSA accents === */
   .employer-theme, .seeker-theme {
     --primary: 236 64% 27%;              /* Deep LANSA navy (#191f71) */
     --primary-foreground: 0 0% 100%;
     --secondary: 14 90% 60%;             /* LANSA coral, used sparingly */
     --secondary-foreground: 0 0% 100%;
-    --background: 28 60% 97%;            /* Warm off-white canvas; peach lives in --identity */
-    --identity: 20 85% 94%;              /* LANSA peach for identity / hero bands */
+    --background: 0 0% 100%;            /* Clean white application canvas */
+    --identity: 0 0% 100%;              /* Identity bands stay white, not peach */
     --foreground: 232 32% 10%;           /* Ink */
-    --muted: 22 55% 93%;
+    --muted: 215 85% 98%;               /* Quiet blue-tinted supporting surfaces */
     --muted-foreground: 232 12% 36%;
-    --border: 22 30% 88%;
-    --input: 22 30% 84%;
+    --border: 215 35% 89%;
+    --input: 215 35% 82%;
     --ring: 236 64% 27%;
-    --accent: 20 80% 90%;
+    --accent: 215 85% 96%;
+    --dashboard-orange-surface: 0 0% 100%;
     --accent-foreground: 232 32% 10%;
     --card: 0 0% 100%;
     --card-foreground: 232 32% 10%;
@@ -138,6 +139,8 @@
     --secondary: 14 90% 60%;             /* Lansa Orange */
     --secondary-foreground: 0 0% 100%;   /* White text */
     --background: 215 20% 12%;           /* Dark blue-grey background */
+    --identity: 215 20% 14%;
+    --dashboard-orange-surface: 14 40% 16%;
     --foreground: 210 40% 98%;           /* Light text */
     --muted: 215 20% 18%;                /* Darker muted */
     --muted-foreground: 215 20% 65%;     /* Lighter muted text */
@@ -780,7 +783,7 @@
 .lx-empty p { font-size: 15px; line-height: 1.5; max-width: 36ch; color: hsl(var(--muted-foreground)); }
 .lx-empty-action { margin-top: 8px; }
 .lx-page-title { font-family: 'Urbanist', sans-serif; font-weight: 800; letter-spacing: -0.035em; line-height: 1.02; }
-.lx-identity-band { background: hsl(var(--identity, 20 85% 94%)); }
+.lx-identity-band { background: hsl(var(--identity, var(--card))); }
 .lx-panel { background: hsl(var(--card)); border: 1px solid hsl(var(--border) / .8); border-radius: 20px; }
 @media (min-width: 768px) {
   .employer-theme .ee-header h1, .seeker-theme .ee-header h1 { font-size: 30px; }
