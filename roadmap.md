@@ -44,3 +44,8 @@ Discovery validation: eight focused tests pass; preview build OK; local fixture 
 - [x] Painted illustrations + shared empty states (feed, jobs, applicants, inbox, notifications)
 - [x] Warm canvas tokens, sidebar, page headers, sign-in/reset, 404, not-allowed
 - [ ] Seeker split views (Mercor-style jobs), employer table/drawer views, settings layouts, pricing/help, mentor
+
+## Role-correct activity sweep
+- [x] Exclude seeker-only alerts and self-match metadata from employer Home, shared history, unread lists/counts and recent activity without changing historical records.
+- [x] Gate future swipe notifications, seeker interest review and email delivery by actual sender/recipient roles; preserve match and connection events.
+- [x] Validate shared read paths and future-alert/email gates with isolated data; confirm applied functions and commit. Live accounts, real emails and a full seeker-review connection were not exercised.

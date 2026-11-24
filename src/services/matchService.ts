@@ -19,6 +19,7 @@ export const matchService = {
         .from('matches')
         .select('*')
         .or(`user_a.eq.${userId},user_b.eq.${userId}`)
+        .or(`user_a.neq.${userId},user_b.neq.${userId}`)
         .order('latest_activity_at', { ascending: false });
 
       if (matchError) throw matchError;
@@ -64,7 +65,8 @@ export const matchService = {
       const { count, error } = await supabase
         .from('matches')
         .select('*', { count: 'exact', head: true })
-        .or(`user_a.eq.${userId},user_b.eq.${userId}`);
+        .or(`user_a.eq.${userId},user_b.eq.${userId}`)
+        .or(`user_a.neq.${userId},user_b.neq.${userId}`);
 
       if (error) throw error;
       return count || 0;

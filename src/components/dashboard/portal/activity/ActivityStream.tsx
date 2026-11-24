@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { notificationService } from "@/services/notificationService";
 import { useAuth } from "@/contexts/UnifiedAuthProvider";
 import { formatDistanceToNow } from "date-fns";
 import { Bell, Sparkles, Heart, ShieldCheck, Briefcase, MessageCircle, Loader2 } from "lucide-react";
@@ -35,16 +35,13 @@ export function ActivityStream({ limit = 5 }: { limit?: number }) {
     let mounted = true;
     (async () => {
       const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
-      const { data } = await supabase
-        .from("notifications")
-        .select("id,type,title,message,action_url,created_at")
-        .eq("user_id", user.id)
-        .gte("created_at", since)
-        .order("created_at", { ascending: false })
-        .limit(limit);
-      if (mounted) {
-        setItems((data || []) as ActivityItem[]);
-        setLoading(false);
+      try {
+        const data = await notificationService.getRecentNotifications(user.id, since, limit);
+        if (mounted) setItems(data);
+      } catch (error) {
+        console.error('Recent activity could not load:', error);
+      } finally {
+        if (mounted) setLoading(false);
       }
     })();
     return () => {

@@ -20,6 +20,9 @@ const isValidUUID = (id: string): boolean => UUID_REGEX.test(id);
 export const swipeService = {
   async recordSwipe(swipeData: SwipeData) {
     try {
+      if (swipeData.swiper_user_id === swipeData.target_user_id) {
+        throw new Error('You cannot express interest in your own profile.');
+      }
       // Skip database recording for mock candidates (non-UUID IDs)
       if (!isValidUUID(swipeData.target_user_id)) {
         console.log('Skipping swipe recording for mock candidate:', swipeData.target_user_id);
@@ -47,6 +50,7 @@ export const swipeService = {
 
   async checkForMatch(swiperId: string, targetId: string, context: SwipeContext, jobListingId?: string) {
     try {
+      if (swiperId === targetId) return null;
       // Skip match check for mock candidates
       if (!isValidUUID(targetId)) {
         return null;

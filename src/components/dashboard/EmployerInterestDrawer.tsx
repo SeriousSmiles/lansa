@@ -115,19 +115,7 @@ export function EmployerInterestDrawer({ employer, open, onClose }: Props) {
       const threadId = threads?.[0]?.id;
 
       if (threadId) {
-        // 4. Notify employer via email
-        try {
-          await supabase.functions.invoke("send-chat-email", {
-            body: {
-              user_id: employer.employer_id,
-              thread_id: threadId,
-              notification_type: "match_created",
-            },
-          });
-        } catch (emailErr) {
-          console.warn("[EmployerInterestDrawer] Email notification failed (non-critical):", emailErr);
-        }
-
+        // Match notification and email belong to the database match trigger.
         onClose();
         navigate(`/chat/${threadId}`);
       } else {

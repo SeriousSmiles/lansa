@@ -4,6 +4,21 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { excludesSeekerInterest, SEEKER_INTEREST_TYPES, selfMatchExclusion } from './notificationAudienceModel';
+
+// Shared by full history, dropdowns, badges and dashboard activity. Historical
+// records remain untouched; only their relevance to this environment changes.
+async function notificationReadQuery(userId: string, head = false) {
+  const { data: answers, error } = await supabase.from('user_answers')
+    .select('user_type').eq('user_id', userId).maybeSingle();
+  if (error) throw error;
+  let query = supabase.from('notifications').select('*', { count: head ? 'exact' : undefined, head })
+    .eq('user_id', userId).or(selfMatchExclusion(userId));
+  if (excludesSeekerInterest(answers?.user_type)) {
+    query = query.not('type', 'in', `(${SEEKER_INTEREST_TYPES.join(',')})`);
+  }
+  return { query };
+}
 
 export type NotificationType =
   | 'org_request_received'
@@ -15,6 +30,10 @@ export type NotificationType =
   | 'job_application_received'
   | 'job_application_status_changed'
   | 'match_created'
+  | 'employer_interest_received'
+  | 'employer_nudge_received'
+  | 'chat_request_received'
+  | 'chat_request_accepted'
   | 'message_received'
   | 'system_update';
 
@@ -69,10 +88,8 @@ export const notificationService = {
     } = await supabase.auth.getUser();
     if (!user) return [];
 
-    const { data, error } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('user_id', user.id)
+    const { query } = await notificationReadQuery(user.id);
+    const { data, error } = await query
       .is('read_at', null)
       .order('created_at', { ascending: false })
       .limit(limit);
@@ -93,10 +110,8 @@ export const notificationService = {
     } = await supabase.auth.getUser();
     if (!user) return [];
 
-    const { data, error } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('user_id', user.id)
+    const { query } = await notificationReadQuery(user.id);
+    const { data, error } = await query
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -113,14 +128,23 @@ export const notificationService = {
     } = await supabase.auth.getUser();
     if (!user) return 0;
 
-    const { count, error } = await supabase
-      .from('notifications')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
+    const { query } = await notificationReadQuery(user.id, true);
+    const { count, error } = await query
       .is('read_at', null);
 
     if (error) throw error;
     return count || 0;
+  },
+
+  /**
+   * Recent activity uses the same audience rules as notifications and badges.
+   */
+  async getRecentNotifications(userId: string, since: string, limit: number): Promise<Notification[]> {
+    const { query } = await notificationReadQuery(userId);
+    const { data, error } = await query.gte('created_at', since)
+      .order('created_at', { ascending: false }).limit(limit);
+    if (error) throw error;
+    return (data || []) as Notification[];
   },
 
   /**

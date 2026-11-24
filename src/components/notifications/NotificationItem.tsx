@@ -33,7 +33,7 @@ function loadPerson(id: string) {
       };
     })());
   }
-  return personCache.get(id)!;
+  return personCache.get(id) ?? Promise.resolve(null);
 }
 
 interface NotificationItemProps {
@@ -50,6 +50,10 @@ const iconMap = {
   job_application_received: Briefcase,
   job_application_status_changed: Briefcase,
   match_created: MessageCircle,
+  employer_interest_received: UserPlus,
+  employer_nudge_received: UserPlus,
+  chat_request_received: MessageCircle,
+  chat_request_accepted: MessageCircle,
   message_received: MessageCircle,
   system_update: CheckCircle,
 };

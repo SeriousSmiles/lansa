@@ -23,6 +23,8 @@
 
 # Employer environment
 - Use employerActivityModel for employer Home event eligibility; seeker-addressed interest alerts must never be relabelled as candidate interest, and self-match metadata must not be presented as a candidate match.
+- Shared notification history, unread badges and recent activity use notificationReadQuery with the stored user type; server swipe alerts require an employer sender and seeker recipient, leaving historical records and permissions unchanged.
+- get_received_employer_interest is intentionally authenticated SECURITY DEFINER with a fixed search path and auth.uid-bound recipient; it validates private sender roles without exposing user_answers or broadening existing table policies. Match emails are sent only by the notification pipeline, not the review drawer.
 - Employer surfaces share the scoped .employer-theme tokens and .ee-* primitives (employerUi.tsx); restyle there rather than per screen so desktop and phone stay coordinated without changing the global theme.
 - Phone employer navigation is five fixed tabs (Discover, Jobs, Inbox, Home, Company) driven by ?tab= with legacy aliases; /organization/settings?section= is the single owner of team settings on every device.
 - Keep the job-applications sheet mounted while it closes; unmounting an open Radix sheet leaves the page unclickable.

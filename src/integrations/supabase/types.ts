@@ -3299,6 +3299,15 @@ export type Database = {
       }
       generate_cert_verification_code: { Args: never; Returns: string }
       get_profile_completion: { Args: { _user_id: string }; Returns: Json }
+      get_received_employer_interest: {
+        Args: never
+        Returns: {
+          created_at: string
+          direction: Database["public"]["Enums"]["swipe_direction"]
+          id: string
+          swiper_user_id: string
+        }[]
+      }
       get_users_with_auth_data: {
         Args: never
         Returns: {

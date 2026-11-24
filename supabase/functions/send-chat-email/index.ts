@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 import { Resend } from 'npm:resend@4.0.0';
+import { shouldSendAudienceNotification } from './notificationAudience.ts';
 import {
   generateChatRequestEmail,
   generateChatAcceptedEmail,
@@ -39,6 +40,23 @@ Deno.serve(async (req) => {
 
     const payload: ChatEmailPayload = await req.json();
     const { user_id, notification_type, title, message, action_url, metadata } = payload;
+
+    // Validate the intended audience before reading email details or dispatching.
+    const isInterest = notification_type === 'employer_interest_received' || notification_type === 'employer_nudge_received';
+    const otherUserId = isInterest ? metadata?.employer_id : metadata?.other_user_id;
+    let recipientType: string | null = null;
+    let senderType: string | null = null;
+    if (isInterest) {
+      const { data: answers, error } = await supabase.from('user_answers')
+        .select('user_id, user_type').in('user_id', typeof otherUserId === 'string' ? [user_id, otherUserId] : [user_id]);
+      if (error) throw error;
+      recipientType = answers?.find(a => a.user_id === user_id)?.user_type ?? null;
+      senderType = answers?.find(a => a.user_id === otherUserId)?.user_type ?? null;
+    }
+    if (!shouldSendAudienceNotification(notification_type, user_id, otherUserId, recipientType, senderType)) {
+      return new Response(JSON.stringify({ message: 'Notification does not apply to this recipient' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
 
     console.log('[send-chat-email] Processing:', { user_id, notification_type });
 

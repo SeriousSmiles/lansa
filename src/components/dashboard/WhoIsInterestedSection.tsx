@@ -41,12 +41,7 @@ export function WhoIsInterestedSection() {
     setIsLoading(true);
     try {
       const { data: swipes, error } = await supabase
-        .from("swipes")
-        .select("id, direction, created_at, swiper_user_id")
-        .eq("target_user_id", user.id)
-        .in("direction", ["right", "nudge"])
-        .order("created_at", { ascending: false })
-        .limit(10);
+        .rpc("get_received_employer_interest");
 
       if (error || !swipes?.length) {
         setIsLoading(false);
