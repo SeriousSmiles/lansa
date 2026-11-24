@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { ProfileError } from "@/hooks/useSharedProfileData";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserState } from "@/contexts/UserStateProvider";
+import { getRoleHomePath } from "@/utils/roleRoutes";
 import { Globe, Lock, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
@@ -18,6 +20,8 @@ interface ProfileNotFoundProps {
 export function ProfileNotFound({ errorType, isOwnProfile, userId, shareUrl }: ProfileNotFoundProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { userType, isAdmin } = useUserState();
+  const homePath = getRoleHomePath({ userType, isAdmin });
   const [isPublishing, setIsPublishing] = useState(false);
 
   const handleMakePublic = async () => {
@@ -37,7 +41,7 @@ export function ProfileNotFound({ errorType, isOwnProfile, userId, shareUrl }: P
         if (shareUrl) {
           navigate(shareUrl, { replace: true });
         } else {
-          navigate('/profile');
+          navigate(userType === 'job_seeker' ? '/profile' : homePath);
         }
       }, 800);
     } catch (err) {
@@ -68,7 +72,7 @@ export function ProfileNotFound({ errorType, isOwnProfile, userId, shareUrl }: P
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate(homePath)}
           className="gap-2 text-muted-foreground"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -93,7 +97,7 @@ export function ProfileNotFound({ errorType, isOwnProfile, userId, shareUrl }: P
       <div className="text-2xl font-semibold text-foreground mb-2">Profile not found</div>
       <p className="text-sm text-muted-foreground max-w-xs text-center">{getMessage()}</p>
       <Button
-        onClick={() => navigate(user ? "/dashboard" : "/auth")}
+        onClick={() => navigate(user ? homePath : "/auth")}
         className="mt-4"
       >
         {user ? "Back to Dashboard" : "Go to Login"}

@@ -2,6 +2,8 @@ import { ReactNode } from "react";
 import { PortalRail } from "./PortalRail";
 import { PortalContextPanel } from "./PortalContextPanel";
 import { cn } from "@/lib/utils";
+import { useUserState, useAuth } from "@/contexts/UnifiedAuthProvider";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 
 interface PortalPageShellProps {
   /** Optional eyebrow above the title (e.g. "Workspace"). */
@@ -45,11 +47,14 @@ export function PortalPageShell({
   className,
   children,
 }: PortalPageShellProps) {
+  const { userType } = useUserState();
+  const { user } = useAuth();
+  const isEmployer = userType === "employer";
   const showHeader = !!(title || subtitle || eyebrow || actions);
 
-  return (
-    <div className="seeker-theme flex w-full min-h-screen bg-background">
-      <PortalRail />
+  const content = (
+    <div className={cn(isEmployer ? "employer-theme" : "seeker-theme", "flex w-full min-h-screen bg-background")}>
+      {!isEmployer && <PortalRail />}
 
       <div className="flex-1 min-w-0 flex flex-col">
         <main className={cn("flex-1", className)}>
@@ -85,7 +90,12 @@ export function PortalPageShell({
         </main>
       </div>
 
-      <PortalContextPanel role={contextRole} goal={contextGoal} />
+      {!isEmployer && <PortalContextPanel role={contextRole} goal={contextGoal} />}
     </div>
   );
+  return isEmployer ? (
+    <DashboardLayout userName={user?.displayName || "Employer"} email={user?.email || ""} fullBleed>
+      {content}
+    </DashboardLayout>
+  ) : content;
 }

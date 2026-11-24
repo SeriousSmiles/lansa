@@ -27,7 +27,7 @@ const PUBLIC_PATH_PREFIXES = [
   '/terms',
   '/for-business',
   '/pricing',
-  '/profile/share/',
+  '/profile/share',
   '/verify/',
 ];
 

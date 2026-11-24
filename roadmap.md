@@ -49,3 +49,9 @@ Discovery validation: eight focused tests pass; preview build OK; local fixture 
 - [x] Exclude seeker-only alerts and self-match metadata from employer Home, shared history, unread lists/counts and recent activity without changing historical records.
 - [x] Gate future swipe notifications, seeker interest review and email delivery by actual sender/recipient roles; preserve match and connection events.
 - [x] Validate shared read paths and future-alert/email gates with isolated data; confirm applied functions and commit. Live accounts, real emails and a full seeker-review connection were not exercised.
+
+## Employer profile-link sweep
+- [x] Remove personal-profile links from Company and mobile account menus; keep company controls.
+- [x] Use employer navigation on shared Chat/Notifications, guard stale seeker shortcuts, and return unavailable public profiles to the correct home.
+- [x] Preserve candidate share links through sign-in and exclude employers from future profile-nudge sends without changing history or permissions.
+- [x] Validate isolated shared-screen and email-audience checks, deploy the nudge gate, and commit. Phone/tablet/desktop checks and six regression tests passed; no real account writes or emails. Live stored notification URLs and scheduled email execution were not exercised.

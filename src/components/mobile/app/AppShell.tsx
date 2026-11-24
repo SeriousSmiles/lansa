@@ -96,7 +96,7 @@ export function AppShell({ children }: AppShellProps) {
 
       {/* Quick Actions Sheet */}
       <QuickActionsSheet 
-        isOpen={isQuickActionsOpen}
+        isOpen={Boolean(showSeekerNav && isQuickActionsOpen)}
         onClose={() => useUIStore.getState().setQuickActionsOpen(false)}
         userName={userName}
       />

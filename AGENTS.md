@@ -22,6 +22,7 @@
 - Keep JobPostingWizard as the single owner of job creation; mobile completion callbacks only refresh results so one completed wizard cannot submit a second job.
 
 # Employer environment
+- Shared PortalPageShell uses employer DashboardLayout without seeker profile/AI drawers for employers; profile nudges check current user_answers identity before sending so seeker-only actions never leak through shared surfaces or stale completion snapshots.
 - Use employerActivityModel for employer Home event eligibility; seeker-addressed interest alerts must never be relabelled as candidate interest, and self-match metadata must not be presented as a candidate match.
 - Shared notification history, unread badges and recent activity use notificationReadQuery with the stored user type; server swipe alerts require an employer sender and seeker recipient, leaving historical records and permissions unchanged.
 - get_received_employer_interest is intentionally authenticated SECURITY DEFINER with a fixed search path and auth.uid-bound recipient; it validates private sender roles without exposing user_answers or broadening existing table policies. Match emails are sent only by the notification pipeline, not the review drawer.

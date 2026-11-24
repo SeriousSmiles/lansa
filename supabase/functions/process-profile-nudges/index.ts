@@ -36,6 +36,7 @@ Deno.serve(async (req) => {
     let q = supabase
       .from('profile_completion_state')
       .select('user_id, score, missing_steps, nudge_sequence_step, nudge_paused, nudge_paused_until, is_complete')
+      .eq('user_type', 'job_seeker')
       .eq('is_complete', false)
       .lt('nudge_sequence_step', MAX_STEP)
       .limit(BATCH_LIMIT);
@@ -48,6 +49,17 @@ Deno.serve(async (req) => {
     const results: any[] = [];
 
     for (const row of rows || []) {
+      // Completion snapshots can predate a role change; validate the current audience
+      // before sending or advancing any sequence/history records.
+      const { data: answers, error: audienceError } = await supabase
+        .from('user_answers')
+        .select('user_type')
+        .eq('user_id', row.user_id)
+        .maybeSingle();
+      if (audienceError || answers?.user_type !== 'job_seeker') {
+        results.push({ user_id: row.user_id, status: 'not_seeker' });
+        continue;
+      }
       // Paused check
       if (row.nudge_paused) {
         if (!row.nudge_paused_until || new Date(row.nudge_paused_until) > new Date()) {
