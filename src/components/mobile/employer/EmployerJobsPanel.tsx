@@ -66,6 +66,7 @@ export function EmployerJobsPanel(p: Props) {
         ) : list.length === 0 ? (
           <EmployerEmpty
             icon={Briefcase}
+            art={p.jobs.length === 0 ? "hiring" : undefined}
             title={p.jobs.length === 0 ? "No jobs posted yet" : filter === "open" ? "No open jobs" : "No closed jobs"}
             body={p.jobs.length === 0 ? "Post a vacancy and applications will appear here." : "Switch the filter to see your other postings."}
             action={p.canCreate && p.jobs.length === 0 ? <button className="ee-primary" onClick={p.onCreate}><Plus size={18} /> Post a job</button> : undefined}

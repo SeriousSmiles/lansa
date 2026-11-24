@@ -1,3 +1,4 @@
+import { Illustration } from "@/components/common/Illustration";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Briefcase, BookOpen, PenLine, RefreshCw, ChevronRight } from "lucide-react";
@@ -104,7 +105,7 @@ export default function Feed() {
         <div className="ee-empty"><h3>Feed didn't load</h3><p>Check your connection and try again.</p><button className="ee-secondary mt-2" onClick={load}><RefreshCw size={16} />Retry</button></div>
       )}
       {state === "ready" && posts.length === 0 && (
-        <div className="ee-empty"><h3>{emptyCopy.t}</h3><p>{emptyCopy.d}</p>{filter !== "saved" && <button className="ee-primary mt-2" onClick={() => setComposeOpen(true)}><PenLine size={18} />Share an update</button>}</div>
+        <div className="ee-empty"><Illustration name={filter === "saved" ? "jobs" : "feed"} size={150} /><h3>{emptyCopy.t}</h3><p>{emptyCopy.d}</p>{filter !== "saved" && <button className="ee-primary mt-2" onClick={() => setComposeOpen(true)}><PenLine size={18} />Share an update</button>}</div>
       )}
       {state === "ready" && posts.map((p) => card(p))}
     </div>

@@ -1,3 +1,4 @@
+import { Illustration } from "@/components/common/Illustration";
 import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -126,7 +127,7 @@ export function ApplicationsSheet({ jobId, jobTitle, open, onOpenChange }: Appli
           </div>
         ) : visible.length === 0 ? (
           <div className="px-5"><div className="ee-empty">
-            <User className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
+            {applications.length === 0 ? <Illustration name="hiring" size={132} /> : <User className="h-8 w-8 text-muted-foreground" aria-hidden="true" />}
             <h3>{applications.length === 0 ? "No applications yet" : "Nothing in this status"}</h3>
             <p>{applications.length === 0 ? "Applications for this job will appear here." : "Choose another status to see more applicants."}</p>
           </div></div>

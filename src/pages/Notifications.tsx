@@ -3,6 +3,7 @@
  * Full page view of all notifications
  */
 
+import { Illustration } from "@/components/common/Illustration";
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { PortalPageShell } from '@/components/dashboard/portal/PortalPageShell';
@@ -125,8 +126,9 @@ export default function Notifications() {
                     </div>
                   ) : notifications.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                      <Inbox className="h-16 w-16 mb-4 opacity-20" />
-                      <p>No notifications yet</p>
+                      <Illustration name="notifications" size={160} className="mb-4" />
+                      <p className="font-semibold text-foreground">All quiet for now</p>
+                      <p className="text-sm">New notifications will show up here.</p>
                     </div>
                   ) : (
                     <ScrollArea className="h-[600px] pr-4">
@@ -164,8 +166,8 @@ export default function Notifications() {
                     </div>
                   ) : updates.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                      <Sparkles className="h-16 w-16 mb-4 opacity-20" />
-                      <p>No updates yet</p>
+                      <Illustration name="learning" size={160} className="mb-4" />
+                      <p className="font-semibold text-foreground">No updates yet</p>
                     </div>
                   ) : (
                     <ScrollArea className="h-[600px] pr-4">

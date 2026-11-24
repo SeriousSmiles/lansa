@@ -1,3 +1,4 @@
+import { Illustration } from "@/components/common/Illustration";
 import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useChatThreads } from "@/hooks/useChatThreads";
@@ -147,9 +148,7 @@ export function MobileChatInbox({
       <div className={embedded ? "flex-1 min-h-0 overflow-y-auto overscroll-contain divide-y divide-border/30" : "flex-1 divide-y divide-border/30"}>
         {embedded && loading ? <div role="status" className="p-5 space-y-4 animate-pulse"><div className="h-16 bg-primary/10 rounded-lg" /><div className="h-16 bg-primary/10 rounded-lg" /><p className="text-sm text-muted-foreground">Loading conversations…</p></div> : threads.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center px-8 py-24">
-            <div className="w-20 h-20 rounded-3xl bg-muted/70 flex items-center justify-center mb-5">
-              <MessageCircle className="w-10 h-10 text-muted-foreground/30" />
-            </div>
+            <Illustration name="inbox" size={150} className="mb-5" />
             <h3 className="text-lg font-bold text-foreground/80 mb-2">No messages yet</h3>
             <p className="text-sm text-muted-foreground/70 leading-relaxed max-w-xs">
               Chats open after you and another person both connect.

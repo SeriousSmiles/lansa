@@ -39,3 +39,8 @@ Discovery validation: eight focused tests pass; preview build OK; local fixture 
 ## Stage 3 — Onboarding carousel (done, preview only)
 - [x] Role-aware /signup (role → account → check email/resend) and /onboarding carousel for seeker, create company, join company; mentor path kept
 - [x] Safe job editing on phone and desktop (update-only, current company)
+
+## App-wide redesign
+- [x] Painted illustrations + shared empty states (feed, jobs, applicants, inbox, notifications)
+- [x] Warm canvas tokens, sidebar, page headers, sign-in/reset, 404, not-allowed
+- [ ] Seeker split views (Mercor-style jobs), employer table/drawer views, settings layouts, pricing/help, mentor

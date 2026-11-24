@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { ArrowLeft, ChevronRight, type LucideIcon } from "lucide-react";
+import { Illustration, type IllustrationName } from "@/components/common/Illustration";
 
 /** Shared employer-environment primitives (styles live in index.css under .ee-*). */
 export function EmployerHeader({ title, onBack, backLabel = "Back", actions }: { title: string; onBack?: () => void; backLabel?: string; actions?: ReactNode }) {
@@ -38,10 +39,10 @@ export function EmployerRow({ icon: Icon, label, detail, trail, onClick, danger,
   );
 }
 
-export function EmployerEmpty({ icon: Icon, title, body, action }: { icon?: LucideIcon; title: string; body?: string; action?: ReactNode }) {
+export function EmployerEmpty({ icon: Icon, title, body, action, art }: { icon?: LucideIcon; title: string; body?: string; action?: ReactNode; art?: IllustrationName }) {
   return (
     <div className="ee-empty ee-fade">
-      {Icon && <span className="ee-row-icon" style={{ width: 48, height: 48 }}><Icon size={22} aria-hidden="true" /></span>}
+      {art ? <Illustration name={art} size={140} /> : Icon && <span className="ee-row-icon" style={{ width: 48, height: 48 }}><Icon size={22} aria-hidden="true" /></span>}
       <h3>{title}</h3>
       {body && <p>{body}</p>}
       {action}

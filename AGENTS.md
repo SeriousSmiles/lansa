@@ -40,3 +40,6 @@
 - Finish only through markOnboardingComplete then refreshUserState; company creation reuses a recorded/owned org and join requests treat "already pending" as success, so retries never duplicate.
 - Editing a vacancy goes only through JobEditForm + jobPostingService.saveJobEdits (update by id and organization, changed fields only, throws, never inserts); JobPostingWizard stays create-only because it flattens structured fields.
 - Phone and desktop job lists both read job_listings_v2 by the active organization_id so edit/close controls only ever target the current company's jobs.
+
+# Illustrations
+- Painted people-first art lives in src/assets/illustrations (webp) and is used only through components/common/Illustration (Illustration, IllustratedEmpty, EmployerEmpty art prop) so empty states stay consistent.

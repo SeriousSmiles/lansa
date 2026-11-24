@@ -58,15 +58,15 @@ export function PortalPageShell({
           ) : (
             <div className="mx-auto w-full max-w-[1440px] px-6 lg:px-10 xl:px-14 pb-6 md:pb-24">
               {showHeader && (
-                <div className={cn("flex items-end justify-between gap-6 flex-wrap", tightTop ? "pt-6" : "pt-8 md:pt-12 pb-6 border-b border-border/30")}>
+                <div className={cn("flex items-end justify-between gap-6 flex-wrap", tightTop ? "pt-6" : "pt-8 md:pt-10 pb-2")}>
                   <div className="min-w-0">
                     {eyebrow && (
-                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                      <p className="text-sm font-semibold text-secondary">
                         {eyebrow}
                       </p>
                     )}
                     {title && (
-                      <h1 className="mt-2 text-4xl md:text-5xl lg:text-6xl leading-[0.95] tracking-[-0.03em] font-extralight text-foreground">
+                      <h1 className="lx-page-title mt-1 text-3xl md:text-4xl lg:text-[2.75rem] text-foreground">
                         {title}
                       </h1>
                     )}

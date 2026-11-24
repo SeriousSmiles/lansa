@@ -1,3 +1,4 @@
+import { Illustration } from "@/components/common/Illustration";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -155,7 +156,7 @@ export function JobManagementTab({ openJobId }: { openJobId?: string }) {
             Refresh
           </Button>
           {canCreateJobs && (
-            <Button onClick={handleCreateJob} className="bg-[#FF6B4A] hover:bg-[#FF6B4A]/90">
+            <Button onClick={handleCreateJob} >
               <Plus className="h-4 w-4 mr-2" />
               Post New Job
             </Button>
@@ -167,14 +168,12 @@ export function JobManagementTab({ openJobId }: { openJobId?: string }) {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                <Plus className="h-8 w-8 text-gray-400" />
-              </div>
+              <Illustration name="hiring" size={160} className="mx-auto" />
               <div>
-                <h3 className="text-lg font-semibold text-[#2E2E2E]">No job listings yet</h3>
-                <p className="text-[#666666]">Create your first job posting to start attracting candidates</p>
+                <h3 className="text-lg font-semibold text-foreground">No job listings yet</h3>
+                <p className="text-muted-foreground">Create your first job posting to start attracting candidates</p>
               </div>
-              <Button onClick={handleCreateJob} className="bg-[#FF6B4A] hover:bg-[#FF6B4A]/90">
+              <Button onClick={handleCreateJob} >
                 <Plus className="h-4 w-4 mr-2" />
                 Post Your First Job
               </Button>

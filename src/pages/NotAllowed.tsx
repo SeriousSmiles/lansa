@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ShieldAlert } from "lucide-react";
+import { Illustration } from "@/components/common/Illustration";
 import { useEffect } from "react";
 import { getRoleHomePath } from "@/utils/roleRoutes";
 
@@ -30,15 +30,13 @@ export default function NotAllowed() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="max-w-md w-full p-8 text-center">
-        <div className="flex justify-center mb-6">
-          <div className="rounded-full bg-destructive/10 p-4">
-            <ShieldAlert className="h-12 w-12 text-destructive" />
-          </div>
+    <div className="seeker-theme min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="max-w-md w-full p-8 text-center rounded-3xl border-border/80 shadow-none">
+        <div className="flex justify-center mb-4">
+          <Illustration name="lost" size={170} />
         </div>
 
-        <h1 className="text-2xl font-bold mb-3">Access Restricted</h1>
+        <h1 className="lx-page-title text-3xl mb-3">This area isn't for your account</h1>
         
         <p className="text-muted-foreground mb-4">
           This area is restricted to{" "}
@@ -61,7 +59,7 @@ export default function NotAllowed() {
         <div className="space-y-3">
           <Button 
             onClick={() => navigate(getDashboardPath())} 
-            className="w-full"
+            className="w-full rounded-full h-12"
           >
             Go to My Dashboard
           </Button>

@@ -17,10 +17,10 @@ export default function LoginPage() {
       />
       <AuthLayout imageSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/21db5620684d4cbbfb27b61d5dfc0736c8a7cd9c?placeholderIfAbsent=true">
         <div className="w-full text-foreground font-normal text-center max-md:max-w-full">
-          <h1 className="text-5xl leading-[1.2] tracking-[-0.48px] max-md:max-w-full max-md:text-[40px]">
+          <h1 className="lx-page-title text-4xl md:text-5xl">
             {t('auth.titleWelcomeBack')}
           </h1>
-          <p className="text-lg mt-6 max-md:max-w-full">
+          <p className="text-base md:text-lg mt-3 text-muted-foreground">
             {t('auth.subtitleLogin')}
           </p>
         </div>

@@ -116,12 +116,13 @@
     --primary-foreground: 0 0% 100%;
     --secondary: 14 90% 60%;             /* LANSA coral, used sparingly */
     --secondary-foreground: 0 0% 100%;
-    --background: 20 85% 95%;            /* Flat LANSA peach */
+    --background: 28 60% 97%;            /* Warm off-white canvas; peach lives in --identity */
+    --identity: 20 85% 94%;              /* LANSA peach for identity / hero bands */
     --foreground: 232 32% 10%;           /* Ink */
-    --muted: 20 60% 91%;
+    --muted: 22 55% 93%;
     --muted-foreground: 232 12% 36%;
-    --border: 20 40% 84%;
-    --input: 20 40% 82%;
+    --border: 22 30% 88%;
+    --input: 22 30% 84%;
     --ring: 236 64% 27%;
     --accent: 20 80% 90%;
     --accent-foreground: 232 32% 10%;
@@ -769,3 +770,18 @@
   .ob-foot { position: static; background: none; padding-bottom: 32px; }
 }
 @media (prefers-reduced-motion: reduce) { .ob-choice, .ob-progress span, .ob-input { transition: none; } }
+
+/* === App-wide modern layer (Mobbin web references: Upwork, Mercor, Threads, Meetup) === */
+.employer-theme .ee-group, .seeker-theme .ee-group, .employer-theme .ee-empty, .seeker-theme .ee-empty { border: 1px solid hsl(var(--border) / .8); box-shadow: none; }
+.employer-theme .ee-empty, .seeker-theme .ee-empty { padding: 32px 24px 36px; gap: 10px; }
+.lx-illustration { object-fit: contain; border-radius: 28px; user-select: none; }
+.lx-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 40px 24px; }
+.lx-empty h3 { font-family: 'Urbanist', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.02em; color: hsl(var(--foreground)); }
+.lx-empty p { font-size: 15px; line-height: 1.5; max-width: 36ch; color: hsl(var(--muted-foreground)); }
+.lx-empty-action { margin-top: 8px; }
+.lx-page-title { font-family: 'Urbanist', sans-serif; font-weight: 800; letter-spacing: -0.035em; line-height: 1.02; }
+.lx-identity-band { background: hsl(var(--identity, 20 85% 94%)); }
+.lx-panel { background: hsl(var(--card)); border: 1px solid hsl(var(--border) / .8); border-radius: 20px; }
+@media (min-width: 768px) {
+  .employer-theme .ee-header h1, .seeker-theme .ee-header h1 { font-size: 30px; }
+}

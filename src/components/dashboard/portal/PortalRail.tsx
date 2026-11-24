@@ -131,7 +131,7 @@ export function PortalRail({ unreadNotifications = 0 }: PortalRailProps) {
     <TooltipProvider delayDuration={150}>
       <aside
         className={cn(
-          "hidden lg:flex sticky top-0 h-screen flex-col border-r border-border/40 bg-card/60 backdrop-blur-sm transition-[width] duration-300 ease-out shrink-0 z-30",
+          "hidden lg:flex sticky top-0 h-screen flex-col border-r border-border/70 bg-card transition-[width] duration-300 ease-out shrink-0 z-30",
           collapsed ? "w-[72px]" : "w-[240px]"
         )}
       >
@@ -144,7 +144,7 @@ export function PortalRail({ unreadNotifications = 0 }: PortalRailProps) {
               className="h-7 w-7 shrink-0"
             />
             {!collapsed && (
-              <span className="text-sm font-medium tracking-tight text-foreground truncate">
+              <span className="lx-page-title text-lg text-primary truncate">
                 Lansa
               </span>
             )}
@@ -156,7 +156,7 @@ export function PortalRail({ unreadNotifications = 0 }: PortalRailProps) {
           {sections.map((section) => (
             <div key={section.label}>
               {!collapsed && (
-                <div className="px-4 pb-2 text-[10px] uppercase tracking-[0.14em] text-muted-foreground font-medium">
+                <div className="px-5 pb-1.5 text-xs font-semibold text-muted-foreground">
                   {section.label}
                 </div>
               )}
@@ -170,22 +170,22 @@ export function PortalRail({ unreadNotifications = 0 }: PortalRailProps) {
                       className={cn(
                         "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all relative group",
                         active
-                          ? "bg-primary/10 text-foreground"
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
+                          ? "bg-secondary/10 text-foreground font-semibold"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
                       )}
                     >
                       {active && (
-                        <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-primary" />
+                        <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-secondary" />
                       )}
-                      <item.icon className={cn("h-[18px] w-[18px] shrink-0", active && "text-primary")} />
+                      <item.icon className={cn("h-[18px] w-[18px] shrink-0", active && "text-secondary")} />
                       {!collapsed && <span className="flex-1 text-left truncate">{item.label}</span>}
                       {!collapsed && item.badge ? (
-                        <span className="ml-auto rounded-full bg-primary text-primary-foreground text-[10px] font-semibold px-2 py-0.5 min-w-[18px] text-center">
+                        <span className="ml-auto rounded-full bg-secondary text-secondary-foreground text-[10px] font-semibold px-2 py-0.5 min-w-[18px] text-center">
                           {item.badge > 99 ? "99+" : item.badge}
                         </span>
                       ) : null}
                       {collapsed && item.badge ? (
-                        <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary" />
+                        <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-secondary" />
                       ) : null}
                     </button>
                   );

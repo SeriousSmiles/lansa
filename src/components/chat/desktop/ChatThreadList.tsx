@@ -1,3 +1,4 @@
+import { Illustration } from "@/components/common/Illustration";
 import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle } from "lucide-react";
@@ -33,8 +34,8 @@ export function ChatThreadList({
       {/* Thread List */}
       <ScrollArea className="flex-1">
         {threads.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-48 text-center px-6">
-            <MessageCircle className="w-10 h-10 text-muted-foreground/40 mb-3" />
+          <div className="flex flex-col items-center justify-center py-10 text-center px-6">
+            <Illustration name="inbox" size={120} className="mb-3" />
             <p className="text-sm font-medium text-muted-foreground">No conversations yet</p>
             <p className="text-xs text-muted-foreground/70 mt-1">
               Connections appear here once a request is accepted
