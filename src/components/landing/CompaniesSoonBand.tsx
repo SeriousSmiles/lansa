@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 import { Band, Display, Eyebrow, Lede, PillButton, ImageFrame } from "./_shared";
-import photo from "@/assets/landing/action/hire.webp";
+import photo from "@/assets/landing/action/shopfront.webp";
 
 export const CompaniesSoonBand = () => {
   const navigate = useNavigate();
@@ -46,7 +46,7 @@ export const CompaniesSoonBand = () => {
         >
           <ImageFrame
             src={photo}
-            alt="Hiring manager reviewing certified candidates"
+            alt="A colourful local shopfront in Willemstad, ready to welcome new staff"
           />
         </motion.div>
       </div>

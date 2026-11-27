@@ -7,9 +7,10 @@ import p2 from "@/assets/landing/people/p2-cafe-laptop.jpg";
 import p4 from "@/assets/landing/people/p4-videocall.jpg";
 import p7 from "@/assets/landing/people/p7-blazer-laptop.jpg";
 import handPhone from "@/assets/landing/action/hand-phone-discover.webp";
-import workPhoto from "@/assets/landing/action/work.webp";
-import examPhoto from "@/assets/landing/action/exam.webp";
-import hirePhoto from "@/assets/landing/action/hire.webp";
+import workPhoto from "@/assets/landing/action/desk-resume.webp";
+import examPhoto from "@/assets/landing/action/certificate.webp";
+import discoverPhoto from "@/assets/landing/action/phone-cafe.webp";
+import hirePhoto from "@/assets/landing/action/interview-table.webp";
 
 /* Illustrative product UI — fictional sample content, for marketing only. */
 function Panel({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -150,7 +151,7 @@ function DiscoverUI({ p }: { p: MotionValue<number> }) {
 const CHAPTERS = [
   { n: "01", kicker: "Build", title: "Tell your real story.", body: "Guided prompts and gentle AI turn your background — even an untraditional one — into a profile that lands.", photo: workPhoto, UI: BuilderUI },
   { n: "02", kicker: "Get certified", title: "Prove what you know.", body: "A timed sector exam. Pass once and the verified badge follows your profile everywhere employers look.", photo: examPhoto, UI: ExamUI },
-  { n: "03", kicker: "Get discovered", title: "The right employer comes to you.", body: "Certified, verified profiles surface to companies. They show interest — you decide when to talk.", photo: hirePhoto, UI: DiscoverUI },
+  { n: "03", kicker: "Get discovered", title: "The right employer comes to you.", body: "Certified, verified profiles surface to companies. They show interest — you decide when to talk.", photo: discoverPhoto, UI: DiscoverUI },
 ] as const;
 
 function Chapter({ c, index }: { c: (typeof CHAPTERS)[number]; index: number }) {
@@ -305,7 +306,7 @@ export function CapabilitiesStory() {
           </div>
           <div className="relative lg:col-span-7">
             <div className="relative overflow-hidden rounded-[2.5rem]">
-              <img src={hirePhoto} alt="An employer shaking hands with a new hire" className="h-[560px] w-full object-cover md:h-[640px]" />
+              <img src={hirePhoto} alt="A meeting table set for an interview, with a resume folder and two coffees" className="h-[560px] w-full object-cover md:h-[640px]" />
               <div className="absolute inset-0 bg-gradient-to-t from-dashboard-ink/70 via-dashboard-ink/10 to-transparent" />
               <div className="absolute inset-x-4 bottom-4 md:inset-x-auto md:bottom-8 md:right-8 md:w-[440px]">
                 <div className="overflow-hidden rounded-3xl bg-card shadow-2xl shadow-dashboard-ink/40">
