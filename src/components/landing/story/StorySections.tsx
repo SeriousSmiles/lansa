@@ -55,7 +55,7 @@ export function ManifestoScroll() {
     );
   }
   return (
-    <section ref={ref} className="relative h-[220vh] bg-dashboard-ink text-dashboard-on-ink" aria-label="Why Lansa">
+    <section ref={ref} className="relative h-[160vh] bg-dashboard-ink text-dashboard-on-ink" aria-label="Why Lansa">
       <div className="sticky top-0 flex min-h-[100svh] items-center overflow-hidden px-6 py-16 md:px-12">
         <div className="mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-12">
           <p className="lx-story-title lg:col-span-7">
@@ -166,7 +166,7 @@ function Chapter({ c, index }: { c: (typeof CHAPTERS)[number]; index: number }) 
   const flip = index % 2 === 1;
   const UI = c.UI;
   return (
-    <div ref={ref} className="relative grid min-h-[120svh] items-center gap-10 py-20 md:grid-cols-12">
+    <div ref={ref} className="relative grid items-center gap-10 py-12 md:py-16 md:grid-cols-12">
       <motion.span aria-hidden style={{ y: numY }} className={`lx-story-number pointer-events-none absolute top-1/2 -translate-y-1/2 text-dashboard-ink/[0.06] ${flip ? "right-0" : "left-0"}`}>{c.n}</motion.span>
       <div className={`relative md:col-span-7 ${flip ? "md:order-2" : ""}`}>
         <motion.div style={{ y: photoY }} className="relative mx-auto aspect-[4/5] w-[86%] max-w-[500px] overflow-hidden rounded-[2.5rem] shadow-2xl">
@@ -275,8 +275,8 @@ export function CapabilitiesStory() {
 
   return (
     <section className="bg-home-mist text-dashboard-ink" aria-labelledby="for-employers">
-      <div ref={ref} className={reduce ? "" : "relative lg:h-[240vh]"}>
-        <div className="mx-auto grid max-w-7xl gap-12 px-6 py-24 md:px-12 lg:sticky lg:top-0 lg:min-h-[100svh] lg:grid-cols-12 lg:items-center">
+      <div ref={ref} className={reduce ? "" : "relative lg:h-[180vh]"}>
+        <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:px-12 lg:sticky lg:top-0 lg:min-h-[100svh] lg:grid-cols-12 lg:items-center">
           <div className="lg:col-span-5">
             <p className="font-urbanist text-sm font-bold uppercase tracking-[0.25em] text-secondary">For employers</p>
             <h2 id="for-employers" className="lx-story-title mt-3">Hire certified people in three steps.</h2>
