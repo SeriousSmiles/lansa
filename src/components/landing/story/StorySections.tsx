@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, useReducedMotion, useScroll, useSpring, useTransform, useMotionValueEvent, type MotionValue } from "framer-motion";
 import { ArrowRight, BadgeCheck, Check, Clock, Heart, MessageCircle, Search, Sparkles, X, Briefcase, Users, TrendingUp } from "lucide-react";
@@ -17,6 +17,13 @@ function Panel({ children, className = "" }: { children: ReactNode; className?: 
   return <div className={`rounded-3xl border border-border bg-card p-5 text-dashboard-ink shadow-2xl ${className}`}>{children}</div>;
 }
 
+function useIsDesktop() {
+  const q = "(min-width: 1024px)";
+  const [m, setM] = useState(() => typeof window !== "undefined" && window.matchMedia(q).matches);
+  useEffect(() => { const mq = window.matchMedia(q); const h = () => setM(mq.matches); mq.addEventListener("change", h); return () => mq.removeEventListener("change", h); }, []);
+  return m;
+}
+
 /* ---------- 1. Giant word-by-word manifesto over real photos ---------- */
 const MANIFESTO = "Bo ta bon. You have the skills, the story and the drive. Lansa makes sure the right people finally see it.";
 
@@ -30,7 +37,8 @@ function Word({ word, progress, range }: { word: string; progress: MotionValue<n
 export function ManifestoScroll() {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  const isDesktop = useIsDesktop();
+  const { scrollYProgress } = useScroll({ target: ref, offset: isDesktop ? ["start start", "end end"] : ["start 0.85", "center 0.4"] });
   const words = MANIFESTO.split(" ");
   const phoneY = useTransform(scrollYProgress, [0, 1], ["8%", "-8%"]);
   const phoneR = useTransform(scrollYProgress, [0, 1], [-4, 3]);
@@ -40,8 +48,8 @@ export function ManifestoScroll() {
     <div className="relative mx-auto w-full max-w-[380px]">
       <motion.img src={handPhone} alt="A hand holding a phone showing the Lansa Discover screen" style={reduce ? undefined : { y: phoneY, rotate: phoneR }}
         className="aspect-[2/3] w-full rounded-[2.5rem] object-cover shadow-2xl ring-1 ring-dashboard-on-ink/10" />
-      <motion.div style={reduce ? undefined : { opacity: notif, y: notifY }} className="absolute -left-6 bottom-10 sm:-left-16">
-        <Panel className="flex w-64 items-center gap-3 p-4">
+      <motion.div style={reduce ? undefined : { opacity: notif, y: notifY }} className="absolute -left-2 bottom-6 sm:-left-16 sm:bottom-10">
+        <Panel className="flex w-60 items-center gap-3 p-3 sm:w-64 sm:p-4">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"><Heart className="h-5 w-5" /></span>
           <div className="min-w-0"><p className="font-urbanist text-sm font-extrabold">Caribe Logistics is interested</p><p className="text-xs text-muted-foreground">Viewed your profile · just now</p></div>
         </Panel>
@@ -56,8 +64,8 @@ export function ManifestoScroll() {
     );
   }
   return (
-    <section ref={ref} className="relative h-[160vh] bg-dashboard-ink text-dashboard-on-ink" aria-label="Why Lansa">
-      <div className="sticky top-0 flex min-h-[100svh] items-center overflow-hidden px-6 py-16 md:px-12">
+    <section ref={ref} className="relative bg-dashboard-ink lg:h-[160vh] text-dashboard-on-ink" aria-label="Why Lansa">
+      <div className="flex items-center overflow-hidden px-6 pb-10 pt-16 md:px-12 lg:sticky lg:top-0 lg:min-h-[100svh] lg:py-16">
         <div className="mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-12">
           <p className="lx-story-title lg:col-span-7">
             {words.map((w, i) => { const s = i / words.length; return <Word key={i} word={w} progress={scrollYProgress} range={[s * 0.8, s * 0.8 + 0.12]} />; })}
@@ -65,7 +73,7 @@ export function ManifestoScroll() {
           <div className="hidden lg:col-span-5 lg:block">{Phone}</div>
         </div>
       </div>
-      <div className="px-6 pb-20 lg:hidden">{Phone}</div>
+      <div className="px-6 pb-16 lg:hidden">{Phone}</div>
     </section>
   );
 }
@@ -167,8 +175,8 @@ function Chapter({ c, index }: { c: (typeof CHAPTERS)[number]; index: number }) 
   const flip = index % 2 === 1;
   const UI = c.UI;
   return (
-    <div ref={ref} className="relative grid items-center gap-10 py-12 md:py-16 md:grid-cols-12">
-      <motion.span aria-hidden style={{ y: numY }} className={`lx-story-number pointer-events-none absolute top-1/2 -translate-y-1/2 text-dashboard-ink/[0.06] ${flip ? "right-0" : "left-0"}`}>{c.n}</motion.span>
+    <div ref={ref} className="relative grid items-center gap-8 py-10 md:gap-10 md:py-16 md:grid-cols-12">
+      <motion.span aria-hidden style={{ y: numY }} className={`lx-story-number pointer-events-none absolute hidden md:block top-1/2 -translate-y-1/2 text-dashboard-ink/[0.06] ${flip ? "right-0" : "left-0"}`}>{c.n}</motion.span>
       <div className={`relative md:col-span-7 ${flip ? "md:order-2" : ""}`}>
         <motion.div style={{ y: photoY }} className="relative mx-auto aspect-[4/5] w-[86%] max-w-[500px] overflow-hidden rounded-[2.5rem] shadow-2xl">
           <motion.img src={c.photo} alt="" aria-hidden loading="lazy" style={{ scale: photoScale }} className="h-full w-full object-cover" />
@@ -180,7 +188,7 @@ function Chapter({ c, index }: { c: (typeof CHAPTERS)[number]; index: number }) 
       <motion.div style={{ y: textY, opacity: textOpacity }} className={`relative z-10 md:col-span-5 ${flip ? "md:order-1" : ""}`}>
         <p className="mb-4 font-urbanist text-sm font-bold uppercase tracking-[0.25em] text-secondary">{c.n} · {c.kicker}</p>
         <h3 className="lx-story-title text-dashboard-ink">{c.title}</h3>
-        <p className="mt-6 max-w-lg font-public-sans text-lg leading-relaxed text-muted-foreground md:text-xl">{c.body}</p>
+        <p className="mt-4 max-w-lg font-public-sans text-base leading-relaxed text-muted-foreground md:mt-6 md:text-xl">{c.body}</p>
       </motion.div>
     </div>
   );
@@ -192,7 +200,7 @@ export function ChapterStory() {
   const bar = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
   return (
     <section ref={ref} className="relative overflow-hidden bg-background px-6 md:px-12" aria-labelledby="how-lansa-works">
-      <div className="mx-auto max-w-7xl pt-16">
+      <div className="mx-auto max-w-7xl pt-14 md:pt-16">
         <p className="mb-4 font-urbanist text-sm font-bold uppercase tracking-[0.25em] text-primary">Behind the curtain</p>
         <h2 id="how-lansa-works" className="lx-story-giant max-w-4xl text-dashboard-ink">Three steps. <span className="text-primary">One honest shortcut.</span></h2>
       </div>
@@ -277,11 +285,11 @@ export function CapabilitiesStory() {
   return (
     <section className="bg-background text-dashboard-ink" aria-labelledby="for-employers">
       <div ref={ref} className={reduce ? "" : "relative lg:h-[180vh]"}>
-        <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:px-12 lg:sticky lg:top-0 lg:min-h-[100svh] lg:grid-cols-12 lg:items-center">
+        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 md:gap-12 md:px-12 md:py-16 lg:sticky lg:top-0 lg:min-h-[100svh] lg:grid-cols-12 lg:items-center">
           <div className="lg:col-span-5">
             <p className="font-urbanist text-sm font-bold uppercase tracking-[0.25em] text-secondary">For employers</p>
             <h2 id="for-employers" className="lx-story-title mt-3">Hire certified people in three steps.</h2>
-            <ol className="mt-10 border-l-2 border-border">
+            <ol className="mt-8 border-l-2 md:mt-10 border-border">
               {STEPS.map((st, i) => {
                 const on = i === step;
                 return (
@@ -300,13 +308,13 @@ export function CapabilitiesStory() {
               })}
             </ol>
             <button type="button" onClick={() => navigate("/signup")}
-              className="group mt-10 flex min-h-[56px] items-center gap-3 rounded-full bg-dashboard-ink px-8 font-urbanist text-lg font-bold text-dashboard-on-ink transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-dashboard-ink/30">
+              className="group mt-8 flex min-h-[56px] w-full justify-center sm:w-auto sm:justify-start md:mt-10 items-center gap-3 rounded-full bg-dashboard-ink px-8 font-urbanist text-lg font-bold text-dashboard-on-ink transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-dashboard-ink/30">
               Start hiring free<ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </button>
           </div>
           <div className="relative lg:col-span-7">
             <div className="relative overflow-hidden rounded-[2.5rem]">
-              <img src={hirePhoto} alt="A meeting table set for an interview, with a resume folder and two coffees" className="h-[560px] w-full object-cover md:h-[640px]" />
+              <img src={hirePhoto} alt="A meeting table set for an interview, with a resume folder and two coffees" className="h-[600px] w-full object-cover sm:h-[560px] md:h-[640px]" />
               <div className="absolute inset-0 bg-gradient-to-t from-dashboard-ink/70 via-dashboard-ink/10 to-transparent" />
               <div className="absolute inset-x-4 bottom-4 md:inset-x-auto md:bottom-8 md:right-8 md:w-[440px]">
                 <div className="overflow-hidden rounded-3xl bg-card shadow-2xl shadow-dashboard-ink/40">
@@ -314,12 +322,12 @@ export function CapabilitiesStory() {
                     <div><p className="text-xs font-semibold uppercase tracking-wider text-secondary">Open role</p><p className="font-urbanist text-lg font-extrabold">Customer Success Lead</p></div>
                     <div className="flex gap-1">{[0, 1, 2].map((i) => <span key={i} className={`h-1.5 w-6 rounded-full transition-colors ${i <= step ? "bg-dashboard-ink" : "bg-border"}`} />)}</div>
                   </div>
-                  <motion.div key={step} initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="min-h-[260px] p-4">
+                  <motion.div key={step} initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="min-h-[250px] p-3 sm:p-4">
                     <StepView step={step} />
                   </motion.div>
                 </div>
               </div>
-              <div className="absolute left-5 top-5 flex items-center gap-2 rounded-full bg-card/95 px-4 py-2 text-sm font-bold shadow-lg backdrop-blur">
+              <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-card/95 px-3 py-1.5 text-xs sm:left-5 sm:top-5 sm:px-4 sm:py-2 sm:text-sm font-bold shadow-lg backdrop-blur">
                 <BadgeCheck className="h-4 w-4 text-secondary" />Every candidate certified &amp; verified
               </div>
             </div>
@@ -328,10 +336,10 @@ export function CapabilitiesStory() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-6 pb-20 md:px-12">
+      <div className="mx-auto max-w-7xl px-5 pb-16 md:px-12 md:pb-20">
         <div className="grid divide-y divide-border rounded-[2rem] bg-dashboard-ink text-dashboard-on-ink sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x lg:divide-dashboard-on-ink/15">
           {TILES.map((t) => (
-            <article key={t.title} className="p-7">
+            <article key={t.title} className="p-6 md:p-7">
               <t.icon className="h-6 w-6 text-dashboard-on-ink/80" />
               <h3 className="mt-4 font-urbanist text-xl font-extrabold tracking-tight">{t.title}</h3>
               <p className="mt-2 font-public-sans text-sm leading-relaxed text-dashboard-on-ink/75">{t.body}</p>

@@ -17,7 +17,7 @@ export const FinalCTABand = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#191f71]/40 via-[#191f71]/70 to-[#191f71]" />
       </div>
-      <div className="relative mx-auto max-w-[1200px] px-6 md:px-10 py-28 md:py-40">
+      <div className="relative mx-auto max-w-[1200px] px-6 md:px-10 py-20 md:py-40">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -28,7 +28,7 @@ export const FinalCTABand = () => {
           <p className="text-[11px] md:text-xs uppercase tracking-[0.22em] font-urbanist font-bold text-primary mb-5">
             Your next move
           </p>
-          <h2 className="font-urbanist font-black tracking-[-0.02em] sm:text-[56px]/[0.85] md:text-[80px]/[0.85] text-7xl">
+          <h2 className="font-urbanist font-black tracking-[-0.02em] text-[48px]/[0.9] sm:text-[56px]/[0.85] md:text-[80px]/[0.85]">
             Bo ta ribe lista?
             <br />
             <span className="text-primary">Let's go.</span>

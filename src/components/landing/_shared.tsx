@@ -30,7 +30,7 @@ export const Band = ({
     id={id}
     className={cn("w-full", BAND_BG[tone], className)}
   >
-    <div className="mx-auto max-w-[1200px] px-6 md:px-10 py-20 md:py-32">
+    <div className="mx-auto max-w-[1200px] px-6 md:px-10 py-16 md:py-32">
       {children}
     </div>
   </section>

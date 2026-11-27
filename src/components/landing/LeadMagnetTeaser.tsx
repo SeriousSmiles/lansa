@@ -3,7 +3,7 @@ import { Gauge, Sparkles } from "lucide-react";
 
 export const LeadMagnetTeaser = () => {
   return (
-    <section className="bg-[hsl(40_33%_94%)] py-24 md:py-32">
+    <section className="bg-[hsl(40_33%_94%)] py-16 md:py-32">
       <div className="mx-auto max-w-[1200px] px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
